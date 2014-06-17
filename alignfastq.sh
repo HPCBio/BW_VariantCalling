@@ -470,9 +470,16 @@ else
 		exit 1;
 	    fi
 
+
+
+
+###########################   CHECK FASTQ QUALITY ###########################################
+
             if [ $fastqcflag == "YES" ]
             then
 		echo "calculating quality values for fastq file"
+                
+                # check that fastqc tool is there
 		if [ ! -d $fastqcdir ]
 		then
 		    MSG="FASTQCDIR=$fastqcdir directory not found"
@@ -480,43 +487,51 @@ else
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
+
+                # create necessary directories
 		if [ ! -d $outputdir/fastqc ]
                 then
                     mkdir $outputdir/fastqc
                     `chmod -R 770 $outputdir/fastqc`
 		fi
+                if [ ! -d $output_logs/fastqc ]
+                then
+                    mkdir $output_logs/fastqc
+                    `chmod -R 770 $output_logs/fastqc`
+                fi
 
-                qsub=$output_logs/qsub.fastqcR1.$prevname
+
+                qsub=$output_logs/fastqc/qsub.fastqcR1.$prevname
 		echo "#PBS -V" > $qsub
 		echo "#PBS -A $pbsprj" >> $qsub
 		echo "#PBS -N ${pipeid}_fastqc_R1_${prevname}" >> $qsub
 		echo "#PBS -l epilogue=$epilogue" >> $qsub
 		echo "#PBS -l walltime=$pbscpu" >> $qsub
 		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
-		echo "#PBS -o $output_logs/log.fastqc_R1_${prevname}.ou" >> $qsub
-		echo "#PBS -e $output_logs/log.fastqc_R1_${prevname}.in" >> $qsub
+		echo "#PBS -o $output_logs/fastqc/log.fastqc_R1_${prevname}.ou" >> $qsub
+		echo "#PBS -e $output_logs/fastqc/log.fastqc_R1_${prevname}.in" >> $qsub
 		echo "#PBS -q $pbsqueue" >> $qsub
 		echo "#PBS -m ae" >> $qsub
 		echo "#PBS -M $email" >> $qsub
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R1 $output_logs/log.fastqc_R1_${prevname}.in $output_logs/log.fastqc_R1_${prevname}.ou $email $output_logs/qsub.fastqc_R1_$prevname" >> $qsub
+		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R1 $output_logs/fastqc/log.fastqc_R1_${prevname}.in $output_logs/log.fastqc_R1_${prevname}.ou $email $output_logs/fastqc/qsub.fastqc_R1_$prevname" >> $qsub
 		`chmod a+r $qsub`
                 `qsub $qsub >> $output_logs/FASTQCpbs`
 
 		if [ $paired -eq 1 ]
 		then
-                    qsub=$output_logs/qsub.fastqc_R2_$prevname
+                    qsub=$output_logs/fastqc/qsub.fastqc_R2_$prevname
 		    echo "#PBS -V" > $qsub
 		    echo "#PBS -A $pbsprj" >> $qsub
 		    echo "#PBS -N ${pipeid}_fastqc_R2_${prevname}" >> $qsub
 		    echo "#PBS -l epilogue=$epilogue" >> $qsub
 		    echo "#PBS -l walltime=$pbscpu" >> $qsub
 		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
-		    echo "#PBS -o $output_logs/log.fastqc_R2_${prevname}.ou" >> $qsub
-		    echo "#PBS -e $output_logs/log.fastqc_R2_${prevname}.in" >> $qsub
+		    echo "#PBS -o $output_logs/fastqc/log.fastqc_R2_${prevname}.ou" >> $qsub
+		    echo "#PBS -e $output_logs/fastqc/log.fastqc_R2_${prevname}.in" >> $qsub
 		    echo "#PBS -q $pbsqueue" >> $qsub
 		    echo "#PBS -m ae" >> $qsub
 		    echo "#PBS -M $email" >> $qsub
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R2 $output_logs/log.fastqc_R2_${prevname}.in $output_logs/log.fastqc_R2_$prevname.ou $email $output_logs/qsub.fastqc_R2_$prevname" >> $qsub
+		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R2 $output_logs/fastqc/log.fastqc_R2_${prevname}.in $output_logs/fastqc/log.fastqc_R2_$prevname.ou $email $output_logs/qsub.fastqc_R2_$prevname" >> $qsub
 		    `chmod a+r $qsub`
                     `qsub $qsub >> $output_logs/FASTQCpbs`
 		fi
