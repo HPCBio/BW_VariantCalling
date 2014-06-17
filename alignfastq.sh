@@ -808,7 +808,7 @@ else
                        #jobnovo=`qsub $qsub`
                        `qhold -h u $jobbwamemse`
                        echo $jobbwamemse >> $outputlogs/ALIGNED_$prevname
-                       echo $jobbwamemse >> $output_logs/ALN_NCSA_jobids
+                       echo $jobbwamemse >> $output_logs/ALIGN_NCSA_jobids
 
 
                     fi
@@ -944,6 +944,7 @@ else
 
         echo $JoblistId >> $output_logs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
         echo $JoblistId >> $output_logs/MERGEDpbs # so that summaryok could depend on this job, in case when there is no merging: a sigle chunk
+        echo $JoblistId >> $output_logs/ALIGN_NCSA_jobids # so that sort jobs in realignment/recalibration block could find the job ids to depend upon 
 
 
 
@@ -961,7 +962,7 @@ else
 	extraids=$( cat $output_logs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
         alignids=$( cat $output_logs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
-	echo $pbsids >> $output_logs/ALN_NCSA_jobids
+	echo $pbsids >> $output_logs/ALIGN_NCSA_jobids
 
         ## generating summary redmine email if analysis ends here
 	echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"
