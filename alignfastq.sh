@@ -942,7 +942,8 @@ else
 
         JoblistId=`qsub  $qsublauncher`
 
-        echo $JoblistId >> $output_logs/ALIGNEDpbs
+        echo $JoblistId >> $output_logs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+        echo $JoblistId >> $output_logs/MERGEDpbs # so that summaryok could depend on this job, in case when there is no merging: a sigle chunk
 
 
 
