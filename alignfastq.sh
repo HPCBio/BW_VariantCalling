@@ -501,39 +501,39 @@ else
                 fi
 
 
-                qsub=$output_logs/fastqc/qsub.fastqcR1.$prevname
-		echo "#PBS -V" > $qsub
-		echo "#PBS -A $pbsprj" >> $qsub
-		echo "#PBS -N ${pipeid}_fastqc_R1_${prevname}" >> $qsub
-		echo "#PBS -l epilogue=$epilogue" >> $qsub
-		echo "#PBS -l walltime=$pbscpu" >> $qsub
-		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
-		echo "#PBS -o $output_logs/fastqc/log.fastqc_R1_${prevname}.ou" >> $qsub
-		echo "#PBS -e $output_logs/fastqc/log.fastqc_R1_${prevname}.in" >> $qsub
-		echo "#PBS -q $pbsqueue" >> $qsub
-		echo "#PBS -m ae" >> $qsub
-		echo "#PBS -M $email" >> $qsub
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R1 $output_logs/fastqc/log.fastqc_R1_${prevname}.in $output_logs/log.fastqc_R1_${prevname}.ou $email $output_logs/fastqc/qsub.fastqc_R1_$prevname" >> $qsub
-		`chmod a+r $qsub`
-                `qsub $qsub >> $output_logs/FASTQCpbs`
+                qsub_fastqcR1=$output_logs/fastqc/qsub.fastqcR1.$prevname
+		echo "#PBS -V" > $qsub_fastqcR1
+		echo "#PBS -A $pbsprj" >> $qsub_fastqcR1
+		echo "#PBS -N ${pipeid}_fastqc_R1_${prevname}" >> $qsub_fastqcR1
+		echo "#PBS -l epilogue=$epilogue" >> $qsub_fastqcR1
+		echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR1
+		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR1
+		echo "#PBS -o $output_logs/fastqc/log.fastqc_R1_${prevname}.ou" >> $qsub_fastqcR1
+		echo "#PBS -e $output_logs/fastqc/log.fastqc_R1_${prevname}.in" >> $qsub_fastqcR1
+		echo "#PBS -q $pbsqueue" >> $qsub_fastqcR1
+		echo "#PBS -m ae" >> $qsub_fastqcR1
+		echo "#PBS -M $email" >> $qsub_fastqcR1
+		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R1 $output_logs/fastqc/log.fastqc_R1_${prevname}.in $output_logs/log.fastqc_R1_${prevname}.ou $email $output_logs/fastqc/qsub.fastqc_R1_$prevname" >> $qsub_fastqcR1
+		`chmod a+r $qsub_fastqcR1`
+                `qsub $qsub_fastqcR1 >> $output_logs/FASTQCpbs`
 
 		if [ $paired -eq 1 ]
 		then
-                    qsub=$output_logs/fastqc/qsub.fastqc_R2_$prevname
-		    echo "#PBS -V" > $qsub
-		    echo "#PBS -A $pbsprj" >> $qsub
-		    echo "#PBS -N ${pipeid}_fastqc_R2_${prevname}" >> $qsub
-		    echo "#PBS -l epilogue=$epilogue" >> $qsub
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
-		    echo "#PBS -o $output_logs/fastqc/log.fastqc_R2_${prevname}.ou" >> $qsub
-		    echo "#PBS -e $output_logs/fastqc/log.fastqc_R2_${prevname}.in" >> $qsub
-		    echo "#PBS -q $pbsqueue" >> $qsub
-		    echo "#PBS -m ae" >> $qsub
-		    echo "#PBS -M $email" >> $qsub
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R2 $output_logs/fastqc/log.fastqc_R2_${prevname}.in $output_logs/fastqc/log.fastqc_R2_$prevname.ou $email $output_logs/qsub.fastqc_R2_$prevname" >> $qsub
-		    `chmod a+r $qsub`
-                    `qsub $qsub >> $output_logs/FASTQCpbs`
+                    qsub_fastqcR2=$output_logs/fastqc/qsub.fastqc_R2_$prevname
+		    echo "#PBS -V" > $qsub_fastqcR2
+		    echo "#PBS -A $pbsprj" >> $qsub_fastqcR2
+		    echo "#PBS -N ${pipeid}_fastqc_R2_${prevname}" >> $qsub_fastqcR2
+		    echo "#PBS -l epilogue=$epilogue" >> $qsub_fastqcR2
+		    echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR2
+		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR2
+		    echo "#PBS -o $output_logs/fastqc/log.fastqc_R2_${prevname}.ou" >> $qsub_fastqcR2
+		    echo "#PBS -e $output_logs/fastqc/log.fastqc_R2_${prevname}.in" >> $qsub_fastqcR2
+		    echo "#PBS -q $pbsqueue" >> $qsub_fastqcR2
+		    echo "#PBS -m ae" >> $qsub_fastqcR2
+		    echo "#PBS -M $email" >> $qsub_fastqcR2
+		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R2 $output_logs/fastqc/log.fastqc_R2_${prevname}.in $output_logs/fastqc/log.fastqc_R2_$prevname.ou $email $output_logs/qsub.fastqc_R2_$prevname" >> $qsub_fastqcR2
+		    `chmod a+r $qsub_fastqcR2`
+                    `qsub $qsub_fastqcR2 >> $output_logs/FASTQCpbs`
 		fi
             else
 		echo "quality information for fastq files will NOT be calculated."
