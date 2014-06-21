@@ -556,6 +556,11 @@ else
 	    else
 		outputsam=$outputalign/$dirname
 	    fi
+            if [ ! -d $outputalign/AnisimovLogs ]
+            then
+		mkdir $outputalign/AnisimovLogs
+            fi
+
             if [ ! -d $outputlogs ]
             then
  		mkdir $outputlogs
@@ -781,16 +786,16 @@ else
                     if [ $paired -eq 1 ]
                     then
                         echo "bwa mem aligner. paired-end reads"
-                        jobfile=$outputalign/bwamem.$prevname.node$i.jobfile
+                        jobfile=$outputalign/AnisimovLogs/bwamem.$prevname.node$i.jobfile
 
                         if [ $chunkfastq == "YES" ]
                         then
                            echo "aprun -n 1 -d $thr $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.sam $outputsam.node$i.bam $outputalign/$Rone $outputalign/$Rtwo $scriptdir $samdir $outputlogs/log.bwamem.$prevname.node$i.in $outputlogs/log.bwamem.$prevname.node$i.ou $email $outputlogs/qsub.bwamem.$prevname.node$i" >> $qsub4
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i $outputalign/$Rone $outputalign/$Rtwo $runfile $outputlogs/log.bwamem.$prevname.node$i.in $outputlogs/log.bwamem.$prevname.node$i.ou $email $outputlogs/qsub.bwamem.$prevname.node$i $RGparms > $outputlogs/log.bwamem.$prevname.node$i.in" > $jobfile
+                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i $outputalign/$Rone $outputalign/$Rtwo $runfile $outputalign/AnisimovLogs/log.bwamem.$prevname.node$i.in $outputalign/AnisimovLogs/log.bwamem.$prevname.node$i.ou $email $jobfile $RGparms > $outputalign/AnisimovLogs/log.bwamem.$prevname.node$i.in" > $jobfile
                            jobfilename=$( basename $jobfile )
-                           echo "$outputalign $jobfilename" >> $outputlogs/Anisimov.joblist
+                           echo "$outputalign/AnisimovLogs $jobfilename" >> $outputlogs/AlignAnisimov.joblist
                         fi
 
 
@@ -940,26 +945,26 @@ else
         numalignnodes=$(( inputfastqcounter + 1))
 
         # scheduling the Anisimov Launcher
-        qsublauncher=$outputlogs/qsub.align.Anisimov
-        echo "#!/bin/bash" > $qsublauncher
-        echo "#PBS -V" >> $qsublauncher
-        echo "#PBS -A $pbsprj" >> $qsublauncher
-        echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsublauncher
-        echo "#PBS -l walltime=$pbscpu" >> $qsublauncher
-        echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsublauncher
-        echo "#PBS -o $outputlogs/log.align.Anisimov.ou" >> $qsublauncher
-        echo "#PBS -e $outputlogs/log.align.Anisimov.in" >> $qsublauncher
-        echo "#PBS -q $pbsqueue" >> $qsublauncher
-        echo "#PBS -m ae" >> $qsublauncher
-        echo "#PBS -M $email" >> $qsublauncher
+        qsubAlignLauncher=$outputlogs/qsub.align.Anisimov
+        echo "#!/bin/bash" > $qsubAlignLauncher
+        echo "#PBS -V" >> $qsubAlignLauncher
+        echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
+        echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
+        echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
+        echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
+        echo "#PBS -o $outputlogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
+        echo "#PBS -e $outputlogs/log.align.Anisimov.in" >> $qsubAlignLauncher
+        echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
+        echo "#PBS -m ae" >> $qsubAlignLauncher
+        echo "#PBS -M $email" >> $qsubAlignLauncher
 
-        echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $outputlogs/Anisimov.joblist /bin/bash > $outputlogs/Anisimov.joblist.log" >> $qsublauncher
+        echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $outputlogs/AlignAnisimov.joblist /bin/bash > $outputlogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
 
-        JoblistId=`qsub  $qsublauncher`
+        AlignAnisimovJoblistId=`qsub  $qsubAlignLauncher`
 
-        echo $JoblistId >> $output_logs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-        echo $JoblistId >> $output_logs/MERGEDpbs # so that summaryok could depend on this job, in case when there is no merging: a sigle chunk
-        echo $JoblistId >> $output_logs/ALIGN_NCSA_jobids # so that sort jobs in realignment/recalibration block could find the job ids to depend upon 
+        echo $AlignAnisimovJoblistId >> $output_logs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+        echo $AlignAnisimovJoblistId >> $output_logs/MERGEDpbs # so that summaryok could depend on this job, in case when there is no merging: a sigle chunk
+        echo $AlignAnisimovJoblistId >> $output_logs/ALIGN_NCSA_jobids # so that sort jobs in realignment/recalibration block could find the job ids to depend upon 
 
 
 
