@@ -37,6 +37,7 @@ Changelog 2.32
 
 * samplenames are no longer listed in runfile
 * epilogue is gone
+* new convention on input fastq names: must be in form of samplename_read?.fq or samplename_read?.fastq
 
 
 
