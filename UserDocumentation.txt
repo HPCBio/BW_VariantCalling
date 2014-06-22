@@ -31,6 +31,14 @@ Case 4: alignment + realignment /recalibration
 Case 5: realignment /recalibration + variant calling
 Case 6: entire pipeline = alignment + realignment /recalibration + variant calling.
 
+
+
+Changelog 2.32
+
+* samplenames are no longer listed in runfile
+* epilogue is gone
+
+
 
 Pipeline architecture: 3 blocks and 6 run cases
 

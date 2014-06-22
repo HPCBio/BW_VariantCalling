@@ -64,7 +64,6 @@ else
         samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
 	dup=$( cat $runfile | grep -w MARKDUP  | cut -d '=' -f2 )
         dupflag=$( cat $runfile | grep -w REMOVE_DUP  | cut -d '=' -f2 )
-        epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
         type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
@@ -91,6 +90,25 @@ else
 
 
 
+
+############ workflow scripts directory
+
+        if [ ! -d $scriptdir ]
+        then
+           MSG="SCRIPTDIR=$scriptdir directory not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           exit 1;
+        fi
+        if [ ! -d $outputdir ]
+        then
+           mkdir -p $outputdir
+        fi
+
+
+
+############ samples 
+
         if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
         then
             pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
@@ -108,6 +126,51 @@ else
             fi
         fi
 
+        if [ ! -d $sampledir ]
+        # check that sampledir exists
+        then
+           MSG="SAMPLEDIR=$sampledir file not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           exit 1;
+        fi
+        numsamples=0
+        # construct a list of samplenames, check that files actually exist
+        for fastqfile in $sampledir
+        do
+            countnames=$( cat $samplefileinfo | grep $name -c )
+            if [ $countnames -lt 1 ]
+            then
+              MSG="No samples found in SAMPLEFILENAMES=$samplefileinfo."
+              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+              #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              exit 1;
+            fi
+            let numsamples+=1
+        done
+        if [ $numsamples -gt 1 -a $multisample == "YES" ]
+        then
+            echo "multiple samples to be aligned."
+        else
+           if [ $numsamples -eq 1 -a $multisample == "NO" ]
+           then
+              echo "single sample to be aligned."
+           fi
+        fi
+
+        if [ $chunkfastq != "YES" -a $chunkfastq != "NO" ]
+        then
+            MSG="CHUNKFASTQ variable is binary YES/NO; incorrect value encountered"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            exit 1;
+        fi
+
+
+
+
+
+############ duplicates 
 
         if [ $dup != "1" -a $dup != "0" -a $dup != "YES" -a $dup != "NO" ]
         then
@@ -145,6 +208,11 @@ else
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
 
 
+
+
+
+############ FastQC 
+
         if [ $fastqcflag != "1" -a $fastqcflag != "0" -a $fastqcflag != "YES" -a $fastqcflag != "NO" ]
         then
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
@@ -162,6 +230,11 @@ else
             fi
         fi
 
+
+
+
+
+############ Cleanup?
 
         if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
         then
@@ -181,14 +254,9 @@ else
         fi
 
 
-        if [ $chunkfastq != "YES" -a $chunkfastq != "NO" ]
-        then
-            MSG="CHUNKFASTQ variable is binary YES/NO; incorrect value encountered"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-            exit 1;
-        fi
 
+
+############ tools
 
         if [ $aligner != "NOVOALIGN" -a $aligner != "BWA" -a $aligner != "BWA_MEM"]
         then
@@ -216,7 +284,6 @@ else
             alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
         fi
 
-
         if [ -z $sortool ]
         then
            MSG="Value for SORTOOL must be specified in configuration file"
@@ -232,7 +299,6 @@ else
                exit 1;
            fi
         fi      
-
 
         if [ -z $markduplicatestool ]
         then
@@ -250,19 +316,34 @@ else
            fi
         fi
 
-
-        if [ ! -d $scriptdir ]
+        if [ ! -d $alignerdir ]
         then
-           MSG="SCRIPTDIR=$scriptdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+           MSG="$alignerdir aligner directory not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
-        if [ ! -d $outputdir ]
+
+        if [ ! -d $picardir ]
         then
-           mkdir -p $outputdir
+           MSG="PICARDIR=$picardir directory not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           exit 1;
         fi
 
+        if [ ! -d $samdir ]
+        then
+           MSG="SAMDIR=$samdir directory not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           exit 1;
+        fi
+
+
+
+
+############ references 
 
         if [ ! -s $refdir/$ref ]
         then
@@ -283,64 +364,6 @@ else
         fi
 
 
-        if [ ! -d $alignerdir ]
-        then
-           MSG="$alignerdir aligner directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
-
-
-        if [ ! -d $picardir ]
-        then
-           MSG="PICARDIR=$picardir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
-
-
-        if [ ! -d $samdir ]
-        then
-           MSG="SAMDIR=$samdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
-
-
-        if [ ! -d $sampledir ]
-        # check that sampledir exists
-        then
-           MSG="SAMPLEDIR=$sampledir file not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
-        numsamples=0
-        # construct a list of samplenames, check that files actually exist
-        for fastqfile in $sampledir
-        do
-            countnames=$( cat $samplefileinfo | grep $name -c )
-            if [ $countnames -lt 1 ]
-            then
-              MSG="No samples found in SAMPLEFILENAMES=$samplefileinfo."
-              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-              #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-              exit 1;
-            fi
-            let numsamples+=1
-        done
-        if [ $numsamples -gt 1 -a $multisample == "YES" ]
-        then
-            echo "multiple samples to be aligned."
-        else
-           if [ $numsamples -eq 1 -a $multisample == "NO" ]
-           then
-              echo "single sample to be aligned."
-	   fi
-        fi
 
 
 
@@ -502,7 +525,6 @@ else
 		echo "#PBS -V" > $qsub_fastqcR1
 		echo "#PBS -A $pbsprj" >> $qsub_fastqcR1
 		echo "#PBS -N ${pipeid}_fastqc_R1_${prevname}" >> $qsub_fastqcR1
-		echo "#PBS -l epilogue=$epilogue" >> $qsub_fastqcR1
 		echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR1
 		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR1
 		echo "#PBS -o $output_logs/fastqc/log.fastqc_R1_${prevname}.ou" >> $qsub_fastqcR1
@@ -520,7 +542,6 @@ else
 		    echo "#PBS -V" > $qsub_fastqcR2
 		    echo "#PBS -A $pbsprj" >> $qsub_fastqcR2
 		    echo "#PBS -N ${pipeid}_fastqc_R2_${prevname}" >> $qsub_fastqcR2
-		    echo "#PBS -l epilogue=$epilogue" >> $qsub_fastqcR2
 		    echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR2
 		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR2
 		    echo "#PBS -o $output_logs/fastqc/log.fastqc_R2_${prevname}.ou" >> $qsub_fastqcR2
@@ -673,7 +694,6 @@ else
                     echo "#PBS -V" > $qsub
                     echo "#PBS -A $pbsprj" >> $qsub
                     echo "#PBS -N ${pipeid}_novoaln_${prevname}_$i" >> $qsub
-		    echo "#PBS -l epilogue=$epilogue" >> $qsub
 		    echo "#PBS -l walltime=$pbscpu" >> $qsub
 		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
 		    echo "#PBS -o $outputlogs/log.novoaln.$prevname.node$i.ou" >> $qsub
@@ -701,7 +721,6 @@ else
 		    echo "#PBS -o $outputlogs/log.bwar1.$prevname.node$i.ou" >> $qsub1
 		    echo "#PBS -e $outputlogs/log.bwar1.$prevname.node$i.in" >> $qsub1
                     echo "#PBS -A $pbsprj" >> $qsub1
-		    echo "#PBS -l epilogue=$epilogue" >> $qsub1
 		    echo "#PBS -l walltime=$pbscpu" >> $qsub1
 		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
                     echo "#PBS -q $pbsqueue" >> $qsub1
@@ -723,7 +742,6 @@ else
 			echo "#PBS -o $outputlogs/log.bwar2.$prevname.node$i.ou" >> $qsub2
 			echo "#PBS -e $outputlogs/log.bwar2.$prevname.node$i.in" >> $qsub2
 			echo "#PBS -A $pbsprj" >> $qsub2
-			echo "#PBS -l epilogue=$epilogue" >> $qsub2
 			echo "#PBS -l walltime=$pbscpu" >> $qsub2
 			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub2
 			echo "#PBS -q $pbsqueue" >> $qsub2
@@ -742,7 +760,6 @@ else
 			echo "#PBS -o $outputlogs/log.bwasampe.$prevname.node$i.ou" >> $qsub3
 			echo "#PBS -e $outputlogs/log.bwasampe.$prevname.node$i.in" >> $qsub3
 			echo "#PBS -A $pbsprj" >> $qsub3
-			echo "#PBS -l epilogue=$epilogue" >> $qsub3
 			echo "#PBS -l walltime=$pbscpu" >> $qsub3
 			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub3
 			echo "#PBS -q $pbsqueue" >> $qsub3
@@ -763,7 +780,6 @@ else
 			echo "#PBS -o $outputlogs/log.bwasamse.$prevname.node$i.ou" >> $qsub3
 			echo "#PBS -e $outputlogs/log.bwasamse.$prevname.node$i.in" >> $qsub3
 			echo "#PBS -A $pbsprj" >> $qsub3
-			echo "#PBS -l epilogue=$epilogue" >> $qsub3
 			echo "#PBS -l walltime=$pbscpu" >> $qsub3
 			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub3
 			echo "#PBS -q $pbsqueue" >> $qsub3
@@ -804,7 +820,6 @@ else
                         echo "#PBS -o $outputlogs/log.bwamem.$prevname.node$i.ou" >> $qsub5
                         echo "#PBS -e $outputlogs/log.bwamem.$prevname.node$i.in" >> $qsub5
                         echo "#PBS -A $pbsprj" >> $qsub5
-                        echo "#PBS -l epilogue=$epilogue" >> $qsub5
                         echo "#PBS -l walltime=$pbscpu" >> $qsub5
                         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub5
                         echo "#PBS -q $pbsqueue" >> $qsub5
@@ -860,7 +875,6 @@ else
 		   echo "#PBS -V" > $qsub1
 		   echo "#PBS -A $pbsprj" >> $qsub1
 		   echo "#PBS -N ${pipeid}_sortmerge_novosort_$prevname" >> $qsub1
-		   echo "#PBS -l epilogue=$epilogue" >> $qsub1
 		   echo "#PBS -l walltime=$pbscpu" >> $qsub1
 		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
 		   echo "#PBS -o $outputlogs/log.sortmerge_novosort.$prevname.ou" >> $qsub1
@@ -881,7 +895,6 @@ else
 		   echo "#PBS -V" > $qsub1
 		   echo "#PBS -A $pbsprj" >> $qsub1
 		   echo "#PBS -N ${pipeid}_sortmerge_picard_$prevname" >> $qsub1
-		   echo "#PBS -l epilogue=$epilogue" >> $qsub1
 		   echo "#PBS -l walltime=$pbscpu" >> $qsub1
 		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
 		   echo "#PBS -o $outputlogs/log.sortmerge.picard.$prevname.ou" >> $qsub1
@@ -904,7 +917,6 @@ else
    	       echo "#PBS -V" > $qsub5
 	       echo "#PBS -A $pbsprj" >> $qsub5
 	       echo "#PBS -N ${pipeid}_extrbam_$prevname" >> $qsub5
-               echo "#PBS -l epilogue=$epilogue" >> $qsub5
 	       echo "#PBS -l walltime=$pbscpu" >> $qsub5
 	       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub5
 	       echo "#PBS -o $outputlogs/log.extractreadsbam.$prevname.ou" >> $qsub5
@@ -999,7 +1011,6 @@ else
 		echo "#PBS -V" > $qsub6
 		echo "#PBS -A $pbsprj" >> $qsub6
 		echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub6
-		echo "#PBS -l epilogue=$epilogue" >> $qsub6
 		echo "#PBS -l walltime=$pbscpu" >> $qsub6
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub6
 		echo "#PBS -o $output_logs/log.cleanup.align.ou" >> $qsub6
@@ -1019,7 +1030,6 @@ else
 	    echo "#PBS -V" > $qsub4
 	    echo "#PBS -A $pbsprj" >> $qsub4
 	    echo "#PBS -N ${pipeid}_summaryok" >> $qsub4
-	    echo "#PBS -l epilogue=$epilogue" >> $qsub4
 	    echo "#PBS -l walltime=$pbscpu" >> $qsub4
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub4
 	    echo "#PBS -o $output_logs/log.summary.aln.ou" >> $qsub4
@@ -1045,7 +1055,6 @@ else
 		echo "#PBS -V" > $qsub5
 		echo "#PBS -A $pbsprj" >> $qsub5
 		echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub5
-		echo "#PBS -l epilogue=$epilogue" >> $qsub5
 		echo "#PBS -l walltime=$pbscpu" >> $qsub5
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub5
 		echo "#PBS -o $output_logs/log.summary.aln.afterany.ou" >> $qsub5
@@ -1068,7 +1077,6 @@ else
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
 	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
-	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
 	    echo "#PBS -o $output_logs/MAINrealn.ou" >> $qsub2
