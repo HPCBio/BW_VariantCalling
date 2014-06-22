@@ -109,7 +109,7 @@ else
         echo "$scriptdir/main.sh $runfile batch $outputlogs/MAIN.in $outputlogs/MAIN.ou $email $outputlogs/qsub.main" >> $qsub1
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
-        pipeid=$( echo $jobid | sed "s/\.[a-z]*//g" )
+        pipeid=$( echo $jobid | sed ""s/\.[a-z]*[0-9]*//g" )
         echo $pipeid >> $outputlogs/MAINpbs
         echo `date`
 

@@ -68,7 +68,7 @@ else
         type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-        samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
+        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
         samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 | tr ":" "\n")
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -309,9 +309,9 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
-        if [ ! -s $samplefileinfo ]
+        if [ ! -d $sampledir ]
         then
-           MSG="SAMPLEFILENAMES=$samplefileinfo file not found"
+           MSG="SAMPLEDIR=$sampledir file not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
@@ -362,7 +362,7 @@ else
 
 
 
-        oualigndir=$outputdir/align
+        AlignmentOutputDir=$outputdir/align
         output_logs=$outputdir/logs
         pipeid=$( cat $output_logs/MAINpbs )
         
@@ -379,12 +379,12 @@ else
         igv=$outputdir/$igvdir
         extradir=$outputdir/extractreads
 
-        if [ -d $oualigndir ]
+        if [ -d $AlignmentOutputDir ]
         then
-           echo "$oualigndir is there; resetting it"
-           `rm -r $oualigndir/*`
+           echo "$AlignmentOutputDir is there; resetting it"
+           `rm -r $AlignmentOutputDir/*`
         else
-           mkdir -p $oualigndir
+           mkdir -p $AlignmentOutputDir
         fi
 
         if [ -d $output_logs ]
@@ -426,8 +426,8 @@ else
             echo "aligning: $sampledetail"
             dirname=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f1 )
             samplenames=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f2 )
-	    R1=$( echo $sampledetail | cut -d ' ' -f1 | cut -d '=' -f2 )
-	    R2=$( echo $sampledetail | cut -d ' ' -f2 )
+	    LeftReadsFastq=$( echo $sampledetail | cut -d ' ' -f1 | cut -d '=' -f2 )
+	    RightReadsFastq=$( echo $sampledetail | cut -d ' ' -f2 )
 
             if [ `expr ${#dirname}` -lt 1  ]
             then
@@ -446,25 +446,25 @@ else
             sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
             RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
-	    if [ ! -s $R1 ]
+	    if [ ! -s $LeftReadsFastq ]
 	    then
-		    MSG="$R1 reads file1 not found"
+		    MSG="$LeftReadsFastq reads file1 not found"
                     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                     #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 	    fi
-	    totlines=`wc -l $R1 | cut -d ' ' -f 1`
+	    totlines=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
 	    if [ $totlines -lt 1 ]
 	    then
-		    MSG="$R1 reads file1 is empty"
+		    MSG="$LeftReadsFastq reads file1 is empty"
                     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                     #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
             fi
 
-	    if [ $paired -eq 1 -a ! -s $R2 ]
+	    if [ $paired -eq 1 -a ! -s $RightReadsFastq ]
 	    then
-		MSG="$R2 reads file2 not found"
+		MSG="$RightReadsFastq reads file2 not found"
                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		exit 1;
@@ -547,7 +547,7 @@ else
 
 ###########################   CHUNK INPUT FASTQ  ###########################################
 
-            outputalign=$oualigndir/$dirname
+            outputalign=$AlignmentOutputDir/$dirname
 
             if [ ! -d $outputalign ]
             then
@@ -1091,7 +1091,7 @@ else
 	    echo `date`
 	fi
 
-	`chmod -R 770 $oualigndir`
+	`chmod -R 770 $AlignmentOutputDir`
 	`chmod -R 770 $output_logs`
 	echo `date`
 fi
