@@ -70,7 +70,6 @@ else
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
         sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
-        samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 | tr ":" "\n")
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -109,6 +108,7 @@ else
             fi
         fi
 
+
         if [ $dup != "1" -a $dup != "0" -a $dup != "YES" -a $dup != "NO" ]
         then
            MSG="Invalid value for MARKDUP=$dup"
@@ -142,9 +142,8 @@ else
                 $dupflag="NO"
             fi
         fi
-
-
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
+
 
         if [ $fastqcflag != "1" -a $fastqcflag != "0" -a $fastqcflag != "YES" -a $fastqcflag != "NO" ]
         then
@@ -191,7 +190,6 @@ else
         fi
 
 
-
         if [ $aligner != "NOVOALIGN" -a $aligner != "BWA" -a $aligner != "BWA_MEM"]
         then
             MSG="ALIGNER=$aligner  is not available at this site"
@@ -199,7 +197,6 @@ else
             #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
-
         if [ $aligner == "NOVOALIGN" ]
         then
             alignerdir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
@@ -219,15 +216,6 @@ else
             alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
         fi
 
-        if [ -z $epilogue ]
-        then
-           MSG="Value for EPILOGUE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        else
-           `chmod 750 $epilogue`
-        fi
 
         if [ -z $sortool ]
         then
@@ -244,6 +232,8 @@ else
                exit 1;
            fi
         fi      
+
+
         if [ -z $markduplicatestool ]
         then
            MSG="Value for MARKDUPLICATESTOOL must be specified in configuration file"
@@ -252,13 +242,15 @@ else
            exit 1;
         else
            if [ $markduplicatestool != "PICARD" -a $markduplicatestool != "SAMBLASTER" ]
-           then
+            then
                MSG="Invalid value for SORTOOL=$sortool in configuration file"
                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                exit 1;
            fi
         fi
+
+
         if [ ! -d $scriptdir ]
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
@@ -270,6 +262,7 @@ else
         then
            mkdir -p $outputdir
         fi
+
 
         if [ ! -s $refdir/$ref ]
         then
@@ -288,6 +281,8 @@ else
               exit 1;
            fi
         fi
+
+
         if [ ! -d $alignerdir ]
         then
            MSG="$alignerdir aligner directory not found"
@@ -295,6 +290,8 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
+
+
         if [ ! -d $picardir ]
         then
            MSG="PICARDIR=$picardir directory not found"
@@ -302,6 +299,8 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
+
+
         if [ ! -d $samdir ]
         then
            MSG="SAMDIR=$samdir directory not found"
@@ -309,16 +308,19 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
+
+
         if [ ! -d $sampledir ]
+        # check that sampledir exists
         then
            MSG="SAMPLEDIR=$sampledir file not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
-
         numsamples=0
-        for name in $samples
+        # construct a list of samplenames, check that files actually exist
+        for fastqfile in $sampledir
         do
             countnames=$( cat $samplefileinfo | grep $name -c )
             if [ $countnames -lt 1 ]
@@ -337,11 +339,6 @@ else
            if [ $numsamples -eq 1 -a $multisample == "NO" ]
            then
               echo "single sample to be aligned."
-#           else
-#              MSG="mismatch between number of samples found=$numsamples and value of parameter MULTISAMPLE=$multisample in configuration file."
-#              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-              #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-#              exit 1;
 	   fi
         fi
 
@@ -989,9 +986,9 @@ else
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 	then
             # release all held jobs
-            `qrls -h u $alignids`
-            `qrls -h u $mergeids`
-            `qrls -h u $extraids`
+            #`qrls -h u $alignids`
+            #`qrls -h u $mergeids`
+            #`qrls -h u $extraids`
      
 	    lastjobid=""
             cleanjobid=""
@@ -1013,7 +1010,7 @@ else
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub6
 		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $output_logs/log.cleanup.align.in $output_logs/log.cleanup.align.ou $email $output_logs/qsub.cleanup.align"  >> $qsub6
 		`chmod a+r $qsub6`
-		cleanjobid=`qsub $qsub6`
+		#cleanjobid=`qsub $qsub6`
 		echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
             fi
 
@@ -1038,7 +1035,7 @@ else
             fi
 	    echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub4
 	    `chmod a+r $qsub4`
-	    lastjobid=`qsub $qsub4`
+	    #lastjobid=`qsub $qsub4`
 	    echo $lastjobid >> $output_logs/SUMMARYpbs
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
@@ -1059,7 +1056,7 @@ else
 		echo "#PBS -W depend=afterany:$pbsids" >> $qsub5
 		echo "aprun -n 1 -d $thr $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub5
 		`chmod a+r $qsub5`
-		badjobid=`qsub $qsub5`
+		#badjobid=`qsub $qsub5`
 		echo $badjobid >> $output_logs/SUMMARYpbs
 	    fi
 	fi
