@@ -124,7 +124,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
         pipeid=$( cat $TopOutputLogs/MAINpbs )
 
         chunks=`expr $nodes "-" 1`
-        if [ $chunks -lt 1 ]
+        if [ $NumChunks -lt 1 ]
         then
             chunks=$nodes
         fi
@@ -468,17 +468,56 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
           else
 
             echo "aligning: $SampleName"
-	    LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
-	    RightReadsFastq=$( ls $sampledir/${SampleName}_read2.* )
 
-            if [ `expr ${#SampleName}` -lt 1  ]
+            # form and check the left reads file
+	    LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
+            if [ ! -e $LeftReadsFastq ]
             then
-		MSG="parsing of line in SAMPLEFILENAMES failed. alignment stopped"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                exit 1;
+                    MSG="$LeftReadsFastq left reads file not found"
+                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                    exit 1;
             fi
- 
+            NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
+            if [ $NumLinesInLeftFastq -lt 1 ]
+            then
+                    MSG="$LeftReadsFastq left reads file is empty"
+                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                    exit 1;
+            fi
+
+   
+            # form and check the right reads file
+            RightReadsFastq=$( ls $sampledir/${SampleName}_read2.* )
+            if [ $paired -eq 1 ]
+            then
+               if [ ! -e $RightReadsFastq ]
+               then
+                  MSG="$RightReadsFastq right reads file not found"
+                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  exit 1;
+               else
+                  NumLinesInRightFastq=`wc -l $RightReadsFastq | cut -d ' ' -f 1`
+                  if [ $NumLinesInRightFastq -lt 1 ]
+                  then
+                      MSG="$RightReadsFastq right reads file is empty"
+                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                      exit 1;
+                  elif [ $NumLinesInRightFastq -ne $NumLinesInLeftFastq ]
+                  then 
+                      MSG="number of lines in $RightReadsFastq is not equal to that in $NumLinesInLeftFastq"
+                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                      exit 1;
+                  fi
+               fi
+            fi
+
+
+            # form the read group values for the aligner 
             sID=$SampleName
             sPU=$SampleName
             sSM=$SampleName
@@ -487,29 +526,6 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
             RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
-	    if [ ! -s $LeftReadsFastq ]
-	    then
-		    MSG="$LeftReadsFastq reads file1 not found"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit 1;
-	    fi
-	    totlines=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
-	    if [ $totlines -lt 1 ]
-	    then
-		    MSG="$LeftReadsFastq reads file1 is empty"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit 1;
-            fi
-
-	    if [ $paired -eq 1 -a ! -s $RightReadsFastq ]
-	    then
-		MSG="$RightReadsFastq reads file2 not found"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		exit 1;
-	    fi
 
 
 
@@ -553,7 +569,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -q $pbsqueue" >> $qsub_fastqcR1
 		echo "#PBS -m ae" >> $qsub_fastqcR1
 		echo "#PBS -M $email" >> $qsub_fastqcR1
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R1 $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
+		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $LeftReadsFastq $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
 		`chmod a+r $qsub_fastqcR1`
                 `qsub $qsub_fastqcR1 >> $TopOutputLogs/FASTQCpbs`
 
@@ -570,7 +586,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		    echo "#PBS -q $pbsqueue" >> $qsub_fastqcR2
 		    echo "#PBS -m ae" >> $qsub_fastqcR2
 		    echo "#PBS -M $email" >> $qsub_fastqcR2
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $R2 $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
+		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $RightReadsFastq $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
 		    `chmod a+r $qsub_fastqcR2`
                     `qsub $qsub_fastqcR2 >> $TopOutputLogs/FASTQCpbs`
 		fi
@@ -586,93 +602,98 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 ###########################   CHUNK INPUT FASTQ  ###########################################
 
-            outputalign=$AlignOutputDir/$SampleName
 
-            if [ ! -d $outputalign ]
+            # results of alignment for each sample will be placed into its own subfolder 
+            if [ ! -d $AlignOutputDir/$SampleName ]
             then
-		mkdir $outputalign
-		outputsam=$outputalign/$SampleName
+		mkdir $AlignOutputDir/$SampleName
+		outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
 	    else
-		outputsam=$outputalign/$SampleName
+		outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
 	    fi
-            if [ ! -d $outputalign/AnisimovLogs ]
+	    `chmod -R 770 $AlignOutputDir/$SampleName/`
+            # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
+            # best keep them in the sample subfolder
+            if [ ! -d $AlignOutputDir/$SampleName/AnisimovLogs ]
             then
-		mkdir $outputalign/AnisimovLogs
+		mkdir $AlignOutputDir/$SampleName/AnisimovLogs
             fi
 
-            if [ ! -d $AlignOutputLogs ]
-            then
- 		mkdir $AlignOutputLogs
-	    fi
-	    `chmod -R 770 $outputalign/`
-	    `chmod -R 770 $AlignOutputLogs/`
 
-            cd $outputalign
 
-            sortedplain=$outputsam.wrg.sorted.bam
-            outsortnodup=$outputsam.nodups.sorted.bam
-            outsortwdup=$outputsam.wdups.sorted.bam
-            newname1=readone_chunk
-            newname2=readtwo_chunk
+            sortedplain=$outputsamfileprefix.wrg.sorted.bam
+            outsortnodup=$outputsamfileprefix.nodups.sorted.bam
+            outsortwdup=$outputsamfileprefix.wdups.sorted.bam
 
 
 
 
+            cd $AlignOutputDir/$SampleName
+
+
+            # create new names for chunks of fastq
+            # doing this outside the chunkfastq conditional, because
+            # non-chunking is handled by creating a symbolic link from chunk 0 to original fastq
+            LeftReadsChunkNamePrefix=leftreads_chunk
+            RightReadsChunkNamePrefix=rightreads_chunk
             if [ $chunkfastq == "YES" ]
             then
 
                ## splitting files into chunks before aligning;
                ## remember that one fastq read is made up of four lines
-               chunks=`expr $nodes "-" 1`
-               if [ $chunks -lt 1 ]
+               NumChunks=`expr $nodes "-" 1`
+               if [ $NumChunks -lt 1 ]
                then
-	   	chunks=$nodes
+	   	NumChunks=$nodes
                fi
-               if [ $chunks -lt 1 ]
+               if [ $NumChunks -lt 1 ]
                then
-                   chunks=1
+                   NumChunks=1
                fi
-               totreads=`expr $totlines "/" 4`
-               reads4chunk=`expr $totreads "/" $chunks`
-               modval=`expr $totreads "%" $chunks`
-               numlines=`expr $reads4chunk "*" 4`
-               if [ $modval -eq 0  ]
+               NumReadsInOriginalFastq=`expr $NumLinesInLeftFastq "/" 4`
+               NumReadsPerChunk=`expr $NumReadsInOriginalFastq "/" $NumChunks`
+               RemainderReads=`expr $NumReadsInOriginalFastq "%" $NumChunks`
+               NumLinesPerChunk=`expr $NumReadsPerChunk "*" 4`
+               if [ $RemainderReads -eq 0  ]
                then
 	   	echo "mod is 0; no reads for last chunk file, one idle node"
-	   	let chunks-=1
+	   	let NumChunks-=1
                fi
 
-               echo "splitting read file1=$R1"
-               `split -l $numlines -a 1 -d $R1 $newname1`
+               echo "splitting read file1=$LeftReadsFastq"
+               `split -l $NumLinesPerChunk -a 1 -d $LeftReadsFastq $LeftReadsChunkNamePrefix`
                exitcode=$?
                if [ $exitcode -ne 0 ]
                then
-                      MSG="splitting of read file $R1 failed. exitcode=$exitcode"
+                      MSG="splitting of read file $LeftReadsFastq failed. exitcode=$exitcode"
                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                       exit $exitcode;
                fi
                if [ $paired -eq 1 ]
                then
-                   echo "splitting read file2=$R2"
- 	     	   `split -l $numlines -a 1 -d $R2 $newname2`
+                   echo "splitting read file2=$RightReadsFastq"
+ 	     	   `split -l $NumLinesPerChunk -a 1 -d $RightReadsFastq $RightReadsChunkNamePrefix`
 	   	   exitcode=$?
 	   	   if [ $exitcode -ne 0 ]
                    then
-                       MSG="splitting of read file $R2 failed.  exitcode=$exitcode"
+                       MSG="splitting of read file $RightReadsFastq failed.  exitcode=$exitcode"
                        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                        exit $exitcode;
 	   	   fi
                fi
             else
-               chunks=0
-               echo "copying original fastq into a single chunk"
-               `cp $R1 ${newname1}0`
+               NumChunks=0
+               echo "copying original fastq into a single chunk takes too long for whole genome"
+               echo "instead, we will create symbolic link to the original file"
+               #   `cp $LeftReadsFastq ${LeftReadsChunkNamePrefix}0`
+               ln -s $LeftReadsFastq leftreads_chunk0
 
                if [ $paired -eq 1 ]
                then
-                  `cp $R2 ${newname2}0`
+               #   `cp $RightReadsFastq ${RightReadsChunkNamePrefix}0`
+                  RightReadsChunkNamePrefix=rightreads_chunk
                fi
             fi
 
@@ -685,24 +706,24 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
             allfiles=""
             # begin loop over chunks of the current input fastq
-            for i in $(seq 0 $chunks)
+            for i in $(seq 0 $NumChunks)
             do
                 echo "step 1: aligning chunk $i... "
 		echo `date`
-                Rone=${newname1}$i
+                Rone=${LeftReadsChunkNamePrefix}$i
                 if [ ! -s $Rone ]
                 then
-                   MSG="chunk $i of read file $R1 file not found"
+                   MSG="chunk $i of read file $LeftReadsFastq file not found"
                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                    exit 1;
                 fi
 		if [ $paired -eq 1 ]
 		then
-                    Rtwo=${newname2}$i
+                    Rtwo=${RightReadsChunkNamePrefix}$i
                     if [ ! -s $Rtwo ]
                     then
-			MSG="chunk $i of read file $R2 file not found"
+			MSG="chunk $i of read file $RightReadsFastq file not found"
                         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
                         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 			exit 1;
@@ -724,9 +745,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     echo "#PBS -M $email" >> $qsub
                     if [ $paired -eq 1 ]
                     then
-			echo "aprun -n 1 -d $thr $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.sam $outputsam.node$i.bam $scriptdir $samdir $paired $outputalign/$Rone $outputalign/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
+			echo "aprun -n 1 -d $thr $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
                     else
-			echo "aprun -n 1 -d $thr $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.sam $outputsam.node$i.bam $scriptdir $samdir $paired $outputalign/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
+			echo "aprun -n 1 -d $thr $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
                     fi
                     `chmod a+r $qsub`
                     jobnovo=`qsub $qsub`
@@ -747,7 +768,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     echo "#PBS -q $pbsqueue" >> $qsub1
                     echo "#PBS -m ae" >> $qsub1
                     echo "#PBS -M $email" >> $qsub1
-		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.R1.sai $outputalign/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$i.in $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$i" >> $qsub1
+		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$i.in $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$i" >> $qsub1
 
                     `chmod a+r $qsub1`
                     jobr1=`qsub $qsub1`
@@ -768,7 +789,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 			echo "#PBS -q $pbsqueue" >> $qsub2
 			echo "#PBS -m ae" >> $qsub2
 			echo "#PBS -M $email" >> $qsub2
-			echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.R2.sai $outputalign/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$i.in $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$i" >> $qsub2
+			echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$i.in $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$i" >> $qsub2
 			`chmod a+r $qsub2`
                         jobr2=`qsub $qsub2`
                         #jobr2=`qsub $qsub2`
@@ -787,7 +808,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 			echo "#PBS -m ae" >> $qsub3
 			echo "#PBS -M $email" >> $qsub3
 			echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub3
-			echo "aprun -n 1 -d $thr $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $outputalign $outputsam.node$i.R1.sai $outputsam.node$i.R2.sai $outputalign/$Rone $outputalign/$Rtwo $outputsam.node$i.sam $outputsam.node$i.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$i" >> $qsub3
+			echo "aprun -n 1 -d $thr $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$i" >> $qsub3
 			`chmod a+r $qsub3`
                         jobwa=`qsub $qsub3`
                         #jobwa=`qsub $qsub3`
@@ -807,7 +828,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 			echo "#PBS -m ae" >> $qsub3
 			echo "#PBS -M $email" >> $qsub3
 			echo "#PBS -W depend=afterok:$jobr1" >> $qsub3
-			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $outputalign $outputsam.node$i.R1.sai $outputalign/$Rone $outputsam.node$i.sam $outputsam.node$i.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$i" >> $qsub3
+			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$i" >> $qsub3
 			`chmod a+r $qsub3`
                         jobwa=`qsub $qsub3`
                         #jobwa=`qsub $qsub3`
@@ -820,16 +841,16 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     if [ $paired -eq 1 ]
                     then
                         echo "bwa mem aligner. paired-end reads"
-                        jobfile=$outputalign/AnisimovLogs/bwamem.$SampleName.node$i.jobfile
+                        jobfile=$AlignOutputDir/$SampleName/AnisimovLogs/bwamem.$SampleName.node$i.jobfile
 
                         if [ $chunkfastq == "YES" ]
                         then
-                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.sam $outputsam.node$i.bam $outputalign/$Rone $outputalign/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub4
+                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub4
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i $outputalign/$Rone $outputalign/$Rtwo $runfile $outputalign/AnisimovLogs/log.bwamem.$SampleName.node$i.in $outputalign/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms > $outputalign/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
+                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms > $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
                            jobfilename=$( basename $jobfile )
-                           echo "$outputalign/AnisimovLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                           echo "$AlignOutputDir/$SampleName/AnisimovLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                         fi
 
 
@@ -849,10 +870,10 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                         if [ $chunkfastq == "YES" ]
                         then
-                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.sam $outputsam.node$i.bam $outputalign/$Rone $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub5
+                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub5
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $outputalign $outputsam.node$i.bam $outputalign/$Rone $scriptdir $samdir $samblasterdir $picardir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i $RGparms" >> $qsub5
+                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $samblasterdir $picardir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i $RGparms" >> $qsub5
                         fi
    
 
@@ -867,7 +888,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     fi
                 fi
 
-                allfiles=$allfiles" $outputsam.node$i.bam"
+                allfiles=$allfiles" $outputsamfileprefix.node$i.bam"
 
                 (( inputfastqcounter++ ))
 		echo `date`
@@ -904,7 +925,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		   echo "#PBS -m ae" >> $qsub1
 		   echo "#PBS -M $email" >> $qsub1
 		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
-		   echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $outputalign $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $qsub1
+		   echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $qsub1
 		   `chmod a+r $qsub1`
 		   mergejob=`qsub $qsub1`
 		   #mergejob=`qsub $qsub1`
@@ -924,7 +945,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		   echo "#PBS -m ae" >> $qsub1
 		   echo "#PBS -M $email" >> $qsub1
 		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
-		   echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $outputalign $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge.picard.$SampleName.in $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.picard.$SampleName" >> $qsub1
+		   echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge.picard.$SampleName.in $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.picard.$SampleName" >> $qsub1
 		   `chmod a+r $qsub1`
 		   mergejob=`qsub $qsub1`
 		   #mergejob=`qsub $qsub1`
@@ -946,7 +967,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	       echo "#PBS -m ae" >> $qsub5
 	       echo "#PBS -M $email" >> $qsub5
 	       echo "#PBS -W depend=afterok:$mergejob" >> $qsub5
-	       echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $outputalign $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub5
+	       echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub5
 	       `chmod a+r $qsub5`
 	       extrajob=`qsub $qsub5`
 	       #extrajob=`qsub $qsub5`
