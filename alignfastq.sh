@@ -693,7 +693,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                if [ $paired -eq 1 ]
                then
                #   `cp $RightReadsFastq ${RightReadsChunkNamePrefix}0`
-                  RightReadsChunkNamePrefix=rightreads_chunk
+                  ln -s $RightReadsFastq rightreads_chunk0
                fi
             fi
 
