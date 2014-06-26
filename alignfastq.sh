@@ -478,7 +478,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                     exit 1;
             fi
+	    echo `date`
             NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
+	    echo `date`
             if [ $NumLinesInLeftFastq -lt 1 ]
             then
                     MSG="$LeftReadsFastq left reads file is empty"
@@ -1040,9 +1042,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 	then
             # release all held jobs
-            #`qrls -h u $alignids`
-            #`qrls -h u $mergeids`
-            #`qrls -h u $extraids`
+            `qrls -h u $alignids`
+            `qrls -h u $mergeids`
+            `qrls -h u $extraids`
      
 	    lastjobid=""
             cleanjobid=""
@@ -1063,7 +1065,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub6
 		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub6
 		`chmod a+r $qsub6`
-		#cleanjobid=`qsub $qsub6`
+		cleanjobid=`qsub $qsub6`
 		echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
             fi
 
@@ -1087,7 +1089,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             fi
 	    echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub4
 	    `chmod a+r $qsub4`
-	    #lastjobid=`qsub $qsub4`
+	    lastjobid=`qsub $qsub4`
 	    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
@@ -1107,7 +1109,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -W depend=afterany:$pbsids" >> $qsub5
 		echo "aprun -n 1 -d $thr $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub5
 		`chmod a+r $qsub5`
-		#badjobid=`qsub $qsub5`
+		badjobid=`qsub $qsub5`
 		echo $badjobid >> $TopOutputLogs/SUMMARYpbs
 	    fi
 	fi

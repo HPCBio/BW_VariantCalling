@@ -38,7 +38,7 @@ Changelog 2.32
 * samplenames are no longer listed in runfile
 * epilogue is gone
 * new convention on input fastq names: must be in form of samplename_read?.fq or samplename_read?.fastq
-
+* runfile now must contain INPUTFORMAT flag to dostinguish between fastq and bam
 
 
 Pipeline architecture: 3 blocks and 6 run cases

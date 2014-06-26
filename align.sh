@@ -38,6 +38,7 @@ else
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
         refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
+        inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -174,13 +175,12 @@ else
               echo "skipping empty line"
             else
               echo "reading next line: $sampledetail"
-              inputype=$( echo $sampledetail | cut -d ':' -f1 | tr '[a-z]' '[A-Z]' )
               sampleTag=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f1 )
               samplefile=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f2 )
               R1=$( echo $sampledetail | cut -d '=' -f2 | cut -d ' ' -f1 )
               R2=$( echo $sampledetail | cut -d ' ' -f2 )
 
-              if [ `expr ${#inputype}` -lt 1 ]
+              if [ `expr ${#inputformat}` -lt 1 ]
               then
 		MSG="Invalid input format. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
@@ -188,7 +188,7 @@ else
                 exit 1;
               fi
 
-              if [ $inputype != "BAM" -a $inputype != "FASTQ" ]
+              if [ $inputformat != "BAM" -a $inputformat != "FASTQ" ]
               then
 		MSG="Invalid input format. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
@@ -211,7 +211,7 @@ else
                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
                 exit 1;
               fi
-	      if [ $inputype == "BAM" ]
+	      if [ $inputformat == "BAM" ]
 	      then
                   if [ ! -s $samplefile ]
                   then
@@ -230,7 +230,7 @@ else
                       fi
                   fi
               fi
-	      if [ $inputype == "FASTQ" ]
+	      if [ $inputformat == "FASTQ" ]
               then 
                   if [ ! -s $R1 ]
                   then
@@ -278,7 +278,7 @@ else
         case=""
         typeOfupdateconfig=""
 
-	if [ $inputype == "BAM" ]
+	if [ $inputformat == "BAM" ]
         then
             echo "input files are BAMs; preprocessing is required before aligning files"
             newfqfiles=""
@@ -469,7 +469,7 @@ else
         # ALIGNMENT PROPER CAN PROCEED NOW
         #################################
 
-        if [ $bamtofastqflag == "YES" -a $inputype == "BAM" ]
+        if [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
         then
 	    qsub1=$output_logs/qsub.main.alnFQ.afterbam2fastq
 	    echo "#PBS -V" > $qsub1
@@ -491,7 +491,7 @@ else
 	    echo `date`
 	fi
 
-        if [ $bamtofastqflag == "NO" -a $inputype == "BAM" ]
+        if [ $bamtofastqflag == "NO" -a $inputformat == "BAM" ]
         then
             echo "aligning bam files directly"
 
@@ -521,7 +521,7 @@ else
             echo `date`
         fi
 
-        if [ $bamtofastqflag == "NO" -a $inputype == "FASTQ" ]
+        if [ $bamtofastqflag == "NO" -a $inputformat == "FASTQ" ]
         then
             echo "aligning fastq files directly"
             qsub3=$output_logs/qsub.alignfastq
@@ -545,7 +545,7 @@ else
 
         if [ `expr ${#case}` -lt 1 ]
         then
-           MSG="Alignment module failed to launch. Incompatible values specified in config files bam2fastqflag=$bamtofastqflag input_format=$inputype analysis=$analysis"
+           MSG="Alignment module failed to launch. Incompatible values specified in config files bam2fastqflag=$bamtofastqflag input_format=$inputformat analysis=$analysis"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
