@@ -135,7 +135,7 @@ else
             echo "#PBS -A $pbsprj" >> $qsub1
             echo "#PBS -N ${pipeid}_MAINaln1" >> $qsub1
             echo "#pbs -l epilogue=$epilogue" >> $qsub1
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub1
+	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
 	    echo "#PBS -o $outputlogs/MAINaln1.ou" >> $qsub1
 	    echo "#PBS -e $outputlogs/MAINaln1.in" >> $qsub1
@@ -156,7 +156,7 @@ else
 	    echo "#PBS -A $pbsprj" >> $qsub2
 	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
+	    echo "#PBS -l walltime=00:30:00" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
 	    echo "#PBS -o $outputlogs/MAINrealn.ou" >> $qsub2
 	    echo "#PBS -e $outputlogs/MAINrealn.in" >> $qsub2
@@ -177,7 +177,7 @@ else
 	    echo "#PBS -A $pbsprj" >> $qsub1
 	    echo "#PBS -N ${pipeid}_MAINaln" >> $qsub1
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub1
+	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
 	    echo "#PBS -o $outputlogs/MAINaln.ou" >> $qsub1
 	    echo "#PBS -e $outputlogs/MAINaln.in" >> $qsub1
@@ -200,7 +200,7 @@ else
 	    echo "#PBS -A $pbsprj" >> $qsub3
 	    echo "#PBS -N ${pipeid}_MAINvcall" >> $qsub3
 	    echo "#PBS -l epilogue=$epilogue" >> $qsub3
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub3
+	    echo "#PBS -l walltime=00:30:00" >> $qsub3
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub3
 	    echo "#PBS -o $outputlogs/log.main.vcallgatk.ou" >> $qsub3
 	    echo "#PBS -e $outputlogs/log.main.vcallgatk.in" >> $qsub3
