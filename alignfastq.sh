@@ -484,7 +484,8 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 ## before any further work is scheduled; but, this takes too long.
 ## wc -l takes 10-15 minutes on a 50X genome file;
 ## multiply that by two, then by number of genomes - and it takes hours
-## just to do that checking; after all, if the files are not complete,
+## just to do that checking; for 45 input genomes the alignfastq.sh
+## takes 11:28:45. Very long. After all, if the files are not complete,
 ## then paired-ended bwa mem and novoalign will abort them; 
 ## then we can capture that error and compare with results of the FastQC.
 ## Same goes for when the input file is empty.
