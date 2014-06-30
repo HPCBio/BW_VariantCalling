@@ -479,15 +479,15 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     exit 1;
             fi
 	    echo `date`
-            NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
-	    echo `date`
-            if [ $NumLinesInLeftFastq -lt 1 ]
-            then
-                    MSG="$LeftReadsFastq left reads file is empty"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+#            NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
+#	    echo `date`
+#            if [ $NumLinesInLeftFastq -lt 1 ]
+#            then
+#                    MSG="$LeftReadsFastq left reads file is empty"
+#                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
                     #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                    exit 1;
-            fi
+#                    exit 1;
+#            fi
 
    
             # form and check the right reads file
@@ -500,22 +500,22 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                   exit 1;
-               else
-                  NumLinesInRightFastq=`wc -l $RightReadsFastq | cut -d ' ' -f 1`
-                  if [ $NumLinesInRightFastq -lt 1 ]
-                  then
-                      MSG="$RightReadsFastq right reads file is empty"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+#               else
+#                  NumLinesInRightFastq=`wc -l $RightReadsFastq | cut -d ' ' -f 1`
+#                  if [ $NumLinesInRightFastq -lt 1 ]
+#                  then
+#                      MSG="$RightReadsFastq right reads file is empty"
+#                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
                       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                      exit 1;
-                  elif [ $NumLinesInRightFastq -ne $NumLinesInLeftFastq ]
-                  then 
-                      MSG="number of lines in $RightReadsFastq is not equal to that in $NumLinesInLeftFastq"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+#                      exit 1;
+#                  elif [ $NumLinesInRightFastq -ne $NumLinesInLeftFastq ]
+#                  then 
+#                      MSG="number of lines in $RightReadsFastq is not equal to that in $NumLinesInLeftFastq"
+#                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                      exit 1;
-                  fi
-               fi
+#                      exit 1;
+#                  fi
+#               fi
             fi
 
 
