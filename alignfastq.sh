@@ -479,6 +479,18 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     exit 1;
             fi
 	    echo `date`
+
+## I used to check the number of lines in left and right fastq, and compare them, 
+## before any further work is scheduled; but, this takes too long.
+## wc -l takes 10-15 minutes on a 50X genome file;
+## multiply that by two, then by number of genomes - and it takes hours
+## just to do that checking; after all, if the files are not complete,
+## then paired-ended bwa mem and novoalign will abort them; 
+## then we can capture that error and compare with results of the FastQC.
+## Same goes for when the input file is empty.
+##
+## Thus I have decided to keep these checks on the number of lines in fastqcommented out for now. 
+##
 #            NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
 #	    echo `date`
 #            if [ $NumLinesInLeftFastq -lt 1 ]
@@ -515,7 +527,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 #                      exit 1;
 #                  fi
-#               fi
+               fi
             fi
 
 
