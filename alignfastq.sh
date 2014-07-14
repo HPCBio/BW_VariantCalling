@@ -119,6 +119,17 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
             mkdir $AlignOutputLogs
         fi
         `chmod -R 770 $AlignOutputLogs/`
+        # where messages about failures will go
+        truncate -s 0 $AlignOutputLogs/FAILEDmessages
+        if [ ! -d $AlignOutputLogs/FAILEDjobs ]
+        then
+            mkdir $AlignOutputLogs/FAILEDjobs
+        else
+            rm -r $AlignOutputLogs/FAILEDjobs/*
+        fi
+        `chmod -R 770 $AlignOutputLogs/FAILEDjobs`
+
+
 
 
         pipeid=$( cat $TopOutputLogs/MAINpbs )
@@ -863,7 +874,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                            echo "aprun -n 1 -d $thr $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub4
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms > $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
+                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
                            jobfilename=$( basename $jobfile )
                            echo "$AlignOutputDir/$SampleName/AnisimovLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                         fi

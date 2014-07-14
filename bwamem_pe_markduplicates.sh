@@ -1,7 +1,7 @@
 #!/bin/sh
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# != 13 ]
+if [ $# != 14 ]
 then
         MSG="parameter mismatch"
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
@@ -24,6 +24,7 @@ else
         email=${11}
         qsubfile=${12}
         RGparms=${13}
+        AlignOutputLogs=${14}
 
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
@@ -97,7 +98,8 @@ else
     if [ $exitcode -ne 0 ]
     then
          MSG="novosort command failed.  exitcode=$exitcode mergenovo stopped"
-         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" 
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
          exit 1;
     fi
     echo `date`
@@ -135,7 +137,8 @@ else
          then
              MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode . bwamem_pe_markduplicates stopped "
              #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" 
+             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
              exit $exitcode;
          fi
         echo `date`
