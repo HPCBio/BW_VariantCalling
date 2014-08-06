@@ -65,9 +65,11 @@ else
         then 
            echo `date`
            $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster -o ${bamprefix}.sam.wdups
+           exitcode=$?
            echo `date`
            $sambambadir/sambamba view -p -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
-           exitcode=$?
+           moreexitcode=$?
+           exitcode=$(( $exitcode + $moreexitcode ))
            echo `date`
         fi
         if [ $exitcode -ne 0 ]
@@ -75,6 +77,8 @@ else
             MSG="bwa mem samblaster command failed on $Rone.  exitcode=$exitcode. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit $exitcode;
         fi
         if [ ! -s ${bamprefix}.wdups ]
@@ -82,6 +86,8 @@ else
             MSG="${bamprefix}.wdups aligned file not created. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit 1;
         fi
         echo `date`
@@ -100,6 +106,8 @@ else
          MSG="novosort command failed.  exitcode=$exitcode mergenovo stopped"
          echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" 
          echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+         cp $qsubfile $AlignOutputLogs/FAILEDjobs/
          exit 1;
     fi
     echo `date`
@@ -123,6 +131,8 @@ else
         then
              MSG="samtools view command failed.  exitcode=$exitcode. bwamem_pe_markduplicates stopped "
              echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
              exit $exitcode;
         fi
 
