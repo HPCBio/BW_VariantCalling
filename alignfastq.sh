@@ -895,7 +895,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                         if [ $chunkfastq == "YES" ]
                         then
-                           echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub4
+                           echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then
                            echo "nohup $profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
@@ -928,7 +928,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
    
 
                        `chmod a+r $qsub5`
-                       jobbwamemse=`qsub $qsub4`
+                       jobbwamemse=`qsub $qsub5`
                        `qhold -h u $jobbwamemse`
                        echo $jobbwamemse >> $AlignOutputLogs/ALIGNED_$SampleName
                        echo $jobbwamemse >> $TopOutputLogs/ALIGN_NCSA_jobids
