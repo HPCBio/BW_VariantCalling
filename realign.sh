@@ -179,7 +179,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
         fi
 
         # construct a list of SampleNames, check that files actually exist
-        if [ ! -e $TopOutputLogs/SAMPLENAMES.list]
+        if [ ! -e $TopOutputLogs/SAMPLENAMES.list ]
         then
            numsamples=0
            truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
@@ -195,7 +195,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
            uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
            rm  $TopOutputLogs/SAMPLENAMES.tmp.list
         else
-           numsamples=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
+           numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
         fi
 
         if [ $numsamples -lt 1 ]
