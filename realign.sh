@@ -216,15 +216,15 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
         fi
 
 
-        pipeid=$( cat $output_logs/MAINpbs )
+        pipeid=$( cat $TopOutputLogs/MAINpbs )
         
         if [ ! -d $outputdir ]
         then
 	    mkdir -p $outputdir
         fi
-        if [ ! -d $output_logs ]
+        if [ ! -d $TopOutputLogs ]
         then
-	    mkdir  -p $output_logs
+	    mkdir  -p $TopOutputLogs
 	fi  
 
 		if [ $realrecalflag != "1" -a $realrecalflag != "0" ]
@@ -246,12 +246,12 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 		    echo "alignment was done inhouse. no need to resort"
 		    echo "We need to wait until the alignment jobs enter the queue"
 
-		    while [ ! -s $output_logs/ALIGN_NCSA_jobids ]
+		    while [ ! -s $TopOutputLogs/ALIGN_NCSA_jobids ]
 		    do
 			`sleep 60s`
 		    done
 
-		    JOBSncsa=$( cat $output_logs/ALIGN_NCSA_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
+		    JOBSncsa=$( cat $TopOutputLogs/ALIGN_NCSA_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
 		else
 		    echo "we need to check entries in samplefileinfo before launching other realignment analyses"
 		    while read sampledetail
@@ -304,7 +304,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 
 			    prefix=`basename $SampleName .wrg.sorted.bam`
 			    outputalign=$outputdir/align/$prefix
-			    outputlogs=$output_logs/align/$prefix
+			    outputlogs=$TopOutputLogs/align/$prefix
 			    tmpbamfile=$SampleName
 			    sortedplain=${prefix}.wrg.sorted.bam
 			    sorted=${prefix}.wdups.sorted.bam
@@ -337,7 +337,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 		   `chmod a+r $qsub1`
                    sortid=`qsub $qsub1`
                    #`qhold -h u $sortid`
-               	   echo $sortid >> $output_logs/REALSORTEDMAYOpbs
+               	   echo $sortid >> $TopOutputLogs/REALSORTEDMAYOpbs
 		   echo "extracting reads"
 		   qsub2=$outputlogs/qsub.extractreadsbam.$prefix
 		   echo "#PBS -V" > $qsub2
@@ -356,14 +356,14 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 		   `chmod a+r $qsub2`               
                    extraid=`qsub $qsub2`
                    #`qhold -h u $extraid`
-                   echo $extraid >> $output_logs/EXTRACTREADSpbs
+                   echo $extraid >> $TopOutputLogs/EXTRACTREADSpbs
                    listfiles=$outputalign/$sorted${sep}${listfiles}
 		fi
             done <  $TopOutputLogs/SAMPLENAMES.list
             # end loop over input samples
 
-            cp $output_logs/REALSORTEDMAYOpbs $output_logs/ALN_MAYO_jobids
-            JOBSmayo=$( cat $output_logs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
+            cp $TopOutputLogs/REALSORTEDMAYOpbs $TopOutputLogs/ALN_MAYO_jobids
+            JOBSmayo=$( cat $TopOutputLogs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
         fi
 
         if [ $resortflag == "NO" -a $analysis == "REALIGN_ONLY" ]
@@ -399,10 +399,10 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 
         # grab job ids for align and for preprocessing done in this module
 
-        alignids=$( cat $output_logs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
-        mergeids=$( cat $output_logs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
-        sortedmayoids=$( cat $output_logs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
-        extraids=$( cat $output_logs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+        alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
+        mergeids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
+        sortedmayoids=$( cat $TopOutputLogs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
+        extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
 
 
 
@@ -478,7 +478,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 	         `chmod a+r $qsub3`               
                  realrecaljob=`qsub $qsub3`
                  #`qhold -h u $realrecaljob` 
-                 echo $realrecaljob >> $output_logs/RECALLpbs
+                 echo $realrecaljob >> $TopOutputLogs/RECALLpbs
               fi
            done <  $TopOutputLogs/SAMPLENAMES.list
            # end loop over input samples
@@ -536,7 +536,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
            `chmod a+r $qsub3`
            realrecaljob=`qsub $qsub3`
            #`qhold -h u $realrecaljob` 
-           echo $realrecaljob >> $output_logs/RECALLpbs
+           echo $realrecaljob >> $TopOutputLogs/RECALLpbs
  
         fi
                  #`qrls -h u $alignids`
@@ -548,5 +548,5 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
         echo "done realig/recalibrating  all bam files."
         echo `date`
 	`chmod -R 770 $outputdir/`
-	`chmod -R 770 $output_logs/`
+	`chmod -R 770 $TopOutputLogs/`
 fi
