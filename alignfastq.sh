@@ -1059,14 +1059,14 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
    
            # if not planning to profile in the launcher (string is empty)
            # then schedule aprun as usual
-           if [ -z $profiler_string ]
-           then
+#           if [ -z $profiler_string ]
+#           then
               echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
            # otherwise use ccm
-           else 
-              echo $ccmgres_string >> $qsubAlignLauncher
-              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-           fi
+#           else 
+#              echo $ccmgres_string >> $qsubAlignLauncher
+#              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+#           fi
 
            AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 

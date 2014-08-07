@@ -149,12 +149,12 @@ else
 		    echo "alignment was done inhouse. no need to resort"
 		    echo "We need to wait until the alignment jobs enter the queue"
 
-		    while [ ! -s $output_logs/ALN_NCSA_jobids ]
+		    while [ ! -s $output_logs/ALIGN_NCSA_jobids ]
 		    do
 			`sleep 60s`
 		    done
 
-		    JOBSncsa=$( cat $output_logs/ALN_NCSA_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
+		    JOBSncsa=$( cat $output_logs/ALIGN_NCSA_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
 		else
 		    echo "we need to check entries in samplefileinfo before launching other realignment analyses"
 		    while read sampledetail

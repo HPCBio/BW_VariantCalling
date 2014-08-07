@@ -568,7 +568,7 @@ else
      extraids=$( cat $output_logs/EXTRACTREADSpbs | sed "s/\.[a-z]*//" | tr "\n" " " )
      mergeids=$( echo $pbsids | tr ":" " " )
      alignids=$( cat $output_logs/ALIGNEDpbs | sed "s/\.[a-z]*//" | tr "\n" " " )
-     echo $pbsids >> $output_logs/ALN_NCSA_jobids
+     echo $pbsids >> $output_logs/ALIGN_NCSA_jobids
 
      if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
      then
