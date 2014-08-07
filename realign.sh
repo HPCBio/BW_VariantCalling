@@ -27,6 +27,11 @@ else
            exit 1;
         fi
 
+
+echo -e "\n\n\n##################################### PARSING RUN INFO FILE ########################################\n\n\n"
+
+
+        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
@@ -40,7 +45,6 @@ else
         realrecalflag=$( cat $runfile | grep -w REALIGNORDER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
-        samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 | tr ":" "\n")
@@ -51,7 +55,52 @@ else
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-        output_logs=$outputdir/logs
+
+
+
+####################################################################################################
+#####################################                       ########################################
+#####################################  CREATE  DIRECTORIES  ########################################
+#####################################                       ########################################
+####################################################################################################
+
+echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  ########################################\n\n\n"
+
+
+
+        RealignOutputDir=$outputdir/realign
+        if [ -d $RealignOutputDir ]
+        then
+           echo "$RealignOutputDir already exists"
+        else
+           mkdir -p $RealignOutputDir
+        fi
+
+        TopOutputLogs=$outputdir/logs
+        if [ -d $TopOutputLogs ]
+        then
+           echo "$TopOutputLogs already exists"
+           pbsids=""
+        else
+           mkdir -p $TopOutputLogs
+        fi
+
+        RealignOutputLogs=$TopOutputLogs/realign
+        if [ ! -d $RealignOutputLogs ]
+        then
+            mkdir $RealignOutputLogs
+        fi
+        `chmod -R 770 $RealignOutputLogs/`
+        # where messages about failures will go
+        truncate -s 0 $RealignOutputLogs/FAILEDmessages
+        if [ ! -d $RealignOutputLogs/FAILEDjobs ]
+        then
+            mkdir $RealignOutputLogs/FAILEDjobs
+        else
+            rm -r $RealignOutputLogs/FAILEDjobs/*
+        fi
+        `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
+
 
 
         if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
@@ -118,6 +167,54 @@ else
 	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
+
+
+        # check that sampledir exists
+        if [ ! -d $sampledir ]
+        then
+           MSG="SAMPLEDIR=$sampledir file not found"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           exit 1;
+        fi
+
+        # construct a list of SampleNames, check that files actually exist
+        if [ ! -e $TopOutputLogs/SAMPLENAMES.list]
+        then
+           numsamples=0
+           truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
+           for fastqfile in $sampledir/*
+           do
+               # strip path, which read (left/right), and extension from input files
+               # and put that info into the SampleNames file
+               SampleName=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
+               echo -e "$SampleName" >> $TopOutputLogs/SAMPLENAMES.tmp.list
+               let numsamples+=1
+           done
+           # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
+           uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
+           rm  $TopOutputLogs/SAMPLENAMES.tmp.list
+        else
+           numsamples=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
+        fi
+
+        if [ $numsamples -lt 1 ]
+            then
+              MSG="No samples found in SAMPLEDIR=$sampledir."
+              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+              #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              exit 1;
+            fi
+        if [ $numsamples -gt 1 -a $multisample == "YES" ]
+        then
+            echo "multiple samples to be aligned."
+        else
+           if [ $numsamples -eq 1 -a $multisample == "NO" ]
+           then
+              echo "single sample to be aligned."
+           fi
+        fi
+
 
         pipeid=$( cat $output_logs/MAINpbs )
         
@@ -187,23 +284,28 @@ else
 				exit 1;
 			    fi
 			fi
-		    done < $samplefileinfo
+                    done <  $TopOutputLogs/SAMPLENAMES.list
+                    # end loop over input samples
+
 		fi   
 
 		if [ $resortflag == "YES" -a $analysis == "REALIGN_ONLY" ]
 		then
 		    echo "alignment was NOT done inhouse. Need to resort bam files. Checking input files"
-		    while read sampledetail
-		    do
-		       if [ `expr ${#sampledetail}` -lt 7 ]
-		       then
-			    echo "skip empty line"
-		       else
-			    samplename=$( echo $sampledetail | cut -d '=' -f2 )
-			    prefix=`basename $samplename .wrg.sorted.bam`
+                    while read SampleName
+                    do
+                       echo "processing next sample"
+                          if [ `expr ${#SampleName}` -lt 7 ]
+                          then
+                             echo "skipping empty line"
+                          else
+
+                          echo "realigning: $SampleName"
+
+			    prefix=`basename $SampleName .wrg.sorted.bam`
 			    outputalign=$outputdir/align/$prefix
 			    outputlogs=$output_logs/align/$prefix
-			    tmpbamfile=$samplename
+			    tmpbamfile=$SampleName
 			    sortedplain=${prefix}.wrg.sorted.bam
 			    sorted=${prefix}.wdups.sorted.bam
 			    sortednodups=${prefix}.nodups.sorted.bam
@@ -211,13 +313,13 @@ else
 			    if [ ! -d $outputalign ]
 			    then
 				mkdir -p $outputalign
-			if [ ! -d $outputlogs ]
-			then
-			    mkdir -p $outputlogs
-                        else
-                            `rm -r $outputlogs/*`
-			fi
-		   fi
+                                if [ ! -d $outputlogs ]
+			        then
+			            mkdir -p $outputlogs
+                                else
+                                    `rm -r $outputlogs/*`
+			        fi
+		            fi
 
 		   qsub1=$outputlogs/qsub.sortbammayo.$prefix
 		   echo "#PBS -V" > $qsub1
@@ -257,7 +359,9 @@ else
                    echo $extraid >> $output_logs/EXTRACTREADSpbs
                    listfiles=$outputalign/$sorted${sep}${listfiles}
 		fi
-	    done < $samplefileinfo
+            done <  $TopOutputLogs/SAMPLENAMES.list
+            # end loop over input samples
+
             cp $output_logs/REALSORTEDMAYOpbs $output_logs/ALN_MAYO_jobids
             JOBSmayo=$( cat $output_logs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
         fi
@@ -267,12 +371,24 @@ else
 	    echo "alignment was NOT done inhouse. BAM files will not be resorted"
             if [ $revertsam == "0" -o $revertsam == "NO" ]
             then
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                 echo "input is aligned bam that is suitable for realignment and recalibration... no need for preprocessing"
                 while read sampledetail
                 do
 		    bam=$( echo $sampledetail | cut -d "=" -f2 )
 		    listfiles=${bam}${sep}${listfiles}
-		done < $samplefileinfo
+                done <  $TopOutputLogs/SAMPLENAMES.list
+                # end loop over input samples
+
             else
                 MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
 	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
@@ -289,37 +405,24 @@ else
         extraids=$( cat $output_logs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
 
 
-        realigntopdir=$outputdir/realign
-        realignlogdir=$outputdir/logs/realign
-        if [ ! -d $realigntopdir ]
-        then
-           mkdir -p $realigntopdir
-        else
-           echo "$realigntopdir already exists. resetting it"
-           `rm -r $realigntopdir/*`
-        fi
-        if [ ! -d $realignlogdir ]
-        then
-           mkdir -p $realignlogdir
-        else
-           echo "$realignlogdir already exists. resetting it"
-           `rm -r $realignlogdir/*`
-        fi
-
-
 
         if [ $multisample == "NO" ]
         then
-           while read sampledetail
-           do
-              if [ `expr ${#sampledetail}` -lt 7 ]
-              then
-                 echo "skip empty line"
-              else
-                 samplename=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f1 )
-                 listfiles=$outputdir/align/${samplename}
 
-                 realigndir=$outputdir/realign/$samplename
+           while read SampleName
+           do
+              echo "processing next sample"
+              if [ `expr ${#SampleName}` -lt 7 ]
+              then
+                 echo "skipping empty line"
+              else
+
+              echo "realigning: $SampleName"
+
+
+                 listfiles=$outputdir/align/${SampleName}
+
+                 realigndir=$outputdir/realign/$SampleName
                  if [ ! -d $realigndir ]
                  then
                      mkdir -p $realigndir
@@ -342,7 +445,7 @@ else
                      else
                          `rm $varlogdir/*`
                      fi
-                     vardir=$outputdir/variant/$samplename
+                     vardir=$outputdir/variant/$SampleName
                      if [ ! -d $vardir ]
                      then
                          mkdir -p $vardir
@@ -353,15 +456,15 @@ else
 
 
 
- 	         qsub3=$realignlogdir/qsub.${samplename}.realign_new
+ 	         qsub3=$RealignOutputLogs/qsub.${SampleName}.realign_new
                  echo "#PBS -V" > $qsub3
          	 echo "#PBS -A $pbsprj" >> $qsub3
-	         echo "#PBS -N ${pipeid}_realign_new.${samplename}" >> $qsub3
+	         echo "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub3
                  echo "#PBS -l epilogue=$epilogue" >> $qsub3
 	         echo "#PBS -l walltime=$pbscpu" >> $qsub3
          	 echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	         echo "#PBS -o $realignlogdir/log.${samplename}.realign_new.ou" >> $qsub3
-         	 echo "#PBS -e $realignlogdir/log.${samplename}.realign_new.in" >> $qsub3
+	         echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub3
+         	 echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub3
 	         echo "#PBS -q $pbsqueue" >> $qsub3
          	 echo "#PBS -m ae" >> $qsub3
 	         echo "#PBS -M $email" >> $qsub3
@@ -371,13 +474,15 @@ else
                  else
                      echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub3
                  fi
-                 echo "$scriptdir/realign_new.sh $realigndir $realignlogdir $listfiles $runfile $realrecalflag $realignlogdir/log.${samplename}.realign_new.in $realignlogdir/log.${samplename}.realign_new.ou $email $realignlogdir/qsub.${samplename}.realign_new" >> $qsub3
+                 echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $qsub3
 	         `chmod a+r $qsub3`               
                  realrecaljob=`qsub $qsub3`
                  #`qhold -h u $realrecaljob` 
                  echo $realrecaljob >> $output_logs/RECALLpbs
               fi
-           done  < $samplefileinfo
+           done <  $TopOutputLogs/SAMPLENAMES.list
+           # end loop over input samples
+
         else
 
 
@@ -409,15 +514,15 @@ else
 
 
            listfiles=$outputdir/align
-           qsub3=$realignlogdir/qsub.realign_new
+           qsub3=$RealignOutputLogs/qsub.realign_new
            echo "#PBS -V" > $qsub3
            echo "#PBS -A $pbsprj" >> $qsub3
            echo "#PBS -N ${pipeid}_realign_new" >> $qsub3
            echo "#PBS -l epilogue=$epilogue" >> $qsub3
            echo "#PBS -l walltime=$pbscpu" >> $qsub3
            echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-           echo "#PBS -o $realignlogdir/log.realign_new.ou" >> $qsub3
-           echo "#PBS -e $realignlogdir/log.realign_new.in" >> $qsub3
+           echo "#PBS -o $RealignOutputLogs/log.realign_new.ou" >> $qsub3
+           echo "#PBS -e $RealignOutputLogs/log.realign_new.in" >> $qsub3
            echo "#PBS -q $pbsqueue" >> $qsub3
            echo "#PBS -m ae" >> $qsub3
            echo "#PBS -M $email" >> $qsub3
@@ -427,7 +532,7 @@ else
            else
                echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub3
            fi
-           echo "$scriptdir/realign_new.sh $realigndir $realignlogdir $listfiles $runfile $realrecalflag $realignlogdir/log.realign_new.in $realignlogdir/log.realign_new.ou $email $realignlogdir/qsub.realign_new" >> $qsub3
+           echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $qsub3
            `chmod a+r $qsub3`
            realrecaljob=`qsub $qsub3`
            #`qhold -h u $realrecaljob` 
