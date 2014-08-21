@@ -782,108 +782,108 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                 if [ $aligner == "NOVOALIGN"  ]
 		then
                     echo "novoalign is used as aligner. input file in fastq format"
-                    qsub=$AlignOutputLogs/qsub.novoaln.$SampleName.node$i
-                    echo "#PBS -V" > $qsub
-                    echo "#PBS -A $pbsprj" >> $qsub
-                    echo "#PBS -N ${pipeid}_novoaln_${SampleName}_$i" >> $qsub
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub
-		    echo $ccmgres_string >> $qsub
-		    echo "#PBS -o $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou" >> $qsub
-		    echo "#PBS -e $AlignOutputLogs/log.novoaln.$SampleName.node$i.in" >> $qsub
-                    echo "#PBS -q $pbsqueue" >> $qsub
-                    echo "#PBS -m ae" >> $qsub
-                    echo "#PBS -M $email" >> $qsub
+                    qsub_novosplit=$AlignOutputLogs/qsub_novosplit.novoaln.$SampleName.node$i
+                    echo "#PBS -V" > $qsub_novosplit
+                    echo "#PBS -A $pbsprj" >> $qsub_novosplit
+                    echo "#PBS -N ${pipeid}_novoaln_${SampleName}_$i" >> $qsub_novosplit
+		    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
+		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_novosplit
+		    echo $ccmgres_string >> $qsub_novosplit
+		    echo "#PBS -o $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou" >> $qsub_novosplit
+		    echo "#PBS -e $AlignOutputLogs/log.novoaln.$SampleName.node$i.in" >> $qsub_novosplit
+                    echo "#PBS -q $pbsqueue" >> $qsub_novosplit
+                    echo "#PBS -m ae" >> $qsub_novosplit
+                    echo "#PBS -M $email" >> $qsub_novosplit
                     if [ $paired -eq 1 ]
                     then
-			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
+			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub_novosplit
                     else
-			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub
+			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub_novosplit
                     fi
-                    `chmod a+r $qsub`
-                    jobnovo=`qsub $qsub`
+                    `chmod a+r $qsub`_novosplit
+                    jobnovo=`qsub $qsub`_novosplit
                     `qhold -h u $jobnovo`
 		    echo $jobnovo >> $AlignOutputLogs/ALIGNED_$SampleName
 		elif [ $aligner == "BWA" ] 
                 then
                     echo "bwa is used as aligner. input file format is in fastq"
-                    qsub1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$i
-                    echo "#PBS -V" > $qsub1
-                    echo "#PBS -N ${pipeid}_bwar1_${SampleName}_$i" >> $qsub1
-		    echo "#PBS -o $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou" >> $qsub1
-		    echo "#PBS -e $AlignOutputLogs/log.bwar1.$SampleName.node$i.in" >> $qsub1
-                    echo "#PBS -A $pbsprj" >> $qsub1
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub1
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-                    echo $ccmgres_string >> $qsub1
-                    echo "#PBS -q $pbsqueue" >> $qsub1
-                    echo "#PBS -m ae" >> $qsub1
-                    echo "#PBS -M $email" >> $qsub1
-		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$i.in $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$i" >> $qsub1
+                    qsub_bwar1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$i
+                    echo "#PBS -V" > $qsub_bwar1
+                    echo "#PBS -N ${pipeid}_bwar1_${SampleName}_$i" >> $qsub_bwar1
+		    echo "#PBS -o $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou" >> $qsub_bwar1
+		    echo "#PBS -e $AlignOutputLogs/log.bwar1.$SampleName.node$i.in" >> $qsub_bwar1
+                    echo "#PBS -A $pbsprj" >> $qsub_bwar1
+		    echo "#PBS -l walltime=$pbscpu" >> $qsub_bwar1
+		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwar1
+                    echo $ccmgres_string >> $qsub_bwar1
+                    echo "#PBS -q $pbsqueue" >> $qsub_bwar1
+                    echo "#PBS -m ae" >> $qsub_bwar1
+                    echo "#PBS -M $email" >> $qsub_bwar1
+		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$i.in $AlignOutputLogs/log.bwar1.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$i" >> $qsub_bwar1
 
-                    `chmod a+r $qsub1`
-                    jobr1=`qsub $qsub1`
+                    `chmod a+r $qsub_bwar1`
+                    jobr1=`qsub $qsub_bwar1`
                     `qhold -h u $jobr1`
                     echo $jobr1 >> $AlignOutputLogs/ALIGNED_$SampleName
                     if [ $paired -eq 1 ]
                     then
                         echo "bwa aligner. paired-end reads"
-			qsub2=$AlignOutputLogs/qsub.bwar2.$SampleName.node$i
-			echo "#PBS -V" > $qsub2
-			echo "#PBS -N ${pipeid}_bwar2_${SampleName}_$i" >> $qsub2
-			echo "#PBS -o $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou" >> $qsub2
-			echo "#PBS -e $AlignOutputLogs/log.bwar2.$SampleName.node$i.in" >> $qsub2
-			echo "#PBS -A $pbsprj" >> $qsub2
-			echo "#PBS -l walltime=$pbscpu" >> $qsub2
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub2
-                        echo $ccmgres_string >> $qsub2
-			echo "#PBS -q $pbsqueue" >> $qsub2
-			echo "#PBS -m ae" >> $qsub2
-			echo "#PBS -M $email" >> $qsub2
-			echo "$run_string $profiler_string $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$i.in $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$i" >> $qsub2
-			`chmod a+r $qsub2`
-                        jobr2=`qsub $qsub2`
+			qsub_bwar2=$AlignOutputLogs/qsub.bwar2.$SampleName.node$i
+			echo "#PBS -V" > $qsub_bwar2
+			echo "#PBS -N ${pipeid}_bwar2_${SampleName}_$i" >> $qsub_bwar2
+			echo "#PBS -o $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou" >> $qsub_bwar2
+			echo "#PBS -e $AlignOutputLogs/log.bwar2.$SampleName.node$i.in" >> $qsub_bwar2
+			echo "#PBS -A $pbsprj" >> $qsub_bwar2
+			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwar2
+			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwar2
+                        echo $ccmgres_string >> $qsub_bwar2
+			echo "#PBS -q $pbsqueue" >> $qsub_bwar2
+			echo "#PBS -m ae" >> $qsub_bwar2
+			echo "#PBS -M $email" >> $qsub_bwar2
+			echo "$run_string $profiler_string $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$i.in $AlignOutputLogs/log.bwar2.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$i" >> $qsub_bwar2
+			`chmod a+r $qsub_bwar2`
+                        jobr2=`qsub $qsub_bwar2`
 			`qhold -h u $jobr2`
 			echo $jobr2 >> $AlignOutputLogs/ALIGNED_$SampleName
 
-			qsub3=$AlignOutputLogs/qsub.bwasampe.$SampleName.node$i
-			echo "#PBS -V" > $qsub3
-			echo "#PBS -N ${pipeid}_bwasampe_${SampleName}_$i" >> $qsub3
-			echo "#PBS -o $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou" >> $qsub3
-			echo "#PBS -e $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in" >> $qsub3
-			echo "#PBS -A $pbsprj" >> $qsub3
-			echo "#PBS -l walltime=$pbscpu" >> $qsub3
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub3
-                        echo $ccmgres_string >> $qsub3
-			echo "#PBS -q $pbsqueue" >> $qsub3
-			echo "#PBS -m ae" >> $qsub3
-			echo "#PBS -M $email" >> $qsub3
-			echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub3
-			echo "$run_string $profiler_string $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$i" >> $qsub3
-			`chmod a+r $qsub3`
-                        jobwa=`qsub $qsub3`
+			qsub_bwasampe=$AlignOutputLogs/qsub.bwasampe.$SampleName.node$i
+			echo "#PBS -V" > $qsub_bwasampe
+			echo "#PBS -N ${pipeid}_bwasampe_${SampleName}_$i" >> $qsub_bwasampe
+			echo "#PBS -o $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou" >> $qsub_bwasampe
+			echo "#PBS -e $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in" >> $qsub_bwasampe
+			echo "#PBS -A $pbsprj" >> $qsub_bwasampe
+			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwasampe
+			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwasampe
+                        echo $ccmgres_string >> $qsub_bwasampe
+			echo "#PBS -q $pbsqueue" >> $qsub_bwasampe
+			echo "#PBS -m ae" >> $qsub_bwasampe
+			echo "#PBS -M $email" >> $qsub_bwasampe
+			echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub_bwasampe
+			echo "$run_string $profiler_string $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $outputsamfileprefix.node$i.R2.sai $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$i.in $AlignOutputLogs/log.bwasampe.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$i" >> $qsub_bwasampe
+			`chmod a+r $qsub_bwasampe`
+                        jobwa=`qsub $qsub_bwasampe`
 			`qhold -h u $jobwa`
 			echo $jobwa >> $AlignOutputLogs/ALIGNED_$SampleName
                     else
                         echo "bwa aligner. single read"
-			qsub3=$AlignOutputLogs/qsub.bwasamse.$SampleName.node$i
-			echo "#PBS -V" > $qsub3
-			echo "#PBS -N ${pipeid}_bwasamse_${SampleName}_$i" >> $qsub3
-			echo "#PBS -o $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou" >> $qsub3
-			echo "#PBS -e $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in" >> $qsub3
-			echo "#PBS -A $pbsprj" >> $qsub3
-			echo "#PBS -l walltime=$pbscpu" >> $qsub3
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub3
-                        echo $ccmgres_string >> $qsub3
-			echo "#PBS -q $pbsqueue" >> $qsub3
-			echo "#PBS -m ae" >> $qsub3
-			echo "#PBS -M $email" >> $qsub3
-			echo "#PBS -W depend=afterok:$jobr1" >> $qsub3
-			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$i" >> $qsub3
-			`chmod a+r $qsub3`
-                        jobwa=`qsub $qsub3`
+			qsub_bwasamse=$AlignOutputLogs/qsub.bwasamse.$SampleName.node$i
+			echo "#PBS -V" > $qsub_bwasamse
+			echo "#PBS -N ${pipeid}_bwasamse_${SampleName}_$i" >> $qsub_bwasamse
+			echo "#PBS -o $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou" >> $qsub_bwasamse
+			echo "#PBS -e $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in" >> $qsub_bwasamse
+			echo "#PBS -A $pbsprj" >> $qsub_bwasamse
+			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwasamse
+			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwasamse
+                        echo $ccmgres_string >> $qsub_bwasamse
+			echo "#PBS -q $pbsqueue" >> $qsub_bwasamse
+			echo "#PBS -m ae" >> $qsub_bwasamse
+			echo "#PBS -M $email" >> $qsub_bwasamse
+			echo "#PBS -W depend=afterok:$jobr1" >> $qsub_bwasamse
+			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.R1.sai $AlignOutputDir/$SampleName/$Rone $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$i.in $AlignOutputLogs/log.bwasamse.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$i" >> $qsub_bwasamse
+			`chmod a+r $qsub_bwasamse`
+                        jobwa=`qsub $qsub_bwasamse`
 			`qhold -h u $jobwa`
-                        echo $qsub3 >> $AlignOutputLogs/ALIGNED_$SampleName
+                        echo $qsub_bwasamse >> $AlignOutputLogs/ALIGNED_$SampleName
                     fi
                 elif [ $aligner == "BWA_MEM" ]
                 then
@@ -895,6 +895,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                         if [ $chunkfastq == "YES" ]
                         then
+			   ### MUST FIX QSUB VARIEBLE NAME PROPERLY
                            echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then
@@ -906,29 +907,29 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                      else
                         echo "bwa mem aligner. single-end reads"
-                        qsub5=$AlignOutputLogs/qsub.bwamem.$SampleName.node$i
-                        echo "#PBS -V" > $qsub5
-                        echo "#PBS -N ${pipeid}_bwamem_${SampleName}_$i" >> $qsub5
-                        echo "#PBS -o $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou" >> $qsub5
-                        echo "#PBS -e $AlignOutputLogs/log.bwamem.$SampleName.node$i.in" >> $qsub5
-                        echo "#PBS -A $pbsprj" >> $qsub5
-                        echo "#PBS -l walltime=$pbscpu" >> $qsub5
-                        echo "#PBS -l nodes=1:ppn=$thr" >> $qsub5
-                        echo "#PBS -q $pbsqueue" >> $qsub5
-                        echo "#PBS -m ae" >> $qsub5
-                        echo "#PBS -M $email" >> $qsub5
+                        qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$i
+                        echo "#PBS -V" > $qsub_bwamem
+                        echo "#PBS -N ${pipeid}_bwamem_${SampleName}_$i" >> $qsub_bwamem
+                        echo "#PBS -o $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou" >> $qsub_bwamem
+                        echo "#PBS -e $AlignOutputLogs/log.bwamem.$SampleName.node$i.in" >> $qsub_bwamem
+                        echo "#PBS -A $pbsprj" >> $qsub_bwamem
+                        echo "#PBS -l walltime=$pbscpu" >> $qsub_bwamem
+                        echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwamem
+                        echo "#PBS -q $pbsqueue" >> $qsub_bwamem
+                        echo "#PBS -m ae" >> $qsub_bwamem
+                        echo "#PBS -M $email" >> $qsub_bwamem
 
                         if [ $chunkfastq == "YES" ]
                         then
-                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub5
+                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub_bwamem
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $samblasterdir $picardir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i $RGparms" >> $qsub5
+                           echo "aprun -n 1 -d $thr $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $scriptdir $samdir $samblasterdir $picardir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i $RGparms" >> $qsub_bwamem
                         fi
    
 
-                       `chmod a+r $qsub5`
-                       jobbwamemse=`qsub $qsub5`
+                       `chmod a+r $qsub_bwamem`
+                       jobbwamemse=`qsub $qsub_bwamem`
                        `qhold -h u $jobbwamemse`
                        echo $jobbwamemse >> $AlignOutputLogs/ALIGNED_$SampleName
                        echo $jobbwamemse >> $TopOutputLogs/ALIGN_NCSA_jobids
@@ -962,61 +963,61 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                if [ $sortool == "NOVOSORT" ]
                then
                    echo "merging aligned chunks with novosort"
-		   qsub1=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
-		   echo "#PBS -V" > $qsub1
-		   echo "#PBS -A $pbsprj" >> $qsub1
-		   echo "#PBS -N ${pipeid}_sortmerge_novosort_$SampleName" >> $qsub1
-		   echo "#PBS -l walltime=$pbscpu" >> $qsub1
-		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-		   echo "#PBS -o $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou" >> $qsub1
-		   echo "#PBS -e $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in" >> $qsub1
-		   echo "#PBS -q $pbsqueue" >> $qsub1
-		   echo "#PBS -m ae" >> $qsub1
-		   echo "#PBS -M $email" >> $qsub1
-		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
-		   echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $qsub1
-		   `chmod a+r $qsub1`
-		   mergejob=`qsub $qsub1`
+		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
+		   echo "#PBS -V" > $qsub_sortmerge
+		   echo "#PBS -A $pbsprj" >> $qsub_sortmerge
+		   echo "#PBS -N ${pipeid}_sortmerge_novosort_$SampleName" >> $qsub_sortmerge
+		   echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
+		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortmerge
+		   echo "#PBS -o $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou" >> $qsub_sortmerge
+		   echo "#PBS -e $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in" >> $qsub_sortmerge
+		   echo "#PBS -q $pbsqueue" >> $qsub_sortmerge
+		   echo "#PBS -m ae" >> $qsub_sortmerge
+		   echo "#PBS -M $email" >> $qsub_sortmerge
+		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
+		   echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $qsub_sortmerge
+		   `chmod a+r $qsub_sortmerge`
+		   mergejob=`qsub $qsub_sortmerge`
 		   `qhold -h u $mergejob`
 		   echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
                else
                    echo "merging aligned chunks with picard"
-		   qsub1=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
-		   echo "#PBS -V" > $qsub1
-		   echo "#PBS -A $pbsprj" >> $qsub1
-		   echo "#PBS -N ${pipeid}_sortmerge_picard_$SampleName" >> $qsub1
-		   echo "#PBS -l walltime=$pbscpu" >> $qsub1
-		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-		   echo "#PBS -o $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou" >> $qsub1
-		   echo "#PBS -e $AlignOutputLogs/log.sortmerge.picard.$SampleName.in" >> $qsub1
-		   echo "#PBS -q $pbsqueue" >> $qsub1
-		   echo "#PBS -m ae" >> $qsub1
-		   echo "#PBS -M $email" >> $qsub1
-		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
-		   echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge.picard.$SampleName.in $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.picard.$SampleName" >> $qsub1
-		   `chmod a+r $qsub1`
-		   mergejob=`qsub $qsub1`
+		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
+		   echo "#PBS -V" > $qsub_sortmerge
+		   echo "#PBS -A $pbsprj" >> $qsub_sortmerge
+		   echo "#PBS -N ${pipeid}_sortmerge_picard_$SampleName" >> $qsub_sortmerge
+		   echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
+		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortmerge
+		   echo "#PBS -o $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou" >> $qsub_sortmerge
+		   echo "#PBS -e $AlignOutputLogs/log.sortmerge.picard.$SampleName.in" >> $qsub_sortmerge
+		   echo "#PBS -q $pbsqueue" >> $qsub_sortmerge
+		   echo "#PBS -m ae" >> $qsub_sortmerge
+		   echo "#PBS -M $email" >> $qsub_sortmerge
+		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
+		   echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge.picard.$SampleName.in $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.picard.$SampleName" >> $qsub_sortmerge
+		   `chmod a+r $qsub_sortmerge`
+		   mergejob=`qsub $qsub_sortmerge`
 		   `qhold -h u $mergejob`
 		   echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
                fi
 
 	       echo `date`
 	       echo "extract reads specified in CHRINDEX param"
-	       qsub5=$AlignOutputLogs/qsub.extractreadsbam.$SampleName
-   	       echo "#PBS -V" > $qsub5
-	       echo "#PBS -A $pbsprj" >> $qsub5
-	       echo "#PBS -N ${pipeid}_extrbam_$SampleName" >> $qsub5
-	       echo "#PBS -l walltime=$pbscpu" >> $qsub5
-	       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub5
-	       echo "#PBS -o $AlignOutputLogs/log.extractreadsbam.$SampleName.ou" >> $qsub5
-	       echo "#PBS -e $AlignOutputLogs/log.extractreadsbam.$SampleName.in" >> $qsub5
-	       echo "#PBS -q $pbsqueue" >> $qsub5
-	       echo "#PBS -m ae" >> $qsub5
-	       echo "#PBS -M $email" >> $qsub5
-	       echo "#PBS -W depend=afterok:$mergejob" >> $qsub5
-	       echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub5
-	       `chmod a+r $qsub5`
-	       extrajob=`qsub $qsub5`
+	       qsub_extractreads=$AlignOutputLogs/qsub.extractreadsbam.$SampleName
+   	       echo "#PBS -V" > $qsub_extractreads
+	       echo "#PBS -A $pbsprj" >> $qsub_extractreads
+	       echo "#PBS -N ${pipeid}_extrbam_$SampleName" >> $qsub_extractreads
+	       echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
+	       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
+	       echo "#PBS -o $AlignOutputLogs/log.extractreadsbam.$SampleName.ou" >> $qsub_extractreads
+	       echo "#PBS -e $AlignOutputLogs/log.extractreadsbam.$SampleName.in" >> $qsub_extractreads
+	       echo "#PBS -q $pbsqueue" >> $qsub_extractreads
+	       echo "#PBS -m ae" >> $qsub_extractreads
+	       echo "#PBS -M $email" >> $qsub_extractreads
+	       echo "#PBS -W depend=afterok:$mergejob" >> $qsub_extractreads
+	       echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub_extractreads
+	       `chmod a+r $qsub_extractreads`
+	       extrajob=`qsub $qsub_extractreads`
                `qhold -h u $extrajob`
                echo $extrajob >> $TopOutputLogs/EXTRACTREADSpbs
 
@@ -1106,65 +1107,65 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
             if [ $cleanupflag == "YES" ]
             then 
-		qsub6=$TopOutputLogs/qsub.cleanup.align
-		echo "#PBS -V" > $qsub6
-		echo "#PBS -A $pbsprj" >> $qsub6
-		echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub6
-		echo "#PBS -l walltime=$pbscpu" >> $qsub6
-		echo "#PBS -l nodes=1:ppn=1" >> $qsub6
-		echo "#PBS -o $TopOutputLogs/log.cleanup.align.ou" >> $qsub6
-		echo "#PBS -e $TopOutputLogs/log.cleanup.align.in" >> $qsub6
-		echo "#PBS -q $pbsqueue" >> $qsub6
-		echo "#PBS -m ae" >> $qsub6
-		echo "#PBS -M $email" >> $qsub6
-		echo "#PBS -W depend=afterok:$pbsids" >> $qsub6
-		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub6
-		`chmod a+r $qsub6`
-		cleanjobid=`qsub $qsub6`
+		qsub_cleanup=$TopOutputLogs/qsub.cleanup.align
+		echo "#PBS -V" > $qsub_cleanup
+		echo "#PBS -A $pbsprj" >> $qsub_cleanup
+		echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub_cleanup
+		echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
+		echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
+		echo "#PBS -o $TopOutputLogs/log.cleanup.align.ou" >> $qsub_cleanup
+		echo "#PBS -e $TopOutputLogs/log.cleanup.align.in" >> $qsub_cleanup
+		echo "#PBS -q $pbsqueue" >> $qsub_cleanup
+		echo "#PBS -m ae" >> $qsub_cleanup
+		echo "#PBS -M $email" >> $qsub_cleanup
+		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_cleanup
+		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
+		`chmod a+r $qsub_cleanup`
+		cleanjobid=`qsub $qsub_cleanup`
 		echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
             fi
 
-            `slepp 30s`
-	    qsub4=$TopOutputLogs/qsub.summary.aln.allok
-	    echo "#PBS -V" > $qsub4
-	    echo "#PBS -A $pbsprj" >> $qsub4
-	    echo "#PBS -N ${pipeid}_summaryok" >> $qsub4
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub4
-	    echo "#PBS -l nodes=1:ppn=1" >> $qsub4
-	    echo "#PBS -o $TopOutputLogs/log.summary.aln.ou" >> $qsub4
-	    echo "#PBS -e $TopOutputLogs/log.summary.aln.in" >> $qsub4
-	    echo "#PBS -q $pbsqueue" >> $qsub4
-	    echo "#PBS -m ae" >> $qsub4
-	    echo "#PBS -M $email" >> $qsub4
+            `sleep 30s`
+	    qsub_summary=$TopOutputLogs/qsub.summary.aln.allok
+	    echo "#PBS -V" > $qsub_summary
+	    echo "#PBS -A $pbsprj" >> $qsub_summary
+	    echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
+	    echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
+	    echo "#PBS -o $TopOutputLogs/log.summary.aln.ou" >> $qsub_summary
+	    echo "#PBS -e $TopOutputLogs/log.summary.aln.in" >> $qsub_summary
+	    echo "#PBS -q $pbsqueue" >> $qsub_summary
+	    echo "#PBS -m ae" >> $qsub_summary
+	    echo "#PBS -M $email" >> $qsub_summary
             if [ `expr ${#cleanjobid}` -gt 0 ]
             then
-		echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub4
+		echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summary
             else
-		echo "#PBS -W depend=afterok:$pbsids" >> $qsub4
+		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_summary
             fi
-	    echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub4
-	    `chmod a+r $qsub4`
-	    lastjobid=`qsub $qsub4`
+	    echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub_summary
+	    `chmod a+r $qsub_summary`
+	    lastjobid=`qsub $qsub_summary`
 	    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
 	    then
 		echo "at least one job aborted"
-		qsub5=$TopOutputLogs/qsub.summary.aln.afterany
-		echo "#PBS -V" > $qsub5
-		echo "#PBS -A $pbsprj" >> $qsub5
-		echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub5
-		echo "#PBS -l walltime=$pbscpu" >> $qsub5
-		echo "#PBS -l nodes=1:ppn=1" >> $qsub5
-		echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub5
-		echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub5
-		echo "#PBS -q $pbsqueue" >> $qsub5
-		echo "#PBS -m ae" >> $qsub5
-		echo "#PBS -M $email" >> $qsub5
-		echo "#PBS -W depend=afterany:$pbsids" >> $qsub5
-		echo "aprun -n 1 -d $thr $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub5
-		`chmod a+r $qsub5`
-		badjobid=`qsub $qsub5`
+		qsub_summary=$TopOutputLogs/qsub.summary.aln.afterany
+		echo "#PBS -V" > $qsub_summary
+		echo "#PBS -A $pbsprj" >> $qsub_summary
+		echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
+		echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+		echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
+		echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub_summary
+		echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub_summary
+		echo "#PBS -q $pbsqueue" >> $qsub_summary
+		echo "#PBS -m ae" >> $qsub_summary
+		echo "#PBS -M $email" >> $qsub_summary
+		echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summary
+		echo "aprun -n 1 -d $thr $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub_summary
+		`chmod a+r $qsub_summary`
+		badjobid=`qsub $qsub_summary`
 		echo $badjobid >> $TopOutputLogs/SUMMARYpbs
 	    fi
 	fi
@@ -1172,21 +1173,21 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" ]
 	then
             echo " analysis continues with realignment"
-	    qsub2=$TopOutputLogs/qsub.main.realn
-	    echo "#PBS -V" > $qsub2
-	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
-	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub2
-	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub2
-	    echo "#PBS -q $pbsqueue" >> $qsub2
-	    echo "#PBS -m ae" >> $qsub2
-	    echo "#PBS -M $email" >> $qsub2
-            #echo "#PBS -W depend=afterany:$pbsids" >> $qsub2
-	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub2
-	    `chmod a+r $qsub2` 
-	    `qsub $qsub2 >> $TopOutputLogs/MAINREALNpbs`
+	    qsub_realign=$TopOutputLogs/qsub.main.realn
+	    echo "#PBS -V" > $qsub_realign
+	    echo "#PBS -A $pbsprj" >> $qsub_realign
+	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub_realign
+	    echo "#PBS -l walltime=$pbscpu" >> $qsub_realign
+	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_realign
+	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub_realign
+	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub_realign
+	    echo "#PBS -q $pbsqueue" >> $qsub_realign
+	    echo "#PBS -m ae" >> $qsub_realign
+	    echo "#PBS -W depend=afterany:$pbsids" >> $qsub_realign
+	    echo "#PBS -M $email" >> $qsub_realign
+	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub_realign
+	    `chmod a+r $qsub_realign` 
+	    `qsub $qsub_realign >> $TopOutputLogs/MAINREALNpbs`
 
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`

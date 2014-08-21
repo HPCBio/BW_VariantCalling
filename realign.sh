@@ -230,6 +230,7 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 		if [ $realrecalflag != "1" -a $realrecalflag != "0" ]
 		then
 		    echo "realign-recalibration order flag is not set properly. Default value [1] will be assiged to it"
+		    # SHOULDN'T WE ABORT INSTEAD?
 		    realrecalflag="1"
 		fi
 		
@@ -266,20 +267,20 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 			    sampletag=$( echo $sampledetail | cut -d '=' -f1 | cut -d ':' -f2 )
 			    if [ `expr ${#bamfile}` -lt 1 ]
 			    then
-				MSG="parsing SAMPLEFILENAMES file failed. realignment failed."
+				MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
 				echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 				exit 1;
 			    fi
 			    if [ `expr ${#sampletag}` -lt 1 ]
 			    then
-				MSG="parsing SAMPLEFILENAMES file failed. realignment failed."
+				MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
 				echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 				exit 1;
 			    fi
 			
 			    if [ ! -s $bamfile ]
 			    then
-				MSG="parsing SAMPLEFILENAMES file failed. realignment failed"
+				MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start"
 				echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 				exit 1;
 			    fi
@@ -321,40 +322,41 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 			        fi
 		            fi
 
-		   qsub1=$outputlogs/qsub.sortbammayo.$prefix
-		   echo "#PBS -V" > $qsub1
-		   echo "#PBS -A $pbsprj" >> $qsub1
-		   echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub1
-                   echo "#PBS -l epilogue=$epilogue" >> $qsub1
-		   echo "#PBS -l walltime=$pbscpu" >> $qsub1
-		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-		   echo "#PBS -o $outputlogs/log.sortbammayo.${prefix}.ou" >> $qsub1
-		   echo "#PBS -e $outputlogs/log.sortbammayo.${prefix}.in" >> $qsub1
-		   echo "#PBS -q $pbsqueue" >> $qsub1
-		   echo "#PBS -m ae" >> $qsub1
-		   echo "#PBS -M $email" >> $qsub1
-		   echo "aprun -n 1 -d $thr $scriptdir/sortbammayo.sh $outputalign $tmpbamfile $sortedplain $sorted $sortednodups $runfile $outputlogs/log.sortbammayo.${prefix}.in $outputlogs/log.sortbammayo.${prefix}.ou $email $outputlogs/qsub.sortbammayo.${prefix}" >> $qsub1
-		   `chmod a+r $qsub1`
-                   sortid=`qsub $qsub1`
+		   qsub_sortbammayo=$outputlogs/qsub.sortbammayo.$prefix
+		   echo "#PBS -V" > $qsub_sortbammayo
+		   echo "#PBS -A $pbsprj" >> $qsub_sortbammayo
+		   echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub_sortbammayo
+                   echo "#PBS -l epilogue=$epilogue" >> $qsub_sortbammayo
+		   echo "#PBS -l walltime=$pbscpu" >> $qsub_sortbammayo
+		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortbammayo
+		   echo "#PBS -o $outputlogs/log.sortbammayo.${prefix}.ou" >> $qsub_sortbammayo
+		   echo "#PBS -e $outputlogs/log.sortbammayo.${prefix}.in" >> $qsub_sortbammayo
+		   echo "#PBS -q $pbsqueue" >> $qsub_sortbammayo
+		   echo "#PBS -m ae" >> $qsub_sortbammayo
+		   echo "#PBS -M $email" >> $qsub_sortbammayo
+		   echo "aprun -n 1 -d $thr $scriptdir/sortbammayo.sh $outputalign $tmpbamfile $sortedplain $sorted $sortednodups $runfile $outputlogs/log.sortbammayo.${prefix}.in $outputlogs/log.sortbammayo.${prefix}.ou $email $outputlogs/qsub.sortbammayo.${prefix}" >> $qsub_sortbammayo
+		   `chmod a+r $qsub_sortbammayo`
+                   sortid=`qsub $qsub_sortbammayo`
                    #`qhold -h u $sortid`
                	   echo $sortid >> $TopOutputLogs/REALSORTEDMAYOpbs
+
 		   echo "extracting reads"
-		   qsub2=$outputlogs/qsub.extractreadsbam.$prefix
-		   echo "#PBS -V" > $qsub2
-		   echo "#PBS -A $pbsprj" >> $qsub2
-		   echo "#PBS -N ${pipeid}_extrbam${prefix}" >> $qsub2
-                   echo "#PBS -l epilogue=$epilogue" >> $qsub2
-		   echo "#PBS -l walltime=$pbscpu" >> $qsub2
-		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub2
-		   echo "#PBS -o $outputlogs/log.extractreadsbam.${prefix}.ou" >> $qsub2
-		   echo "#PBS -e $outputlogs/log.extractreadsbam.${prefix}.in" >> $qsub2
-		   echo "#PBS -q $pbsqueue" >> $qsub2
-		   echo "#PBS -m ae" >> $qsub2
-		   echo "#PBS -M $email" >> $qsub2
-                   echo "#PBS -W depend=afterok:$sortid" >> $qsub2
-                   echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $outputalign $sorted $runfile $outputlogs/log.extractreadsbam.${prefix}.in $outputlogs/log.extractreadsbam.${prefix}.ou $outputlogs/qsub.extractreadsbam.$prefix $igvdir $extradir" >> $qsub2
-		   `chmod a+r $qsub2`               
-                   extraid=`qsub $qsub2`
+		   qsub_extractreads=$outputlogs/qsub.extractreadsbam.$prefix
+		   echo "#PBS -V" > $qsub_extractreads
+		   echo "#PBS -A $pbsprj" >> $qsub_extractreads
+		   echo "#PBS -N ${pipeid}_extrbam${prefix}" >> $qsub_extractreads
+                   echo "#PBS -l epilogue=$epilogue" >> $qsub_extractreads
+		   echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
+		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
+		   echo "#PBS -o $outputlogs/log.extractreadsbam.${prefix}.ou" >> $qsub_extractreads
+		   echo "#PBS -e $outputlogs/log.extractreadsbam.${prefix}.in" >> $qsub_extractreads
+		   echo "#PBS -q $pbsqueue" >> $qsub_extractreads
+		   echo "#PBS -m ae" >> $qsub_extractreads
+		   echo "#PBS -M $email" >> $qsub_extractreads
+                   echo "#PBS -W depend=afterok:$sortid" >> $qsub_extractreads
+                   echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $outputalign $sorted $runfile $outputlogs/log.extractreadsbam.${prefix}.in $outputlogs/log.extractreadsbam.${prefix}.ou $outputlogs/qsub.extractreadsbam.$prefix $igvdir $extradir" >> $qsub_extractreads
+		   `chmod a+r $qsub_extractreads`               
+                   extraid=`qsub $qsub_extractreads`
                    #`qhold -h u $extraid`
                    echo $extraid >> $TopOutputLogs/EXTRACTREADSpbs
                    listfiles=$outputalign/$sorted${sep}${listfiles}
@@ -456,35 +458,38 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 
 
 
- 	         qsub3=$RealignOutputLogs/qsub.${SampleName}.realign_new
-                 echo "#PBS -V" > $qsub3
-         	 echo "#PBS -A $pbsprj" >> $qsub3
-	         echo "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub3
-                 echo "#PBS -l epilogue=$epilogue" >> $qsub3
-	         echo "#PBS -l walltime=$pbscpu" >> $qsub3
-         	 echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	         echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub3
-         	 echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub3
-	         echo "#PBS -q $pbsqueue" >> $qsub3
-         	 echo "#PBS -m ae" >> $qsub3
-	         echo "#PBS -M $email" >> $qsub3
+ 	         qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
+                 echo "#PBS -V" > $qsub_realignnew
+         	 echo "#PBS -A $pbsprj" >> $qsub_realignnew
+	         echo "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
+                 echo "#PBS -l epilogue=$epilogue" >> $qsub_realignnew
+	         echo "#PBS -l walltime=$pbscpu" >> $qsub_realignnew
+         	 echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
+	         echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
+         	 echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
+	         echo "#PBS -q $pbsqueue" >> $qsub_realignnew
+         	 echo "#PBS -m ae" >> $qsub_realignnew
+	         echo "#PBS -M $email" >> $qsub_realignnew
                  if [ `expr ${#JOBSmayo}` -gt 0 ]
                  then
-                     echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub3
-                 else
-                     echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub3
+                     echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
+        #         else
+        #             echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
                  fi
-                 echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $qsub3
-	         `chmod a+r $qsub3`               
-                 realrecaljob=`qsub $qsub3`
-                 #`qhold -h u $realrecaljob` 
+                 echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $qsub_realignnew
+	         `chmod a+r $qsub_realignnew`               
+                 realrecaljob=`qsub $qsub_realignnew`
+                 `qhold -h u $realrecaljob` 
                  echo $realrecaljob >> $TopOutputLogs/RECALLpbs
               fi
            done <  $TopOutputLogs/SAMPLENAMES.list
            # end loop over input samples
+        # end of case with multiple independent samples
+
+
 
         else
-
+        # multisample experiment
 
            realigndir=$outputdir/realign
            if [ ! -d $realigndir ]
@@ -514,36 +519,36 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 
 
            listfiles=$outputdir/align
-           qsub3=$RealignOutputLogs/qsub.realign_new
-           echo "#PBS -V" > $qsub3
-           echo "#PBS -A $pbsprj" >> $qsub3
-           echo "#PBS -N ${pipeid}_realign_new" >> $qsub3
-           echo "#PBS -l epilogue=$epilogue" >> $qsub3
-           echo "#PBS -l walltime=$pbscpu" >> $qsub3
-           echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-           echo "#PBS -o $RealignOutputLogs/log.realign_new.ou" >> $qsub3
-           echo "#PBS -e $RealignOutputLogs/log.realign_new.in" >> $qsub3
-           echo "#PBS -q $pbsqueue" >> $qsub3
-           echo "#PBS -m ae" >> $qsub3
-           echo "#PBS -M $email" >> $qsub3
+           qsub_realignnew=$RealignOutputLogs/qsub.realign_new
+           echo "#PBS -V" > $qsub_realignnew
+           echo "#PBS -A $pbsprj" >> $qsub_realignnew
+           echo "#PBS -N ${pipeid}_realign_new" >> $qsub_realignnew
+           echo "#PBS -l epilogue=$epilogue" >> $qsub_realignnew
+           echo "#PBS -l walltime=$pbscpu" >> $qsub_realignnew
+           echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
+           echo "#PBS -o $RealignOutputLogs/log.realign_new.ou" >> $qsub_realignnew
+           echo "#PBS -e $RealignOutputLogs/log.realign_new.in" >> $qsub_realignnew
+           echo "#PBS -q $pbsqueue" >> $qsub_realignnew
+           echo "#PBS -m ae" >> $qsub_realignnew
+           echo "#PBS -M $email" >> $qsub_realignnew
            if [ `expr ${#JOBSmayo}` -gt 0 ]
            then
-               echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub3
+               echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
            else
-               echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub3
+               echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
            fi
-           echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $qsub3
-           `chmod a+r $qsub3`
-           realrecaljob=`qsub $qsub3`
+           echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $qsub_realignnew
+           `chmod a+r $qsub_realignnew`
+           realrecaljob=`qsub $qsub_realignnew`
            #`qhold -h u $realrecaljob` 
            echo $realrecaljob >> $TopOutputLogs/RECALLpbs
  
         fi
-                 #`qrls -h u $alignids`
-                 #`qrls -h u $mergeids`
-                 #`qrls -h u $sortedmayoids`
-                 #`qrls -h u $extraids`
-                 #`qrls -h u $realrecaljob`
+                 `qrls -h u $alignids`
+                 `qrls -h u $mergeids`
+                 `qrls -h u $sortedmayoids`
+                 `qrls -h u $extraids`
+                 `qrls -h u $realrecaljob`
 
         echo "done realig/recalibrating  all bam files."
         echo `date`

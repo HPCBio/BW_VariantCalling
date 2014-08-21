@@ -145,20 +145,20 @@ else
          exit $exitcode;
     fi
     echo `date`
-    java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
-        INPUT=$tmpfilewdups \
-        OUTPUT=$tmpfilewdups.flagstat \
-        VALIDATION_STRINGENCY=SILENT
+    #java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
+    #    INPUT=$tmpfilewdups \
+    #    OUTPUT=$tmpfilewdups.flagstat \
+    #    VALIDATION_STRINGENCY=SILENT
 
-     exitcode=$?
-     if [ $exitcode -ne 0 ]
-     then
-         MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode . mergenovo stopped "
-         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+    # exitcode=$?
+    # if [ $exitcode -ne 0 ]
+    # then
+    #     MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode . mergenovo stopped "
+    #     echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
          #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-         exit $exitcode;
-     fi
-    echo `date`
+    #     exit $exitcode;
+    # fi
+    #echo `date`
         
     ## step 3: marking and or removing duplicates        
 
@@ -229,20 +229,20 @@ else
             exit $exitcode;
 	fi
 	echo `date`
-	java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
-            INPUT=$outfilewdups \
-            OUTPUT=$outfilewdups.flagstat \
-            VALIDATION_STRINGENCY=SILENT
+	#java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
+        #    INPUT=$outfilewdups \
+        #    OUTPUT=$outfilewdups.flagstat \
+        #    VALIDATION_STRINGENCY=SILENT
 
-	exitcode=$?
-	if [ $exitcode -ne 0 ]
-	then
-            MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenovo stopped"
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	#exitcode=$?
+	#if [ $exitcode -ne 0 ]
+	#then
+        #    MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenovo stopped"
+        #    echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-            exit $exitcode;
-	fi
-	echo `date`
+        #    exit $exitcode;
+	#fi
+	#echo `date`
     else 
         echo "remove duplicates or do nothing"
 	if [ $deldup == "TRUE" ]
@@ -312,20 +312,20 @@ else
 		exit $exitcode;
 	    fi
 	    echo `date`
-	    java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
-		INPUT=$outfilenodups \
-		OUTPUT=$outfilenodups.flagstat \
-		VALIDATION_STRINGENCY=SILENT
+	    #java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
+	#	INPUT=$outfilenodups \
+	#	OUTPUT=$outfilenodups.flagstat \
+	#	VALIDATION_STRINGENCY=SILENT
 
-	    exitcode=$?
-	    if [ $exitcode -ne 0 ]
-	    then
-		MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenovo stopped"
-		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	#    exitcode=$?
+	#    if [ $exitcode -ne 0 ]
+	#    then
+	#	MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenovo stopped"
+	#	echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		#echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-	    fi
-	    echo `date`
+	#	exit $exitcode;
+	#    fi
+	#    echo `date`
 	else
 	    echo "we need to copy tmpfilewdups to outfilewdups now"
 	    echo "these output files are not suitable for realignment"

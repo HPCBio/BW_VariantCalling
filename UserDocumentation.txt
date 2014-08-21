@@ -40,6 +40,33 @@ Changelog 2.32
 * new convention on input fastq names: must be in form of samplename_read?.fq or samplename_read?.fastq
 * runfile now must contain INPUTFORMAT flag to dostinguish between fastq and bam
 
+Changelog 2.33
+
+* alignfastq.sh -- changed names of all qsub variables to be more descriptive
+* realign.sh -- changed names of all qsub variables to be more descriptive
+* realign_new.sh -- changed names of all qsub variables to be more descriptive
+* alignfastq.sh -- realign.sh is now submitted with a dependency on merge jobs
+* realign.sh -- now runs 
+* now in runfile the chromosomes are specified explicitly as given in the full
+* genome fastq, not just the numbers; this way any species can be analyzed;
+* made appropriate changes in realign_new.sh
+* introduce the Anisimov switch: 
+** want to run real/recal and variant calling via the Launcher. But,
+realign_new still has to be a separate scheduled job, because there is a case
+when it depends on sortbammayo and extract_reads_bam: when bams were obtained
+from elsewhere and need to be resorted.
+** introduced user-level variable SCHEDULE, with values:
+*** ANISIMOV - means we use the anisimov launcher
+*** QSUB - means we schedule each job as an individual qsub
+*** SERIAL - means we run the entire workflow on the same machine in series
+
+#################################################
+############ NEED TO RENAME SORTNODE AND REALIGN, REALIGN_NEW AND REALRECAL.OLD ################
+also vcallgatk, vcallmain
+mainaln
+#################################################
+
+
 
 Pipeline architecture: 3 blocks and 6 run cases
 
