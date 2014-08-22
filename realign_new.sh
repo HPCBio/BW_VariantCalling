@@ -6,63 +6,62 @@ redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
 if [ $# != 9 ]
 then
-    MSG="parameter mismatch."
-    echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
-    #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
-    exit 1;
+   MSG="parameter mismatch."
+   echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+   #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+   exit 1;
 else
    set -x
    echo `date`
    scriptfile=$0
-        realigndir=$1
-        realignlogdir=$2
-        aligndir=$3
-        runfile=$4
-        flag=$5
+   realigndir=$1
+   realignlogdir=$2
+   aligndir=$3
+   runfile=$4
+   flag=$5
    elog=$6
    olog=$7
    email=$8
-        qsubfile=$9
+   qsubfile=$9
    LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-        if [ ! -s $runfile ]
-        then
-       MSG="$runfile configuration file not found"
+   if [ ! -s $runfile ]
+   then
+      MSG="$runfile configuration file not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
-        fi
+   fi
 
-        pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
-        thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-        analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-        schedule=$( cat $runfile | grep -w SCHEDULE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-        outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-        scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
-        refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
-        ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
-        picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-        samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-        gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-        tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
-        vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
-        dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-        kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
-        targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
-        realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
-        multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
-        samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 )
-        chrindex=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
-        #indices=$( echo $chrindex | sed 's/^/chr/' | sed 's/:/ chr/g' )
-        indices=$( echo $chrindex | sed 's/:/ /g' )
-        sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
-        sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
-        sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
-        epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
-        javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
-        skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
-        cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
+   thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
+   type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   schedule=$( cat $runfile | grep -w SCHEDULE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+   scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
+   refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
+   ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
+   picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+   samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+   gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+   tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
+   vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
+   dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+   kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
+   targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
+   realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
+   multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
+   samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 )
+   chrindex=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
+   #indices=$( echo $chrindex | sed 's/^/chr/' | sed 's/:/ chr/g' )
+   indices=$( echo $chrindex | sed 's/:/ /g' )
+   sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
+   sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
+   sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
+   javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
+   skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
+   cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
         if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
         then
@@ -130,15 +129,6 @@ else
             fi
         fi
 
-        if [ -z $epilogue ]
-        then
-           MSG="Value for EPILOGUE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        else
-           `chmod 750 $epilogue`
-        fi
         if [ -z $javamodule ]
         then
            MSG="Value for JAVAMODULE must be specified in configuration file"
@@ -317,7 +307,6 @@ else
                 echo "#PBS -V" > $qsub_sortnode
                 echo "#PBS -A $pbsprj" >> $qsub_sortnode
                 echo "#PBS -N ${pipeid}_sort_${bamfile}_$chr" >> $qsub_sortnode
-                echo "#PBS -l epilogue=$epilogue" >> $qsub_sortnode
       echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
       echo "#PBS -o $realignlogdir/log.sort.$bamfile.$chr.ou" >> $qsub_sortnode
@@ -360,7 +349,6 @@ else
        echo "#PBS -V" > $qsub_realrecalold
        echo "#PBS -A $pbsprj" >> $qsub_realrecalold
        echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecalold
-       echo "#PBS -l epilogue=$epilogue" >> $qsub_realrecalold
        echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecalold
        echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecalold
        echo "#PBS -o $realignlogdir/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecalold
@@ -394,7 +382,6 @@ else
       echo "#PBS -V" > $qsub_vcallgatk
       echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
       echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
-      echo "#PBS -l epilogue=$epilogue" >> $qsub_vcallgatk
       echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
       echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
@@ -437,7 +424,6 @@ else
    echo "#PBS -V" > $qsub_aisimov
    echo "#PBS -A $pbsprj" >> $qsub_aisimov
    echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_aisimov
-   echo "#PBS -l epilogue=$epilogue" >> $qsub_aisimov
    echo "#PBS -l walltime=$pbscpu" >> $qsub_aisimov
    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_aisimov
    echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_aisimov
@@ -467,7 +453,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
      echo "#PBS -V" > $qsub_igvbam
      echo "#PBS -A $pbsprj" >> $qsub_igvbam
      echo "#PBS -N ${pipeid}_igvbam.$bamfile" >> $qsub_igvbam
-     echo "#PBS -l epilogue=$epilogue" >> $qsub_igvbam
      echo "#PBS -l walltime=$pbscpu" >> $qsub_igvbam
      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_igvbam
      echo "#PBS -o $outputrootdir/logs/log.igvbam.$bamfile.ou" >> $qsub_igvbam
@@ -487,7 +472,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
     echo "#PBS -V" > $qsub_cleanup
     echo "#PBS -A $pbsprj" >> $qsub_cleanup
     echo "#PBS -N ${pipeid}_cleanup_realn.$bamfile" >> $qsub_cleanup
-    echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
     echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
     echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
     echo "#PBS -o $outputrootdir/logs/log.cleanup.realn.$bamfile.ou" >> $qsub_cleanup
@@ -508,7 +492,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
     echo "#PBS -V" > $qsub_mergevcf
     echo "#PBS -A $pbsprj" >> $qsub_mergevcf
     echo "#PBS -N ${pipeid}_mergevcf.$bamfile" >> $qsub_mergevcf
-    echo "#PBS -l epilogue=$epilogue" >> $qsub_mergevcf
     echo "#PBS -l walltime=$pbscpu" >> $qsub_mergevcf
     echo "#PBS -l nodes=1:ppn=1" >> $qsub_mergevcf
     echo "#PBS -o $varlogdir/log.mergevcf.$bamfile.ou" >> $qsub_mergevcf
@@ -528,7 +511,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
         echo "#PBS -V" > $qsub_cleanup
         echo "#PBS -A $pbsprj" >> $qsub_cleanup
         echo "#PBS -N ${pipeid}_cleanup_vcall.$bamfile" >> $qsub_cleanup
-        echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
         echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
         echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
         echo "#PBS -o $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou" >> $qsub_cleanup
@@ -560,7 +542,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
      echo "#PBS -V" > $qsub_summary
      echo "#PBS -A $pbsprj" >> $qsub_summary
      echo "#PBS -N ${pipeid}_summaryok.$bamfile" >> $qsub_summary
-     echo "#PBS -l epilogue=$epilogue" >> $qsub_summary
      echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
      echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
      echo "#PBS -o $outputrootdir/logs/log.summary.realn.$bamfile.ou" >> $qsub_summary
@@ -591,7 +572,6 @@ $realignlogdir/$realrecal.AnisimovJoblist
     echo "#PBS -V" > $qsub_summary
     echo "#PBS -A $pbsprj" >> $qsub_summary
     echo "#PBS -N ${pipeid}_summary_afterany.$bamfile" >> $qsub_summary
-    echo "#PBS -l epilogue=$epilogue" >> $qsub_summary
     echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
     echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
     echo "#PBS -o $outputrootdir/logs/log.summary.realn.afterany.$bamfile.ou" >> $qsub_summary
