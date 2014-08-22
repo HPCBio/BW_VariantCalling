@@ -11,26 +11,26 @@ then
     #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
     exit 1;
 else
-	set -x
-	echo `date`
-	scriptfile=$0
+   set -x
+   echo `date`
+   scriptfile=$0
         realigndir=$1
         realignlogdir=$2
         aligndir=$3
         runfile=$4
         flag=$5
-	elog=$6
-	olog=$7
-	email=$8
+   elog=$6
+   olog=$7
+   email=$8
         qsubfile=$9
-	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
+   LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
         if [ ! -s $runfile ]
         then
-	    MSG="$runfile configuration file not found"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$runfile configuration file not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
 
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
@@ -71,12 +71,12 @@ else
         else
             if [ $type == "EXOME" -o $type == "WHOLE_EXOME" -o $type == "WHOLEEXOME" -o $type == "WES" ]
             then
-		pbscpu=$( cat $runfile | grep -w PBSCPUOTHEREXOME | cut -d '=' -f2 )
-		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
+      pbscpu=$( cat $runfile | grep -w PBSCPUOTHEREXOME | cut -d '=' -f2 )
+      pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
-		MSG="Invalid value for TYPE=$type in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      MSG="Invalid value for TYPE=$type in configuration file."
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                 exit 1;
             fi
         fi
@@ -100,17 +100,17 @@ else
 
 
 
-	#################make sure the checks work everywhere: != vs ne
+   #################make sure the checks work everywhere: != vs ne
         if [ $schedule ne "ANISIMOV" -a $schedule ne "QSUB" -a $schedule ne "SERIAL" ]
         then
            MSG="Invalid value for SCHEDULE=$schedule"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
            exit 1; 
-	elif [ $schedule eq "ANISIMOV" ]
+   elif [ $schedule eq "ANISIMOV" ]
         then
            truncate -s 0 $realignlogdir/$realrecal.AnisimovJoblist
-	fi
+   fi
 
 
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
@@ -149,64 +149,64 @@ else
 
         if [ ! -d $picardir ]
         then
-	    MSG="$picardir picard directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$picardir picard directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
         if [ ! -d $samdir ]
         then
-	    MSG="$samdir samtools directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$samdir samtools directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
         if [ ! -d $gatk ]
         then
-	    MSG="$gatk GATK directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$gatk GATK directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
 
         if [ ! -d $refdir ]
         then
-	    MSG="$refdir reference genome directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$refdir reference genome directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
         if [ ! -s $refdir/$ref ]
         then
-	    MSG="$ref reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$ref reference genome not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
 
         if [ -s $refdir/$dbSNP ]
         then
-	    realparms="-known:$refdir/$dbSNP"
+       realparms="-known:$refdir/$dbSNP"
             recalparms="--knownSites:$refdir/$dbSNP"
         fi
         if [ -s $refdir/$kgenome ]
         then
-	    realparms=$realparms":-known:$refdir/$kgenome"
-	    recalparms=$recalparms":--knownSites:$refdir/$kgenome"
+       realparms=$realparms":-known:$refdir/$kgenome"
+       recalparms=$recalparms":--knownSites:$refdir/$kgenome"
         fi
         if [ ! -d $realignlogdir ]
         then
-	    MSG="$realignlogdir realignlog directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$realignlogdir realignlog directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
         if [ ! -d $realigndir ]
         then
-	    MSG="$realigndir realign directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
+       MSG="$realigndir realign directory not found"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       exit 1;
         fi
 
 
@@ -216,32 +216,32 @@ else
             echo "inhouse alignment. gathering aligned bam files"
             cd $aligndir
             allfiles=`find ./ -name "*.wdups.sorted.bam"`
-	    if [ `expr ${#allfiles}` -lt 1 ]
-	    then
-		MSG="No bam file(s) found to perform realign-recalibrate at $aligndir"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		exit 1;
-	    fi
+       if [ `expr ${#allfiles}` -lt 1 ]
+       then
+      MSG="No bam file(s) found to perform realign-recalibrate at $aligndir"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
+       fi
             listfiles=""
-	    sep=" "
+       sep=" "
             for file in $allfiles
             do
-		newname=$aligndir/$file
-		listfiles=$newname${sep}${listfiles}
+      newname=$aligndir/$file
+      listfiles=$newname${sep}${listfiles}
             done
-	else
+   else
             if [ $analysis == "REALIGN_ONLY" -o $analysis == "REALIGNONLY" ]
             then
-		echo "3rd param, aligndir,  has the list of aligned bam files"
-		listfiles=$( echo $aligndir | tr ":" " " )
+      echo "3rd param, aligndir,  has the list of aligned bam files"
+      listfiles=$( echo $aligndir | tr ":" " " )
             else
-		MSG="Invalid value for analysis=$analysis"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		exit 1;
+      MSG="Invalid value for analysis=$analysis"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
             fi
-	fi
+   fi
 
         pipeid=$( cat $outputrootdir/logs/MAINpbs )
         outputdir=$realigndir
@@ -252,35 +252,35 @@ else
         #    varlogdir=$outputrootdir/logs/variant
         #    if [ ! -d $vardir ]
         #    then
-	#	mkdir -p $vardir
-	#	mkdir -p $varlogdir
-	#    fi
-	#    if [ ! -d $varlogdir ]
+   #   mkdir -p $vardir
+   #   mkdir -p $varlogdir
+   #    fi
+   #    if [ ! -d $varlogdir ]
         #    then
-	#	mkdir -p $varlogdir
+   #   mkdir -p $varlogdir
         #    else
-	#	`rm $varlogdir/*`
+   #   `rm $varlogdir/*`
         #    fi
         #fi
 
         #generating regions and intervals files in BED format
         echo `date`
-	i=1
+   i=1
         for chr in $indices
         do
             #i=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
             if [ -d $targetkit ]
             then
-		if [ `cat $targetkit/${chr}.bed | wc -l` -gt 0 ]
+      if [ `cat $targetkit/${chr}.bed | wc -l` -gt 0 ]
                 then
                     region[$i]="-L:$targetkit/${chr}.bed"
                 else
-		    region[$i]="-L:$chr"
+          region[$i]="-L:$chr"
                 fi
             else
-		region[$i]="-L:$chr"
+      region[$i]="-L:$chr"
             fi
-	    (($i++)) ########### make sure this works
+       (($i++)) ########### make sure this works
         done
         echo `date`
 
@@ -297,38 +297,38 @@ else
         #####################
 
         cd $outputdir
-	inx=1
-	for chr in $indices
+   inx=1
+   for chr in $indices
         do
             echo "generating real-recal calls fro chr=${chr} ..."
-	    echo `date`
-	    #inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
+       echo `date`
+       #inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
 
             for bam in $listfiles
             do
                 bamfile=`basename $bam`
-		sample=`basename $bamfile .bam`
-		sID=$sample
-		sPU=$sample
-		sSM=$sample
-		RGparms=$( echo "RGID=${sID}:RGLB=${sLB}:RGPU=${sPU}:RGSM=${sSM}:RGPL=${sPL}:RGCN=${sCN}" )
+      sample=`basename $bamfile .bam`
+      sID=$sample
+      sPU=$sample
+      sSM=$sample
+      RGparms=$( echo "RGID=${sID}:RGLB=${sLB}:RGPU=${sPU}:RGSM=${sSM}:RGPL=${sPL}:RGCN=${sCN}" )
 
                 qsub_sortnode=$realignlogdir/qsub.sort.$bamfile.$chr
                 echo "#PBS -V" > $qsub_sortnode
                 echo "#PBS -A $pbsprj" >> $qsub_sortnode
                 echo "#PBS -N ${pipeid}_sort_${bamfile}_$chr" >> $qsub_sortnode
                 echo "#PBS -l epilogue=$epilogue" >> $qsub_sortnode
-		echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
-		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
-		echo "#PBS -o $realignlogdir/log.sort.$bamfile.$chr.ou" >> $qsub_sortnode
-		echo "#PBS -e $realignlogdir/log.sort.$bamfile.$chr.in" >> $qsub_sortnode
+      echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
+      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
+      echo "#PBS -o $realignlogdir/log.sort.$bamfile.$chr.ou" >> $qsub_sortnode
+      echo "#PBS -e $realignlogdir/log.sort.$bamfile.$chr.in" >> $qsub_sortnode
                 echo "#PBS -q $pbsqueue" >> $qsub_sortnode
                 echo "#PBS -m ae" >> $qsub_sortnode
                 echo "#PBS -M $email" >> $qsub_sortnode
 
-		# schedule using a qsub or via the launcher/serial
-		if [ $schedule eq "QSUB" ]
-		then
+      # schedule using a qsub or via the launcher/serial
+      if [ $schedule eq "QSUB" ]
+      then
                    echo "aprun -n 1 -d $thr $scriptdir/sortnode.sh $picardir $samdir $javamodule $outputdir $bam $bamfile.$chr.bam $bamfile.$chr.sorted.bam $RGparms $flag $chr $realignlogdir/log.sort.$bamfile.$chr.in $realignlogdir/log.sort.$bamfile.$chr.ou $email $realignlogdir/qsub.sort.$bamfile.$chr" >> $qsub_sortnode
                    `chmod a+r $qsub_sortnode`
                    sortjobid=`qsub $qsub_sortnode`
@@ -336,89 +336,90 @@ else
                    #`qhold -h u $sortjobid`
                    echo $sortjobid >> $outputrootdir/logs/REALSORTEDpbs.$bamfile
                    echo $sortjobid >> $outputrootdir/logs/REALSORTED.$bamfile_$chr
-	        else 
-		   # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
-                   # clear out the jobs file for that chromosome, for that sample	
-	           truncate -s 0 $realrecal.$bamfile.$chr.serialjobs
-		   # add this jobs file into joblist for the launcher
-	           echo "$realignlogdir realrecal.$bamfile.$chr.serialjobs" >> $realignlogdir/$realrecal.AnisimovJoblist
+           else 
+         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
+                   # clear out the jobs file for that chromosome, for that sample   
+              truncate -s 0 $realrecal.$bamfile.$chr.serialjobs
+         # add this jobs file into joblist for the launcher
+              echo "$realignlogdir realrecal.$bamfile.$chr.serialjobs" >> $realignlogdir/$realrecal.AnisimovJoblist
 
                    echo "nohup $scriptdir/sortnode.sh $picardir $samdir $javamodule $outputdir $bam $bamfile.$chr.bam $bamfile.$chr.sorted.bam $RGparms $flag $chr $realignlogdir/log.sort.$bamfile.$chr.in $realignlogdir/log.sort.$bamfile.$chr.ou $email $realignlogdir/qsub.sort.$bamfile.$chr > $realignlogdir/log.sort.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
-		fi
+      fi
 
-		chrinfiles[$inx]=${chrinfiles[$inx]}":-I:$outputdir/$bamfile.$chr.sorted.bam"
-		chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$bamfile.$chr.sorted.bam"
-	    done # end loop over samples
-	    echo `date`
+      chrinfiles[$inx]=${chrinfiles[$inx]}":-I:$outputdir/$bamfile.$chr.sorted.bam"
+      chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$bamfile.$chr.sorted.bam"
+       done # end loop over samples
+       echo `date`
 
 
             sortid=$( cat $outputrootdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
             outputfile=$chr.realrecal.$bamfile.output.bam
             igv_files=${igv_files}":INPUT=${outputfile}"
-	    echo "realign-recalibrate for interval:$chr..."
-	    qsub_realrecalold=$realignlogdir/qsub.realrecal.$bamfile.$chr
-	    echo "#PBS -V" > $qsub_realrecalold
-	    echo "#PBS -A $pbsprj" >> $qsub_realrecalold
-	    echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecalold
-	    echo "#PBS -l epilogue=$epilogue" >> $qsub_realrecalold
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecalold
-	    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecalold
-	    echo "#PBS -o $realignlogdir/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecalold
-	    echo "#PBS -e $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $qsub_realrecalold
-	    echo "#PBS -q $pbsqueue" >> $qsub_realrecalold
-	    echo "#PBS -m ae" >> $qsub_realrecalold
-	    echo "#PBS -M $email" >> $qsub_realrecalold
-	    echo "#PBS -W depend=afterok:$sortid" >> $qsub_realrecalold
+       echo "realign-recalibrate for interval:$chr..."
+       qsub_realrecalold=$realignlogdir/qsub.realrecal.$bamfile.$chr
+       echo "#PBS -V" > $qsub_realrecalold
+       echo "#PBS -A $pbsprj" >> $qsub_realrecalold
+       echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecalold
+       echo "#PBS -l epilogue=$epilogue" >> $qsub_realrecalold
+       echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecalold
+       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecalold
+       echo "#PBS -o $realignlogdir/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecalold
+       echo "#PBS -e $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $qsub_realrecalold
+       echo "#PBS -q $pbsqueue" >> $qsub_realrecalold
+       echo "#PBS -m ae" >> $qsub_realrecalold
+       echo "#PBS -M $email" >> $qsub_realrecalold
+       echo "#PBS -W depend=afterok:$sortid" >> $qsub_realrecalold
 
-	    if [ $schedule eq "QSUB" ]
-	    then
-	       echo "aprun -n 1 -d $thr $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecalold
-	       `chmod a+r $qsub_realrecalold`
-	       recaljobid=`qsub $qsub_realrecalold`
+       if [ $schedule eq "QSUB" ]
+       then
+          echo "aprun -n 1 -d $thr $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecalold
+          `chmod a+r $qsub_realrecalold`
+          recaljobid=`qsub $qsub_realrecalold`
                # new line to avoid hiccup
                #`qhold -h u $recaljobid`
-	       echo $recaljobid >> $outputrootdir/logs/REALRECALpbs.$bamfile
-	    else 
-	       # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
-	       echo "nohup $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr > $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
-	    fi
+          echo $recaljobid >> $outputrootdir/logs/REALRECALpbs.$bamfile
+       else 
+          # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
+          echo "nohup $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr > $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
+       fi
 
             if [ $skipvcall == "NO" ]
             then
                 vardir=$( echo $outputdir | sed 's/realign/variant/' )
                 varlogdir=$( echo $realignlogdir | sed 's/realign/variant/' )
   
-		vcf_files=${vcf_files}":${outputfile}"
+      vcf_files=${vcf_files}":${outputfile}"
                 echo "variant calling call.."
-		qsub_vcallgatk=$varlogdir/qsub.vcallgatk.$bamfile.$chr
-		echo "#PBS -V" > $qsub_vcallgatk
-		echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
-		echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
-		echo "#PBS -l epilogue=$epilogue" >> $qsub_vcallgatk
-		echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
-		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
-		echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
-		echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_vcallgatk
-		echo "#PBS -q $pbsqueue" >> $qsub_vcallgatk
-		echo "#PBS -m ae" >> $qsub_vcallgatk
-		echo "#PBS -M $email" >> $qsub_vcallgatk
-		echo "#PBS -W depend=afterok:$recaljobid" >> $qsub_vcallgatk
-	        if [ $schedule eq "QSUB" ]
-		then
-		   echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
-		   `chmod a+r $qsub_vcallgatk`
-		   vcalljobid=`qsub $qsub_vcallgatk`
-		   echo $vcalljobid >> $outputrootdir/logs/VCALLGATKpbs.$bamfile
-		else
-		   echo "nohup $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
-	        fi
+      qsub_vcallgatk=$varlogdir/qsub.vcallgatk.$bamfile.$chr
+      echo "#PBS -V" > $qsub_vcallgatk
+      echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
+      echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
+      echo "#PBS -l epilogue=$epilogue" >> $qsub_vcallgatk
+      echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
+      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
+      echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
+      echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_vcallgatk
+      echo "#PBS -q $pbsqueue" >> $qsub_vcallgatk
+      echo "#PBS -m ae" >> $qsub_vcallgatk
+      echo "#PBS -M $email" >> $qsub_vcallgatk
+      echo "#PBS -W depend=afterok:$recaljobid" >> $qsub_vcallgatk
+           if [ $schedule eq "QSUB" ]
+      then
+         echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
+         `chmod a+r $qsub_vcallgatk`
+         vcalljobid=`qsub $qsub_vcallgatk`
+         echo $vcalljobid >> $outputrootdir/logs/VCALLGATKpbs.$bamfile
+      else
+# something is messed up with redirection here
+         echo "nohup $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
+           fi
             else
                      echo "variant calling will not be run"
             fi
 
 
             (($inx)) ########### make sure this works
-	    echo `date`
+       echo `date`
             echo "bottom of the loop over chromosomes"
      done
      echo `date`
@@ -429,21 +430,21 @@ else
      if [ $schedule eq "ANISIMOV" ]
      then
 
-################### figure out $numsamples !!!!!!!!!!!!!!!!!!
+################### figure out $numsamples !!!!!!!!!!!!!!!!!!#
 
         echo "scheduling Anisimov Launcher joblist"
-	qsub_aisimov=$varlogdir/qsub.vcallgatk.$bamfile.$chr
-	echo "#PBS -V" > $qsub_aisimov
-	echo "#PBS -A $pbsprj" >> $qsub_aisimov
-	echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_aisimov
-	echo "#PBS -l epilogue=$epilogue" >> $qsub_aisimov
-	echo "#PBS -l walltime=$pbscpu" >> $qsub_aisimov
-	echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_aisimov
-	echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_aisimov
-	echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_aisimov
-	echo "#PBS -q $pbsqueue" >> $qsub_aisimov
-	echo "#PBS -m ae" >> $qsub_aisimov
-	echo "#PBS -M $email" >> $qsub_aisimov
+   qsub_aisimov=$varlogdir/qsub.vcallgatk.$bamfile.$chr
+   echo "#PBS -V" > $qsub_aisimov
+   echo "#PBS -A $pbsprj" >> $qsub_aisimov
+   echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_aisimov
+   echo "#PBS -l epilogue=$epilogue" >> $qsub_aisimov
+   echo "#PBS -l walltime=$pbscpu" >> $qsub_aisimov
+   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_aisimov
+   echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_aisimov
+   echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_aisimov
+   echo "#PBS -q $pbsqueue" >> $qsub_aisimov
+   echo "#PBS -m ae" >> $qsub_aisimov
+   echo "#PBS -M $email" >> $qsub_aisimov
 
         echo "aprun -n $numsamples -N 1 -d $thr ~anisimov/scheduler/scheduler.x $realignlogdir/$realrecal.AnisimovJoblist /bin/bash > $realignlogdir/RealRecalVarCallAnisimov.joblist.log" >> $qsub_anisimov
 $realignlogdir/$realrecal.AnisimovJoblist
@@ -455,9 +456,9 @@ $realignlogdir/$realrecal.AnisimovJoblist
      echo "clean up and produce summary table"
      if [ $skipvcall == "NO" ]
      then
-	 listjobids=$( cat $outputrootdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
+    listjobids=$( cat $outputrootdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
      else
-	 listjobids=$( cat $outputrootdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
+    listjobids=$( cat $outputrootdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
      fi
 
      # preparing output files for realignment and/or variant calling
@@ -482,65 +483,65 @@ $realignlogdir/$realrecal.AnisimovJoblist
 
      if [ $cleanupflag == "YES" ]
      then
-	 qsub_cleanup=$outputrootdir/logs/qsub.cleanup.realn.$bamfile
-	 echo "#PBS -V" > $qsub_cleanup
-	 echo "#PBS -A $pbsprj" >> $qsub_cleanup
-	 echo "#PBS -N ${pipeid}_cleanup_realn.$bamfile" >> $qsub_cleanup
-	 echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
-	 echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
-	 echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
-	 echo "#PBS -o $outputrootdir/logs/log.cleanup.realn.$bamfile.ou" >> $qsub_cleanup
-	 echo "#PBS -e $outputrootdir/logs/log.cleanup.realn.$bamfile.in" >> $qsub_cleanup
-	 echo "#PBS -q $pbsqueue" >> $qsub_cleanup
-	 echo "#PBS -m ae" >> $qsub_cleanup
-	 echo "#PBS -M $email" >> $qsub_cleanup
-	 echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_cleanup
-	 echo "$scriptdir/cleanup.sh $outputrootdir $analysis $outputrootdir/logs/log.cleanup.realn.$bamfile.in $outputrootdir/logs/log.cleanup.realn.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.realn.$bamfile"  >> $qsub_cleanup
-	 `chmod a+r $qsub_cleanup`
-	 cleanjobid=`qsub $qsub_cleanup`
-	 echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
+    qsub_cleanup=$outputrootdir/logs/qsub.cleanup.realn.$bamfile
+    echo "#PBS -V" > $qsub_cleanup
+    echo "#PBS -A $pbsprj" >> $qsub_cleanup
+    echo "#PBS -N ${pipeid}_cleanup_realn.$bamfile" >> $qsub_cleanup
+    echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
+    echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
+    echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
+    echo "#PBS -o $outputrootdir/logs/log.cleanup.realn.$bamfile.ou" >> $qsub_cleanup
+    echo "#PBS -e $outputrootdir/logs/log.cleanup.realn.$bamfile.in" >> $qsub_cleanup
+    echo "#PBS -q $pbsqueue" >> $qsub_cleanup
+    echo "#PBS -m ae" >> $qsub_cleanup
+    echo "#PBS -M $email" >> $qsub_cleanup
+    echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_cleanup
+    echo "$scriptdir/cleanup.sh $outputrootdir $analysis $outputrootdir/logs/log.cleanup.realn.$bamfile.in $outputrootdir/logs/log.cleanup.realn.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.realn.$bamfile"  >> $qsub_cleanup
+    `chmod a+r $qsub_cleanup`
+    cleanjobid=`qsub $qsub_cleanup`
+    echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
      fi
 
      if [ $skipvcall == "NO" ]
      then
-	 qsub_mergevcf=$varlogdir/qsub.mergevcf.$bamfile
-	 echo "#PBS -V" > $qsub_mergevcf
-	 echo "#PBS -A $pbsprj" >> $qsub_mergevcf
-	 echo "#PBS -N ${pipeid}_mergevcf.$bamfile" >> $qsub_mergevcf
-	 echo "#PBS -l epilogue=$epilogue" >> $qsub_mergevcf
-	 echo "#PBS -l walltime=$pbscpu" >> $qsub_mergevcf
-	 echo "#PBS -l nodes=1:ppn=1" >> $qsub_mergevcf
-	 echo "#PBS -o $varlogdir/log.mergevcf.$bamfile.ou" >> $qsub_mergevcf
-	 echo "#PBS -e $varlogdir/log.mergevcf.$bamfile.in" >> $qsub_mergevcf
-	 echo "#PBS -q $pbsqueue" >> $qsub_mergevcf
-	 echo "#PBS -m ae" >> $qsub_mergevcf
-	 echo "#PBS -M $email" >> $qsub_mergevcf
-	 echo "#PBS -W depend=afterok:$listjobids" >> $qsub_mergevcf
-	 echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.$bamfile.in $varlogdir/log.mergevcf.$bamfile.ou $email $varlogdir/qsub.mergevcf.$bamfile"  >> $qsub_mergevcf
-	 `chmod a+r $qsub_mergevcf`
-	 mergevcfjobid=`qsub $qsub_mergevcf`
-	 echo $mergevcfjobid >> $outputrootdir/logs/MERGEVCFpbs
+    qsub_mergevcf=$varlogdir/qsub.mergevcf.$bamfile
+    echo "#PBS -V" > $qsub_mergevcf
+    echo "#PBS -A $pbsprj" >> $qsub_mergevcf
+    echo "#PBS -N ${pipeid}_mergevcf.$bamfile" >> $qsub_mergevcf
+    echo "#PBS -l epilogue=$epilogue" >> $qsub_mergevcf
+    echo "#PBS -l walltime=$pbscpu" >> $qsub_mergevcf
+    echo "#PBS -l nodes=1:ppn=1" >> $qsub_mergevcf
+    echo "#PBS -o $varlogdir/log.mergevcf.$bamfile.ou" >> $qsub_mergevcf
+    echo "#PBS -e $varlogdir/log.mergevcf.$bamfile.in" >> $qsub_mergevcf
+    echo "#PBS -q $pbsqueue" >> $qsub_mergevcf
+    echo "#PBS -m ae" >> $qsub_mergevcf
+    echo "#PBS -M $email" >> $qsub_mergevcf
+    echo "#PBS -W depend=afterok:$listjobids" >> $qsub_mergevcf
+    echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.$bamfile.in $varlogdir/log.mergevcf.$bamfile.ou $email $varlogdir/qsub.mergevcf.$bamfile"  >> $qsub_mergevcf
+    `chmod a+r $qsub_mergevcf`
+    mergevcfjobid=`qsub $qsub_mergevcf`
+    echo $mergevcfjobid >> $outputrootdir/logs/MERGEVCFpbs
 
-	 if [ $cleanupflag == "YES" ]
-	 then
-	     qsub_cleanup=$outputrootdir/logs/qsub.cleanup.vcall.$bamfile
-	     echo "#PBS -V" > $qsub_cleanup
-	     echo "#PBS -A $pbsprj" >> $qsub_cleanup
-	     echo "#PBS -N ${pipeid}_cleanup_vcall.$bamfile" >> $qsub_cleanup
-	     echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
-	     echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
-	     echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
-	     echo "#PBS -o $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou" >> $qsub_cleanup
-	     echo "#PBS -e $outputrootdir/logs/log.cleanup.vcall.$bamfile.in" >> $qsub_cleanup
-	     echo "#PBS -q $pbsqueue" >> $qsub_cleanup
-	     echo "#PBS -m ae" >> $qsub_cleanup
-	     echo "#PBS -M $email" >> $qsub_cleanup
-	     echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_cleanup
-	     echo "$scriptdir/cleanup.sh $outputrootdir VCALL_ONLY $outputrootdir/logs/log.cleanup.vcall.$bamfile.in $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.vcall.$bamfile"  >> $qsub_cleanup
-	     `chmod a+r $qsub_cleanup`
-	     cleanjobid=`qsub $qsub_cleanup`
-	     echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
-	 fi
+    if [ $cleanupflag == "YES" ]
+    then
+        qsub_cleanup=$outputrootdir/logs/qsub.cleanup.vcall.$bamfile
+        echo "#PBS -V" > $qsub_cleanup
+        echo "#PBS -A $pbsprj" >> $qsub_cleanup
+        echo "#PBS -N ${pipeid}_cleanup_vcall.$bamfile" >> $qsub_cleanup
+        echo "#PBS -l epilogue=$epilogue" >> $qsub_cleanup
+        echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
+        echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
+        echo "#PBS -o $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou" >> $qsub_cleanup
+        echo "#PBS -e $outputrootdir/logs/log.cleanup.vcall.$bamfile.in" >> $qsub_cleanup
+        echo "#PBS -q $pbsqueue" >> $qsub_cleanup
+        echo "#PBS -m ae" >> $qsub_cleanup
+        echo "#PBS -M $email" >> $qsub_cleanup
+        echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_cleanup
+        echo "$scriptdir/cleanup.sh $outputrootdir VCALL_ONLY $outputrootdir/logs/log.cleanup.vcall.$bamfile.in $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.vcall.$bamfile"  >> $qsub_cleanup
+        `chmod a+r $qsub_cleanup`
+        cleanjobid=`qsub $qsub_cleanup`
+        echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
+    fi
      fi
 
      # new lines to avoid hiccups and missing jobs in summary
@@ -569,13 +570,13 @@ $realignlogdir/$realrecal.AnisimovJoblist
      echo "#PBS -M $email" >> $qsub_summary
      if [ `expr ${#cleanupjobs}` -gt 0 ]
      then 
-	 echo "#PBS -W depend=afterok:$cleanupjobs" >> $qsub_summary
+    echo "#PBS -W depend=afterok:$cleanupjobs" >> $qsub_summary
      else
          if [ $skipvcall == "YES" ]
          then
-	     echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_summary
+        echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_summary
          else
-	     echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_summary
+        echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_summary
          fi
      fi
      echo "$scriptdir/summary.sh $outputrootdir $email exitok"  >> $qsub_summary
@@ -586,23 +587,23 @@ $realignlogdir/$realrecal.AnisimovJoblist
      if [ `expr ${#lastjobid}` -lt 1 ]
      then
          echo "at least one job aborted"
-	 qsub_summary=$outputrootdir/logs/qsub.summary.realn.afterany.$bamfile
-	 echo "#PBS -V" > $qsub_summary
-	 echo "#PBS -A $pbsprj" >> $qsub_summary
-	 echo "#PBS -N ${pipeid}_summary_afterany.$bamfile" >> $qsub_summary
-	 echo "#PBS -l epilogue=$epilogue" >> $qsub_summary
-	 echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
-	 echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-	 echo "#PBS -o $outputrootdir/logs/log.summary.realn.afterany.$bamfile.ou" >> $qsub_summary
-	 echo "#PBS -e $outputrootdir/logs/log.summary.realn.afterany.$bamfile.in" >> $qsub_summary
-	 echo "#PBS -q $pbsqueue" >> $qsub_summary
-	 echo "#PBS -m ae" >> $qsub_summary
-	 echo "#PBS -M $email" >> $qsub_summary
-	 echo "#PBS -W depend=afterany:$listjobids" >> $qsub_summary
-	 echo "$scriptdir/summary.sh $outputtopdir $email exitnotok"  >> $qsub_summary
-	 `chmod a+r $qsub_summary`
-	 badjobid=`qsub $qsub_summary`
-	 echo $badjobid >> $outputrootdir/logs/SUMMARYpbs.$bamfile
+    qsub_summary=$outputrootdir/logs/qsub.summary.realn.afterany.$bamfile
+    echo "#PBS -V" > $qsub_summary
+    echo "#PBS -A $pbsprj" >> $qsub_summary
+    echo "#PBS -N ${pipeid}_summary_afterany.$bamfile" >> $qsub_summary
+    echo "#PBS -l epilogue=$epilogue" >> $qsub_summary
+    echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
+    echo "#PBS -o $outputrootdir/logs/log.summary.realn.afterany.$bamfile.ou" >> $qsub_summary
+    echo "#PBS -e $outputrootdir/logs/log.summary.realn.afterany.$bamfile.in" >> $qsub_summary
+    echo "#PBS -q $pbsqueue" >> $qsub_summary
+    echo "#PBS -m ae" >> $qsub_summary
+    echo "#PBS -M $email" >> $qsub_summary
+    echo "#PBS -W depend=afterany:$listjobids" >> $qsub_summary
+    echo "$scriptdir/summary.sh $outputtopdir $email exitnotok"  >> $qsub_summary
+    `chmod a+r $qsub_summary`
+    badjobid=`qsub $qsub_summary`
+    echo $badjobid >> $outputrootdir/logs/SUMMARYpbs.$bamfile
      fi
      `chmod -R 770 $outputroordir/logs`
      echo `date`
