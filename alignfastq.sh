@@ -66,7 +66,7 @@ echo -e "\n\n\n##################################### PARSING RUN INFO FILE #####
         samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
 	dup=$( cat $runfile | grep -w MARKDUP  | cut -d '=' -f2 )
         dupflag=$( cat $runfile | grep -w REMOVE_DUP  | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
         sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
@@ -75,6 +75,7 @@ echo -e "\n\n\n##################################### PARSING RUN INFO FILE #####
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         profiling=$( cat $runfile | grep -w PROFILING | cut -d '=' -f2 )
+################## MUST PUT IN A CHECK FOR CORRECT SETTING ON THE PROFILING VARIABLE
         profiler=$( cat $runfile | grep -w PROFILER | cut -d '=' -f2 )
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
@@ -185,17 +186,17 @@ echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  #####
 ############ checking samples 
         echo -e "\n\n\n############ checking samples\n"
 
-        if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
+        if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
         then
             pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
             pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
         else
-            if [ $type == "EXOME" -o $type == "WHOLE_EXOME" -o $type == "WHOLEEXOME" -o $type == "WES" ]
+            if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
             then
 		pbscpu=$( cat $runfile | grep -w PBSCPUALIGNEXOME | cut -d '=' -f2 )
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
-		MSG="Invalid value for TYPE=$type in configuration file."
+		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                 exit 1;
@@ -742,6 +743,8 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 ###########################   FORM ALIGNMENT QSUBS  ###########################################
 
             # if want to profile, then must set up  the environment
+            # for now, let us do without this; too much else going on: Aug 22, 2014
+            # in other words, do not set the option in the runfile
             if [ $profiling == 'memprof' ]
             then
                ccmgres_string="#PBS -l gres=ccm"
@@ -895,7 +898,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                         if [ $chunkfastq == "YES" ]
                         then
-			   ### MUST FIX QSUB VARIEBLE NAME PROPERLY
+			   ### MUST FIX QSUB VARIABLE NAME PROPERLY
                            echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then

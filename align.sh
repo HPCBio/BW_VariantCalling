@@ -51,7 +51,7 @@ else
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
 
@@ -61,17 +61,17 @@ else
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
-        if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
+        if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
         then
             pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
             pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
         else
-            if [ $type == "EXOME" -o $type == "WHOLE_EXOME" -o $type == "WHOLEEXOME" -o $type == "WES" ]
+            if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
             then
 		pbscpu=$( cat $runfile | grep -w PBSCPUALIGNEXOME | cut -d '=' -f2 )
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
-		MSG="Invalid value for TYPE=$type in configuration file."
+		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                 exit 1;
@@ -402,7 +402,7 @@ else
         
             CONVERTids=$( cat $output_logs/CONVERTBAMpbs | sed "s/\.[a-z]*//" | tr "\n" ":" )
 
-	    if [ $typeOfupdateconfig == "bam2fastq" ]
+	    if [ $input_typeOfupdateconfig == "bam2fastq" ]
             then
                 ###############################
                 # todo:
@@ -428,7 +428,7 @@ else
 		updatejob=`qsub $qsub2` 
 		echo $updatejob >> $output_logs/UPDATECONFIGpbs
             else
-               if [ $typeOfupdateconfig == "bam2newbam" ]
+               if [ $input_typeOfupdateconfig == "bam2newbam" ]
                then
                    ###############################
                    # todo:

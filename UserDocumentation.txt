@@ -59,6 +59,13 @@ from elsewhere and need to be resorted.
 *** ANISIMOV - means we use the anisimov launcher
 *** QSUB - means we schedule each job as an individual qsub
 *** SERIAL - means we run the entire workflow on the same machine in series
+* renamed user-define variable TYPE ($type) into INPUTTYPE ($input_type), because 
+"type" seems to be some sort of a special variable (highlighted in the editor), 
+even though it is not a reserved variable in bash...
+* introduced variable RUNMETHOD ($run_method) to choose between submitting with 
+aprun (APRUN), qsub (QSUB), launcher (LAUNCHER), or sequentially on one server 
+(SERVER)
+* introduced variable "profiling" to choose whether to use memprof, cray Profiler or something else
 
 #################################################
 ############ NEED TO RENAME SORTNODE AND REALIGN, REALIGN_NEW AND REALRECAL.OLD ################

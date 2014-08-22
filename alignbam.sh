@@ -46,7 +46,7 @@ else
         epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
         dup=$( cat $runfile | grep -w MARKDUP  | cut -d '=' -f2 )
         dupflag=$( cat $runfile | grep -w REMOVE_DUP  | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         inputdir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
@@ -59,17 +59,17 @@ else
         igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
         sortooldir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
 
-        if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
+        if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
         then
             pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
             pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
         else
-            if [ $type == "EXOME" -o $type == "WHOLE_EXOME" -o $type == "WHOLEEXOME" -o $type == "WES" ]
+            if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
             then
 		pbscpu=$( cat $runfile | grep -w PBSCPUALIGNEXOME | cut -d '=' -f2 )
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
-		MSG="Invalid value for TYPE=$type in configuration file."
+		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
                 exit 1;

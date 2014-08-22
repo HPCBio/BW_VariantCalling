@@ -51,7 +51,7 @@ else
         snvmixdir=$( cat $runfile | grep -w SNVMIXDIR | cut -d '=' -f2 )
         snvmixparms=$( cat $runfile | grep -w SNVMIX2PARMS | cut -d '=' -f2 )
         snvmixfilter=$( cat $runfile | grep -w SNVMIX2FILTER | cut -d '=' -f2 )
-        uparms=$( cat $runfile | grep -w UNIFIEDGENOTYPERPARMS | cut -d '=' -f2 )
+        uparms=$( cat $runfile | grep -w UNIFIEDGENOINPUTTYPERPARMS | cut -d '=' -f2 )
         onlyontarget=$( cat $runfile | grep -w TARGETTED | cut -d '=' -f2 )
         javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
@@ -158,7 +158,7 @@ else
        if [ $snvcaller == "GATK" ]
        then
 	   echo "snvcaller is GATK"
-           if [[ $allsites == "YES" && $type == "exome" ]]
+           if [[ $allsites == "YES" && $input_type == "exome" ]]
            then
                pedfile=$infile.$chr.raw.all.pbt.vcf
 	       outfile=$infile.$chr.raw.all.vcf
@@ -173,7 +173,7 @@ else
        elif [ $snvcaller == "SNVMIX" -o $snvcaller == "SNVMix" ]
        then
 	   echo "snvcaller is SNVMIX"
-           if [ $allsites == "YES" -a $type == "exome" ]
+           if [ $allsites == "YES" -a $input_type == "exome" ]
            then
 	       snvfile=$infile.$chr.raw.snv.all.vcf
 	       outfile=$infile.$chr.raw.indel.all.vcf

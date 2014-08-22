@@ -38,7 +38,7 @@ else
    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
    scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
    refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
-   type=$( cat $runfile | grep -w TYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
    extradir=$outputdir/extractreads
@@ -103,16 +103,16 @@ else
 
 
 
-   if [ $type == "GENOME" -o $type == "WHOLE_GENOME" -o $type == "WHOLEGENOME" -o $type == "WGS" ]
+   if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
    then
       pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
       pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
-   elif [ $type == "EXOME" -o $type == "WHOLE_EXOME" -o $type == "WHOLEEXOME" -o $type == "WES" ]
+   elif [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
    then
       pbscpu=$( cat $runfile | grep -w PBSCPUALIGNEXOME | cut -d '=' -f2 )
       pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
    else
-      MSG="Invalid value for TYPE=$type in configuration file."
+      MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
       #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
       exit 1;
@@ -398,12 +398,23 @@ else
    fi
 
 
-        # grab job ids for align and for preprocessing done in this module
-
+   # grab job ids for align and for preprocessing done in this module
    alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
    mergeids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
    sortedmayoids=$( cat $TopOutputLogs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
    extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+
+
+
+
+
+
+   ######################################################################################
+   ######################################################################################
+   #############   NOW THAT THE INPUT HAVE BEEN CHECKED AND RESORTED,  ###################
+   #############   WE CAN PROCEED TO SCHEDULE REAL/RECAL ETC           ###################
+   ######################################################################################
+   ######################################################################################
 
 
 
