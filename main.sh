@@ -124,6 +124,38 @@ else
         `chmod 750 $epilogue`
         outputlogs=$outputdir/logs
         pipeid=$( cat $outputlogs/MAINpbs )
+
+
+   # construct a list of SampleNames, check that files actually exist
+   if [ ! -e $TopOutputLogs/SAMPLENAMES.list ]
+   then
+      truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
+      for fastqfile in $sampledir/*
+      do
+         # strip path, which read (left/right), and extension from input files
+         # and put that info into the SampleNames file
+         SampleName=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
+         echo -e "$SampleName" >> $TopOutputLogs/SAMPLENAMES.tmp.list
+      done
+      # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
+      uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
+      sed -i '/^\s*$/d' $TopOutputLogs/SAMPLENAMES.list # remove blank lines
+      rm  $TopOutputLogs/SAMPLENAMES.tmp.list
+   fi
+
+
+
+# generate a qsub header so we would not have to repeat the same lines
+        generic_qsub_header=$outputdir/qsubGenericHeader
+        truncate -s 0 $generic_qsub_header
+        echo "#PBS -V" > $generic_qsub_header
+        echo "#PBS -A $pbsprj" >> $generic_qsub_header
+        echo "#PBS -q $pbsqueue" >> $generic_qsub_header
+        echo "#PBS -m ae" >> $generic_qsub_header
+        echo "#PBS -M $email" >> $generic_qsub_header
+        echo -e "\n" >> $generic_qsub_header
+
+
         
         case=""
         if [ $analysis == "ALIGN" -o $analysis == "ALIGNMENT" ]

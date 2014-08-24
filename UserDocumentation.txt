@@ -55,17 +55,21 @@ Changelog 2.33
 realign_new still has to be a separate scheduled job, because there is a case
 when it depends on sortbammayo and extract_reads_bam: when bams were obtained
 from elsewhere and need to be resorted.
-** introduced user-level variable SCHEDULE, with values:
+** introduced user-level variable RUNMETHOD ($run_method), with values:
 *** ANISIMOV - means we use the anisimov launcher
-*** QSUB - means we schedule each job as an individual qsub
-*** SERIAL - means we run the entire workflow on the same machine in series
+*** QSUB - means we schedule each job as an individual qsub without aprun
+*** APRUN - means we schedule each job as an individual qsub with aprun
+*** SERVER - means we run the entire workflow on the same machine in series
 * renamed user-define variable TYPE ($type) into INPUTTYPE ($input_type), because 
 "type" seems to be some sort of a special variable (highlighted in the editor), 
 even though it is not a reserved variable in bash...
-* introduced variable RUNMETHOD ($run_method) to choose between submitting with 
-aprun (APRUN), qsub (QSUB), launcher (LAUNCHER), or sequentially on one server 
-(SERVER)
 * introduced variable "profiling" to choose whether to use memprof, cray Profiler or something else
+* realign.sh calls realign_new.sh; in 2.32 it calls one realign_new per sample 
+in the case of independent samples, and a single realign_new for the multisample case.
+In either case, one of the input parameters is the directory where to look for
+the aligned bams. I am rewriting the code so that a single realign_new is called in any
+case, with the appropriate folder for aligned bams, depending on the case.
+* moved creating SAMPLENAMES.list file into main.sh -- should not have to do this in every piece of code!!
 
 #################################################
 ############ NEED TO RENAME SORTNODE AND REALIGN, REALIGN_NEW AND REALRECAL.OLD ################
@@ -176,7 +180,6 @@ UNIFIEDGENOTYPERPARMS=-maxAlleles 5
 SNVMIX2PARMS=
 SNVMIX2FILTER=-p 0.8
 ## other parameters - DO NOT EDIT
-EPILOGUE=/projects/mayo/scripts/epilogue.user
 GENOMEBUILD=hg19
 EMIT_ALL_SITES=YES
 DEPTH_FILTER=0

@@ -13,10 +13,9 @@ then
 else
    set -x
    echo `date`
+######################## realigndir and listfiles removed
    scriptfile=$0
-   realigndir=$1
    realignlogdir=$2
-   aligndir=$3
    runfile=$4
    flag=$5
    elog=$6
@@ -293,6 +292,76 @@ else
       echo "generating real-recal calls fro chr=${chr} ..."
       echo `date`
       #inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
+
+
+
+###################################
+
+#work this in somehow
+
+   if [ $multisample == "NO" ]
+   then
+      samplescounter=0
+      while read SampleName
+      do
+         echo "processing next sample"
+         if [ `expr ${#SampleName}` -lt 7 ]
+         then
+            echo "skipping empty line"
+         else
+            echo "realigning: $SampleName"
+
+
+            # where to look for list of files to realign
+            listfiles=$outputdir/align # for multisample-yes case
+            listfiles=$outputdir/align/${SampleName}
+
+            if [ ! -d $RealignOutputDir/$SampleName ]
+            then
+               mkdir -p $RealignOutputDir/$SampleName
+            else
+               echo "$RealignOutputDir/$SampleName already exists. resetting it"
+               `rm -r $RealignOutputDir/$SampleName/*`
+            fi
+
+            # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
+            # best keep them in the sample subfolder
+            if [ $run_method eq "LAUNCHER" ]
+               if [ ! -d $RealignOutputDir/$SampleName/AnisimovLogs ]
+               then
+                  mkdir $RealignOutputDir/$SampleName/AnisimovLogs
+               fi
+            fi
+
+
+
+            if [ $skipvcall == "NO" ]
+            then
+               if [ ! -d $VarcallOutputDir/$SampleName ]
+               then
+                  mkdir -p $VarcallOutputDir/$SampleName
+               fi
+
+               # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
+               # best keep them in the sample subfolder
+               if [ $run_method eq "LAUNCHER" ]
+                  if [ ! -d $VarcallOutputDir/$SampleName/AnisimovLogs ]
+                  then
+                     mkdir $VarcallOutputDir/$SampleName/AnisimovLogs
+                  fi
+               fi
+            fi
+
+
+
+
+
+
+
+
+
+
+#####################################
 
       for bam in $listfiles
       do
@@ -588,3 +657,67 @@ else
   `chmod -R 770 $outputroordir/logs`
   echo `date`
 fi
+
+
+
+# howe to implement the case switrching for schweuler
+
+
+            if [ $run_method == "LAUNCHER" ]
+            then
+               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" > $RealignOutputLogs/$realignnew_${SampleName}_LauncherJob
+               echo "$RealignOutputLogs $realignnew_${SampleName}_LauncherJob" >> $RealignOutputLogs/$realignnew_LauncherJobList
+            else
+               # in this case does not matter whether with or without aprun: the realign_new should run on a MOM node anyway
+               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $RealignOutputLogs/qsub.${SampleName}.realign_new
+            fi
+            #`chmod a+r $qsub_realignnew`
+            # realrecaljob=`qsub $qsub_realignnew`
+            # `qhold -h u $realrecaljob`
+            # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+         fi # finish checking for empty lines in SampleNames file
+
+         (( samplescounter++ ))
+      done <  $TopOutputLogs/SAMPLENAMES.list
+      # end loop over input samples
+
+
+
+      ### schedule the realign_new job(s)
+      case $run_method in
+         APRUN|QSUB)
+            # schedule a separate qsub for realign_new for each sample
+            while read SampleName
+            do
+
+               qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
+
+               # constructing the qsub
+               # appending the generic header to the
+               cat $outputdir/qsubGenericHeader $qsub_realignnew > /tmp/qsub.${SampleName}.realign_new && mv /tmp/qsub.${SampleName}.realign_new $qsub_realignnew
+
+                sed -i "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
+               echo "#PBS -l walltime=01:00:00" >> $qsub_realignnew # allowing an hour for realign_new:
+               # should be more than enough (it only takes ~5 minutes), and increases job priority
+               echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
+               echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
+               echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
+               if [ `expr ${#JOBSmayo}` -gt 0 ]
+               then
+                  echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
+   #           else
+   #              echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
+               fi
+               echo -e "\n" >> $qsub_realignnew
+            done <  $TopOutputLogs/SAMPLENAMES.list
+            # end loop over input samples
+
+         ;;
+         LAUNCHER)
+            commands
+         ;;
+         SERVER)
+            commands
+         ;;
+      esac
+

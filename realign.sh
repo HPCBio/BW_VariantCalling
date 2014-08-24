@@ -28,17 +28,22 @@ else
    fi
 
 
-   echo -e "\n\n\n##################################### PARSING RUN INFO FILE ########################################\n\n\n"
+
+   # wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
+   echo "####################################################################################################"
+   echo "#####################################                       ########################################"
+   echo "##################################### PARSING RUN INFO FILE ########################################"
+   echo "#####################################                       ########################################"
+   echo "####################################################################################################"
 
 
    sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
    outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-   pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
    thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
    scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
    refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
-   type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
    extradir=$outputdir/extractreads
@@ -52,7 +57,6 @@ else
    resortflag=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    revertsam=$( cat $runfile | grep -w REVERTSAM | cut -d '=' -f2  )
    indices=$( echo $region | sed 's/^/chr/' | sed 's/:/ chr/g' )
-   epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
    picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
    samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 
@@ -66,14 +70,38 @@ else
 
    echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  ########################################\n\n\n"
 
+   
+############# what happens when this is a Ralign-only job? where are the folders created?
+#   if [ ! -d $outputdir ]
+#   then
+#      mkdir -p $outputdir
+#   fi  
+#   if [ ! -d $TopOutputLogs ]
+#   then
+#      mkdir  -p $TopOutputLogs
+#   fi  
+
 
 
    RealignOutputDir=$outputdir/realign
    if [ -d $RealignOutputDir ]
    then
-      echo "$RealignOutputDir already exists"
+      echo "$RealignOutputDir already exists; resetting it"
+      `rm -r $RealignOutputDir/*`
    else
       mkdir -p $RealignOutputDir
+   fi
+
+   if [ $skipvcall == "NO" ]
+   then
+      VarcallOutputDir=$outputdir/realign
+      if [ -d $VarcallOutputDir ]
+      then
+         echo "$VarcallOutputDir already exists; resetting it"
+         `rm -r $VarcallOutputDir/*`
+      else
+         mkdir -p $VarcallOutputDir
+      fi
    fi
 
    TopOutputLogs=$outputdir/logs
@@ -84,6 +112,7 @@ else
    else
       mkdir -p $TopOutputLogs
    fi
+   pipeid=$( cat $TopOutputLogs/MAINpbs )
 
    RealignOutputLogs=$TopOutputLogs/realign
    if [ ! -d $RealignOutputLogs ]
@@ -100,6 +129,26 @@ else
       rm -r $RealignOutputLogs/FAILEDjobs/*
    fi
    `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
+
+   if [ $skipvcall == "NO" ]
+   then
+      VarcallOutputLogs=$TopOutputLogs/variant
+      if [ ! -d $VarcallOutputLogs ]
+      then
+         mkdir $VarcallOutputLogs
+      fi
+      `chmod -R 770 $VarcallOutputLogs/`
+      # where messages about failures will go
+      truncate -s 0 $VarcallOutputLogs/FAILEDmessages
+      if [ ! -d $VarcallOutputLogs/FAILEDjobs ]
+      then
+         mkdir $VarcallOutputLogs/FAILEDjobs
+      else
+         rm -r $VarcallOutputLogs/FAILEDjobs/*
+      fi
+      `chmod -R 770 $VarcallOutputLogs/FAILEDjobs`
+   fi
+
 
 
 
@@ -134,14 +183,6 @@ else
       fi
    fi
 
-   if [ -z $epilogue ]
-   then
-      MSG="Invalid value for EPILOGUE=$epilogue in configuration file"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      exit 1;
-   else
-      `chmod 750 $epilogue`
-   fi
    if [ ! -d $scriptdir ]
    then
       MSG="$scriptdir script directory not found"
@@ -197,6 +238,8 @@ else
       numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
    fi
 
+
+
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in SAMPLEDIR=$sampledir."
@@ -214,17 +257,6 @@ else
       fi
    fi
 
-
-   pipeid=$( cat $TopOutputLogs/MAINpbs )
-   
-   if [ ! -d $outputdir ]
-   then
-      mkdir -p $outputdir
-   fi
-   if [ ! -d $TopOutputLogs ]
-   then
-      mkdir  -p $TopOutputLogs
-   fi  
 
    if [ $realrecalflag != "1" -a $realrecalflag != "0" ]
    then
@@ -325,7 +357,6 @@ else
             echo "#PBS -V" > $qsub_sortbammayo
             echo "#PBS -A $pbsprj" >> $qsub_sortbammayo
             echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub_sortbammayo
-            echo "#PBS -l epilogue=$epilogue" >> $qsub_sortbammayo
             echo "#PBS -l walltime=$pbscpu" >> $qsub_sortbammayo
             echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortbammayo
             echo "#PBS -o $outputlogs/log.sortbammayo.${prefix}.ou" >> $qsub_sortbammayo
@@ -344,7 +375,6 @@ else
             echo "#PBS -V" > $qsub_extractreads
             echo "#PBS -A $pbsprj" >> $qsub_extractreads
             echo "#PBS -N ${pipeid}_extrbam${prefix}" >> $qsub_extractreads
-            echo "#PBS -l epilogue=$epilogue" >> $qsub_extractreads
             echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
             echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
             echo "#PBS -o $outputlogs/log.extractreadsbam.${prefix}.ou" >> $qsub_extractreads
@@ -418,177 +448,53 @@ else
 
 
 
-   if [ $multisample == "NO" ]
-   then
-      samplescounter=0
+   # the realign_new should run on a MOM node, so submitting with qsub without aprun
+   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $RealignOutputLogs/qsub.${SampleName}.realign_new
+   #`chmod a+r $qsub_realignnew`               
+   # realrecaljob=`qsub $qsub_realignnew`
+   # `qhold -h u $realrecaljob` 
+   # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+
+
+   ### schedule the realign_new job(s)
+   case $run_method in
+   APRUN|QSUB)
+      # schedule a separate qsub for realign_new for each sample
       while read SampleName
       do
-         echo "processing next sample"
-         if [ `expr ${#SampleName}` -lt 7 ]
+         qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
+
+         # constructing the qsub 
+         # appending the generic header to the 
+         cat $outputdir/qsubGenericHeader $qsub_realignnew > /tmp/qsub.${SampleName}.realign_new && mv /tmp/qsub.${SampleName}.realign_new $qsub_realignnew
+
+         sed -i "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
+         echo "#PBS -l walltime=01:00:00" >> $qsub_realignnew # allowing an hour for realign_new: 
+         # should be more than enough (it only takes ~5 minutes), and increases job priority
+         echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
+         echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
+         echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
+         if [ `expr ${#JOBSmayo}` -gt 0 ]
          then
-            echo "skipping empty line"
-         else
-            echo "realigning: $SampleName"
-
-
-            listfiles=$outputdir/align/${SampleName}
-
-            realigndir=$outputdir/realign/$SampleName
-            if [ ! -d $realigndir ]
-            then
-               mkdir -p $realigndir
-            else
-               echo "$realigndir already exists. resetting it"
-               `rm -r $realigndir/*`
-            fi
-
-            if [ $skipvcall == "NO" ]
-            then
-               vartopdir=$outputdir/variant
-               varlogdir=$outputdir/logs/variant
-               if [ ! -d $vartopdir ]
-               then
-                  mkdir -p $vartopdir
-               fi
-               if [ ! -d $varlogdir ]
-               then
-                  mkdir -p $varlogdir
-               else
-                  `rm $varlogdir/*`
-               fi
-               vardir=$outputdir/variant/$SampleName
-               if [ ! -d $vardir ]
-               then
-                  mkdir -p $vardir
-               fi
-            fi
-   
-
-            qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
-            echo "#PBS -V" > $qsub_realignnew
-            echo "#PBS -A $pbsprj" >> $qsub_realignnew
-            echo "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
-            echo "#PBS -l epilogue=$epilogue" >> $qsub_realignnew
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_realignnew
-            echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
-            echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
-            echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
-            echo "#PBS -q $pbsqueue" >> $qsub_realignnew
-            echo "#PBS -m ae" >> $qsub_realignnew
-            echo "#PBS -M $email" >> $qsub_realignnew
-            if [ `expr ${#JOBSmayo}` -gt 0 ]
-            then
-               echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
-       #         else
-       #            echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
-            fi 
-
-#### will write it so both qsub and launcher are possible
-#              echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $qsub_realignnew
-            echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" > $RealignOutputLogs/$realignnew_${SampleName}_LauncherJob
-            echo "$RealignOutputLogs $realignnew_${SampleName}_LauncherJob" >> $RealignOutputLogs/$realignnew_LauncherJobList
-            #`chmod a+r $qsub_realignnew`               
-            # realrecaljob=`qsub $qsub_realignnew`
-            # `qhold -h u $realrecaljob` 
-            # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
-         fi # finish checking for empty lines in SampleNames file
-         (( samplescounter++ ))
+            echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
+   #        else
+   #        echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
+         fi
+         echo -e "\n" >> $qsub_realignnew
       done <  $TopOutputLogs/SAMPLENAMES.list
-           # end loop over input samples
-           # end of case with multiple independent samples
+      # end loop over input samples
+
+   ;;
+   LAUNCHER)
+      commands
+   ;;
+   SERVER)
+      commands
+   ;;
+   esac
 
 
 
-### schedule the launcher
-
-      numrealignnewnodes=$(( samplescounter + 1))
-
-      # scheduling the Anisimov Launcher
-      qsubReAlignLauncher=$AlignOutputLogs/qsub.Realign.Anisimov
-      echo "#!/bin/bash" > $qsubReAlignLauncher
-      echo "#PBS -V" >> $qsubReAlignLauncher
-      echo "#PBS -A $pbsprj" >> $qsubReAlignLauncher
-      echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubReAlignLauncher
-      echo "#PBS -l walltime=$pbscpu" >> $qsubReAlignLauncher
-      echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubReAlignLauncher
-      echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubReAlignLauncher
-      echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubReAlignLauncher
-      echo "#PBS -q $pbsqueue" >> $qsubReAlignLauncher
-      echo "#PBS -m ae" >> $qsubReAlignLauncher
-      echo "#PBS -M $email" >> $qsubReAlignLauncher
-
-      # if not planning to profile in the launcher (string is empty)
-      # then schedule aprun as usual
-#     if [ -z $profiler_string ]
-#     then
-########################## we are scheduling single-threaded processes, so this is not correct aprun command
-      echo "aprun -n $numrealignnewnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-           # otherwise use ccm
-#           else 
-#              echo $ccmgres_string >> $qsubAlignLauncher
-#              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-#           fi
-
-           AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
-
-
-
-   else
-        # multisample experiment
-
-      realigndir=$outputdir/realign
-      if [ ! -d $realigndir ]
-      then
-         mkdir -p $realigndir
-      else
-         echo "$realigndir already exists. resetting it"
-         `rm -r $realigndir/*`
-      fi
-
-      if [ $skipvcall == "NO" ]
-      then
-         varlogdir=$outputdir/logs/variant
-         if [ ! -d $varlogdir ]
-         then
-            mkdir -p $varlogdir
-         else
-            `rm $varlogdir/*`
-         fi
-         vardir=$outputdir/variant
-         if [ ! -d $vardir ]
-         then
-            mkdir -p $vardir
-         fi
-
-      fi
-
-
-      listfiles=$outputdir/align
-      qsub_realignnew=$RealignOutputLogs/qsub.realign_new
-      echo "#PBS -V" > $qsub_realignnew
-      echo "#PBS -A $pbsprj" >> $qsub_realignnew
-      echo "#PBS -N ${pipeid}_realign_new" >> $qsub_realignnew
-      echo "#PBS -l epilogue=$epilogue" >> $qsub_realignnew
-      echo "#PBS -l walltime=$pbscpu" >> $qsub_realignnew
-      echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
-      echo "#PBS -o $RealignOutputLogs/log.realign_new.ou" >> $qsub_realignnew
-      echo "#PBS -e $RealignOutputLogs/log.realign_new.in" >> $qsub_realignnew
-      echo "#PBS -q $pbsqueue" >> $qsub_realignnew
-      echo "#PBS -m ae" >> $qsub_realignnew
-      echo "#PBS -M $email" >> $qsub_realignnew
-      if [ `expr ${#JOBSmayo}` -gt 0 ]
-      then
-         echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
-      else
-         echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
-      fi
-      echo "$scriptdir/realign_new.sh $realigndir $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $qsub_realignnew
-      `chmod a+r $qsub_realignnew`
-      realrecaljob=`qsub $qsub_realignnew`
-      #`qhold -h u $realrecaljob` 
-      echo $realrecaljob >> $TopOutputLogs/RECALLpbs
- 
-   fi # end checking whether independent samples or multisample
    `qrls -h u $alignids`
    `qrls -h u $mergeids`
    `qrls -h u $sortedmayoids`
