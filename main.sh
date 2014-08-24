@@ -146,6 +146,16 @@ else
       rm  $TopOutputLogs/SAMPLENAMES.tmp.list
    fi
 
+   numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
+   if [ $numsamples -lt 1 ]
+   then
+      MSG="No samples found in SAMPLEDIR=$sampledir."
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
+   fi
+
+
 
 
 # generate a qsub header so we would not have to repeat the same lines

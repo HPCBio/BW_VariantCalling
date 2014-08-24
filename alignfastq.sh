@@ -210,28 +210,7 @@ echo "##########################################################################
            exit 1;
         fi
 
-        # construct a list of samplenames, check that files actually exist
-        numsamples=0
-        truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
-        for fastqfile in $sampledir/*
-        do
-            # strip path, which read (left/right), and extension from input files
-            # and put that info into the samplenames file
-            samplename=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
-            echo -e "$samplename" >> $TopOutputLogs/SAMPLENAMES.tmp.list
-            let numsamples+=1
-        done
-        # paired-ended fastq will produce duplicate lines in the samplenames file, so remove the duplicates
-        uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
-        rm  $TopOutputLogs/SAMPLENAMES.tmp.list
-
-        if [ $numsamples -lt 1 ]
-            then
-              MSG="No samples found in SAMPLEDIR=$sampledir."
-              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-              #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-              exit 1;
-            fi
+        numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
         if [ $numsamples -gt 1 -a $multisample == "YES" ]
         then
             echo "multiple samples to be aligned."
