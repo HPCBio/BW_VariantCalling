@@ -56,9 +56,10 @@ else
    region=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
    resortflag=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    revertsam=$( cat $runfile | grep -w REVERTSAM | cut -d '=' -f2  )
-   indices=$( echo $region | sed 's/^/chr/' | sed 's/:/ chr/g' )
+   indices=$( echo $region | sed 's/:/ /g' )
    picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
    samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+   run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 )
 
 
 
@@ -68,7 +69,7 @@ else
 #####################################                       ########################################
 ####################################################################################################
 
-   echo -e "\n\n\n#####################################  CREATE  DIRECTORIES  ########################################\n\n\n"
+   echo "#####################################  CREATE  DIRECTORIES  ########################################"
 
    
 ############# what happens when this is a Ralign-only job? where are the folders created?
@@ -201,12 +202,6 @@ else
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
-   if [ ! -s $samplefileinfo ]
-   then
-      MSG="SAMPLEFILENAMES=$samplefileinfo file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      exit 1;
-   fi
 
 
    # check that sampledir exists
@@ -218,28 +213,7 @@ else
       exit 1;
    fi
 
-   # construct a list of SampleNames, check that files actually exist
-   if [ ! -e $TopOutputLogs/SAMPLENAMES.list ]
-   then
-      numsamples=0
-      truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
-      for fastqfile in $sampledir/*
-      do
-         # strip path, which read (left/right), and extension from input files
-         # and put that info into the SampleNames file
-         SampleName=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
-         echo -e "$SampleName" >> $TopOutputLogs/SAMPLENAMES.tmp.list
-         let numsamples+=1
-      done
-      # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
-      uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
-      rm  $TopOutputLogs/SAMPLENAMES.tmp.list
-   else
-      numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
-   fi
-
-
-
+   numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in SAMPLEDIR=$sampledir."
@@ -269,21 +243,12 @@ else
    listfiles="";
    sep=":";
    JOBSmayo=""
-   JOBSncsa=""
 
    # finding all aligned BAMs to be realigned-recalibrated
 
    if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" ]
    then
       echo "alignment was done inhouse. no need to resort"
-      echo "We need to wait until the alignment jobs enter the queue"
-
-      while [ ! -s $TopOutputLogs/ALIGN_NCSA_jobids ]
-      do
-         `sleep 60s`
-      done
-
-      JOBSncsa=$( cat $TopOutputLogs/ALIGN_NCSA_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
    else
       echo "we need to check entries in samplefileinfo before launching other realignment analyses"
       while read sampledetail
@@ -449,59 +414,56 @@ else
 
 
    # the realign_new should run on a MOM node, so submitting with qsub without aprun
-   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $RealignOutputLogs/qsub.${SampleName}.realign_new
-   #`chmod a+r $qsub_realignnew`               
-   # realrecaljob=`qsub $qsub_realignnew`
-   # `qhold -h u $realrecaljob` 
-   # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $RealignOutputLogs/qsub.realign_new
 
 
    ### schedule the realign_new job(s)
    case $run_method in
-   APRUN|QSUB)
-      # schedule a separate qsub for realign_new for each sample
-      while read SampleName
-      do
-         qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
+   "APRUN"|"QSUB"|"LAUNCHER")
+      # schedule a single qsub for all samples
+      qsub_realignnew=$RealignOutputLogs/qsub.realign_new
 
-         # constructing the qsub 
-         # appending the generic header to the 
-         cat $outputdir/qsubGenericHeader $qsub_realignnew > /tmp/qsub.${SampleName}.realign_new && mv /tmp/qsub.${SampleName}.realign_new $qsub_realignnew
+      ################## constructing the qsub by editing the file in place
+      sed -i "1i \n" $qsub_realignnew # this will separate the header from command
 
-         sed -i "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
-         echo "#PBS -l walltime=01:00:00" >> $qsub_realignnew # allowing an hour for realign_new: 
-         # should be more than enough (it only takes ~5 minutes), and increases job priority
-         echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
-         echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
-         echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
-         if [ `expr ${#JOBSmayo}` -gt 0 ]
-         then
-            echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
-   #        else
-   #        echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
-         fi
-         echo -e "\n" >> $qsub_realignnew
-      done <  $TopOutputLogs/SAMPLENAMES.list
-      # end loop over input samples
+      # inserting dependencies; 
+      # does not  depend on NCSA alignment jobs, as realign.sh depends on them
+      if [ `expr ${#JOBSmayo}` -gt 0 ]
+      then
+         sed -i "1i #PBS -W depend=afterok:$JOBSmayo" $qsub_realignnew
+      fi
 
-   ;;
-   LAUNCHER)
-      commands
-   ;;
-   SERVER)
-      commands
-   ;;
+      # appending the PBS options to the file in reverse order
+      sed -i "1i #PBS -l walltime=01:00:00" $qsub_realignnew # allowing an hour for realign_new: 
+      # should be more than enough (it only takes ~5 minutes), and increases job priority
+      sed -i "1i #PBS -l nodes=1:ppn=1" $qsub_realignnew
+      sed -i "1i #PBS -o $RealignOutputLogs/log.realign_new.ou" $qsub_realignnew
+      sed -i "1i #PBS -e $RealignOutputLogs/log.realign_new.in" $qsub_realignnew
+
+      # appending the generic header to the qsub
+      cat $outputdir/qsubGenericHeader $qsub_realignnew > $qsub_realignnew.tmp && mv $qsub_realignnew.tmp $qsub_realignnew
+
+      sed -i "#PBS -N ${pipeid}_realign_new" $qsub_realignnew
+
+      `chmod a+r $qsub_realignnew`               
+      realrecaljob=`qsub $qsub_realignnew`
+      # `qhold -h u $realrecaljob` 
+      echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+      ;;
+   "SERVER")
+      nohup $RealignOutputLogs/qsub.realign_new > $RealignOutputLogs/log.realign_new.in 
+      ;;
    esac
 
 
 
-   `qrls -h u $alignids`
-   `qrls -h u $mergeids`
-   `qrls -h u $sortedmayoids`
-   `qrls -h u $extraids`
-   `qrls -h u $realrecaljob`
+   #`qrls -h u $alignids`
+   #`qrls -h u $mergeids`
+   #`qrls -h u $sortedmayoids`
+   #`qrls -h u $extraids`
+   #`qrls -h u $realrecaljob`
 
-   echo "done realig/recalibrating  all bam files."
+   echo "###################### done scheduling realign/recalibrate.#################################"
    echo `date`
    `chmod -R 770 $outputdir/`
    `chmod -R 770 $TopOutputLogs/`

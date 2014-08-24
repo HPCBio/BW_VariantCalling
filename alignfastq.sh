@@ -65,7 +65,7 @@ echo "##########################################################################
         samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
 	dup=$( cat $runfile | grep -w MARKDUP  | cut -d '=' -f2 )
         dupflag=$( cat $runfile | grep -w REMOVE_DUP  | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
         sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
@@ -1110,7 +1110,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    echo "#PBS -V" > $qsub_summary
 	    echo "#PBS -A $pbsprj" >> $qsub_summary
 	    echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+	    echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
 	    echo "#PBS -o $TopOutputLogs/log.summary.aln.ou" >> $qsub_summary
 	    echo "#PBS -e $TopOutputLogs/log.summary.aln.in" >> $qsub_summary
@@ -1135,7 +1135,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -V" > $qsub_summary
 		echo "#PBS -A $pbsprj" >> $qsub_summary
 		echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
-		echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+		echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
 		echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub_summary
 		echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub_summary
@@ -1157,7 +1157,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
 	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub_realign
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub_realign
+	    echo "#PBS -l walltime=01:00:00" >> $qsub_realign # 1 hour should be more than enough
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_realign
 	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub_realign
 	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub_realign

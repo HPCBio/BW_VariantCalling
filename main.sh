@@ -145,6 +145,16 @@ else
       sed -i '/^\s*$/d' $TopOutputLogs/SAMPLENAMES.list # remove blank lines
       rm  $TopOutputLogs/SAMPLENAMES.tmp.list
    fi
+   # check that this actually worked, 
+   # because otherwise the bash script will just go on, as if there is no problem
+   if [ ! -s $TopOutputLogs/SAMPLENAMES.list ]
+   then
+      MSG="$TopOutputLogs/SAMPLENAMES.list is empty"
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+      exit 1;
+   fi
+
 
    numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]
@@ -159,14 +169,24 @@ else
 
 
 # generate a qsub header so we would not have to repeat the same lines
-        generic_qsub_header=$outputdir/qsubGenericHeader
-        truncate -s 0 $generic_qsub_header
-        echo "#PBS -V" > $generic_qsub_header
-        echo "#PBS -A $pbsprj" >> $generic_qsub_header
-        echo "#PBS -q $pbsqueue" >> $generic_qsub_header
-        echo "#PBS -m ae" >> $generic_qsub_header
-        echo "#PBS -M $email" >> $generic_qsub_header
-        echo -e "\n" >> $generic_qsub_header
+   generic_qsub_header=$outputdir/qsubGenericHeader
+   truncate -s 0 $generic_qsub_header
+   echo "#PBS -V" > $generic_qsub_header
+   echo "#PBS -A $pbsprj" >> $generic_qsub_header
+   echo "#PBS -q $pbsqueue" >> $generic_qsub_header
+   echo "#PBS -m ae" >> $generic_qsub_header
+   echo "#PBS -M $email" >> $generic_qsub_header
+   echo -e "\n" >> $generic_qsub_header
+   # check that this actually worked,
+   # because otherwise the bash script will just go on, as if there is no problem
+   if [ ! -s $generic_qsub_header ]
+   then
+      MSG="$generic_qsub_header is empty"
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+      exit 1;
+   fi
+
 
 
         

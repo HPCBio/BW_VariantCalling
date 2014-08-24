@@ -29,7 +29,7 @@ else
         email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
         samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
         if [ -z $epilogue ]

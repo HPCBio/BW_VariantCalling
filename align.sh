@@ -51,7 +51,7 @@ else
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
 
