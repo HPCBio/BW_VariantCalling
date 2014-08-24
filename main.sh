@@ -176,7 +176,6 @@ else
    echo "#PBS -q $pbsqueue" >> $generic_qsub_header
    echo "#PBS -m ae" >> $generic_qsub_header
    echo "#PBS -M $email" >> $generic_qsub_header
-   echo -e "\n" >> $generic_qsub_header
    # check that this actually worked,
    # because otherwise the bash script will just go on, as if there is no problem
    if [ ! -s $generic_qsub_header ]

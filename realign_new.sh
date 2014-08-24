@@ -34,9 +34,9 @@ else
 
    pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
    thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
-   type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-   schedule=$( cat $runfile | grep -w SCHEDULE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
    scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )

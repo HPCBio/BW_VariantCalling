@@ -414,7 +414,7 @@ else
 
 
    # the realign_new should run on a MOM node, so submitting with qsub without aprun
-   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" >> $RealignOutputLogs/qsub.realign_new
+   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" > $RealignOutputLogs/qsub.realign_new
 
 
    ### schedule the realign_new job(s)
@@ -424,7 +424,7 @@ else
       qsub_realignnew=$RealignOutputLogs/qsub.realign_new
 
       ################## constructing the qsub by editing the file in place
-      sed -i "1i \n" $qsub_realignnew # this will separate the header from command
+      sed -i "1i \ " $qsub_realignnew # this will separate the header from command
 
       # inserting dependencies; 
       # does not  depend on NCSA alignment jobs, as realign.sh depends on them
@@ -443,7 +443,7 @@ else
       # appending the generic header to the qsub
       cat $outputdir/qsubGenericHeader $qsub_realignnew > $qsub_realignnew.tmp && mv $qsub_realignnew.tmp $qsub_realignnew
 
-      sed -i "#PBS -N ${pipeid}_realign_new" $qsub_realignnew
+      sed -i "1i #PBS -N ${pipeid}_realign_new" $qsub_realignnew
 
       `chmod a+r $qsub_realignnew`               
       realrecaljob=`qsub $qsub_realignnew`
