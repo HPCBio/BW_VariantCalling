@@ -35,7 +35,10 @@ else
         resortbam=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 )
         bamtofastqflag=$( cat $runfile | grep -w BAM2FASTQFLAG | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
-        type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
+
+        input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+
         if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
         then
             pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
@@ -122,8 +125,8 @@ else
         fi
 	`chmod -R 770 $outputdir`
         `chmod 750 $epilogue`
-        outputlogs=$outputdir/logs
-        pipeid=$( cat $outputlogs/MAINpbs )
+        TopOutputLogs=$outputdir/logs
+        pipeid=$( cat $TopOutputLogs/MAINpbs )
 
 
    # construct a list of SampleNames, check that files actually exist
@@ -162,63 +165,63 @@ else
         then
             echo "Type of analysis to run: ALIGNMENT only" 
             
-            qsub1=$outputlogs/qsub.main.aln1
+            qsub1=$TopOutputLogs/qsub.main.aln1
             echo "#PBS -V" > $qsub1
             echo "#PBS -A $pbsprj" >> $qsub1
             echo "#PBS -N ${pipeid}_MAINaln1" >> $qsub1
             echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	    echo "#PBS -o $outputlogs/MAINaln1.ou" >> $qsub1
-	    echo "#PBS -e $outputlogs/MAINaln1.in" >> $qsub1
+	    echo "#PBS -o $TopOutputLogs/MAINaln1.ou" >> $qsub1
+	    echo "#PBS -e $TopOutputLogs/MAINaln1.in" >> $qsub1
             echo "#PBS -q $pbsqueue" >> $qsub1
             echo "#PBS -m ae" >> $qsub1
             echo "#PBS -M $email" >> $qsub1
-            echo "$scriptdir/align.sh $runfile $outputlogs/MAINaln1.in $outputlogs/MAINaln1.ou $email $outputlogs/qsub.main.aln1" >> $qsub1
+            echo "$scriptdir/align.sh $runfile $TopOutputLogs/MAINaln1.in $TopOutputLogs/MAINaln1.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
             `chmod a+r $qsub1`               
-            `qsub $qsub1 >> $outputlogs/MAINALNpbs`
+            `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
             echo `date`
             case="alignonly"
 	fi
 	if [ $analysis == "REALIGNONLY" -o $analysis == "REALIGN_ONLY" ]
         then
 	    echo "Type of analysis to run: REALIGNMENT only. bams provided"
-	    qsub2=$outputlogs/qsub.main.realn
+	    qsub2=$TopOutputLogs/qsub.main.realn
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
 	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=00:30:00" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-	    echo "#PBS -o $outputlogs/MAINrealn.ou" >> $qsub2
-	    echo "#PBS -e $outputlogs/MAINrealn.in" >> $qsub2
+	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub2
+	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub2
 	    echo "#PBS -q $pbsqueue" >> $qsub2
 	    echo "#PBS -m ae" >> $qsub2
 	    echo "#PBS -M $email" >> $qsub2
-	    echo "$scriptdir/realign.sh $runfile $outputlogs/MAINrealn.in $outputlogs/MAINrealn.ou $email $outputlogs/qsub.main.realn" >> $qsub2
+	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub2
 	    `chmod a+r $qsub2` 
-	    `qsub $qsub2 >> $outputlogs/MAINREALNpbs`
+	    `qsub $qsub2 >> $TopOutputLogs/MAINREALNpbs`
 	    echo `date`
             case="realignonly" 
         fi
         if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" ]
         then
 	    echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
-	    qsub1=$outputlogs/qsub.main.aln
+	    qsub1=$TopOutputLogs/qsub.main.aln
 	    echo "#PBS -V" > $qsub1
 	    echo "#PBS -A $pbsprj" >> $qsub1
 	    echo "#PBS -N ${pipeid}_MAINaln" >> $qsub1
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	    echo "#PBS -o $outputlogs/MAINaln.ou" >> $qsub1
-	    echo "#PBS -e $outputlogs/MAINaln.in" >> $qsub1
+	    echo "#PBS -o $TopOutputLogs/MAINaln.ou" >> $qsub1
+	    echo "#PBS -e $TopOutputLogs/MAINaln.in" >> $qsub1
 	    echo "#PBS -q $pbsqueue" >> $qsub1
 	    echo "#PBS -m ae" >> $qsub1
 	    echo "#PBS -M $email" >> $qsub1
-	    echo "$scriptdir/align.sh $runfile $outputlogs/MAINaln.in $outputlogs/MAINaln.ou $email $outputlogs/qsub.main.aln" >> $qsub1
+	    echo "$scriptdir/align.sh $runfile $TopOutputLogs/MAINaln.in $TopOutputLogs/MAINaln.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 	    `chmod a+r $qsub1`               
-	    `qsub $qsub1 >> $outputlogs/MAINALNpbs`
+	    `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
 	    echo `date`
             echo "Note: realign module will be scheduled after align module ends"
             case="align and realign"  
@@ -227,22 +230,22 @@ else
         then
 
             echo "variant calling only"
-	    qsub3=$outputlogs/qsub.main.vcallgatk
+	    qsub3=$TopOutputLogs/qsub.main.vcallgatk
 	    echo "#PBS -V" > $qsub3
 	    echo "#PBS -A $pbsprj" >> $qsub3
 	    echo "#PBS -N ${pipeid}_MAINvcall" >> $qsub3
 	    echo "#PBS -l epilogue=$epilogue" >> $qsub3
 	    echo "#PBS -l walltime=00:30:00" >> $qsub3
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	    echo "#PBS -o $outputlogs/log.main.vcallgatk.ou" >> $qsub3
-	    echo "#PBS -e $outputlogs/log.main.vcallgatk.in" >> $qsub3
+	    echo "#PBS -o $TopOutputLogs/log.main.vcallgatk.ou" >> $qsub3
+	    echo "#PBS -e $TopOutputLogs/log.main.vcallgatk.in" >> $qsub3
 	    echo "#PBS -q $pbsqueue" >> $qsub3
 	    echo "#PBS -m ae" >> $qsub3
 	    echo "#PBS -M $email" >> $qsub3
-	    echo "$scriptdir/vcallmain.sh $runfile $outputlogs/log.main.vcallgatk.in $outputlogs/log.main.vcallgatk.ou $email $outputlogs/qsub.main.vcallgatk" >> $qsub3
+	    echo "$scriptdir/vcallmain.sh $runfile $TopOutputLogs/log.main.vcallgatk.in $TopOutputLogs/log.main.vcallgatk.ou $email $TopOutputLogs/qsub.main.vcallgatk" >> $qsub3
 	    `chmod a+r $qsub3`
 	    vcalljobid=`qsub $qsub3`
-	    echo $vcalljobid >> $outputlogs/VCALLGATKpbs
+	    echo $vcalljobid >> $TopOutputLogs/VCALLGATKpbs
             case="vcall_only"  
         fi
         if [ `expr ${#case}` -lt 1 ]
