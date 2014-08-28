@@ -63,13 +63,12 @@ else
 
 
 
-####################################################################################################
-#####################################                       ########################################
-#####################################  CREATE  DIRECTORIES  ########################################
-#####################################                       ########################################
-####################################################################################################
+echo "####################################################################################################"
+echo "#####################################                       ########################################"
+echo "#####################################  CREATE  DIRECTORIES  ########################################"
+echo "#####################################                       ########################################"
+echo "####################################################################################################"
 
-   echo "#####################################  CREATE  DIRECTORIES  ########################################"
 
    
 ############# what happens when this is a Ralign-only job? where are the folders created?
@@ -95,7 +94,7 @@ else
 
    if [ $skipvcall == "NO" ]
    then
-      VarcallOutputDir=$outputdir/realign
+      VarcallOutputDir=$outputdir/variant
       if [ -d $VarcallOutputDir ]
       then
          echo "$VarcallOutputDir already exists; resetting it"
@@ -114,6 +113,8 @@ else
       mkdir -p $TopOutputLogs
    fi
    pipeid=$( cat $TopOutputLogs/MAINpbs )
+
+
 
    RealignOutputLogs=$TopOutputLogs/realign
    if [ ! -d $RealignOutputLogs ]
@@ -414,7 +415,7 @@ else
 
 
    # the realign_new should run on a MOM node, so submitting with qsub without aprun
-   echo "$scriptdir/realign_new.sh $RealignOutputLogs $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" > $RealignOutputLogs/qsub.realign_new
+   echo "$scriptdir/realign_new.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" > $RealignOutputLogs/qsub.realign_new
 
 
    ### schedule the realign_new job(s)

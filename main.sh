@@ -130,33 +130,33 @@ else
 
 
    # construct a list of SampleNames, check that files actually exist
-   if [ ! -e $TopOutputLogs/SAMPLENAMES.list ]
+   if [ ! -e $outputdir/SAMPLENAMES.list ]
    then
-      truncate -s 0 $TopOutputLogs/SAMPLENAMES.tmp.list
+      truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
       for fastqfile in $sampledir/*
       do
          # strip path, which read (left/right), and extension from input files
          # and put that info into the SampleNames file
          SampleName=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
-         echo -e "$SampleName" >> $TopOutputLogs/SAMPLENAMES.tmp.list
+         echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
       done
       # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
-      uniq  $TopOutputLogs/SAMPLENAMES.tmp.list >  $TopOutputLogs/SAMPLENAMES.list
-      sed -i '/^\s*$/d' $TopOutputLogs/SAMPLENAMES.list # remove blank lines
-      rm  $TopOutputLogs/SAMPLENAMES.tmp.list
+      uniq  $outputdir/SAMPLENAMES.tmp.list >  $outputdir/SAMPLENAMES.list
+      sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
+      rm  $outputdir/SAMPLENAMES.tmp.list
    fi
    # check that this actually worked, 
    # because otherwise the bash script will just go on, as if there is no problem
-   if [ ! -s $TopOutputLogs/SAMPLENAMES.list ]
+   if [ ! -s $outputdir/SAMPLENAMES.list ]
    then
-      MSG="$TopOutputLogs/SAMPLENAMES.list is empty"
+      MSG="$outputdir/SAMPLENAMES.list is empty"
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
       exit 1;
    fi
 
 
-   numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
+   numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in SAMPLEDIR=$sampledir."

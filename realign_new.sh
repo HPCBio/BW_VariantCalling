@@ -4,7 +4,7 @@
 #  script to realign and recalibrate the aligned file(s)
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# != 9 ]
+if [ $# != 7 ]
 then
    MSG="parameter mismatch."
    echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
@@ -14,14 +14,15 @@ else
    set -x
    echo `date`
 ######################## realigndir and listfiles removed
+######################## RealignOutputLogs replaced with outputdir: top level output folder
    scriptfile=$0
-   realignlogdir=$2
-   runfile=$4
-   flag=$5
-   elog=$6
-   olog=$7
-   email=$8
-   qsubfile=$9
+   outputdir=$1
+   runfile=$2
+   flag=$3
+   elog=$4
+   olog=$5
+   email=$6
+   qsubfile=$7
    LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
    if [ ! -s $runfile ]
@@ -32,12 +33,26 @@ else
        exit 1;
    fi
 
+
+
+# wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
+                ####################################################################################################"
+                #####################################                       ######################################## 
+echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ######################################## \n\n\n"
+                #####################################                       ######################################## 
+                #################################################################################################### 
+
+
+
+
+
+
    pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
    thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
    input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-   outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+   outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
    scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
    ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
@@ -96,19 +111,6 @@ else
       fi
    fi
 
-
-
-   #################make sure the checks work everywhere: != vs ne
-   if [ $schedule ne "ANISIMOV" -a $schedule ne "QSUB" -a $schedule ne "SERIAL" ]
-   then
-      MSG="Invalid value for SCHEDULE=$schedule"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      exit 1; 
-   elif [ $schedule eq "ANISIMOV" ]
-      then
-      truncate -s 0 $realignlogdir/$realrecal.AnisimovJoblist
-   fi
 
 
    if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
@@ -183,76 +185,156 @@ else
       realparms=$realparms":-known:$refdir/$kgenome"
       recalparms=$recalparms":--knownSites:$refdir/$kgenome"
    fi
-   if [ ! -d $realignlogdir ]
+   if [ ! -d $RealignOutputLogs ]
    then
-      MSG="$realignlogdir realignlog directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      exit 1;
-   fi
-   if [ ! -d $realigndir ]
-   then
-      MSG="$realigndir realign directory not found"
+      MSG="$RealignOutputLogs realignlog directory not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
 
-   # get aligned bam files when alignment is done inhouse
-   if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" ]
+   RealignOutputDir=$outputdir/realign
+   if [ ! -d $RealignOutputDir ]
    then
-      echo "inhouse alignment. gathering aligned bam files"
-      cd $aligndir
-      allfiles=`find ./ -name "*.wdups.sorted.bam"`
-      if [ `expr ${#allfiles}` -lt 1 ]
+      MSG="$RealignOutputDir realign directory not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
+   fi
+
+   if [ $skipvcall == "NO" ]
+   then
+      VcallOutputDir=$outputdir/variant
+      if [ ! -d $VcallOutputDir ]
       then
-         MSG="No bam file(s) found to perform realign-recalibrate at $aligndir"
-         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo "$VcallOutputDir variant directory not found, creating it"
+         mkdir $VcallOutputDir
+      fi
+   fi
+
+
+   TopOutputLogs=$outputdir/logs
+   if [ ! -d $TopOutputLogs ]
+   then
+      MSG="$TopOutputLogs realign directory not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      exit 1;
+   fi
+
+   RealignOutputLogs=$outputdir/logs/realign
+   if [ ! -d $RealignOutputLogs ]
+   then
+      MSG="$RealignOutputLogs realign directory not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
+   fi
+
+   if [ $skipvcall == "NO" ]
+   then
+      VcallOutputLogs=$outputdir/logs/variant
+      if [ ! -d $VcallOutputLogs ]
+      then
+         MSG="$VcallOutputLogs realign directory not found"
+         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
          exit 1;
       fi
-      listfiles=""
-      sep=" "
-      for file in $allfiles
-      do
-         newname=$aligndir/$file
-         listfiles=$newname${sep}${listfiles}
-      done
-   else
-      if [ $analysis == "REALIGN_ONLY" -o $analysis == "REALIGNONLY" ]
+   fi
+
+
+   if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
+   then
+      MSG="Invalid value for RUNMETHOD=$run_method"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      exit 1;
+   elif [ $schedule eq "LAUNCHER" ]
       then
-         echo "3rd param, aligndir,  has the list of aligned bam files"
-         listfiles=$( echo $aligndir | tr ":" " " )
+      truncate -s 0 $RealignOutputLogs/$realrecal.AnisimovJoblist
+   fi
+
+
+   pipeid=$( cat $TopOutputLogs/MAINpbs )
+
+
+
+
+
+
+                ####################################################################################################
+                #####################################                       ########################################
+echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ######################################## \n\n\n"
+                #####################################                       ########################################
+                ####################################################################################################
+
+
+
+   while read SampleName
+   do
+      if [ ! -d $RealignOutputDir/${SampleName} ]
+      then
+         mkdir -p $RealignOutputDir/${SampleName}
       else
-         MSG="Invalid value for analysis=$analysis"
-         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-         exit 1;
+         echo "$RealignOutputDir/${SampleName} already exists. resetting it"
+         `rm -r $RealignOutputDir/${SampleName}/*`
       fi
-   fi
 
-   pipeid=$( cat $outputrootdir/logs/MAINpbs )
-   outputdir=$realigndir
+      if [ $multisample == "NO" ]
+      then
 
-        #if [ $skipvcall == "NO" ]
-        #then
-        #    vardir=$outputrootdir/variant
-        #    varlogdir=$outputrootdir/logs/variant
-        #    if [ ! -d $vardir ]
-        #    then
-   #   mkdir -p $vardir
-   #   mkdir -p $varlogdir
-   #    fi
-   #    if [ ! -d $varlogdir ]
-        #    then
-   #   mkdir -p $varlogdir
-        #    else
-   #   `rm $varlogdir/*`
-        #    fi
-        #fi
+         # when running multiple INDEPENDENT samples, there will be lots of qsubs, logs and jobfiles
+         # best keep them in the sample subfolder
+         if [ ! -d $RealignOutputDir/${SampleName}/logs ]
+         then
+            mkdir $RealignOutputDir/${SampleName}/logs
+         else
+            echo "$RealignOutputDir/${SampleName}/logs already exists. resetting it"
+            `rm -r $RealignOutputDir/${SampleName}/logs/*`
+         fi
 
-   #generating regions and intervals files in BED format
+         if [ $skipvcall == "NO" ]
+         then
+            if [ ! -d $VcallOutputDir/${SampleName} ]
+            then
+               mkdir -p $VcallOutputDir/${SampleName}
+            else 
+               echo "$VcallOutputDir/${SampleName} already exists. resetting it"
+               `rm -r $VcallOutputDir/${SampleName}/*`
+            fi
+
+            # when running multiple samples, there will be lots of qsubs, logs and jobfiles
+            # best keep them in the sample subfolder
+            if [ ! -d $VcallOutputDir/${SampleName}/logs ]
+            then
+               mkdir $VcallOutputDir/${SampleName}/logs
+            else
+               echo "$VcallOutputDir/${SampleName}/logs already exists. resetting it"
+               `rm -r $VcallOutputDir/${SampleName}/logs/*`
+            fi
+         fi
+      fi
+   done  <  $outputdir/SAMPLENAMES.list
+   # end loop over samples
+
+
+
+
+
+
+
+
+                ###########################################################################################################
+                ###########################                                                          ######################"
+echo -e "\n\n\n ###########################   generating regions and intervals files in BED format   ############### \n\n\n"
+                ###########################                                                          ######################
+                ###########################################################################################################
+
+
+
+
    echo `date`
    i=1
    for chr in $indices
@@ -269,7 +351,7 @@ else
       else
          region[$i]="-L:$chr"
       fi
-      (($i++)) ########### make sure this works
+      (( i++ ))
    done
    echo `date`
 
@@ -280,444 +362,583 @@ else
 
 
 
-    ####################
-    # main loops start here
-    # outer loop by chromosome; inner loop by sample
-    #####################
 
-   cd $outputdir
-   inx=1
+
+
+                #############################################################################################################
+                ###################################                                ##########################################
+echo -e "\n\n\n ###################################       main loops start here    ###################################### 
+                ########################   outer loops by chromosome; inner loops by sample   ######################## \n\n\n"
+                ########################                                                      ###############################
+                #############################################################################################################
+
+
+
+   chromosomecounter=1
    for chr in $indices
    do
-      echo "generating real-recal calls fro chr=${chr} ..."
+      echo "generating real-recal calls for chr=${chr} ..."
       echo `date`
       #inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
 
-
-
-###################################
-
-#work this in somehow
-
-   if [ $multisample == "NO" ]
-   then
-      samplescounter=0
+      samplecounter=1 
       while read SampleName
       do
          echo "processing next sample"
-         if [ `expr ${#SampleName}` -lt 7 ]
+         echo "realigning: $SampleName"
+
+         echo -e "\n######################################  get aligned bam files  #####################################\n"
+
+         cd $outputdir/align/${SampleName}
+         # look for aligned, sorted bams with duplicates marked, inside the align folder for that particular sample
+         # there should be only one such file
+         aligned_bam=`find ./ -name "*.wdups.sorted.bam"`
+         #  the ${# tells the length of the string
+         if [ `expr ${#aligned_bam}` -lt 1 ]
          then
-            echo "skipping empty line"
+            MSG="No bam file(s) found to perform realign-recalibrate at $outputdir/align/${SampleName}"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            exit 1;
+         fi
+         # now check that there is only one file
+         aligned_bam=( $aligned_bam ) # recast variable as an array and count the number of members
+         if [ ${#aligned_bam[@]} -ne 1 ]
+         then
+            MSG="more than one bam file found in $outputdir/align/${SampleName}"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            exit 1;
+         fi
+
+         aligned_bam="${aligned_bam[*]}" # recast variable back as string
+         aligned_bam=$outputdir/align/${SampleName}/${aligned_bam}
+         sID=$SampleName
+         sPU=$SampleName
+         sSM=$SampleName
+         RGparms=$( echo "RGID=${sID}:RGLB=${sLB}:RGPU=${sPU}:RGSM=${sSM}:RGPL=${sPL}:RGCN=${sCN}" )
+
+
+
+         echo -e "\n######################################  assemble the sortnode sub-block #####################################\n"
+         echo "$scriptdir/sortnode.sh $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}
+
+         # construct the list of all input files for the GATK real-recal procedure, multisample case
+         if [ $multisample == "YES" ]
+         then
+            chrinfiles[$chromosomecounter]=${chrinfiles[$chromosomecounter]}":-I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam"
+# not used anymore?          chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$SampleName.$chr.sorted.bam"
          else
-            echo "realigning: $SampleName"
-
-
-            # where to look for list of files to realign
-            listfiles=$outputdir/align # for multisample-yes case
-            listfiles=$outputdir/align/${SampleName}
-
-            if [ ! -d $RealignOutputDir/$SampleName ]
+            echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
+            echo "$scriptdir/realrecalold.sh $RealignOutputDir/${SampleName} $chr.realrecal.$SampleName.output.bam $chr $RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}
+           
+            if [ $skipvcall == "NO" ]
             then
-               mkdir -p $RealignOutputDir/$SampleName
-            else
-               echo "$RealignOutputDir/$SampleName already exists. resetting it"
-               `rm -r $RealignOutputDir/$SampleName/*`
+               echo "$scriptdir/vcallgatk.sh $VcallOutputDir/${SampleName}  $RealignOutputDir/${SampleName} ${chr}.realrecal.${SampleName}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.ou $email $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}" >> $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}
             fi
+         fi
 
-            # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
-            # best keep them in the sample subfolder
-            if [ $run_method eq "LAUNCHER" ]
-               if [ ! -d $RealignOutputDir/$SampleName/AnisimovLogs ]
-               then
-                  mkdir $RealignOutputDir/$SampleName/AnisimovLogs
-               fi
-            fi
+         (( samplecounter++ ))
+
+      done <  $outputdir/SAMPLENAMES.list
+      # end loop over samples
+      echo `date`
+      
 
 
+#      if [ $multisample == "YES" ]
+#      then      
+#         echo "##"
+#         echo "###################    assemble the sortnode sub-block for MULTISAMPLE experiment    ############################"
+#         echo "##" # this line makes output logs more readable
+###############################################################################
+###############################################################################
+#########################   NOT CLEAR HOW TO HANDLE BAMFILE AND rg VARIABLES HERE IN THE MULTISAMPLE CASE
+#######################3          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+#####################################################3333
+         #echo "$scriptdir/realrecalold.sh $RealignOutputDir $chr.realrecal.output.bam $chr ${chrinfiles[$chromosomecounter]} ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecalold
+#      fi
+
+
+      ((  chromosomecounter++ )) 
+   done # done going through chromosomes 
+   # at the end of this set of nested loops, the variables chromosomecounter and samplecounter
+   # reflect, respectively, number_of_chromosomes+1 and number_of_samples+1,
+   # which is exactly the number of nodes required for anisimov launcher 
+
+
+
+
+
+
+
+
+#         qsub_sortnode=$RealignOutputLogs/qsub.sort.${SampleName}.$chr
+#         echo "#PBS -N ${pipeid}_sort_${SampleName}_$chr" >> $qsub_sortnode
+#         echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
+#         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
+#         echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.ou" >> $qsub_sortnode
+#         echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.in" >> $qsub_sortnode
+# 
+#         `chmod a+r $qsub_sortnode`
+#            sortjobid=`qsub $qsub_sortnode`
+#            # new line to avoid hiccup
+#            #`qhold -h u $sortjobid`
+#            echo $sortjobid >> $outputdir/logs/REALSORTEDpbs.$SampleName
+#            echo $sortjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
+#
+#            truncate -s 0 $realrecal.$SampleName.$chr.serialjobs
+#            echo "$RealignOutputLogs realrecal.$SampleName.$chr.serialjobs" >> $RealignOutputLogs/$realrecal.AnisimovJoblist
+#
+
+
+
+
+
+
+#         if [ $multisample == "NO" ]
+#         then
+
+
+#      sortid=$( cat $outputdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
+#      outputfile=$chr.realrecal.$bamfile.output.bam
+#      igv_files=${igv_files}":INPUT=${outputfile}"
+#      echo "realign-recalibrate for interval:$chr..."
+#      qsub_realrecalold=$RealignOutputLogs/qsub.realrecal.$bamfile.$chr
+#      echo "#PBS -V" > $qsub_realrecalold
+#      echo "#PBS -A $pbsprj" >> $qsub_realrecalold
+#      echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecalold
+#      echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecalold
+#      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecalold
+#      echo "#PBS -o $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecalold
+#      echo "#PBS -e $RealignOutputLogs/log.realrecal.$bamfile.$chr.in" >> $qsub_realrecalold
+#      echo "#PBS -q $pbsqueue" >> $qsub_realrecalold
+#      echo "#PBS -m ae" >> $qsub_realrecalold
+#      echo "#PBS -M $email" >> $qsub_realrecalold
+#      echo "#PBS -W depend=afterok:$sortid" >> $qsub_realrecalold
+#
+#      if [ $schedule eq "QSUB" ]
+#      then
+#         echo "aprun -n 1 -d $thr $scriptdir/realrecalold.sh $????#####outputdir $outputfile $chr ${chrinfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecalold
+#         `chmod a+r $qsub_realrecalold`
+#         #recaljobid=`qsub $qsub_realrecalold`
+#         # new line to avoid hiccup
+#         #`qhold -h u $recaljobid`
+#         echo $recaljobid >> $outputdir/logs/REALRECALpbs.$bamfile
+#      else 
+#         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
+#         echo "nohup $scriptdir/realrecalold.sh $????#####outputdir $outputfile $chr ${chrinfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr > $RealignOutputLogs/log.realrecal.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
+#      fi
+
+#      if [ $skipvcall == "NO" ]
+#      then
+#         vardir=$( echo $????#####outputdir | sed 's/realign/variant/' )
+#         varlogdir=$( echo $RealignOutputLogs | sed 's/realign/variant/' )
+#  
+#         vcf_files=${vcf_files}":${outputfile}"
+#         echo "variant calling call.."
+#         qsub_vcallgatk=$varlogdir/qsub.vcallgatk.$bamfile.$chr
+#         echo "#PBS -V" > $qsub_vcallgatk
+#         echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
+#         echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
+#         echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
+#         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
+#         echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
+#         echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_vcallgatk
+#         echo "#PBS -q $pbsqueue" >> $qsub_vcallgatk
+#         echo "#PBS -m ae" >> $qsub_vcallgatk
+#         echo "#PBS -M $email" >> $qsub_vcallgatk
+#         echo "#PBS -W depend=afterok:$recaljobid" >> $qsub_vcallgatk
+#         if [ $schedule eq "QSUB" ]
+#         then
+#            echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
+#            `chmod a+r $qsub_vcallgatk`
+##            vcalljobid=`qsub $qsub_vcallgatk`
+#            echo $vcalljobid >> $outputdir/logs/VCALLGATKpbs.$bamfile
+#         else
+#            # something is messed up with redirection here
+#            echo "nohup $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
+#         fi
+#      else
+#         echo "variant calling will not be run"
+#      fi
+#
+#
+#      echo `date`
+#      echo "bottom of the loop over chromosomes"
+#   done
+#   echo `date`
+#
+#
+#     
+#
+
+
+
+
+
+
+
+
+                #############################################################################################################
+                ###################################                             #############################################
+echo -e "\n\n\n ###################################   now schedule these jobs   ###################################### \n\n\n"
+                ###################################                             #############################################
+                #############################################################################################################
+
+
+
+
+
+   case $run_method in
+   "APRUN")
+      while read SampleName
+      do
+         # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+         sed "1!b;s/^/aprun -n 1 -d $thr /" $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/qsub.sortnode.${SampleName}.${chr}
+         sed "1!b;s/^/aprun -n 1 -d $thr /" $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/qsub.realrecal.${SampleName}.${chr}
+         if [ $skipvcall == "NO" ]
+         then
+            sed "1!b;s/^/aprun -n 1 -d $thr /" $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/qsub.vcallgatk.${SampleName}.${chr}
+         fi
+      done <  $outputdir/SAMPLENAMES.list
+      # end loop over samples
+   ;;
+   "QSUB")
+
+   ;;
+   "LAUNCHER")
+      for chr in $indices
+      do
+         # clear out the joblists
+         truncate -s 0 $RealignOutputLogs/sortnode.${chr}.AnisimovJoblist
+         truncate -s 0 $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
+         truncate -s 0 $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
+         while read SampleName
+         do
+            # creating a qsub out of the job file
+            # need to prepend "nohup" and append lof file name, so that logs are properly created when Anisimov launches these jobs 
+            sortnode_log=${RealignOutputDir}/${SampleName}/logs/log.sort.$SampleName.$chr.in
+            awk -v awkvar_sortnodelog=$sortnode_log '{print "nohup "$0" > "awkvar_sortnodelog}' $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/jobfile.sortnode.${SampleName}.${chr}
+            echo "$RealignOutputDir/${SampleName}/logs/ jobfile.sortnode.${SampleName}.${chr}" >> $RealignOutputLogs/sortnode.${chr}.AnisimovJoblist
+
+            realrecal_log=$RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in
+            awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/jobfile.realrecal.${SampleName}.${chr}
+            echo "$RealignOutputDir/${SampleName}/logs/ jobfile.realrecal.${SampleName}.${chr}" >> $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
 
             if [ $skipvcall == "NO" ]
             then
-               if [ ! -d $VarcallOutputDir/$SampleName ]
-               then
-                  mkdir -p $VarcallOutputDir/$SampleName
-               fi
-
-               # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
-               # best keep them in the sample subfolder
-               if [ $run_method eq "LAUNCHER" ]
-                  if [ ! -d $VarcallOutputDir/$SampleName/AnisimovLogs ]
-                  then
-                     mkdir $VarcallOutputDir/$SampleName/AnisimovLogs
-                  fi
-               fi
+               vcall_log=$VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in
+               awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/jobfile.vcallgatk.${SampleName}.${chr}
+               echo "$VcallOutputDir/${SampleName}/logs/ jobfile.vcallgatk.${SampleName}.${chr}" >> $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
             fi
+         done <  $outputdir/SAMPLENAMES.list
+         # end loop over samples
 
+         echo -e "\nscheduling Anisimov Launcher joblists\n"
+         qsub_sortnode_anisimov=$RealignOutputLogs/qsub.sortnode.${chr}.AnisimovLauncher
 
+         # appending the generic header to the qsub
+         cat $outputdir/qsubGenericHeader > $qsub_sortnode_anisimov
 
+         # constructing the qsub
+         echo "#PBS -N ${pipeid}_sortnode_${chr}" >> $qsub_sortnode_anisimov
+         echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode_anisimov
+         echo "#PBS -o $RealignOutputLogs/log.sortnode.${chr}.ou" >> $qsub_sortnode_anisimov
+         echo -e "#PBS -e $RealignOutputLogs/log.sortnode.${chr}.in\n" >> $qsub_sortnode_anisimov
 
-
-
-
-
-
-
-#####################################
-
-      for bam in $listfiles
-      do
-         bamfile=`basename $bam`
-         sample=`basename $bamfile .bam`
-         sID=$sample
-         sPU=$sample
-         sSM=$sample
-         RGparms=$( echo "RGID=${sID}:RGLB=${sLB}:RGPU=${sPU}:RGSM=${sSM}:RGPL=${sPL}:RGCN=${sCN}" )
-
-         qsub_sortnode=$realignlogdir/qsub.sort.$bamfile.$chr
-         echo "#PBS -V" > $qsub_sortnode
-         echo "#PBS -A $pbsprj" >> $qsub_sortnode
-         echo "#PBS -N ${pipeid}_sort_${bamfile}_$chr" >> $qsub_sortnode
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
-         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
-         echo "#PBS -o $realignlogdir/log.sort.$bamfile.$chr.ou" >> $qsub_sortnode
-         echo "#PBS -e $realignlogdir/log.sort.$bamfile.$chr.in" >> $qsub_sortnode
-         echo "#PBS -q $pbsqueue" >> $qsub_sortnode
-         echo "#PBS -m ae" >> $qsub_sortnode
-         echo "#PBS -M $email" >> $qsub_sortnode
-
-         # schedule using a qsub or via the launcher/serial
-         if [ $schedule eq "QSUB" ]
+         # sortnode only contains single-threaded commands
+         # -n should be equal to the number of Anisimov jobs + 1
+         # -d 2 is there to space the jobs every other integer core: bunches of fp operations are being performed
+         NumberOfProcesses=$(( samplecounter )) # already more than actual number of samples by 1
+         NumberOfProcPerNode=16
+         if [ $NumberOfProcesses -lt 17 ]
          then
-            echo "aprun -n 1 -d $thr $scriptdir/sortnode.sh $picardir $samdir $javamodule $outputdir $bam $bamfile.$chr.bam $bamfile.$chr.sorted.bam $RGparms $flag $chr $realignlogdir/log.sort.$bamfile.$chr.in $realignlogdir/log.sort.$bamfile.$chr.ou $email $realignlogdir/qsub.sort.$bamfile.$chr" >> $qsub_sortnode
-            `chmod a+r $qsub_sortnode`
-            sortjobid=`qsub $qsub_sortnode`
-            # new line to avoid hiccup
-            #`qhold -h u $sortjobid`
-            echo $sortjobid >> $outputrootdir/logs/REALSORTEDpbs.$bamfile
-            echo $sortjobid >> $outputrootdir/logs/REALSORTED.$bamfile_$chr
-         else 
-         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
-            # clear out the jobs file for that chromosome, for that sample   
-            truncate -s 0 $realrecal.$bamfile.$chr.serialjobs
-            # add this jobs file into joblist for the launcher
-            echo "$realignlogdir realrecal.$bamfile.$chr.serialjobs" >> $realignlogdir/$realrecal.AnisimovJoblist
-
-            echo "nohup $scriptdir/sortnode.sh $picardir $samdir $javamodule $outputdir $bam $bamfile.$chr.bam $bamfile.$chr.sorted.bam $RGparms $flag $chr $realignlogdir/log.sort.$bamfile.$chr.in $realignlogdir/log.sort.$bamfile.$chr.ou $email $realignlogdir/qsub.sort.$bamfile.$chr > $realignlogdir/log.sort.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
-         fi
-
-         chrinfiles[$inx]=${chrinfiles[$inx]}":-I:$outputdir/$bamfile.$chr.sorted.bam"
-         chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$bamfile.$chr.sorted.bam"
-      done # end loop over samples
-      echo `date`
-
-
-      sortid=$( cat $outputrootdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
-      outputfile=$chr.realrecal.$bamfile.output.bam
-      igv_files=${igv_files}":INPUT=${outputfile}"
-      echo "realign-recalibrate for interval:$chr..."
-      qsub_realrecalold=$realignlogdir/qsub.realrecal.$bamfile.$chr
-      echo "#PBS -V" > $qsub_realrecalold
-      echo "#PBS -A $pbsprj" >> $qsub_realrecalold
-      echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecalold
-      echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecalold
-      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecalold
-      echo "#PBS -o $realignlogdir/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecalold
-      echo "#PBS -e $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $qsub_realrecalold
-      echo "#PBS -q $pbsqueue" >> $qsub_realrecalold
-      echo "#PBS -m ae" >> $qsub_realrecalold
-      echo "#PBS -M $email" >> $qsub_realrecalold
-      echo "#PBS -W depend=afterok:$sortid" >> $qsub_realrecalold
-
-      if [ $schedule eq "QSUB" ]
-      then
-         echo "aprun -n 1 -d $thr $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecalold
-         `chmod a+r $qsub_realrecalold`
-         recaljobid=`qsub $qsub_realrecalold`
-         # new line to avoid hiccup
-         #`qhold -h u $recaljobid`
-         echo $recaljobid >> $outputrootdir/logs/REALRECALpbs.$bamfile
-      else 
-         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
-         echo "nohup $scriptdir/realrecalold.sh $outputdir $outputfile $chr ${chrinfiles[$inx]} ${chrinputfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $realignlogdir/log.realrecal.$bamfile.$chr.in $realignlogdir/log.realrecal.$bamfile.$chr.ou $email $realignlogdir/qsub.realrecal.$bamfile.$chr > $realignlogdir/log.realrecal.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
-      fi
-
-      if [ $skipvcall == "NO" ]
-      then
-         vardir=$( echo $outputdir | sed 's/realign/variant/' )
-         varlogdir=$( echo $realignlogdir | sed 's/realign/variant/' )
-  
-         vcf_files=${vcf_files}":${outputfile}"
-         echo "variant calling call.."
-         qsub_vcallgatk=$varlogdir/qsub.vcallgatk.$bamfile.$chr
-         echo "#PBS -V" > $qsub_vcallgatk
-         echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
-         echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
-         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
-         echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
-         echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_vcallgatk
-         echo "#PBS -q $pbsqueue" >> $qsub_vcallgatk
-         echo "#PBS -m ae" >> $qsub_vcallgatk
-         echo "#PBS -M $email" >> $qsub_vcallgatk
-         echo "#PBS -W depend=afterok:$recaljobid" >> $qsub_vcallgatk
-         if [ $schedule eq "QSUB" ]
-         then
-            echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
-            `chmod a+r $qsub_vcallgatk`
-            vcalljobid=`qsub $qsub_vcallgatk`
-            echo $vcalljobid >> $outputrootdir/logs/VCALLGATKpbs.$bamfile
+            NumberOfNodes=1
+            NumberOfProcPerNode=$(( samplecounter ))
          else
-            # something is messed up with redirection here
-            echo "nohup $scriptdir/vcallgatk.sh $vardir $outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $realignlogdir/realrecal.$bamfile.$chr.serialjobs
+            NumberOfNodes=$(( NumberOfProcesses/NumberOfProcPerNode ))
+            if [ `expr $NumberOfProcesses % $NumberOfProcPerNode` -gt 0 ] 
+            then
+               (( NumberOfNodes++ )) # there is a remainder in that division, and we give those remaining jobs an extra node
+            fi
          fi
-      else
-         echo "variant calling will not be run"
-      fi
+         echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_sortnode_anisimov
+         echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/sortnode.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/sortnode.${chr}.AnisimovLauncher.log" >> $qsub_sortnode_anisimov
+
+   #     qsub $qsub_anisimov
+
+      done # done going through chromosomes
+   ;;
+   "SERVER")
+      while read SampleName
+      do
+         nohup $RealignOutputDir/${SampleName}/logs/jobfile.sortnode.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in
+         nohup $RealignOutputDir/${SampleName}/logs/jobfile.realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in 
+
+         if [ $skipvcall == "NO" ]
+         then
+            nohup $VcallOutputDir/${SampleName}/logs/jobfile.vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in
+         fi
+      done  <  $outputdir/SAMPLENAMES.list
+      # end loop over samples
+   ;;
+   esac
 
 
-      (( $inx )) 
-      echo `date`
-      echo "bottom of the loop over chromosomes"
-   done
-   echo `date`
 
-
-     
-
-   if [ $schedule eq "ANISIMOV" ]
-   then
-
-      ################### figure out $numsamples !!!!!!!!!!!!!!!!!!#
-
-      echo "scheduling Anisimov Launcher joblist"
-      qsub_aisimov=$varlogdir/qsub.vcallgatk.$bamfile.$chr
-      echo "#PBS -V" > $qsub_aisimov
-      echo "#PBS -A $pbsprj" >> $qsub_aisimov
-      echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_aisimov
-      echo "#PBS -l walltime=$pbscpu" >> $qsub_aisimov
-      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_aisimov
-      echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_aisimov
-      echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_aisimov
-      echo "#PBS -q $pbsqueue" >> $qsub_aisimov
-      echo "#PBS -m ae" >> $qsub_aisimov
-      echo "#PBS -M $email" >> $qsub_aisimov
-
-      echo "aprun -n $numsamples -N 1 -d $thr ~anisimov/scheduler/scheduler.x $realignlogdir/$realrecal.AnisimovJoblist /bin/bash > $realignlogdir/RealRecalVarCallAnisimov.joblist.log" >> $qsub_anisimov
-      $realignlogdir/$realrecal.AnisimovJoblist
+#      echo "scheduling Anisimov Launcher joblist"
+#      qsub_aisimov=$varlogdir/qsub.vcallgatk.$bamfile.$chr
+#      echo "#PBS -V" > $qsub_aisimov
+#      echo "#PBS -A $pbsprj" >> $qsub_aisimov
+#      echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_aisimov
+#      echo "#PBS -l walltime=$pbscpu" >> $qsub_aisimov
+#      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_aisimov
+#      echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_aisimov
+#      echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_aisimov
+#      echo "#PBS -q $pbsqueue" >> $qsub_aisimov
+#      echo "#PBS -m ae" >> $qsub_aisimov
+#      echo "#PBS -M $email" >> $qsub_aisimov
+#
+#      echo "aprun -n $numsamples -N 1 -d $thr ~anisimov/scheduler/scheduler.x $RealignOutputLogs/$realrecal.AnisimovJoblist /bin/bash > $RealignOutputLogs/RealRecalVCallAnisimov.joblist.log" >> $qsub_anisimov
+#      $RealignOutputLogs/$realrecal.AnisimovJoblist
  
-     qsub $qsub_anisimov
-
-   fi
-
-   echo "clean up and produce summary table"
-   if [ $skipvcall == "NO" ]
-   then
-      listjobids=$( cat $outputrootdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
-   else
-      listjobids=$( cat $outputrootdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
-   fi
-
-   # preparing output files for realignment and/or variant calling
-
-   qsub_igvbam=$outputrootdir/logs/qsub.igvbam.$bamfile
-   echo "#PBS -V" > $qsub_igvbam
-   echo "#PBS -A $pbsprj" >> $qsub_igvbam
-   echo "#PBS -N ${pipeid}_igvbam.$bamfile" >> $qsub_igvbam
-   echo "#PBS -l walltime=$pbscpu" >> $qsub_igvbam
-   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_igvbam
-   echo "#PBS -o $outputrootdir/logs/log.igvbam.$bamfile.ou" >> $qsub_igvbam
-   echo "#PBS -e $outputrootdir/logs/log.igvbam.$bamfile.in" >> $qsub_igvbam
-   echo "#PBS -q $pbsqueue" >> $qsub_igvbam
-   echo "#PBS -m ae" >> $qsub_igvbam
-   echo "#PBS -M $email" >> $qsub_igvbam
-   echo "#PBS -W depend=afterok:$listjobids" >> $qsub_igvbam
-   echo "aprun -n 1 -d $thr $scriptdir/igvbam.sh $outputdir $igv_files $runfile $outputrootdir/logs/log.igvbam.$bamfile.in $outputroot/logs/log.igvbam.$bamfile.ou $email $outputrootdir/logs/qsub.igvbam.$bamfile"  >> $qsub_igvbam
-   `chmod a+r $qsub_igvbam`
-   igvjobid=`qsub $qsub_igvbam`
-   echo $igvjobid >> $outputrootdir/logs/IGVBAMpbs.$bamfile
-
-   if [ $cleanupflag == "YES" ]
-   then
-      qsub_cleanup=$outputrootdir/logs/qsub.cleanup.realn.$bamfile
-      echo "#PBS -V" > $qsub_cleanup
-      echo "#PBS -A $pbsprj" >> $qsub_cleanup
-      echo "#PBS -N ${pipeid}_cleanup_realn.$bamfile" >> $qsub_cleanup
-      echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
-      echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
-      echo "#PBS -o $outputrootdir/logs/log.cleanup.realn.$bamfile.ou" >> $qsub_cleanup
-      echo "#PBS -e $outputrootdir/logs/log.cleanup.realn.$bamfile.in" >> $qsub_cleanup
-      echo "#PBS -q $pbsqueue" >> $qsub_cleanup
-      echo "#PBS -m ae" >> $qsub_cleanup
-      echo "#PBS -M $email" >> $qsub_cleanup
-      echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_cleanup
-      echo "$scriptdir/cleanup.sh $outputrootdir $analysis $outputrootdir/logs/log.cleanup.realn.$bamfile.in $outputrootdir/logs/log.cleanup.realn.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.realn.$bamfile"  >> $qsub_cleanup
-      `chmod a+r $qsub_cleanup`
-      cleanjobid=`qsub $qsub_cleanup`
-      echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
-   fi
-
-   if [ $skipvcall == "NO" ]
-   then
-      qsub_mergevcf=$varlogdir/qsub.mergevcf.$bamfile
-      echo "#PBS -V" > $qsub_mergevcf
-      echo "#PBS -A $pbsprj" >> $qsub_mergevcf
-      echo "#PBS -N ${pipeid}_mergevcf.$bamfile" >> $qsub_mergevcf
-      echo "#PBS -l walltime=$pbscpu" >> $qsub_mergevcf
-      echo "#PBS -l nodes=1:ppn=1" >> $qsub_mergevcf
-      echo "#PBS -o $varlogdir/log.mergevcf.$bamfile.ou" >> $qsub_mergevcf
-      echo "#PBS -e $varlogdir/log.mergevcf.$bamfile.in" >> $qsub_mergevcf
-      echo "#PBS -q $pbsqueue" >> $qsub_mergevcf
-      echo "#PBS -m ae" >> $qsub_mergevcf
-      echo "#PBS -M $email" >> $qsub_mergevcf
-      echo "#PBS -W depend=afterok:$listjobids" >> $qsub_mergevcf
-      echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.$bamfile.in $varlogdir/log.mergevcf.$bamfile.ou $email $varlogdir/qsub.mergevcf.$bamfile"  >> $qsub_mergevcf
-      `chmod a+r $qsub_mergevcf`
-      mergevcfjobid=`qsub $qsub_mergevcf`
-      echo $mergevcfjobid >> $outputrootdir/logs/MERGEVCFpbs
-
-      if [ $cleanupflag == "YES" ]
-      then
-         qsub_cleanup=$outputrootdir/logs/qsub.cleanup.vcall.$bamfile
-         echo "#PBS -V" > $qsub_cleanup
-         echo "#PBS -A $pbsprj" >> $qsub_cleanup
-         echo "#PBS -N ${pipeid}_cleanup_vcall.$bamfile" >> $qsub_cleanup
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
-         echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
-         echo "#PBS -o $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou" >> $qsub_cleanup
-         echo "#PBS -e $outputrootdir/logs/log.cleanup.vcall.$bamfile.in" >> $qsub_cleanup
-         echo "#PBS -q $pbsqueue" >> $qsub_cleanup
-         echo "#PBS -m ae" >> $qsub_cleanup
-         echo "#PBS -M $email" >> $qsub_cleanup
-         echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_cleanup
-         echo "$scriptdir/cleanup.sh $outputrootdir VCALL_ONLY $outputrootdir/logs/log.cleanup.vcall.$bamfile.in $outputrootdir/logs/log.cleanup.vcall.$bamfile.ou $email $outputrootdir/logs/qsub.cleanup.vcall.$bamfile"  >> $qsub_cleanup
-         `chmod a+r $qsub_cleanup`
-         cleanjobid=`qsub $qsub_cleanup`
-         echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs.$bamfile
-      fi
-   fi
-
-  # new lines to avoid hiccups and missing jobs in summary
-
-  heldjobs_realsorted=$( cat $outputrootdir/logs/REALSORTEDpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
-  heldjobs_realrecal=$( cat $outputrootdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
-  heldjobs_vcall=$( cat $outputrootdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
-  cleanupjobs=$( cat $outputrootdir/logs/CLEANUPpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
-
-  #`qrls -h u $heldjobs_realsorted`
-  #`qrls -h u $heldjobs_realrecal`
-  #`qrls -h u $heldjobs_vcall`
-  `sleep 10s`
-
-  qsub_summary=$outputrootdir/logs/qsub.summary.realn.allok.$bamfile
-  echo "#PBS -V" > $qsub_summary
-  echo "#PBS -A $pbsprj" >> $qsub_summary
-  echo "#PBS -N ${pipeid}_summaryok.$bamfile" >> $qsub_summary
-  echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
-  echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-  echo "#PBS -o $outputrootdir/logs/log.summary.realn.$bamfile.ou" >> $qsub_summary
-  echo "#PBS -e $outputrootdir/logs/log.summary.realn.$bamfile.in" >> $qsub_summary
-  echo "#PBS -q $pbsqueue" >> $qsub_summary
-  echo "#PBS -m ae" >> $qsub_summary
-  echo "#PBS -M $email" >> $qsub_summary
-  if [ `expr ${#cleanupjobs}` -gt 0 ]
-  then 
-     echo "#PBS -W depend=afterok:$cleanupjobs" >> $qsub_summary
-  else
-     if [ $skipvcall == "YES" ]
-     then
-        echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_summary
-     else
-        echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_summary
-     fi
-  fi
-  echo "$scriptdir/summary.sh $outputrootdir $email exitok"  >> $qsub_summary
-  `chmod a+r $qsub_summary`
-  lastjobid=`qsub $qsub_summary`
-  echo $lastjobid >> $outputrootdir/logs/SUMMARYpbs.$bamfile
-
-  if [ `expr ${#lastjobid}` -lt 1 ]
-  then
-     echo "at least one job aborted"
-     qsub_summary=$outputrootdir/logs/qsub.summary.realn.afterany.$bamfile
-     echo "#PBS -V" > $qsub_summary
-     echo "#PBS -A $pbsprj" >> $qsub_summary
-     echo "#PBS -N ${pipeid}_summary_afterany.$bamfile" >> $qsub_summary
-     echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
-     echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-     echo "#PBS -o $outputrootdir/logs/log.summary.realn.afterany.$bamfile.ou" >> $qsub_summary
-     echo "#PBS -e $outputrootdir/logs/log.summary.realn.afterany.$bamfile.in" >> $qsub_summary
-     echo "#PBS -q $pbsqueue" >> $qsub_summary
-     echo "#PBS -m ae" >> $qsub_summary
-     echo "#PBS -M $email" >> $qsub_summary
-     echo "#PBS -W depend=afterany:$listjobids" >> $qsub_summary
-     echo "$scriptdir/summary.sh $outputtopdir $email exitnotok"  >> $qsub_summary
-     `chmod a+r $qsub_summary`
-     badjobid=`qsub $qsub_summary`
-     echo $badjobid >> $outputrootdir/logs/SUMMARYpbs.$bamfile
-  fi
-  `chmod -R 770 $outputroordir/logs`
-  echo `date`
-fi
+##     qsub $qsub_anisimov
+#
+#   fi
+#
+#   echo "clean up and produce summary table"
+#   if [ $skipvcall == "NO" ]
+#   then
+#      listjobids=$( cat $outputdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
+#   else
+#      listjobids=$( cat $outputdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" ":" )
+#   fi
+#
+#   # preparing output files for realignment and/or variant calling
+#
+#   qsub_igvbam=$outputdir/logs/qsub.igvbam.$bamfile
+#   echo "#PBS -V" > $qsub_igvbam
+#   echo "#PBS -A $pbsprj" >> $qsub_igvbam
+#   echo "#PBS -N ${pipeid}_igvbam.$bamfile" >> $qsub_igvbam
+#   echo "#PBS -l walltime=$pbscpu" >> $qsub_igvbam
+#   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_igvbam
+#   echo "#PBS -o $outputdir/logs/log.igvbam.$bamfile.ou" >> $qsub_igvbam
+#   echo "#PBS -e $outputdir/logs/log.igvbam.$bamfile.in" >> $qsub_igvbam
+#   echo "#PBS -q $pbsqueue" >> $qsub_igvbam
+#   echo "#PBS -m ae" >> $qsub_igvbam
+#   echo "#PBS -M $email" >> $qsub_igvbam
+#   echo "#PBS -W depend=afterok:$listjobids" >> $qsub_igvbam
+#   echo "aprun -n 1 -d $thr $scriptdir/igvbam.sh $????#####outputdir $igv_files $runfile $outputdir/logs/log.igvbam.$bamfile.in $outputroot/logs/log.igvbam.$bamfile.ou $email $outputdir/logs/qsub.igvbam.$bamfile"  >> $qsub_igvbam
+#   `chmod a+r $qsub_igvbam`
+##   igvjobid=`qsub $qsub_igvbam`
+#   echo $igvjobid >> $outputdir/logs/IGVBAMpbs.$bamfile
+#
+#   if [ $cleanupflag == "YES" ]
+#   then
+#      qsub_cleanup=$outputdir/logs/qsub.cleanup.realn.$bamfile
+#      echo "#PBS -V" > $qsub_cleanup
+#      echo "#PBS -A $pbsprj" >> $qsub_cleanup
+#      echo "#PBS -N ${pipeid}_cleanup_realn.$bamfile" >> $qsub_cleanup
+#      echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
+#      echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
+#      echo "#PBS -o $outputdir/logs/log.cleanup.realn.$bamfile.ou" >> $qsub_cleanup
+#      echo "#PBS -e $outputdir/logs/log.cleanup.realn.$bamfile.in" >> $qsub_cleanup
+#      echo "#PBS -q $pbsqueue" >> $qsub_cleanup
+#      echo "#PBS -m ae" >> $qsub_cleanup
+#      echo "#PBS -M $email" >> $qsub_cleanup
+#      echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_cleanup
+#      echo "$scriptdir/cleanup.sh $outputdir $analysis $outputdir/logs/log.cleanup.realn.$bamfile.in $outputdir/logs/log.cleanup.realn.$bamfile.ou $email $outputdir/logs/qsub.cleanup.realn.$bamfile"  >> $qsub_cleanup
+#      `chmod a+r $qsub_cleanup`
+##      cleanjobid=`qsub $qsub_cleanup`
+#      echo $cleanjobid >> $outputdir/logs/CLEANUPpbs.$bamfile
+#   fi
+#
+#   if [ $skipvcall == "NO" ]
+#   then
+#      qsub_mergevcf=$varlogdir/qsub.mergevcf.$bamfile
+#      echo "#PBS -V" > $qsub_mergevcf
+#      echo "#PBS -A $pbsprj" >> $qsub_mergevcf
+#      echo "#PBS -N ${pipeid}_mergevcf.$bamfile" >> $qsub_mergevcf
+#      echo "#PBS -l walltime=$pbscpu" >> $qsub_mergevcf
+#      echo "#PBS -l nodes=1:ppn=1" >> $qsub_mergevcf
+#      echo "#PBS -o $varlogdir/log.mergevcf.$bamfile.ou" >> $qsub_mergevcf
+#      echo "#PBS -e $varlogdir/log.mergevcf.$bamfile.in" >> $qsub_mergevcf
+#      echo "#PBS -q $pbsqueue" >> $qsub_mergevcf
+#      echo "#PBS -m ae" >> $qsub_mergevcf
+#      echo "#PBS -M $email" >> $qsub_mergevcf
+#      echo "#PBS -W depend=afterok:$listjobids" >> $qsub_mergevcf
+#      echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.$bamfile.in $varlogdir/log.mergevcf.$bamfile.ou $email $varlogdir/qsub.mergevcf.$bamfile"  >> $qsub_mergevcf
+#      `chmod a+r $qsub_mergevcf`
+##      mergevcfjobid=`qsub $qsub_mergevcf`
+#      echo $mergevcfjobid >> $outputdir/logs/MERGEVCFpbs
+#
+#      if [ $cleanupflag == "YES" ]
+#      then
+#         qsub_cleanup=$outputdir/logs/qsub.cleanup.vcall.$bamfile
+#         echo "#PBS -V" > $qsub_cleanup
+#         echo "#PBS -A $pbsprj" >> $qsub_cleanup
+#         echo "#PBS -N ${pipeid}_cleanup_vcall.$bamfile" >> $qsub_cleanup
+#         echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
+#         echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
+#         echo "#PBS -o $outputdir/logs/log.cleanup.vcall.$bamfile.ou" >> $qsub_cleanup
+#         echo "#PBS -e $outputdir/logs/log.cleanup.vcall.$bamfile.in" >> $qsub_cleanup
+#         echo "#PBS -q $pbsqueue" >> $qsub_cleanup
+#         echo "#PBS -m ae" >> $qsub_cleanup
+#         echo "#PBS -M $email" >> $qsub_cleanup
+#         echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_cleanup
+#         echo "$scriptdir/cleanup.sh $outputdir VCALL_ONLY $outputdir/logs/log.cleanup.vcall.$bamfile.in $outputdir/logs/log.cleanup.vcall.$bamfile.ou $email $outputdir/logs/qsub.cleanup.vcall.$bamfile"  >> $qsub_cleanup
+#         `chmod a+r $qsub_cleanup`
+##         cleanjobid=`qsub $qsub_cleanup`
+#         echo $cleanjobid >> $outputdir/logs/CLEANUPpbs.$bamfile
+#      fi
+#   fi
+#
+#  # new lines to avoid hiccups and missing jobs in summary
+#
+#  heldjobs_realsorted=$( cat $outputdir/logs/REALSORTEDpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
+#  heldjobs_realrecal=$( cat $outputdir/logs/REALRECALpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
+#  heldjobs_vcall=$( cat $outputdir/logs/VCALLGATKpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
+#  cleanupjobs=$( cat $outputdir/logs/CLEANUPpbs.$bamfile | sed "s/\..*//g" | tr "\n" " " )
+#
+#  #`qrls -h u $heldjobs_realsorted`
+#  #`qrls -h u $heldjobs_realrecal`
+#  #`qrls -h u $heldjobs_vcall`
+#  `sleep 10s`
+#
+#  qsub_summary=$outputdir/logs/qsub.summary.realn.allok.$bamfile
+#  echo "#PBS -V" > $qsub_summary
+#  echo "#PBS -A $pbsprj" >> $qsub_summary
+#  echo "#PBS -N ${pipeid}_summaryok.$bamfile" >> $qsub_summary
+#  echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+#  echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
+#  echo "#PBS -o $outputdir/logs/log.summary.realn.$bamfile.ou" >> $qsub_summary
+#  echo "#PBS -e $outputdir/logs/log.summary.realn.$bamfile.in" >> $qsub_summary
+#  echo "#PBS -q $pbsqueue" >> $qsub_summary
+#  echo "#PBS -m ae" >> $qsub_summary
+#  echo "#PBS -M $email" >> $qsub_summary
+#  if [ `expr ${#cleanupjobs}` -gt 0 ]
+#  then 
+#     echo "#PBS -W depend=afterok:$cleanupjobs" >> $qsub_summary
+#  else
+#     if [ $skipvcall == "YES" ]
+#     then
+#        echo "#PBS -W depend=afterok:$igvjobid" >> $qsub_summary
+#     else
+#        echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub_summary
+#     fi
+#  fi
+#  echo "$scriptdir/summary.sh $outputdir $email exitok"  >> $qsub_summary
+#  `chmod a+r $qsub_summary`
+##  lastjobid=`qsub $qsub_summary`
+#  echo $lastjobid >> $outputdir/logs/SUMMARYpbs.$bamfile
+#
+#  if [ `expr ${#lastjobid}` -lt 1 ]
+#  then
+#     echo "at least one job aborted"
+#     qsub_summary=$outputdir/logs/qsub.summary.realn.afterany.$bamfile
+#     echo "#PBS -V" > $qsub_summary
+#     echo "#PBS -A $pbsprj" >> $qsub_summary
+#     echo "#PBS -N ${pipeid}_summary_afterany.$bamfile" >> $qsub_summary
+#     echo "#PBS -l walltime=$pbscpu" >> $qsub_summary
+#     echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
+#     echo "#PBS -o $outputdir/logs/log.summary.realn.afterany.$bamfile.ou" >> $qsub_summary
+#     echo "#PBS -e $outputdir/logs/log.summary.realn.afterany.$bamfile.in" >> $qsub_summary
+#     echo "#PBS -q $pbsqueue" >> $qsub_summary
+#     echo "#PBS -m ae" >> $qsub_summary
+#     echo "#PBS -M $email" >> $qsub_summary
+#     echo "#PBS -W depend=afterany:$listjobids" >> $qsub_summary
+#     echo "$scriptdir/summary.sh $outputtopdir $email exitnotok"  >> $qsub_summary
+#     `chmod a+r $qsub_summary`
+##     badjobid=`qsub $qsub_summary`
+#     echo $badjobid >> $outputdir/logs/SUMMARYpbs.$bamfile
+#  fi
+#  `chmod -R 770 $outputroordir/logs`
+#  echo `date`
+#fi
 
 
 
 # howe to implement the case switrching for schweuler
 
 
-            if [ $run_method == "LAUNCHER" ]
-            then
-               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" > $RealignOutputLogs/$realignnew_${SampleName}_LauncherJob
-               echo "$RealignOutputLogs $realignnew_${SampleName}_LauncherJob" >> $RealignOutputLogs/$realignnew_LauncherJobList
-            else
-               # in this case does not matter whether with or without aprun: the realign_new should run on a MOM node anyway
-               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $RealignOutputLogs/qsub.${SampleName}.realign_new
-            fi
-            #`chmod a+r $qsub_realignnew`
-            # realrecaljob=`qsub $qsub_realignnew`
-            # `qhold -h u $realrecaljob`
-            # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
-         fi # finish checking for empty lines in SampleNames file
-
-         (( samplescounter++ ))
-      done <  $TopOutputLogs/SAMPLENAMES.list
-      # end loop over input samples
+#            if [ $run_method == "LAUNCHER" ]
+#            then
+#               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" > $RealignOutputLogs/$realignnew_${SampleName}_LauncherJob
+#               echo "$RealignOutputLogs $realignnew_${SampleName}_LauncherJob" >> $RealignOutputLogs/$realignnew_LauncherJobList
+#            else
+#               # in this case does not matter whether with or without aprun: the realign_new should run on a MOM node anyway
+#               echo "$scriptdir/realign_new.sh $RealignOutputDir/$SampleName $RealignOutputLogs $listfiles $runfile $realrecalflag $RealignOutputLogs/log.${SampleName}.realign_new.in $RealignOutputLogs/log.${SampleName}.realign_new.ou $email $RealignOutputLogs/qsub.${SampleName}.realign_new" >> $RealignOutputLogs/qsub.${SampleName}.realign_new
+#            fi
+#            #`chmod a+r $qsub_realignnew`
+#            # realrecaljob=`qsub $qsub_realignnew`
+#            # `qhold -h u $realrecaljob`
+#            # echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+#         fi # finish checking for empty lines in SampleNames file
+#
+#         (( samplecounter++ ))
+#      done <  $outputdir/SAMPLENAMES.list
+#      # end loop over input samples
 
 
 
       ### schedule the realign_new job(s)
-      case $run_method in
-         APRUN|QSUB)
-            # schedule a separate qsub for realign_new for each sample
-            while read SampleName
-            do
+#      case $run_method in
+#         APRUN|QSUB)
+#            # schedule a separate qsub for realign_new for each sample
+#            while read SampleName
+#            do
+#
+#               qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
+##
+#               # constructing the qsub
+#               # appending the generic header to the
+#               cat $????#####outputdir/qsubGenericHeader $qsub_realignnew > /tmp/qsub.${SampleName}.realign_new && mv /tmp/qsub.${SampleName}.realign_new $qsub_realignnew
+#
+#                sed -i "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
+#               echo "#PBS -l walltime=01:00:00" >> $qsub_realignnew # allowing an hour for realign_new:
+#               # should be more than enough (it only takes ~5 minutes), and increases job priority
+#               echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
+#               echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
+#               echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
+#               if [ `expr ${#JOBSmayo}` -gt 0 ]
+#               then
+#                  echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
+#   #           else
+#   #              echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
+#               fi
+#               echo -e "\n" >> $qsub_realignnew
+#            done <  $outputdir/SAMPLENAMES.list
+#            # end loop over input samples
+#
+#         ;;
+#         LAUNCHER)
+#            commands
+#         ;;
+#         SERVER)
+#            commands
+#         ;;
+#      esac
 
-               qsub_realignnew=$RealignOutputLogs/qsub.${SampleName}.realign_new
 
-               # constructing the qsub
-               # appending the generic header to the
-               cat $outputdir/qsubGenericHeader $qsub_realignnew > /tmp/qsub.${SampleName}.realign_new && mv /tmp/qsub.${SampleName}.realign_new $qsub_realignnew
 
-                sed -i "#PBS -N ${pipeid}_realign_new.${SampleName}" >> $qsub_realignnew
-               echo "#PBS -l walltime=01:00:00" >> $qsub_realignnew # allowing an hour for realign_new:
-               # should be more than enough (it only takes ~5 minutes), and increases job priority
-               echo "#PBS -l nodes=1:ppn=1" >> $qsub_realignnew
-               echo "#PBS -o $RealignOutputLogs/log.${SampleName}.realign_new.ou" >> $qsub_realignnew
-               echo "#PBS -e $RealignOutputLogs/log.${SampleName}.realign_new.in" >> $qsub_realignnew
-               if [ `expr ${#JOBSmayo}` -gt 0 ]
-               then
-                  echo "#PBS -W depend=afterok:$JOBSmayo" >> $qsub_realignnew
-   #           else
-   #              echo "#PBS -W depend=afterok:$JOBSncsa" >> $qsub_realignnew
-               fi
-               echo -e "\n" >> $qsub_realignnew
-            done <  $TopOutputLogs/SAMPLENAMES.list
-            # end loop over input samples
+#aprun -n 1 -d $thr sortnode
+#
+#         qsub_sortnode=$RealignOutputLogs/qsub.sort.${SampleName}.$chr
+#         echo "#PBS -N ${pipeid}_sort_${SampleName}_$chr" >> $qsub_sortnode
+#         echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode
+#         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortnode
+#         echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.ou" >> $qsub_sortnode
+#         echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.in" >> $qsub_sortnode
+#
+#         `chmod a+r $qsub_sortnode`
+#            sortjobid=`qsub $qsub_sortnode`
+#            # new line to avoid hiccup
+#            #`qhold -h u $sortjobid`
+#            echo $sortjobid >> $outputdir/logs/REALSORTEDpbs.$SampleName
+#            echo $sortjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
+#
+#            truncate -s 0 $realrecal.$SampleName.$chr.serialjobs
+#            echo "$RealignOutputLogs realrecal.$SampleName.$chr.serialjobs" >> $RealignOutputLogs/$realrecal.AnisimovJoblist
 
-         ;;
-         LAUNCHER)
-            commands
-         ;;
-         SERVER)
-            commands
-         ;;
-      esac
-
+fi

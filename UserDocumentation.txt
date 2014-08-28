@@ -70,6 +70,13 @@ In either case, one of the input parameters is the directory where to look for
 the aligned bams. I am rewriting the code so that a single realign_new is called in any
 case, with the appropriate folder for aligned bams, depending on the case.
 * moved creating SAMPLENAMES.list file into main.sh -- should not have to do this in every piece of code!!
+* intended to run all realrecall in a single joblist per chromosome. But, multisample case 
+makes it more sensible to have one joblist for sortnode, as it is independent of multisample
+variable; then if multisample then we only use a single qsub for realrecalold, and a single one for vcall;
+but for independent samples, we do one joblist for realrecal per chromosome, and one joblist
+for vcall per chromosome
+* for each qsub file, we now construct a command file. because we have extra flexibility of 
+using qsub, aprun, launcher or serial; then the command gets modified and contents put into qsub or jobfile
 
 #################################################
 ############ NEED TO RENAME SORTNODE AND REALIGN, REALIGN_NEW AND REALRECAL.OLD ################

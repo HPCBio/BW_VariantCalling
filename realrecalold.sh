@@ -5,7 +5,7 @@
 ########################################################
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# != 14 ];
+if [ $# != 13 ];
 then
 	MSG="parameter mismatch."
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
@@ -19,16 +19,16 @@ else
         outputfile=$2	
         chr=$3
         chrinfiles=$4
-        chrinputfiles=$5
-        region=$6
-        realparms=$7
-        recalparms=$8
-        runfile=$9
-        flag=${10}
-	elog=${11}
-	olog=${12}
-	email=${13}
-        qsubfile=${14}
+        #chrinputfiles=$5 # not used anymore?
+        region=$5
+        realparms=$6
+        recalparms=$7
+        runfile=$8
+        flag=${9}
+	elog=${10}
+	olog=${11}
+	email=${12}
+        qsubfile=${13}
 	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
         if [ ! -s $runfile ]
@@ -54,7 +54,7 @@ else
 
         # cleaning up the lists
         chrinfiles=$( echo $chrinfiles | tr ":" " " )
-        chrinputfiles=$( echo $chrinputfiles | tr ":" " " )
+#        chrinputfiles=$( echo $chrinputfiles | tr ":" " " ) # not used anymore?
         region=$( echo $region | tr ":" " " )
         realparms=$( echo $realparms | tr ":" " " )
         recalparms=$( echo $recalparms | tr ":" " " )
