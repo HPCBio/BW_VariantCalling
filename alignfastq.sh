@@ -210,7 +210,7 @@ echo "##########################################################################
            exit 1;
         fi
 
-        numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
+        numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
         if [ $numsamples -gt 1 -a $multisample == "YES" ]
         then
             echo "multiple samples to be aligned."
@@ -1004,7 +1004,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	       cat $AlignOutputLogs/MERGED_$SampleName >> $TopOutputLogs/MERGEDpbs
             fi
           fi
-	done <  $TopOutputLogs/SAMPLENAMES.list
+	done <  $outputdir/SAMPLENAMES.list
         # end loop over input fastq
 
 
@@ -1163,7 +1163,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub_realign
 	    echo "#PBS -q $pbsqueue" >> $qsub_realign
 	    echo "#PBS -m ae" >> $qsub_realign
-	    echo "#PBS -W depend=afterany:$pbsids" >> $qsub_realign
+	    echo "#PBS -W depend=afterok:$pbsids" >> $qsub_realign
 	    echo "#PBS -M $email" >> $qsub_realign
 	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub_realign
 	    `chmod a+r $qsub_realign` 

@@ -430,7 +430,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 # not used anymore?          chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$SampleName.$chr.sorted.bam"
          else
             echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
-            echo "$scriptdir/realrecalold.sh $RealignOutputDir/${SampleName} $chr.realrecal.$SampleName.output.bam $chr $RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}
+            echo "$scriptdir/realrecalold.sh $RealignOutputDir/${SampleName} $chr.realrecal.$SampleName.output.bam $chr -I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}
            
             if [ $skipvcall == "NO" ]
             then
@@ -637,11 +637,18 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
          echo -e "\nscheduling Anisimov Launcher joblists\n"
          qsub_sortnode_anisimov=$RealignOutputLogs/qsub.sortnode.${chr}.AnisimovLauncher
+         qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
+         qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
 
          # appending the generic header to the qsub
          cat $outputdir/qsubGenericHeader > $qsub_sortnode_anisimov
+         cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
+         cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
 
-         # constructing the qsub
+
+
+         ###############
+         ############### constructing the qsub for sortnode
          echo "#PBS -N ${pipeid}_sortnode_${chr}" >> $qsub_sortnode_anisimov
          echo "#PBS -l walltime=$pbscpu" >> $qsub_sortnode_anisimov
          echo "#PBS -o $RealignOutputLogs/log.sortnode.${chr}.ou" >> $qsub_sortnode_anisimov
@@ -658,7 +665,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
             NumberOfProcPerNode=$(( samplecounter ))
          else
             NumberOfNodes=$(( NumberOfProcesses/NumberOfProcPerNode ))
-            if [ `expr $NumberOfProcesses % $NumberOfProcPerNode` -gt 0 ] 
+            if [ `expr $NumberOfProcesses % $NumberOfProcPerNode` -gt 0 ]
             then
                (( NumberOfNodes++ )) # there is a remainder in that division, and we give those remaining jobs an extra node
             fi
@@ -666,7 +673,49 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_sortnode_anisimov
          echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/sortnode.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/sortnode.${chr}.AnisimovLauncher.log" >> $qsub_sortnode_anisimov
 
-   #     qsub $qsub_anisimov
+         sortnode_job=`qsub $qsub_sortnode_anisimov`
+         `qhold -h u $sortnode_job`
+
+
+
+         ###############
+         ############### constructing the qsub for realrecal
+         echo "#PBS -N ${pipeid}_realrecal_${chr}" >> $qsub_realrecal_anisimov
+         echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal_anisimov
+         echo "#PBS -o $RealignOutputLogs/log.realrecal.${chr}.ou" >> $qsub_realrecal_anisimov
+         echo -e "#PBS -e $RealignOutputLogs/log.realrecal.${chr}.in\n" >> $qsub_realrecal_anisimov
+         # add dependency to realrecal job
+         echo -e "#PBS -W depend=afterok:$sortnode_job\n" >> $qsub_realrecal_anisimov
+         # realrecal and vcall actually use multithreaded processes,
+         # so we will give each chromosome its own node
+         # +1 for the launcher
+         echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
+         # the actual command
+         echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${chr}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
+
+         realrecal_job=`qsub $qsub_realrecal_anisimov`
+         `qhold -h u $realrecal_job`
+         `qrls -h u $sortnode_job`
+
+
+
+         ###############
+         ############### constructing the qsub for vcallgatk
+         echo "#PBS -N ${pipeid}_vcallgatk_${chr}" >> $qsub_vcallgatk_anisimov
+         echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov
+         echo "#PBS -o $RealignOutputLogs/log.vcallgatk.${chr}.ou" >> $qsub_vcallgatk_anisimov
+         echo -e "#PBS -e $RealignOutputLogs/log.vcallgatk.${chr}.in\n" >> $qsub_vcallgatk_anisimov
+         # add dependency to realrecal job
+         echo -e "#PBS -W depend=afterok:$realrecal_job\n" >> $qsub_vcallgatk_anisimov
+         # realrecal and vcall actually use multithreaded processes, 
+         # so we will give each chromosome its own node
+         # +1 for the launcher
+         echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
+         # the actual command
+         echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+
+         vcallgatk_job=`qsub $qsub_vcallgatk_anisimov`
+         `qrls -h u $realrecal_job`
 
       done # done going through chromosomes
    ;;

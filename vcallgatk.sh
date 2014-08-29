@@ -380,4 +380,7 @@ else
 	    echo "Skipping PhaseByTransmission and SNVMix"
 	fi
 	
+
+         nohup python /projects/sciteam/jq9/builds/StephensReadsSimulator_March27_2014/read_simulator/extra_utilities/vcf_compare.py $refdir/$ref /projects/sciteam/jq9/LSM_SyntheticDataGeneration/Zach/Chr1_50X_StephensAnisimov_ERR250965/H3A_NextGen_assessment_set2/H3A_NextGen_assessment.Chr1_50X.set2_golden.vcf $outfile blah
+
 fi
