@@ -37,11 +37,13 @@ else
        exit 1;
     fi
     markdup=$( echo $dupparms | tr "_" "\n" | grep -w dup | cut -d '=' -f2 )
+    samprocessing=$( cat $runfile | grep -w SAMPROCESSING | cut -d "=" -f2 )
     deldup=$( echo $dupparms | tr "_" "\n" | grep -w flag | cut -d '=' -f2 )
     picardir=$( cat $runfile | grep -w PICARDIR | cut -d "=" -f2 )
     markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
     samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
     samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
+    sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d "=" -f2 )
     novodir=$( cat $runfile | grep -w NOVODIR | cut -d "=" -f2 )
     threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
     javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d "=" -f2 )
@@ -98,6 +100,7 @@ else
     rgheader=$( echo -n -e "@RG\t" )$( echo $header  | tr "=" ":" )
 
     ## step 1: sort-merge and add RG tags all at once
+    ## novosort ingests bam files and outputs bam files as well
     cd $outputdir
     if [ $markduplicatestool == "PICARD" ]
     then
@@ -179,7 +182,19 @@ else
 	    exitcode=$?
         elif [ $markduplicatestool == "SAMBLASTER" ]
         then
+        if [ $samprocessing == "SAMTOOLS" ]
+        then
+           echo `date`
+           # convert from novosorted bam to sam, mark duplicates, then convert back to bam
            $samdir/samtools view -h $tmpfilewdups | $samblasterdir/samblaster | $samdir/samtools view -Sb -> $outfilewdups.namesorted
+           exitcode=$?
+           echo `date`
+        elif [ $samprocessing == "SAMBAMBA" ]
+        then
+           echo `date`
+           # convert from novosorted bam to sam, mark duplicates, then convert back to bam
+           $sambambadir/sambamba view -p -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -p -t 32 -f bam -S -o $outfilewdups.namesorted
+           echo `date`
            exitcode=$?
         fi
 

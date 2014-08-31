@@ -137,21 +137,21 @@ else
         fi
 
         echo `date`
-        java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
-            INPUT=${bamprefix}.wdups.sorted.bam \
-            OUTPUT=${bamprefix}.wdups.sorted.bam.flagstat \
-            VALIDATION_STRINGENCY=SILENT
+#        java -Xmx6g -Xms512m -jar $picardir/CollectAlignmentSummaryMetrics.jar \
+#            INPUT=${bamprefix}.wdups.sorted.bam \
+#            OUTPUT=${bamprefix}.wdups.sorted.bam.flagstat \
+#            VALIDATION_STRINGENCY=SILENT
 
-         exitcode=$?
-         if [ $exitcode -ne 0 ]
-         then
-             MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode . bwamem_pe_markduplicates stopped "
-             #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-             exit $exitcode;
-         fi
-        echo `date`
+#         exitcode=$?
+#         if [ $exitcode -ne 0 ]
+#         then
+#             MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode . bwamem_pe_markduplicates stopped "
+#             #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+#             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+#             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+#             exit $exitcode;
+#         fi
+#        echo `date`
 
 
 

@@ -19,11 +19,16 @@ else
         samfile=$5
         bamfile=$6
         scriptdir=$7
-        samdir=$8
+        runfile=$8
         paired=$9
         R1=${10}
 
         parameters=$( echo $params | tr "_" " " )
+        samprocessing=$( cat $runfile | grep -w SAMPROCESSING | cut -d "=" -f2 )
+        sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d "=" -f2 )
+
+        samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
+
 
         ## checking quality scores to gather additional params
         qscores=$scriptdir/checkFastqQualityScores.pl
@@ -80,12 +85,23 @@ else
         fi
 
         ## sam2bam conversion
-	$samdir/samtools view -bS -o $bamfile $samfile
-        exitcode=$?
-        echo `date`
+        if [ $samprocessing == "SAMTOOLS" ]
+        then
+           echo `date`
+	   $samdir/samtools view -bS -o $bamfile $samfile
+           exitcode=$?
+           echo `date`
+        elif [ $samprocessing == "SAMBAMBA" ]
+        then
+           echo `date`
+           $sambambadir/sambamba view -p -t 32 -f bam -S $samfile -o $bamfile
+           exitcode=$?
+           echo `date`
+        fi
+
         if [ $exitcode -ne 0 ]
         then
-           MSG="samtools view  command failed.  exitcode=$exitcode  novosplit alignment failed"
+           MSG="sam to bam conversion failed.  exitcode=$exitcode  novosplit alignment failed"
 	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit $exitcode;
         fi

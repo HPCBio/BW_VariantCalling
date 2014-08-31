@@ -171,6 +171,7 @@ else
 # generate a qsub header so we would not have to repeat the same lines
    generic_qsub_header=$outputdir/qsubGenericHeader
    truncate -s 0 $generic_qsub_header
+   echo "#!/bin/bash" > $generic_qsub_header
    echo "#PBS -V" > $generic_qsub_header
    echo "#PBS -A $pbsprj" >> $generic_qsub_header
    echo "#PBS -q $pbsqueue" >> $generic_qsub_header

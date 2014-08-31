@@ -46,7 +46,7 @@ echo "##########################################################################
 
 
 
-
+        run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
@@ -135,11 +135,11 @@ echo "##########################################################################
 
         pipeid=$( cat $TopOutputLogs/MAINpbs )
 
-        chunks=`expr $nodes "-" 1`
-        if [ $NumChunks -lt 1 ]
-        then
-            chunks=$nodes
-        fi
+        #chunks=`expr $nodes "-" 1`
+        #if [ $chunks -lt 1 ]
+        #then
+        #    chunks=$nodes
+        #fi
         nthreads=`expr $thr "-" 1`
         if [ $nthreads -lt 1 ]
         then
@@ -440,6 +440,17 @@ echo "##########################################################################
 
 
 
+############ checking run method
+   if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
+   then
+      MSG="Invalid value for RUNMETHOD=$run_method"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      exit 1;
+   fi
+
+
+
 
 
 
@@ -627,9 +638,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    `chmod -R 770 $AlignOutputDir/$SampleName/`
             # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
             # best keep them in the sample subfolder
-            if [ ! -d $AlignOutputDir/$SampleName/AnisimovLogs ]
+            if [ ! -d $AlignOutputDir/$SampleName/logs ]
             then
-		mkdir $AlignOutputDir/$SampleName/AnisimovLogs
+		mkdir $AlignOutputDir/$SampleName/logs
             fi
 
 
@@ -659,10 +670,10 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                then
 	   	NumChunks=$nodes
                fi
-               if [ $NumChunks -lt 1 ]
-               then
-                   NumChunks=1
-               fi
+               #if [ $NumChunks -lt 1 ]
+               #then
+               #    NumChunks=1
+               #fi
 
                NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
                NumReadsInOriginalFastq=`expr $NumLinesInLeftFastq "/" 4`
@@ -761,29 +772,29 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                 fi
                 if [ $aligner == "NOVOALIGN"  ]
 		then
-                    echo "novoalign is used as aligner. input file in fastq format"
-                    qsub_novosplit=$AlignOutputLogs/qsub_novosplit.novoaln.$SampleName.node$i
-                    echo "#PBS -V" > $qsub_novosplit
-                    echo "#PBS -A $pbsprj" >> $qsub_novosplit
-                    echo "#PBS -N ${pipeid}_novoaln_${SampleName}_$i" >> $qsub_novosplit
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_novosplit
-		    echo $ccmgres_string >> $qsub_novosplit
-		    echo "#PBS -o $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou" >> $qsub_novosplit
-		    echo "#PBS -e $AlignOutputLogs/log.novoaln.$SampleName.node$i.in" >> $qsub_novosplit
-                    echo "#PBS -q $pbsqueue" >> $qsub_novosplit
-                    echo "#PBS -m ae" >> $qsub_novosplit
-                    echo "#PBS -M $email" >> $qsub_novosplit
+                    echo -e "\n###############   novoalign is used as aligner. input file in fastq format ################\n"
+                    #qsub_novosplit=$AlignOutputLogs/qsub_novosplit.novoaln.$SampleName.node$i
+                    #echo "#PBS -V" > $qsub_novosplit
+                    #echo "#PBS -A $pbsprj" >> $qsub_novosplit
+                    #echo "#PBS -N ${pipeid}_novoaln_${SampleName}_$i" >> $qsub_novosplit
+		    #echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
+		    #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_novosplit
+		    #echo $ccmgres_string >> $qsub_novosplit
+		    #echo "#PBS -o $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou" >> $qsub_novosplit
+		    #echo "#PBS -e $AlignOutputLogs/log.novoaln.$SampleName.node$i.in" >> $qsub_novosplit
+                    #echo "#PBS -q $pbsqueue" >> $qsub_novosplit
+                    #echo "#PBS -m ae" >> $qsub_novosplit
+                    #echo "#PBS -M $email" >> $qsub_novosplit
                     if [ $paired -eq 1 ]
                     then
-			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub_novosplit
+			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $runfile $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$i
                     else
-			echo "$run_string $profiler_string $scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $samdir $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $qsub_novosplit
+			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $scriptdir $runfile $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$i.in $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$i" >> $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$i
                     fi
-                    `chmod a+r $qsub`_novosplit
-                    jobnovo=`qsub $qsub`_novosplit
-                    `qhold -h u $jobnovo`
-		    echo $jobnovo >> $AlignOutputLogs/ALIGNED_$SampleName
+                    #`chmod a+r $qsub`_novosplit
+                    #jobnovo=`qsub $qsub`_novosplit
+                    #`qhold -h u $jobnovo`
+		    #echo $jobnovo >> $AlignOutputLogs/ALIGNED_$SampleName
 		elif [ $aligner == "BWA" ] 
                 then
                     echo "bwa is used as aligner. input file format is in fastq"
@@ -871,7 +882,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     if [ $paired -eq 1 ]
                     then
                         echo "bwa mem aligner. paired-end reads"
-                        jobfile=$AlignOutputDir/$SampleName/AnisimovLogs/bwamem.$SampleName.node$i.jobfile
+                        jobfile=$AlignOutputDir/$SampleName/logs/bwamem.$SampleName.node$i.jobfile
 
                         if [ $chunkfastq == "YES" ]
                         then
@@ -879,9 +890,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                            echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i.sam $outputsamfileprefix.node$i.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$i.in $AlignOutputLogs/log.bwamem.$SampleName.node$i.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$i" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/AnisimovLogs/log.bwamem.$SampleName.node$i.in" > $jobfile
+                           echo "nohup $profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$i $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$i.in $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$i.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$i.in" > $jobfile
                            jobfilename=$( basename $jobfile )
-                           echo "$AlignOutputDir/$SampleName/AnisimovLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                           echo "$AlignOutputDir/$SampleName/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                         fi
 
 
@@ -912,15 +923,14 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                        jobbwamemse=`qsub $qsub_bwamem`
                        `qhold -h u $jobbwamemse`
                        echo $jobbwamemse >> $AlignOutputLogs/ALIGNED_$SampleName
-                       echo $jobbwamemse >> $TopOutputLogs/ALIGN_NCSA_jobids
 
 
                     fi
                 fi
 
-                allfiles=$allfiles" $outputsamfileprefix.node$i.bam"
+                allfiles=$allfiles" $outputsamfileprefix.node$i.bam" # this will be used later for merging
 
-                (( inputfastqcounter++ ))
+                (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
 		echo `date`
             done
             # end loop over chunks of the current input fastq
@@ -929,37 +939,40 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
 
-
-###########################   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES  ###########################################
+##########################################################################################################################################
+###########################                                                                    ###########################################
+echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES  ################################### \n\n\n"
+###########################                                                                    ###########################################
+##########################################################################################################################################
 
             cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
 
             if [ $chunkfastq == "YES" ]
             then
    	       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\.[a-z]*//" | tr "\n" ":" )
-	       ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\..*//" | tr "\n" ":" )
+	       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\..*//" | tr "\n" ":" )
 
 	       listfiles=$( echo $allfiles  | tr " " ":" | sed "s/::/:/g" )
                if [ $sortool == "NOVOSORT" ]
                then
-                   echo "merging aligned chunks with novosort"
-		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
-		   echo "#PBS -V" > $qsub_sortmerge
-		   echo "#PBS -A $pbsprj" >> $qsub_sortmerge
-		   echo "#PBS -N ${pipeid}_sortmerge_novosort_$SampleName" >> $qsub_sortmerge
-		   echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
-		   echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortmerge
-		   echo "#PBS -o $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou" >> $qsub_sortmerge
-		   echo "#PBS -e $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in" >> $qsub_sortmerge
-		   echo "#PBS -q $pbsqueue" >> $qsub_sortmerge
-		   echo "#PBS -m ae" >> $qsub_sortmerge
-		   echo "#PBS -M $email" >> $qsub_sortmerge
-		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
-		   echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $qsub_sortmerge
-		   `chmod a+r $qsub_sortmerge`
-		   mergejob=`qsub $qsub_sortmerge`
-		   `qhold -h u $mergejob`
-		   echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
+                   echo -e "\n merging aligned chunks with novosort\n"
+		   #qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
+		   #echo "#PBS -V" > $qsub_sortmerge
+		   #echo "#PBS -A $pbsprj" >> $qsub_sortmerge
+		   #echo "#PBS -N ${pipeid}_sortmerge_novosort_$SampleName" >> $qsub_sortmerge
+		   #echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
+		   #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortmerge
+		   #echo "#PBS -o $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou" >> $qsub_sortmerge
+		   #echo "#PBS -e $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in" >> $qsub_sortmerge
+		   #echo "#PBS -q $pbsqueue" >> $qsub_sortmerge
+		   #echo "#PBS -m ae" >> $qsub_sortmerge
+		   #echo "#PBS -M $email" >> $qsub_sortmerge
+		   #echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
+		   echo "$scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName}
+		   #`chmod a+r $qsub_sortmerge`
+		   #mergejob=`qsub $qsub_sortmerge`
+		   #`qhold -h u $mergejob`
+		   #echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
                else
                    echo "merging aligned chunks with picard"
 		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
@@ -981,27 +994,28 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		   echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
                fi
 
-	       echo `date`
-	       echo "extract reads specified in CHRINDEX param"
-	       qsub_extractreads=$AlignOutputLogs/qsub.extractreadsbam.$SampleName
-   	       echo "#PBS -V" > $qsub_extractreads
-	       echo "#PBS -A $pbsprj" >> $qsub_extractreads
-	       echo "#PBS -N ${pipeid}_extrbam_$SampleName" >> $qsub_extractreads
-	       echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
-	       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
-	       echo "#PBS -o $AlignOutputLogs/log.extractreadsbam.$SampleName.ou" >> $qsub_extractreads
-	       echo "#PBS -e $AlignOutputLogs/log.extractreadsbam.$SampleName.in" >> $qsub_extractreads
-	       echo "#PBS -q $pbsqueue" >> $qsub_extractreads
-	       echo "#PBS -m ae" >> $qsub_extractreads
-	       echo "#PBS -M $email" >> $qsub_extractreads
-	       echo "#PBS -W depend=afterok:$mergejob" >> $qsub_extractreads
-	       echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub_extractreads
-	       `chmod a+r $qsub_extractreads`
-	       extrajob=`qsub $qsub_extractreads`
-               `qhold -h u $extrajob`
-               echo $extrajob >> $TopOutputLogs/EXTRACTREADSpbs
+               ## COMMENTING THIS OUT AS A MAYO IDIOSYNCRACY
+	       #echo `date`
+	       #echo -e "\n extract reads specified in CHRINDEX param\n"
+	       #qsub_extractreads=$AlignOutputLogs/qsub.extractreadsbam.$SampleName
+   	       #echo "#PBS -V" > $qsub_extractreads
+	       #echo "#PBS -A $pbsprj" >> $qsub_extractreads
+	       #echo "#PBS -N ${pipeid}_extrbam_$SampleName" >> $qsub_extractreads
+	       #echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
+	       #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
+	       #echo "#PBS -o $AlignOutputLogs/log.extractreadsbam.$SampleName.ou" >> $qsub_extractreads
+	       #echo "#PBS -e $AlignOutputLogs/log.extractreadsbam.$SampleName.in" >> $qsub_extractreads
+	       #echo "#PBS -q $pbsqueue" >> $qsub_extractreads
+	       #echo "#PBS -m ae" >> $qsub_extractreads
+	       #echo "#PBS -M $email" >> $qsub_extractreads
+	       #echo "#PBS -W depend=afterok:$mergejob" >> $qsub_extractreads
+	       #echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub_extractreads
+	       #`chmod a+r $qsub_extractreads`
+	       #extrajob=`qsub $qsub_extractreads`
+               #`qhold -h u $extrajob`
+               #echo $extrajob >> $TopOutputLogs/EXTRACTREADSpbs
 
-	       cat $AlignOutputLogs/MERGED_$SampleName >> $TopOutputLogs/MERGEDpbs
+	       #cat $AlignOutputLogs/MERGED_$SampleName >> $TopOutputLogs/MERGEDpbs
             fi
           fi
 	done <  $outputdir/SAMPLENAMES.list
@@ -1012,11 +1026,117 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
 
-#############################################################################################################
-#####################################                                ########################################
-#####################################  SCHEDULE QSUBS CREATED ABOVE  ########################################
-#####################################                                ########################################
-#############################################################################################################
+#####################################################################################################################################
+#####################################                                                        ########################################
+echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CREATED ABOVE  #################################\n\n\n"
+#####################################                                                        ########################################
+#####################################################################################################################################
+
+
+        if [ $chunkfastq == "YES" -a $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
+        then
+
+           case $run_method in
+           "APRUN")
+              while read SampleName
+              do
+                 # ADD LOOP OVER CHUNKS
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                 sed "1!b;s/^/aprun -n 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$i > $AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node$i
+                 sed "1!b;s/^/aprun -n 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName} > $AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
+           ;;
+           "QSUB")
+              # will add this later
+           ;;
+           "LAUNCHER")
+              # clear out the joblists
+              truncate -s 0 $AlignOutputLogs/novosplit.AnisimovJoblist
+              truncate -s 0 $AlignOutputLogs/mergenovo.AnisimovJoblist
+
+              while read SampleName
+              do
+                 for i in $(seq 0 $NumChunks)
+                 do
+                    # creating a qsub out of the job file
+                    # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs
+                    novosplit_log=${AlignOutputDir}/${SampleName}/logs/log.novosplit.${SampleName}.node$i.in
+                    awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${i} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${i}
+                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.${i}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
+                 done # done going through chunks
+
+                 mergenovo_log=${AlignOutputDir}/${SampleName}/logs/log.mergenovo.${SampleName}.in
+                 awk -v awkvar_mergenovolog=$mergenovo_log '{print "nohup "$0" > "awkvar_mergenovolog}' $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName} > $AlignOutputDir/${SampleName}/logs/jobfile.mergenovo.${SampleName}
+                 echo "$AlignOutputDir/${SampleName}/logs/ jobfile.mergenovo.${SampleName}" >> $AlignOutputLogs/mergenovo.AnisimovJoblist
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
+
+
+              echo -e "\n\nscheduling Anisimov Launcher joblists\n\n"
+              qsub_novosplit_anisimov=$AlignOutputLogs/qsub.novosplit.AnisimovLauncher
+              qsub_mergenovo_anisimov=$AlignOutputLogs/qsub.mergenovo.AnisimovLauncher
+
+              # appending the generic header to the qsub
+              cat $outputdir/qsubGenericHeader > $qsub_novosplit_anisimov
+              cat $outputdir/qsubGenericHeader > $qsub_mergenovos_anisimov
+
+
+              ###############################
+              echo -e "\n################# constructing qsub for novosplit\n"
+              echo "#PBS -N ${pipeid}_novoalign_Anisimov" >> $qsub_novosplit_anisimov
+              echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit_anisimov
+              echo "#PBS -o $AlignOutputLogs/log.novosplit.Anisimov.ou" >> $qsub_novosplit_anisimov
+              echo "#PBS -e $AlignOutputLogs/log.novosplit.Anisimov.in" >> $qsub_novosplit_anisimov
+
+              # number of nodes required for alignment is equal to the number of samples times number of chunks into which every sample is broken
+              NumberOfNodes=$(( inputfastqcounter * NumChunks )) # counter started at zero, so in the end reflects the true number of fsatq samples
+              NumberOfNodes=$(( NumberOfNodes++ )) # plus one for the launcher
+              echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
+              echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+              novosplit_job=`qsub $qsub_novosplit_anisimov`
+              `qhold -h u $novosplit_job`
+              echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+
+
+              ###############################
+              echo -e "\n ################# constructing qsub for mergenovo\n"
+              echo "#PBS -N ${pipeid}_mergenovo_Anisimov" >> $qsub_mergenovo_anisimov
+              echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo_anisimov
+              echo "#PBS -o $AlignOutputLogs/log.mergenovo.Anisimov.ou" >> $qsub_mergenovo_anisimov
+              echo "#PBS -e $AlignOutputLogs/log.mergenovo.Anisimov.in" >> $qsub_mergenovo_anisimov
+              # add dependency on novosplit job
+              echo -e "#PBS -W depend=afterok:$novosplit_job" >> $qsub_mergenovo_anisimov
+
+              # number of nodes required for mergenovo is equal to the number of samples plus one for the launcher
+              NumberOfNodes=$(( inputfastqcounter++ )) # counter started at zero, so in the end reflects the true number of fsatq samples
+              echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
+              echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
+              mergenovo_job=`qsub $qsub_mergenovo_anisimov`
+              `qhold -h u $mergenovo_job`
+              echo $mergenovo_job >> $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
+
+           ;;
+           "SERVER")
+              # will fill in later
+           ;;
+           esac
+        else 
+           MSG="something went wrong with scheduling alignment: chunking/aligner/sort_tool options not correctly set"
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        fi
+
+
+
+
+
+
+
+
+#####################################################################################################################
+#####################################                                        ########################################
+#####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################
+#####################################                                        ########################################
+#####################################################################################################################
 
 
         if [ $chunkfastq == "NO" ]
@@ -1052,8 +1172,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
            AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 
            echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-           echo $AlignAnisimovJoblistId >> $TopOutputLogs/MERGEDpbs # so that summaryok could depend on this job, in case when there is no merging: a sigle chunk
-           echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGN_NCSA_jobids # so that sort jobs in realignment/recalibration block could find the job ids to depend upon 
+           echo $AlignAnisimovJoblistId >> $TopOutputLogs/MERGEDpbs # so that summaryok and realign.sh could depend on this job, in case when there is no merging: a sigle chunk
 
         fi
 
@@ -1071,7 +1190,6 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
         alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
-	echo $pbsids >> $TopOutputLogs/ALIGN_NCSA_jobids
 
         ## generating summary redmine email if analysis ends here
 	echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"

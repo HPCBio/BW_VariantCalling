@@ -381,6 +381,6 @@ else
 	fi
 	
 
-         nohup python /projects/sciteam/jq9/builds/StephensReadsSimulator_March27_2014/read_simulator/extra_utilities/vcf_compare.py $refdir/$ref /projects/sciteam/jq9/LSM_SyntheticDataGeneration/Zach/Chr1_50X_StephensAnisimov_ERR250965/H3A_NextGen_assessment_set2/H3A_NextGen_assessment.Chr1_50X.set2_golden.vcf $outfile blah
+#         nohup python /projects/sciteam/jq9/builds/StephensReadsSimulator_March27_2014/read_simulator/extra_utilities/vcf_compare.py $refdir/$ref /projects/sciteam/jq9/LSM_SyntheticDataGeneration/Zach/Chr1_50X_StephensAnisimov_ERR250965/H3A_NextGen_assessment_set2/H3A_NextGen_assessment.Chr1_50X.set2_golden.vcf $outfile blah /projects/sciteam/jq9/LSM_SyntheticDataGeneration/IlluminaTargetRegions/ZachUses_Illumina_truseq_exome_targeted_regions.hg19.chr.bed 100 > vcfcompare.nohup
 
 fi
