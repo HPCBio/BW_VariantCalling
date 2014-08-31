@@ -1089,7 +1089,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               # number of nodes required for alignment is equal to the number of samples times number of chunks into which every sample is broken
               NumberOfNodes=$(( inputfastqcounter * NumChunks )) # counter started at zero, so in the end reflects the true number of fsatq samples
-              NumberOfNodes=$(( NumberOfNodes++ )) # plus one for the launcher
+              $(( NumberOfNodes++ )) # plus one for the launcher
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
               novosplit_job=`qsub $qsub_novosplit_anisimov`
@@ -1107,8 +1107,8 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               echo -e "#PBS -W depend=afterok:$novosplit_job" >> $qsub_mergenovo_anisimov
 
               # number of nodes required for mergenovo is equal to the number of samples plus one for the launcher
-              NumberOfNodes=$(( inputfastqcounter++ )) # counter started at zero, so in the end reflects the true number of fsatq samples
-              echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
+              NumberOfNodes=$(( inputfastqcounter + 1 )) # counter started at zero, so in the end reflects the true number of fsatq samples
+              echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_mergenovo_anisimov
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
