@@ -180,24 +180,24 @@ else
 	       CREATE_INDEX=true \
 	       VALIDATION_STRINGENCY=SILENT
 	    exitcode=$?
-        elif [ $markduplicatestool == "SAMBLASTER" ]
-        then
-        if [ $samprocessing == "SAMTOOLS" ]
-        then
-           echo `date`
-           # convert from novosorted bam to sam, mark duplicates, then convert back to bam
-           $samdir/samtools view -h $tmpfilewdups | $samblasterdir/samblaster | $samdir/samtools view -Sb -> $outfilewdups.namesorted
-           exitcode=$?
-           echo `date`
-        elif [ $samprocessing == "SAMBAMBA" ]
-        then
-           echo `date`
-           # convert from novosorted bam to sam, mark duplicates, then convert back to bam
-           $sambambadir/sambamba view -p -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -p -t 32 -f bam -S -o $outfilewdups.namesorted
-           echo `date`
-           exitcode=$?
-        fi
-
+       elif [ $markduplicatestool == "SAMBLASTER" ]
+       then
+          if [ $samprocessing == "SAMTOOLS" ]
+          then
+             echo `date`
+             # convert from novosorted bam to sam, mark duplicates, then convert back to bam
+             $samdir/samtools view -h $tmpfilewdups | $samblasterdir/samblaster | $samdir/samtools view -Sb -> $outfilewdups.namesorted
+             exitcode=$?
+             echo `date`
+          elif [ $samprocessing == "SAMBAMBA" ]
+          then
+             echo `date`
+             # convert from novosorted bam to sam, mark duplicates, then convert back to bam
+             $sambambadir/sambamba view -h -p -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -p -t 32 -f bam -S -o $outfilewdups.namesorted
+             echo `date`
+             exitcode=$?
+          fi
+       fi
 	if [ $exitcode -ne 0 ]
 	then
             MSG="markduplicates command failed.  exitcode=$exitcode mergenovo stopped"
