@@ -673,11 +673,6 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_sortnode_anisimov
          echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/sortnode.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/sortnode.${chr}.AnisimovLauncher.log" >> $qsub_sortnode_anisimov
 
-         cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
-         sortnode_job=`qsub $qsub_sortnode_anisimov`
-         #`qhold -h u $sortnode_job` I am going to allow these to run right away, 
-         # banking on the expectation that they will take long enough time for dependent jobs to enter the queue
-
 
 
          ###############
@@ -686,18 +681,14 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal_anisimov
          echo "#PBS -o $RealignOutputLogs/log.realrecal.${chr}.ou" >> $qsub_realrecal_anisimov
          echo -e "#PBS -e $RealignOutputLogs/log.realrecal.${chr}.in\n" >> $qsub_realrecal_anisimov
-         # add dependency on realrecal job
-         echo -e "#PBS -W depend=afterok:$sortnode_job\n" >> $qsub_realrecal_anisimov
+         # the dependency on sortnode job will be added when it is scheduled in the loop below
+
          # realrecal and vcall actually use multithreaded processes,
          # so we will give each chromosome its own node
          # +1 for the launcher
          echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
          # the actual command
          echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${chr}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
-
-         #realrecal_job=`qsub $qsub_realrecal_anisimov`
-         #`qhold -h u $realrecal_job`
-         #`qrls -h u $sortnode_job`
 
 
 
@@ -716,29 +707,43 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # the actual command
          echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
 
-         #vcallgatk_job=`qsub $qsub_vcallgatk_anisimov`
-         #`qrls -h u $realrecal_job`
-
       done # done going through chromosomes
+
+
 
       ###############
       ############### 
       echo -e "\n going through chromosomes again to schedule all sort before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
+      # reset the list of SORTNODE pbs ids
+      truncate -s 0 $RealignOutputLogs/SORTNODEpbs
+      cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
+      # first sortnode
       for chr in $indices
       do
-         cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
+         sortnode_job=`qsub $RealignOutputLogs/qsub.sortnode.${chr}.AnisimovLauncher`
+         `qhold -h u $sortnode_job` #I am going to allow these to run right away,
+         echo $sortnode_job >> $RealignOutputLogs/SORTNODEpbs # will read these in to release them later
+         # add dependency on sortnode job to realrecal job
+         sed -i "2i #PBS -W depend=afterok:$sortnode_job" $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
+      done
+      # now realrecal
+      for chr in $indices
+      do
          realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher`
          # I am not going to put these on hold, as they will be helkd back by the dependency on respective sort jobs
-
-         # add dependency on realrecal job to vcallgatk job
-         sed -i "1i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+         # Add dependency on realrecal job to vcallgatk job
+         sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
       done
       # finally submit the vcallgatk
+      cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
       for chr in $indices
       do
-         cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
          qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
       done 
+
+      # now release the sortnode jobs
+      sortnode_ids=$( cat $RealignOutputLogs/SORTNODEpbs | sed "s/\..*//" | tr "\n" " " )
+      qrls -h u $sortnode_ids
    ;;
    "SERVER")
       while read SampleName
