@@ -971,7 +971,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 		   #`chmod a+r $qsub_sortmerge`
 		   #mergejob=`qsub $qsub_sortmerge`
 		   #`qhold -h u $mergejob`
-		   #echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
+		   #echo $mergejob  > $AlignOutputLogs/MERGED_$SampleName
                else
                    echo "merging aligned chunks with picard"
 		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
@@ -990,7 +990,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 		   `chmod a+r $qsub_sortmerge`
 		   mergejob=`qsub $qsub_sortmerge`
 		   `qhold -h u $mergejob`
-		   echo $mergejob  >> $AlignOutputLogs/MERGED_$SampleName
+		   echo $mergejob  > $AlignOutputLogs/MERGED_$SampleName
                fi
 
                ## COMMENTING THIS OUT AS A MAYO IDIOSYNCRACY
@@ -1115,7 +1115,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
-              echo $mergenovo_job >> $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
+              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
 
            ;;
            "SERVER")
@@ -1175,7 +1175,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
            AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 
            echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-           echo $AlignAnisimovJoblistId >> $TopOutputLogs/MERGEDpbs # so that summaryok and realign.sh could depend on this job, in case when there is no merging: a sigle chunk
+           echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and realign.sh could depend on this job, in case when there is no merging: a sigle chunk
 
         fi
 
