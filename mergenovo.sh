@@ -193,7 +193,7 @@ else
           then
              echo `date`
              # convert from novosorted bam to sam, mark duplicates, then convert back to bam
-             $sambambadir/sambamba view -h -p -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -p -t 32 -f bam -S -o $outfilewdups.namesorted
+             $sambambadir/sambamba view -h -p -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -p -t 32 -f bam -S /dev/stdin -o $outfilewdups.namesorted
              echo `date`
              exitcode=$?
           fi
