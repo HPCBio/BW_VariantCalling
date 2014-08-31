@@ -723,9 +723,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
       ###############
       ############### 
-      echo -e "\n going through chromosomes again to schedule all sort before all realrecal,
-      and all realrecal before vcallgatk,
-      in order to efficiently work with a 25 job limit on queued state\n"
+      echo -e "\n going through chromosomes again to schedule all sort before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
       for chr in $indices
       do
          cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
