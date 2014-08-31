@@ -930,7 +930,6 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
                 allfiles=$allfiles" $outputsamfileprefix.node$i.bam" # this will be used later for merging
 
-                (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
 		echo `date`
             done
             # end loop over chunks of the current input fastq
@@ -1018,6 +1017,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 	       #cat $AlignOutputLogs/MERGED_$SampleName >> $TopOutputLogs/MERGEDpbs
             fi
           fi
+          (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
 	done <  $outputdir/SAMPLENAMES.list
         # end loop over input fastq
 
@@ -1062,7 +1062,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                     # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs
                     novosplit_log=${AlignOutputDir}/${SampleName}/logs/log.novosplit.${SampleName}.node$i.in
                     awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${i} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${i}
-                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.${i}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
+                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.node${i}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
                  done # done going through chunks
 
                  mergenovo_log=${AlignOutputDir}/${SampleName}/logs/log.mergenovo.${SampleName}.in
