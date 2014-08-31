@@ -67,7 +67,7 @@ else
            $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster -o ${bamprefix}.sam.wdups
            exitcode=$?
            echo `date`
-           $sambambadir/sambamba view -p -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
+           $sambambadir/sambamba view -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
            moreexitcode=$?
            exitcode=$(( $exitcode + $moreexitcode ))
            echo `date`

@@ -739,7 +739,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       for chr in $indices
       do
          cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
-         `qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
+         qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
       done 
    ;;
    "SERVER")

@@ -94,7 +94,7 @@ else
         elif [ $samprocessing == "SAMBAMBA" ]
         then
            echo `date`
-           $sambambadir/sambamba view -p -t 32 -f bam -S $samfile -o $bamfile
+           $sambambadir/sambamba view -t 32 -f bam -S $samfile -o $bamfile
            exitcode=$?
            echo `date`
         fi
