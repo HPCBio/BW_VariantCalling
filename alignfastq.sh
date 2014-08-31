@@ -1077,7 +1077,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               # appending the generic header to the qsub
               cat $outputdir/qsubGenericHeader > $qsub_novosplit_anisimov
-              cat $outputdir/qsubGenericHeader > $qsub_mergenovos_anisimov
+              cat $outputdir/qsubGenericHeader > $qsub_mergenovo_anisimov
 
 
               ###############################
@@ -1088,8 +1088,11 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               echo "#PBS -e $AlignOutputLogs/log.novosplit.Anisimov.in" >> $qsub_novosplit_anisimov
 
               # number of nodes required for alignment is equal to the number of samples times number of chunks into which every sample is broken
-              NumberOfNodes=$(( inputfastqcounter * NumChunks )) # counter started at zero, so in the end reflects the true number of fsatq samples
-              $(( NumberOfNodes++ )) # plus one for the launcher
+              # counter started at zero, so in the end reflects the true number of fsatq samples
+              # for some stupid reason NumChunks is actually from 0 to number_of_chunks-1, so we have to increment it now
+              (( NumChunks++ ))
+              NumberOfNodes=$(( inputfastqcounter * NumChunks )) 
+              (( NumberOfNodes++ )) # plus one for the launcher
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
               novosplit_job=`qsub $qsub_novosplit_anisimov`
