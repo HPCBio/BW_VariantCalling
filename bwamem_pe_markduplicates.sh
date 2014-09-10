@@ -46,6 +46,7 @@ else
         novodir=$( cat $runfile | grep -w NOVODIR | cut -d "=" -f2 )
         threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
         alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+        memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 
 
         header=$( echo $RGparms  | tr ":" "\t" )
@@ -67,7 +68,7 @@ else
            $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster -o ${bamprefix}.sam.wdups
            exitcode=$?
            echo `date`
-           $sambambadir/sambamba view -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
+           $memprof $sambambadir/sambamba view -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
            moreexitcode=$?
            exitcode=$(( $exitcode + $moreexitcode ))
            echo `date`
@@ -99,7 +100,7 @@ else
 
 ########## step 2: sort by coordinate and index on the fly: required for creating an indexed bam, 
 ##########      which in turn is required for extracting alignments by chromosome
-    $novodir/novosort --tmpdir $outputdir --threads $threads --index ${bamprefix}.wdups -o ${bamprefix}.wdups.sorted.bam
+    $memprof $novodir/novosort --tmpdir $outputdir --threads $threads --index ${bamprefix}.wdups -o ${bamprefix}.wdups.sorted.bam
     exitcode=$?
     if [ $exitcode -ne 0 ]
     then
@@ -125,7 +126,7 @@ else
 #        echo `date`
 
         #$samdir/samtools flagstat $tmpfilewdups > $tmpfilewdups.flagstat
-        $samdir/samtools view -H ${bamprefix}.wdups.sorted.bam > ${bamprefix}.wdups.sorted.bam.header
+        $memprof $samdir/samtools view -H ${bamprefix}.wdups.sorted.bam > ${bamprefix}.wdups.sorted.bam.header
         exitcode=$?
         if [ $exitcode -ne 0 ]
         then

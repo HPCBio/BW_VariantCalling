@@ -55,6 +55,7 @@ else
         onlyontarget=$( cat $runfile | grep -w TARGETTED | cut -d '=' -f2 )
         javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
+        memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
@@ -213,10 +214,11 @@ else
         echo "calculating variant calling w unifiedgenotyper"
         cd $outputdir
 
-        java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+        $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $inputdir/$infile \
 	    -T UnifiedGenotyper \
+            -nt 18 -nct 10 \
             -glm $utype \
             --output_mode $umode \
             -A DepthOfCoverage \
@@ -250,7 +252,7 @@ else
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
             echo "calculating phasebytransmission"
-            java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
 	    -T PhaseByTransmission \
@@ -282,7 +284,7 @@ else
 	    echo "calculating variants by snvmix and then merging results"
             pilefile=$outfile.pileup
             tmpfile=$infile.$chr.tmp.snv
-            $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
+            $memprof $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
 
             exitcode=$?
             if [ $exitcode -ne 0 ]
@@ -306,9 +308,9 @@ else
             if [ $smode == "all" ]
             then
 		## question: modefile Mu_pi.txt does not exist in that folder
-		$snvmixdir/SNVMix2 -i $pilefile -f -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
+		$memprof $snvmixdir/SNVMix2 -i $pilefile -f -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
 	    else
-		$snvmixdir/SNVMix2 -i $pilefile -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
+		$memprof $snvmixdir/SNVMix2 -i $pilefile -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
 	    fi
 
             exitcode=$?
@@ -330,7 +332,7 @@ else
 		exit 1;
 	    fi
 
-	    perl $scriptdir/snvmix_to_vcf.pl -i $tmpfile -o $snvfile
+	    $memprof perl $scriptdir/snvmix_to_vcf.pl -i $tmpfile -o $snvfile
             exitcode=$?
             if [ $exitcode -ne 0 ]
             then
@@ -352,7 +354,7 @@ else
 
             echo "combining VCF files"
 
-            java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    $combparms \
 	    -T CombineVariants \

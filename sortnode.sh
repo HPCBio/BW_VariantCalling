@@ -2,7 +2,7 @@
 # written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# -gt 14 ]
+if [ $# -gt 15 ]
 then
 	MSG="parameter mismatch."
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
@@ -11,21 +11,25 @@ else
     set -x
     echo `date`
     scriptfile=$0
-    picardir=$1
-    samdir=$2
-    javamodule=$3
-    outputdir=$4
-    bamfile=$5
-    infile=$6
-    outfile=$7
-    rgparms=$8
-    flag=$9
-    chr=${10}
-    elog=${11}
-    olog=${12}
-    email=${13}
-    qsubfile=${14}
+    runfile=$1
+    picardir=$2
+    samdir=$3
+    javamodule=$4
+    outputdir=$5
+    bamfile=$6
+    infile=$7
+    outfile=$8
+    rgparms=$9
+    flag=${10}
+    chr=${11}
+    elog=${12}
+    olog=${13}
+    email=${14}
+    qsubfile=${15}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
+
+    memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
+
 
     if [ ! -d $outputdir ]
     then
@@ -66,7 +70,7 @@ else
     echo `date`
     if [ ! -s $infile ]
     then
-        $samdir/samtools view -b $bamfile $chr > $infile
+        $memprof $samdir/samtools view -b $bamfile $chr > $infile
         exitcode=$?
         if [ $exitcode -ne 0 ]
         then
@@ -81,7 +85,7 @@ else
 	    exit 1;
         fi
 	echo `date`
-        $samdir/samtools index $infile
+        $memprof $samdir/samtools index $infile
         exitcode=$?
         if [ $exitcode -ne 0 ]
         then
@@ -101,7 +105,7 @@ else
     if [ $sortflag == "NCSA" ]
     then
        echo "alignment was done inhouse. we need to add_readgroup info"
-       java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+       $memprof java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
 	   INPUT=$infile \
 	   OUTPUT=$tmpfile \
 	   MAX_RECORDS_IN_RAM=null \
@@ -120,7 +124,7 @@ else
        echo `date`
     else
 	echo "alignment was done at Mayo. checking if readgroup info is present"
-	$samdir/samtools view -H $infile > $infile.header
+	$memprof $samdir/samtools view -H $infile > $infile.header
         exitcode=$?
         if [ $exitcode -ne 0 ]
         then
@@ -137,7 +141,7 @@ else
             cp $infile $tmpfile
 	else
             echo "readgroup info NOT found in input file. Adding it now..."
-	    java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+	    $memprof java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
 		   INPUT=$infile \
 		   OUTPUT=$tmpfile \
 		   MAX_RECORDS_IN_RAM=null \
@@ -165,7 +169,7 @@ else
     fi
     echo `date`
 
-    java -Xmx6g -Xms512m -jar $picardir/SortSam.jar \
+    $memprof java -Xmx6g -Xms512m -jar $picardir/SortSam.jar \
 	INPUT=$tmpfile \
 	OUTPUT=$outfile \
 	TMP_DIR=$outputdir \
@@ -189,7 +193,7 @@ else
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit 1;
     fi
-    $samdir/samtools index $outfile
+    $memprof $samdir/samtools index $outfile
     exitcode=$?
     if [ $exitcode -ne 0 ]
     then
@@ -198,7 +202,7 @@ else
 	exit $exitcode;
     fi
     echo `date`
-    $samdir/samtools view -H $outfile > $outfile.header
+    $memprof $samdir/samtools view -H $outfile > $outfile.header
     exitcode=$?
     if [ $exitcode -ne 0 ]
     then

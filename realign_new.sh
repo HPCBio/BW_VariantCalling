@@ -421,7 +421,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 
 
          echo -e "\n######################################  assemble the sortnode sub-block #####################################\n"
-         echo "$scriptdir/sortnode.sh $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}
+         echo "$scriptdir/sortnode.sh $runfile $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/sortnode.${SampleName}.${chr}
 
          # construct the list of all input files for the GATK real-recal procedure, multisample case
          if [ $multisample == "YES" ]
@@ -716,6 +716,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       echo -e "\n going through chromosomes again to schedule all sort before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
       # reset the list of SORTNODE pbs ids
       truncate -s 0 $RealignOutputLogs/SORTNODEpbs
+      truncate -s 0 $RealignOutputLogs/REALRECALpbs
+      truncate -s 0 $VcallOutputLogs/VCALGATKpbs
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
       # first sortnode
       for chr in $indices
@@ -733,12 +735,14 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # I am not going to put these on hold, as they will be helkd back by the dependency on respective sort jobs
          # Add dependency on realrecal job to vcallgatk job
          sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+         echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
       done
       # finally submit the vcallgatk
       cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
       for chr in $indices
       do
-         qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+         vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
+         echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
       done 
 
       # now release the sortnode jobs

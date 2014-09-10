@@ -49,6 +49,7 @@ else
         targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
         realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
 	outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+        memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
         #thr=`expr $threads "-" 1`
         thr=`expr $threads "/" 2`
 
@@ -116,7 +117,7 @@ else
 		echo "realign then recalibrate"
 		echo "realigning..."
 		
-            	java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+            	$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $chrinfiles \
 		    -T RealignerTargetCreator \
@@ -140,7 +141,7 @@ else
 		echo `date`
 
 
-		java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $chrinfiles \
 		    -T IndelRealigner \
@@ -163,10 +164,10 @@ else
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                     exit 1;
                 fi
-		mv realign.$chr.realigned.bai realign.$chr.realigned.bam.bai
-		cp realign.$chr.realigned.bam realign.$chr.real.cleaned.bam
-		cp realign.$chr.realigned.bam.bai realign.$chr.real.cleaned.bam.bai
-                $samdir/samtools flagstat realign.$chr.real.cleaned.bam > realign.$chr.real.cleaned.flagstat
+		$memprof mv realign.$chr.realigned.bai realign.$chr.realigned.bam.bai
+		$memprof cp realign.$chr.realigned.bam realign.$chr.real.cleaned.bam
+		$memprof cp realign.$chr.realigned.bam.bai realign.$chr.real.cleaned.bam.bai
+                $memprof $samdir/samtools flagstat realign.$chr.real.cleaned.bam > realign.$chr.real.cleaned.flagstat
 
 		exitcode=$?
 		if [ $exitcode -ne 0 ]
@@ -179,13 +180,12 @@ else
 
 		echo "recalibrating..."
 	
-		java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $recalparms \
 		    -I realign.$chr.real.cleaned.bam \
 		    $region  \
 		    -T CountCovariates \
-		    -nt $thr \
 		    -cov ReadGroupCovariate \
 		    -cov QualityScoreCovariate \
 		    -cov CycleCovariate \
@@ -209,7 +209,7 @@ else
 		fi
 		echo `date`
 
-		java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -L $chr \
 		    -I realign.$chr.real.cleaned.bam \
@@ -233,9 +233,9 @@ else
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
-		cp recal.$chr.real.recal.bam $outputfile
-		cp recal.$chr.real.recal.bai $outputfile.bai
-		$samdir/samtools flagstat $outputfile > $outputfile.flagstat
+		$memprof cp recal.$chr.real.recal.bam $outputfile
+		$memprof cp recal.$chr.real.recal.bai $outputfile.bai
+		$memprof $samdir/samtools flagstat $outputfile > $outputfile.flagstat
 		exitcode=$?
 		if [ $exitcode -ne 0 ]
 		then
@@ -249,13 +249,12 @@ else
 		echo "recalibrate then realign. not common practice"
 		echo "recalibrating"
 
-		java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $recalparms \
 		    $chrinfiles \
 		    $region \
 		    -T CountCovariates \
-		    -nt $thr \
 		    -cov ReadGroupCovariate \
 		    -cov QualityScoreCovariate \
 		    -cov CycleCovariate \
@@ -280,7 +279,7 @@ else
 	
 		echo `date`
 
-		java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -L $chr \
 		    $chrinfiles \
@@ -303,9 +302,9 @@ else
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
                 fi
-                cp recal.$chr.recal.bam recal.$chr.recal.cleaned.bam
-                cp recal.$chr.recal.bai recal.$chr.recal.cleaned.bam.bai
-		$samdir/samtools flagstat recal.$chr.recal.cleaned.bam > recal.$chr.recal.cleaned.flagstat
+                $memprof cp recal.$chr.recal.bam recal.$chr.recal.cleaned.bam
+                $memprof cp recal.$chr.recal.bai recal.$chr.recal.cleaned.bam.bai
+		$memprof $samdir/samtools flagstat recal.$chr.recal.cleaned.bam > recal.$chr.recal.cleaned.flagstat
 		
 		exitcode=$?
 		if [ $exitcode -ne 0 ]
@@ -317,7 +316,7 @@ else
 		echo `date` 		
 
 		echo "realigning"
-		java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -I recal.$chr.recal.bam \
 		    -o realign.$chr.recal.bam.list \
@@ -339,7 +338,7 @@ else
 		fi
 		echo `date`
 
-		java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -I recal.$chr.recal.bam \
 		    -T IndelRealigner \
@@ -361,9 +360,9 @@ else
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
-		cp realign.$chr.recal.realigned.bam $outputfile
-		cp realign.$chr.recal.realigned.bam.bai $outputfile.bai
-		$samdir/samtools flagstat $outputfile > $outputfile.flagstat
+		$memprof cp realign.$chr.recal.realigned.bam $outputfile
+		$memprof cp realign.$chr.recal.realigned.bam.bai $outputfile.bai
+		$memprof $samdir/samtools flagstat $outputfile > $outputfile.flagstat
 		exitcode=$?
 		if [ $exitcode -ne 0 ]
 		then
