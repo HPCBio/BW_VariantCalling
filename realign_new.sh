@@ -684,11 +684,12 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # the dependency on sortnode job will be added when it is scheduled in the loop below
 
          # realrecal and vcall actually use multithreaded processes,
-         # so we will give each chromosome its own node
+         # so we will give each sample its own node
          # +1 for the launcher
-         echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
+         # samplecounter is already more than actual number of samples by 1
+         echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
          # the actual command
-         echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${chr}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
+         echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${chr}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
 
 
 
@@ -701,11 +702,12 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # the dependency on realrecal job will be added when it is scheduled in the loop below
 
          # realrecal and vcall actually use multithreaded processes, 
-         # so we will give each chromosome its own node
+         # so we will give each sample its own node
          # +1 for the launcher
-         echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
+         # samplecounter is already more than actual number of samples by 1
+         echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
          # the actual command
-         echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+         echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
 
       done # done going through chromosomes
 
