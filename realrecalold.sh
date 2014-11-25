@@ -44,6 +44,7 @@ else
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
         gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+        recalibrator=$( cat $runfile | grep -w RECALIBRATOR | cut -d '=' -f2 )
         dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
         kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
         targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
@@ -179,62 +180,102 @@ else
 		echo `date`		
 
 		echo "recalibrating..."
-	
-		$memprof java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
-		    -R $refdir/$ref \
-		    $recalparms \
-		    -I realign.$chr.real.cleaned.bam \
-		    $region  \
-		    -T CountCovariates \
-		    -cov ReadGroupCovariate \
-		    -cov QualityScoreCovariate \
-		    -cov CycleCovariate \
-		    -cov DinucCovariate \
-		    -recalFile recal.$chr.recal_data.csv 
 
-		exitcode=$?
-		if [ $exitcode -ne 0 ]
-		then
-		    MSG="countcovariates command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit $exitcode;
-		fi
-		echo `date`		
+                if [ "$recalibrator" == "BQSR" ]
+                then
+                   $memprov java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+                       -R $refdir/$ref \
+                       $recalparms \
+                       -I realign.$chr.real.cleaned.bam \
+                       $region  \
+                       -T PrintReads \
+                       -BQSR recal.$chr.recal_report.grp \
+                       --out recal.$chr.real.recal.bam
 
-		if [ ! -s recal.$chr.recal_data.csv ]
-		then
-		    MSG="recal.$chr.recal_data.csv countcovariates file not created realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit 1;
-		fi
-		echo `date`
+                   exitcode=$?
+                   if [ $exitcode -ne 0 ]
+                   then
+                       MSG="BQSR command failed exitcode=$exitcode  recalibration stopped"
+                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                       exit $exitcode;
+                   fi
+                   echo `date`
 
-		$memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
-		    -R $refdir/$ref \
-		    -L $chr \
-		    -I realign.$chr.real.cleaned.bam \
-		    -T TableRecalibration \
-		    --out recal.$chr.real.recal.bam \
-		    -recalFile recal.$chr.recal_data.csv 
+                   if [ ! -s recal.$chr.recal_report.grp ]
+                   then
+                       MSG="recal.$chr.recal_report.grp recalibration report file not created, realignment-recalibration stopped"
+                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                       exit 1;
+                   fi
+                   echo `date`
 
-		exitcode=$?
-		if [ $exitcode -ne 0 ]
-		then
-		    MSG="tablerecalibration command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit $exitcode;
-		fi
-		echo `date`		
+                   if [ ! -s recal.$chr.real.recal.bam ]
+                   then
+                       MSG="recal.$chr.real.recal.bam recalibrated file not created, realignment-recalibration stopped"
+                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                       exit 1;
+                   fi
+                   $memprof cp recal.$chr.real.recal.bam $outputfile
+                   $memprof cp recal.$chr.real.recal.bai $outputfile.bai
+
+                else	
+   		   $memprof java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		       -R $refdir/$ref \
+		       $recalparms \
+		       -I realign.$chr.real.cleaned.bam \
+		       $region  \
+		       -T CountCovariates \
+		       -cov ReadGroupCovariate \
+		       -cov QualityScoreCovariate \
+		       -cov CycleCovariate \
+		       -cov DinucCovariate \
+		       -recalFile recal.$chr.recal_data.csv 
+
+		   exitcode=$?
+		   if [ $exitcode -ne 0 ]
+		   then
+		       MSG="countcovariates command failed exitcode=$exitcode  realignment-recalibration stopped"
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       exit $exitcode;
+		   fi
+		   echo `date`		
+
+		   if [ ! -s recal.$chr.recal_data.csv ]
+		   then
+		       MSG="recal.$chr.recal_data.csv countcovariates file not created realignment-recalibration stopped"
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       exit 1;
+		   fi
+		   echo `date`
+
+		   $memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		       -R $refdir/$ref \
+		       -L $chr \
+		       -I realign.$chr.real.cleaned.bam \
+		       -T TableRecalibration \
+		       --out recal.$chr.real.recal.bam \
+		       -recalFile recal.$chr.recal_data.csv 
+
+		   exitcode=$?
+		   if [ $exitcode -ne 0 ]
+		   then
+		       MSG="tablerecalibration command failed exitcode=$exitcode  realignment-recalibration stopped"
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       exit $exitcode;
+		   fi
+		   echo `date`		
 
 
-		if [ ! -s recal.$chr.real.recal.bam ]
-		then
-		    MSG="$chr.real.recal.bam tablerecalibration file not created realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-		    exit 1;
-		fi
-		$memprof cp recal.$chr.real.recal.bam $outputfile
-		$memprof cp recal.$chr.real.recal.bai $outputfile.bai
+		   if [ ! -s recal.$chr.real.recal.bam ]
+		   then
+		       MSG="$chr.real.recal.bam tablerecalibration file not created realignment-recalibration stopped"
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       exit 1;
+		   fi
+		   $memprof cp recal.$chr.real.recal.bam $outputfile
+		   $memprof cp recal.$chr.real.recal.bai $outputfile.bai
+                fi # end choosing between BQSR and CountCovariates/TableRecalibration
+
 		$memprof $samdir/samtools flagstat $outputfile > $outputfile.flagstat
 		exitcode=$?
 		if [ $exitcode -ne 0 ]
