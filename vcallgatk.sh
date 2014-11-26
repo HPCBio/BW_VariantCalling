@@ -221,7 +221,7 @@ else
             -nt 18 -nct 10 \
             -glm $utype \
             --output_mode $umode \
-            -A DepthOfCoverage \
+            -A Coverage \
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
