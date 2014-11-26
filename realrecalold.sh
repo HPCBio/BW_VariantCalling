@@ -188,9 +188,9 @@ else
                        $recalparms \
                        -I realign.$chr.real.cleaned.bam \
                        $region  \
-                       -T PrintReads \
-                       -BQSR recal.$chr.recal_report.grp \
-                       --out recal.$chr.real.recal.bam
+                       -T BaseRecalibrator \
+                       --out recal.$chr.recal_report.grp \
+                       -nct 32
 
                    exitcode=$?
                    if [ $exitcode -ne 0 ]
@@ -208,6 +208,26 @@ else
                        exit 1;
                    fi
                    echo `date`
+
+
+                   $memprov java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+                       -R $refdir/$ref \
+                       -I realign.$chr.real.cleaned.bam \
+                       $region  \
+                       -T PrintReads \
+                       -BQSR recal.$chr.recal_report.grp \
+                       --out recal.$chr.real.recal.bam \
+                       -nct 32
+
+                   exitcode=$?
+                   if [ $exitcode -ne 0 ]
+                   then
+                       MSG="BQSR PrintReads command failed exitcode=$exitcode  recalibration stopped"
+                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                       exit $exitcode;
+                   fi
+                   echo `date`
+
 
                    if [ ! -s recal.$chr.real.recal.bam ]
                    then
