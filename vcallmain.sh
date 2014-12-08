@@ -219,7 +219,7 @@ else
 
                      echo "invoking variant calling..."
 		     qsub3=$varlogdir/qsub.vcallgatk.${preffix}.$chr
-		     echo "#PBS -V" > $qsub3
+		     #echo "#PBS -V" > $qsub3
 		     echo "#PBS -A $pbsprj" >> $qsub3
 		     echo "#PBS -N ${pipeid}_vcallgatk_${preffix}_$chr" >> $qsub3
 		     echo "#PBS -l epilogue=$epilogue" >> $qsub3
@@ -230,6 +230,7 @@ else
 		     echo "#PBS -q $pbsqueue" >> $qsub3
 		     echo "#PBS -m ae" >> $qsub3
 		     echo "#PBS -M $email" >> $qsub3
+                     echo "source /opt/modules/default/init/bash" >> $qsub3
 		     echo "$scriptdir/vcallgatk.sh $vardir $dirname $prefix $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.${preffix}.$chr.in $varlogdir/log.vcallgatk.${preffix}.$chr.ou $email $varlogdir/qsub.vcallgatk.${preffix}.$chr" >> $qsub3
 		     `chmod a+r $qsub3`
 		     vcalljobid=`qsub $qsub3`

@@ -1,9 +1,12 @@
-#!/bin/sh
+#!/bin/bash -l
 # written in collaboration with Mayo Bioinformatics core group
 #	
 #  script to perform variant calling with unifiedgenotyper ONLY
 #  This module is called from within the realign module
 ######################################
+
+source /opt/modules/default/init/bash
+
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
 if [ $# != 10 ];
@@ -44,6 +47,7 @@ else
         picardir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+        javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
         gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
         ped=$( cat $runfile | grep -w PEDIGREE | cut -d '=' -f2 )
         allsites=$( cat $runfile | grep -w EMIT_ALL_SITES | cut -d '=' -f2 )
@@ -53,7 +57,7 @@ else
         snvmixfilter=$( cat $runfile | grep -w SNVMIX2FILTER | cut -d '=' -f2 )
         uparms=$( cat $runfile | grep -w UNIFIEDGENOINPUTTYPERPARMS | cut -d '=' -f2 )
         onlyontarget=$( cat $runfile | grep -w TARGETTED | cut -d '=' -f2 )
-        javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
+        #javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 
@@ -113,15 +117,15 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        if [ -z $javamodule ]
+        if [ -z $javadir ]
         then
-	    MSG="A value must be specified for JAVAMODULE in configuration file"
+	    MSG="A value must be specified for JAVADIR in configuration file"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
-        else
+        #else
             #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
-            `module load $javamodule`
+        #    `module load $javamodule`
         fi      
         if [ ! -d $gatk ]
         then
@@ -214,14 +218,15 @@ else
         echo "calculating variant calling w unifiedgenotyper"
         cd $outputdir
 
-        $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+        #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+        $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $inputdir/$infile \
 	    -T UnifiedGenotyper \
-            -nt 18 -nct 10 \
+            -nt 8 -nct 4 \
             -glm $utype \
             --output_mode $umode \
-            -A Coverage \
+            -A DepthOfCoverage \
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
@@ -252,7 +257,7 @@ else
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
             echo "calculating phasebytransmission"
-            $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
 	    -T PhaseByTransmission \
@@ -354,7 +359,7 @@ else
 
             echo "combining VCF files"
 
-            $memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    $combparms \
 	    -T CombineVariants \
