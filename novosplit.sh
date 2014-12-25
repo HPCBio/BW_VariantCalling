@@ -26,8 +26,8 @@ else
         parameters=$( echo $params | tr "_" " " )
         samprocessing=$( cat $runfile | grep -w SAMPROCESSING | cut -d "=" -f2 )
         sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d "=" -f2 )
-
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
+        threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
 
 
         ## checking quality scores to gather additional params
@@ -37,7 +37,8 @@ else
         if [ $exitcode -ne 0 ]
         then
            MSG="checkfastqc command failed.  exitcode=$exitcode  novosplit alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit $exitcode;
         fi
 
@@ -49,6 +50,7 @@ else
         fi
 
         cd $outputdir
+        #######################     PAIRED ALIGNMENT      ####################
         if [ $paired -eq 1 ]
         then
            R2=${11}
@@ -56,62 +58,190 @@ else
            olog=${13}
            email=${14}
            qsubfile=${15}
-           $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual > $samfile
+           LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
+
+           if [ $samprocessing == "SAMTOOLS" ]
+           then
+              echo `date`
+
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual | $samdir/samtools view -bS -o $bamfile 
+              novoalign_exitcode=${PIPESTATUS[0]}
+              samtools_exitcode=${PIPESTATUS[1]}
+              echo `date`
+
+              if [ $novoalign_exitcode -ne 0 ]
+              then
+                 MSG="novoalign command failed.  exitcode=$novoalign_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $novoalign_exitcode;
+              fi
+              if [ ! -s $samfile ]
+              then
+                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit 1;
+              fi
+
+              if [ $samtools_exitcode -ne 0 ]
+              then
+                 MSG="sam to bam conversion failed.  exitcode=$samtools_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $samtools_exitcode;
+              fi
+              if [ ! -s $bamfile ]
+              then
+                  MSG="$outputdir/$bamfile BAM file not created. sam2bam step failed during  novosplit alignment."
+                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  exit 1;
+              fi
+              echo `date`
+
+
+
+
+           elif [ $samprocessing == "SAMBAMBA" ]
+           then
+              echo `date`
+
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              novoalign_exitcode=${PIPESTATUS[0]}
+              sambamba_exitcode=${PIPESTATUS[1]}
+              echo `date`
+
+              if [ $novoalign_exitcode -ne 0 ]
+              then
+                 MSG="novoalign command failed.  exitcode=$novoalign_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $novoalign_exitcode;
+              fi
+              if [ ! -s $samfile ]
+              then
+                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit 1;
+              fi
+
+              if [ $sambamba_exitcode -ne 0 ]
+              then
+                 MSG="sam to bam conversion failed.  exitcode=$sambamba_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $samtools_exitcode;
+              fi
+              if [ ! -s $bamfile ]
+              then
+                  MSG="$outputdir/$bamfile BAM file not created. sam2bam step failed during  novosplit alignment."
+                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  exit 1;
+              fi
+              echo `date`
+           fi
+
+
+
+
+
+        #######################     SINGLE-ENDED ALIGNMENT      ####################
         else
            elog=${11}
            olog=${12}
            email=${13}
            qsubfile=${14}
-           $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual > $samfile
-        fi
+           LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-        exitcode=$?
-        echo `date`
+           if [ $samprocessing == "SAMTOOLS" ]
+           then
+              echo `date`
 
-        LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual | $samdir/samtools view -bS -o $bamfile
+              novoalign_exitcode=${PIPESTATUS[0]}
+              samtools_exitcode=${PIPESTATUS[1]}
+              echo `date`
 
-        if [ $exitcode -ne 0 ]
-        then
-           MSG="novoalign command failed.  exitcode=$exitcode  novosplit alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit $exitcode;
-        fi
+              if [ $novoalign_exitcode -ne 0 ]
+              then
+                 MSG="novoalign command failed.  exitcode=$novoalign_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $novoalign_exitcode;
+              fi
+              if [ ! -s $samfile ]
+              then
+                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit 1;
+              fi
 
-        if [ ! -s $samfile ]
-        then
-           MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
-
-        ## sam2bam conversion
-        if [ $samprocessing == "SAMTOOLS" ]
-        then
-           echo `date`
-	   $samdir/samtools view -bS -o $bamfile $samfile
-           exitcode=$?
-           echo `date`
-        elif [ $samprocessing == "SAMBAMBA" ]
-        then
-           echo `date`
-           $sambambadir/sambamba view -t 32 -f bam -S $samfile -o $bamfile
-           exitcode=$?
-           echo `date`
-        fi
-
-        if [ $exitcode -ne 0 ]
-        then
-           MSG="sam to bam conversion failed.  exitcode=$exitcode  novosplit alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit $exitcode;
-        fi
+              if [ $samtools_exitcode -ne 0 ]
+              then
+                 MSG="sam to bam conversion failed.  exitcode=$samtools_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $samtools_exitcode;
+              fi
+              if [ ! -s $bamfile ]
+              then
+                  MSG="$outputdir/$bamfile BAM file not created. sam2bam step failed during  novosplit alignment."
+                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  exit 1;
+              fi
+              echo `date`
 
 
-	if [ ! -s $bamfile ]
-	then
-	    MSG="$outputdir/$bamfile BAM file not created. sam2bam step failed during  novosplit alignment."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    exit 1;
-	fi       
-        echo `date`
+
+           elif [ $samprocessing == "SAMBAMBA" ]
+           then
+              echo `date`
+
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              novoalign_exitcode=${PIPESTATUS[0]}
+              sambamba_exitcode=${PIPESTATUS[1]}
+              echo `date`
+
+              if [ $novoalign_exitcode -ne 0 ]
+              then
+                 MSG="novoalign command failed.  exitcode=$novoalign_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $novoalign_exitcode;
+              fi
+              if [ ! -s $samfile ]
+              then
+                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit 1;
+              fi
+
+              if [ $sambamba_exitcode -ne 0 ]
+              then
+                 MSG="sam to bam conversion failed.  exitcode=$sambamba_exitcode  novosplit alignment failed"
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                 exit $samtools_exitcode;
+              fi
+              if [ ! -s $bamfile ]
+              then
+                  MSG="$outputdir/$bamfile BAM file not created. sam2bam step failed during  novosplit alignment."
+                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                  exit 1;
+              fi
+              echo `date`
+           fi
+
+
+
+        fi # end paired-ended/single-ended condition 
+
+
 fi
