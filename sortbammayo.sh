@@ -38,7 +38,7 @@ else
     markdup=$( cat $runfile | grep -w ^MARKDUP | cut -d '=' -f2 )
     deldup=$( cat $runfile | grep -w ^REMOVE_DUP | cut -d '=' -f2 )
     revertsam=$( cat $runfile | grep -w ^REVERTSAM | cut -d '=' -f2 )
-    javamodule=$( cat $runfile | grep -w ^JAVAMODULE | cut -d '=' -f2 )
+    javadir=$( cat $runfile | grep -w ^JAVADIR | cut -d '=' -f2 )
     sID=$sample
     sPU=$sample
     sSM=$sample
@@ -65,14 +65,14 @@ else
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
-    if [ -z $javamodule ]
+    if [ -z $javadir ]
     then
-       MSG="A value for JAVAMODULE has to be specified in configuration file."
+       MSG="A value for JAVAdir has to be specified in configuration file."
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
-    else
+    #else
         #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
-            `module load $javamodule`
+    #        `module load $javamodule`
     fi
 
     if [ $revertsam != "1" -a $revertsam != "0" -a $revertsam != "YES" -a $revertsam != "NO" ]
@@ -111,7 +111,7 @@ else
     if [ $revertsam == "1" ]
     then
         echo "revertsam then addreadgroup..."
-	java -Xmx6g -Xms512m -jar $picardir/RevertSam.jar \
+	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/RevertSam.jar \
         COMPRESSION_LEVEL=0 \
         INPUT=$inbamfile \
         OUTPUT=$tmpfilerevertsam \
@@ -133,7 +133,7 @@ else
 	    exit 1;
 	fi    
 
-	java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	    INPUT=$tmpfilerevertsam \
 	    OUTPUT=$tmpfile \
 	    MAX_RECORDS_IN_RAM=null \
@@ -153,7 +153,7 @@ else
 
     else
         echo "just addreadgroup"
-	java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	    INPUT=$inbamfile \
 	    OUTPUT=$tmpfile \
 	    MAX_RECORDS_IN_RAM=null \
@@ -183,7 +183,7 @@ else
     # step : sortsam
     #########################
 
-    java -Xmx6g -Xms512m -jar $picardir/SortSam.jar \
+    $javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
 	INPUT=$tmpfile \
 	OUTPUT=$sortedplain \
 	TMP_DIR=$outputdir \
@@ -222,7 +222,7 @@ else
     if [ $markdup == "YES" -a $deldup != "TRUE" ]
     then
         echo "marking duplicates in sorted bam file"
-        java -Xmx6g -Xms512m -jar $picardir/MarkDuplicates.jar \
+        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MarkDuplicates.jar \
 	    INPUT=$sortedplain \
 	    OUTPUT=$outfilewdups \
 	    TMP_DIR=$outputdir \
@@ -255,7 +255,7 @@ else
 	if [ $deldup == "TRUE" ]
 	then
             echo "removing marked duplicates in sorted bam file"
-            java -Xmx6g -Xms512m -jar $picardir/MarkDuplicates.jar \
+            $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MarkDuplicates.jar \
 		INPUT=$sortedplain \
 		OUTPUT=$outfilenodups \
 		TMP_DIR=$outputdir \

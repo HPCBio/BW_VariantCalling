@@ -6,7 +6,7 @@
 ######################################
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# != 8 ];
+if [ $# != 9 ];
 then
 	MSG="parameter mismatch"
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
@@ -19,10 +19,11 @@ else
         outfile=$2
         picardir=$3
         samdir=$4
-        elog=$5
-        olog=$6
-        email=$7
-        qsubfile=$8
+        javadir=$5
+        elog=$6
+        olog=$7
+        email=$8
+        qsubfile=$9
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
         if [ ! -s $infile ]
@@ -50,7 +51,7 @@ else
         prefix=`basename $infile`
         samfile=$outputdir/${prefix}.sam
 	echo `date`
-        java -Xmx6g -Xms512m -jar $picardir/RevertSam.jar \
+        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/RevertSam.jar \
             COMPRESSION_LEVEL=0 \
             INPUT=$infile \
             OUTPUT=$samfile \

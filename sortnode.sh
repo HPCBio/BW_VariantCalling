@@ -14,7 +14,6 @@ else
     runfile=$1
     picardir=$2
     samdir=$3
-    javamodule=$4
     outputdir=$5
     bamfile=$6
     infile=$7
@@ -29,6 +28,7 @@ else
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
     memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
+    javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 
     if [ ! -d $outputdir ]
@@ -50,14 +50,14 @@ else
        exit 1;
     fi
 
-    if [ -z $javamodule ]
+    if [ -z $javadir ]
     then
-	MSG="A value must be specified for JAVAMODULE in configuration file"
+	MSG="A value must be specified for JAVADIR in configuration file"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit 1;
-    else
+    #else
         #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
-            `module load $javamodule`
+    #        `module load $javamodule`
     fi          
     if [ ! -s $bamfile ]
     then
@@ -105,7 +105,7 @@ else
     if [ $sortflag == "NCSA" ]
     then
        echo "alignment was done inhouse. we need to add_readgroup info"
-       $memprof java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+       $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	   INPUT=$infile \
 	   OUTPUT=$tmpfile \
 	   MAX_RECORDS_IN_RAM=null \
@@ -141,7 +141,7 @@ else
             cp $infile $tmpfile
 	else
             echo "readgroup info NOT found in input file. Adding it now..."
-	    $memprof java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
+	    $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 		   INPUT=$infile \
 		   OUTPUT=$tmpfile \
 		   MAX_RECORDS_IN_RAM=null \
@@ -169,7 +169,7 @@ else
     fi
     echo `date`
 
-    $memprof java -Xmx6g -Xms512m -jar $picardir/SortSam.jar \
+    $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
 	INPUT=$tmpfile \
 	OUTPUT=$outfile \
 	TMP_DIR=$outputdir \

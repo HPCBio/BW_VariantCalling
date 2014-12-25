@@ -37,7 +37,7 @@ else
 	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
+        javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
         threads=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
         refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
@@ -80,14 +80,14 @@ else
 	    exit 1;
         fi
 
-        if [ -z $javamodule ]
+        if [ -z $javadir ]
         then
-	    MSG="Value for JAVAMODULE must be specified in configuration file"
+	    MSG="Value for JAVADIR must be specified in configuration file"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
-        else
+        #else
             #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
-            `module load $javamodule`
+        #    `module load $javamodule`
         fi
 
         if [ ! -d $refdir ]
@@ -118,7 +118,7 @@ else
 		echo "realign then recalibrate"
 		echo "realigning..."
 		
-            	$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+            	$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $chrinfiles \
 		    -T RealignerTargetCreator \
@@ -142,7 +142,7 @@ else
 		echo `date`
 
 
-		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $chrinfiles \
 		    -T IndelRealigner \
@@ -183,7 +183,7 @@ else
 
                 if [ "$recalibrator" == "BQSR" ]
                 then
-                   $memprov java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+                   $memprov $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                        -R $refdir/$ref \
                        $recalparms \
                        -I realign.$chr.real.cleaned.bam \
@@ -210,7 +210,7 @@ else
                    echo `date`
 
 
-                   $memprov java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+                   $memprov $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                        -R $refdir/$ref \
                        -I realign.$chr.real.cleaned.bam \
                        $region  \
@@ -239,7 +239,7 @@ else
                    $memprof cp recal.$chr.real.recal.bai $outputfile.bai
 
                 else	
-   		   $memprof java -Xmx32g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+   		   $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		       -R $refdir/$ref \
 		       $recalparms \
 		       -I realign.$chr.real.cleaned.bam \
@@ -268,7 +268,7 @@ else
 		   fi
 		   echo `date`
 
-		   $memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		   $memprof $javadir/java -Xmx1024m -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		       -R $refdir/$ref \
 		       -L $chr \
 		       -I realign.$chr.real.cleaned.bam \
@@ -310,7 +310,7 @@ else
 		echo "recalibrate then realign. not common practice"
 		echo "recalibrating"
 
-		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    $recalparms \
 		    $chrinfiles \
@@ -340,7 +340,7 @@ else
 	
 		echo `date`
 
-		$memprof java -Xmx6g -Xms512m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof $javadir/java -Xmx1024m -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -L $chr \
 		    $chrinfiles \
@@ -377,7 +377,7 @@ else
 		echo `date` 		
 
 		echo "realigning"
-		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -I recal.$chr.recal.bam \
 		    -o realign.$chr.recal.bam.list \
@@ -399,7 +399,7 @@ else
 		fi
 		echo `date`
 
-		$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+		$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		    -R $refdir/$ref \
 		    -I recal.$chr.recal.bam \
 		    -T IndelRealigner \

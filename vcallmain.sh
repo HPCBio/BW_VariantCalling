@@ -48,7 +48,6 @@ else
         chrindex=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
         indices=$( echo $chrindex | sed 's/^/chr/' | sed 's/:/ chr/g' )
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
-        javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
@@ -107,12 +106,6 @@ else
            exit 1;
         else
            `chmod 750 $epilogue`
-        fi
-        if [ -z $javamodule ]
-        then
-           MSG="Value for JAVAMODULE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
         fi
 
         if [ ! -d $picardir ]
