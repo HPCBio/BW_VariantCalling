@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # originally written in collaboration with Mayo Bioinformatics core group
 # alignfastq.sh
@@ -56,6 +56,7 @@ echo "##########################################################################
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         chunkfastq=$( cat $runfile | grep -w CHUNKFASTQ | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        launcherdir=$( cat $runfile | grep -w LAUNCHERDIR | cut -d '=' -f2 )
         igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
         fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2 )
         fastqcflag=$( cat $runfile | grep -w FASTQCFLAG | cut -d '=' -f2 )
@@ -391,21 +392,21 @@ echo "##########################################################################
            exit 1;
         fi
 
-        if [ ! -d $picardir ]
-        then
-           MSG="PICARDIR=$picardir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
+        #if [ ! -d $picardir ]
+        #then
+        #   MSG="PICARDIR=$picardir directory not found"
+        #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+        #   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        #   exit 1;
+        #fi
 
-        if [ ! -d $samdir ]
-        then
-           MSG="SAMDIR=$samdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
+        #if [ ! -d $samdir ]
+        #then
+        #   MSG="SAMDIR=$samdir directory not found"
+        #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+        #   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        #   exit 1;
+        #fi
 
         if [ ! -e $profiler ]
         then
@@ -1051,7 +1052,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 #####################################################################################################################################
 
 
-        if [ $chunkfastq == "YES" -a $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
+        if [ $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
         then
 
            case $run_method in
@@ -1076,11 +1077,19 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               do
                  for i in $(seq 0 $NumChunks)
                  do
+
+                 if (( $i < 10 ))
+                 then
+                    OutputFileSuffix=0${i}
+                 else
+                    OutputFileSuffix=${i}
+                 fi
+
                     # creating a qsub out of the job file
                     # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs
                     novosplit_log=${AlignOutputDir}/${SampleName}/logs/log.novosplit.${SampleName}.node$OutputFileSuffix.in
-                    awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${i} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${i}
-                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.node${i}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
+                    awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${OutputFileSuffix}
+                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.node${OutputFileSuffix}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
                  done # done going through chunks
 
                  mergenovo_log=${AlignOutputDir}/${SampleName}/logs/log.mergenovo.${SampleName}.in
@@ -1112,7 +1121,11 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               NumberOfNodes=$(( inputfastqcounter * NumChunks )) 
               (( NumberOfNodes++ )) # plus one for the launcher
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
-              echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+              #echo "aprun -n $NumberOfNodes -N 1 -d $thr $launcherdir/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+              echo "module load intel/12.0.4" >> $qsub_novosplit_anisimov
+              echo "module load openmpi-1.4.3-intel-12.0.4" >> $qsub_novosplit_anisimov
+              #echo "cat $PBS_NODEFILE | sort -u | awk -v n=1 '{for(i=0;i<n;i++) print \$0}' > ${AlignOutputLogs}/HOSTLIST" >> $qsub_novosplit_anisimov
+              echo "mpiexec -n $NumberOfNodes  --pernode -machinefile \$PBS_NODEFILE --mca btl tcp,self  ${launcherdir}/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
               novosplit_job=`qsub $qsub_novosplit_anisimov`
               `qhold -h u $novosplit_job`
               echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
@@ -1130,10 +1143,10 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               # number of nodes required for mergenovo is equal to the number of samples plus one for the launcher
               NumberOfNodes=$(( inputfastqcounter + 1 )) # counter started at zero, so in the end reflects the true number of fsatq samples
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_mergenovo_anisimov
-              echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
-              mergenovo_job=`qsub $qsub_mergenovo_anisimov`
-              `qhold -h u $mergenovo_job`
-              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
+              echo "aprun -n $NumberOfNodes -N 1 -d $thr $launcherdir/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
+              #mergenovo_job=`qsub $qsub_mergenovo_anisimov`
+              #`qhold -h u $mergenovo_job`
+              #echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
 
            ;;
            "SERVER")
@@ -1160,7 +1173,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 #####################################################################################################################
 
 
-        if [ $chunkfastq == "NO" ]
+        if [ $chunkfastq == "NO" -a $aligner == "BWA_MEM"]
         then
 
            numalignnodes=$(( inputfastqcounter + 1))

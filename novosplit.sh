@@ -64,7 +64,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual | $samdir/samtools view -bS -o $bamfile 
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual -c $threads | $samdir/samtools view -bS -o $bamfile 
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -76,14 +76,6 @@ else
                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                  exit $novoalign_exitcode;
               fi
-              if [ ! -s $samfile ]
-              then
-                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
-                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 exit 1;
-              fi
-
               if [ $samtools_exitcode -ne 0 ]
               then
                  MSG="sam to bam conversion failed.  exitcode=$samtools_exitcode  novosplit alignment failed"
@@ -107,7 +99,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -119,14 +111,6 @@ else
                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                  exit $novoalign_exitcode;
               fi
-              if [ ! -s $samfile ]
-              then
-                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
-                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 exit 1;
-              fi
-
               if [ $sambamba_exitcode -ne 0 ]
               then
                  MSG="sam to bam conversion failed.  exitcode=$sambamba_exitcode  novosplit alignment failed"
@@ -160,7 +144,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual | $samdir/samtools view -bS -o $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual -c $threads | $samdir/samtools view -bS -o $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -172,14 +156,6 @@ else
                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                  exit $novoalign_exitcode;
               fi
-              if [ ! -s $samfile ]
-              then
-                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
-                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 exit 1;
-              fi
-
               if [ $samtools_exitcode -ne 0 ]
               then
                  MSG="sam to bam conversion failed.  exitcode=$samtools_exitcode  novosplit alignment failed"
@@ -202,7 +178,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -214,14 +190,6 @@ else
                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                  exit $novoalign_exitcode;
               fi
-              if [ ! -s $samfile ]
-              then
-                 MSG="$outputdir/$samfile aligned file not created.  novosplit alignment failed"
-                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                 exit 1;
-              fi
-
               if [ $sambamba_exitcode -ne 0 ]
               then
                  MSG="sam to bam conversion failed.  exitcode=$sambamba_exitcode  novosplit alignment failed"
