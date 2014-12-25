@@ -1067,6 +1067,39 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
            ;;
            "QSUB")
               # will add this later
+
+                 for i in $(seq 0 $NumChunks)
+                 do
+
+                    if (( $i < 10 ))
+                    then
+                       OutputFileSuffix=0${i}
+                    else
+                       OutputFileSuffix=${i}
+                    fi
+
+                    echo -e "\n\nscheduling qsubs\n\n"
+                    qsub_novosplit_anisimov=$AlignOutputLogs/qsub.novosplit.AnisimovLauncher.node${OutputFileSuffix}
+
+                    # appending the generic header to the qsub
+                    cat $outputdir/qsubGenericHeader > $qsub_novosplit_anisimov
+
+
+                    ###############################
+                    echo -e "\n################# constructing qsub for novosplit\n"
+                    echo "#PBS -N ${pipeid}_novoalign_Anisimov.node${OutputFileSuffix}" >> $qsub_novosplit_anisimov
+                    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit_anisimov
+                    echo "#PBS -o $AlignOutputLogs/log.novosplit.Anisimov.node${OutputFileSuffix}.ou" >> $qsub_novosplit_anisimov
+                    echo "#PBS -e $AlignOutputLogs/log.novosplit.Anisimov.node${OutputFileSuffix}.in" >> $qsub_novosplit_anisimov
+                    echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit_anisimov
+                    cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit_anisimov
+                    novosplit_job=`qsub $qsub_novosplit_anisimov`
+                    `qhold -h u $novosplit_job`
+                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+
+                 done < $outputdir/SAMPLENAMES.list # done looping over samples
+
+
            ;;
            "LAUNCHER")
               # clear out the joblists

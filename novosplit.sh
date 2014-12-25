@@ -30,25 +30,6 @@ else
         threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
 
 
-        ## checking quality scores to gather additional params
-        qscores=$scriptdir/checkFastqQualityScores.pl
-        ill2sanger=`perl $qscores $R1 10000`
-        exitcode=$?
-        if [ $exitcode -ne 0 ]
-        then
-           MSG="checkfastqc command failed.  exitcode=$exitcode  novosplit alignment failed"
-	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit $exitcode;
-        fi
-
-        if [ $ill2sanger -gt 65 ]
-        then
-           qual="-F ILMFQ"
-        else
-           qual="-F STDFQ"
-        fi
-
         cd $outputdir
         #######################     PAIRED ALIGNMENT      ####################
         if [ $paired -eq 1 ]
@@ -64,7 +45,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual -c $threads | $samdir/samtools view -bS -o $bamfile 
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters -c $threads | $samdir/samtools view -bS -o $bamfile 
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -99,7 +80,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -144,7 +125,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual -c $threads | $samdir/samtools view -bS -o $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters -c $threads | $samdir/samtools view -bS -o $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -178,7 +159,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
