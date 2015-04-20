@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # originally written in collaboration with Mayo Bioinformatics core group
 # alignfastq.sh
@@ -1066,7 +1066,39 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "QSUB")
-              # will add this later
+              while read SampleName
+              do
+                 for i in $(seq 0 $NumChunks)
+                 do
+
+                    if (( $i < 10 ))
+                    then
+                       OutputFileSuffix=0${i}
+                    else
+                       OutputFileSuffix=${i}
+                    fi
+
+                    echo -e "\n\nscheduling qsubs\n\n"
+                    qsub_novosplit_anisimov=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
+
+                    # appending the generic header to the qsub
+                    cat $outputdir/qsubGenericHeader > $qsub_novosplit_anisimov
+
+
+                    ###############################
+                    echo -e "\n################# constructing qsub for novosplit\n"
+                    echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit_anisimov
+                    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit_anisimov
+                    echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit_anisimov
+                    echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.in" >> $qsub_novosplit_anisimov
+                    echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit_anisimov
+                    cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit_anisimov
+                    novosplit_job=`qsub $qsub_novosplit_anisimov`
+                    `qhold -h u $novosplit_job`
+                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+
+                 done # done looping over chunks of a sample
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "LAUNCHER")
               # clear out the joblists
@@ -1122,6 +1154,13 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               (( NumberOfNodes++ )) # plus one for the launcher
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+
+              ### iForge - specific use of launcher - not sure how to handle the switch, so keeping it commented out for now
+              ### echo "module load intel/12.0.4" >> $qsub_novosplit_anisimov
+              ### echo "module load openmpi-1.4.3-intel-12.0.4" >> $qsub_novosplit_anisimov
+              #echo "cat $PBS_NODEFILE | sort -u | awk -v n=1 '{for(i=0;i<n;i++) print \$0}' > ${AlignOutputLogs}/HOSTLIST" >> $qsub_novosplit_anisimov
+              ### echo "mpiexec -n $NumberOfNodes  --pernode -machinefile \$PBS_NODEFILE --mca btl tcp,self  ${launcherdir}/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+
               novosplit_job=`qsub $qsub_novosplit_anisimov`
               `qhold -h u $novosplit_job`
               echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
@@ -1140,6 +1179,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               NumberOfNodes=$(( inputfastqcounter + 1 )) # counter started at zero, so in the end reflects the true number of fsatq samples
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_mergenovo_anisimov
               echo "aprun -n $NumberOfNodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
+
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
               echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
