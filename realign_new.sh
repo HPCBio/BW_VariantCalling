@@ -257,7 +257,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
 
 
-   pipeid=$( cat $TopOutputLogs/MAINpbs )
+   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
 
 
 

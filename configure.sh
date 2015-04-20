@@ -195,21 +195,21 @@ else
         then
             echo "Type of analysis to run: ALIGNMENT only" 
             
-            qsub1=$TopOutputLogs/qsub.main.aln1
+            qsub1=$TopOutputLogs/qsub.start_align_block
             echo "#PBS -V" > $qsub1
             echo "#PBS -A $pbsprj" >> $qsub1
-            echo "#PBS -N ${pipeid}_MAINaln1" >> $qsub1
+            echo "#PBS -N ${pipeid}_start_align_block" >> $qsub1
             echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	    echo "#PBS -o $TopOutputLogs/MAINaln1.ou" >> $qsub1
-	    echo "#PBS -e $TopOutputLogs/MAINaln1.in" >> $qsub1
+	    echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
+	    echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
             echo "#PBS -q $pbsqueue" >> $qsub1
             echo "#PBS -m ae" >> $qsub1
             echo "#PBS -M $email" >> $qsub1
-            echo "$scriptdir/start_slign_block.sh $runfile $TopOutputLogs/MAINaln1.in $TopOutputLogs/MAINaln1.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
+            echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
             `chmod a+r $qsub1`               
-            `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
+            `qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
             echo `date`
             case="alignonly"
 	fi
@@ -237,21 +237,21 @@ else
         if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" ]
         then
 	    echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
-	    qsub1=$TopOutputLogs/qsub.main.aln
+	    qsub1=$TopOutputLogs/qsub.start_align_block
 	    echo "#PBS -V" > $qsub1
 	    echo "#PBS -A $pbsprj" >> $qsub1
-	    echo "#PBS -N ${pipeid}_MAINaln" >> $qsub1
+	    echo "#PBS -N ${pipeid}_start_align_block" >> $qsub1
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	    echo "#PBS -o $TopOutputLogs/MAINaln.ou" >> $qsub1
-	    echo "#PBS -e $TopOutputLogs/MAINaln.in" >> $qsub1
+	    echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
+	    echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
 	    echo "#PBS -q $pbsqueue" >> $qsub1
 	    echo "#PBS -m ae" >> $qsub1
 	    echo "#PBS -M $email" >> $qsub1
-	    echo "$scriptdir/start_slign_block.sh $runfile $TopOutputLogs/MAINaln.in $TopOutputLogs/MAINaln.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
+	    echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 	    `chmod a+r $qsub1`               
-	    `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
+	    `qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
 	    echo `date`
             echo "Note: realign module will be scheduled after align module ends"
             case="align and realign"  

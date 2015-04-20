@@ -309,7 +309,7 @@ else
 
         oualigndir=$outputdir/align
         output_logs=$outputdir/logs
-        pipeid=$( cat $output_logs/MAINpbs )
+        pipeid=$( cat $output_logs/CONFIGUREpbs )
         
         if [ -d $oualigndir ]
         then

@@ -18,7 +18,7 @@ else
         numdays=30
 
 	listjobids=$( cat $outputdir/logs/*pbs | tr "\n" "\t" )
-	pipeid=$( cat $outputdir/logs/MAINpbs )
+	pipeid=$( cat $outputdir/logs/CONFIGUREpbs )
 
         if [ $exitstatus == "exitok" ]
         then

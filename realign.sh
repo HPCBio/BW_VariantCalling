@@ -112,7 +112,7 @@ echo "##########################################################################
    else
       mkdir -p $TopOutputLogs
    fi
-   pipeid=$( cat $TopOutputLogs/MAINpbs )
+   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
 
 
 

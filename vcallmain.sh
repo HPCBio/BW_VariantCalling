@@ -148,7 +148,7 @@ else
 
         vardir=$outputrootdir/variant
         varlogdir=$outputrootdir/logs/variant
-        pipeid=$( cat $outputrootdir/logs/MAINpbs )
+        pipeid=$( cat $outputrootdir/logs/CONFIGUREpbs )
         vcf_files=""
 
         if [ ! -d $vardir ]
