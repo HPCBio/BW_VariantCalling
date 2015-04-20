@@ -207,7 +207,7 @@ else
             echo "#PBS -q $pbsqueue" >> $qsub1
             echo "#PBS -m ae" >> $qsub1
             echo "#PBS -M $email" >> $qsub1
-            echo "$scriptdir/align.sh $runfile $TopOutputLogs/MAINaln1.in $TopOutputLogs/MAINaln1.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
+            echo "$scriptdir/start_slign_block.sh $runfile $TopOutputLogs/MAINaln1.in $TopOutputLogs/MAINaln1.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
             `chmod a+r $qsub1`               
             `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
             echo `date`
@@ -249,7 +249,7 @@ else
 	    echo "#PBS -q $pbsqueue" >> $qsub1
 	    echo "#PBS -m ae" >> $qsub1
 	    echo "#PBS -M $email" >> $qsub1
-	    echo "$scriptdir/align.sh $runfile $TopOutputLogs/MAINaln.in $TopOutputLogs/MAINaln.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
+	    echo "$scriptdir/start_slign_block.sh $runfile $TopOutputLogs/MAINaln.in $TopOutputLogs/MAINaln.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 	    `chmod a+r $qsub1`               
 	    `qsub $qsub1 >> $TopOutputLogs/MAINALNpbs`
 	    echo `date`
