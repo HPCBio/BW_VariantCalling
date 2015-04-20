@@ -126,7 +126,7 @@ else
 	`chmod -R 770 $outputdir`
         `chmod 750 $epilogue`
         TopOutputLogs=$outputdir/logs
-        pipeid=$( cat $TopOutputLogs/MAINpbs )
+        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
 
 
    # construct a list of SampleNames, check that files actually exist

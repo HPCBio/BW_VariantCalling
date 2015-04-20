@@ -336,19 +336,19 @@ echo "##########################################################################
         then
             alignerdir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
             refindexed=$( cat $runfile | grep -w NOVOINDEX | cut -d '=' -f2 )
-            alignparms=$( cat $runfile | grep -w NOVOPARAMS | cut -d '=' -f2 | tr " " "_" )_-c_${thr}
+            alignparms=$( cat $runfile | grep -w NOVOPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
         if [ $aligner == "BWA" ]
         then
             alignerdir=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2 )
             refindexed=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
-            alignparms=$( cat $runfile | grep -w BWAPARAMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
+            alignparms=$( cat $runfile | grep -w BWAPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
         if [ $aligner == "BWA_MEM" ]
         then
             alignerdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
             refindexed=$( cat $runfile | grep -w BWAMEMINDEX | cut -d '=' -f2 )
-            alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
+            alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
 
         if [ -z $sortool ]
@@ -471,7 +471,8 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
         while read SampleName
         do
           echo "processing next sample" 
-          if [ `expr ${#SampleName}` -lt 7 ]
+          # this will evaluate the length of string
+          if [ `expr ${#SampleName}` -lt 1 ]
           then
             echo "skipping empty line"
           else
@@ -1076,11 +1077,19 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               do
                  for i in $(seq 0 $NumChunks)
                  do
+
+                    if (( $i < 10 ))
+                    then
+                       OutputFileSuffix=0${i}
+                    else
+                       OutputFileSuffix=${i}
+                    fi
+
                     # creating a qsub out of the job file
                     # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs
                     novosplit_log=${AlignOutputDir}/${SampleName}/logs/log.novosplit.${SampleName}.node$OutputFileSuffix.in
-                    awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${i} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${i}
-                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.node${i}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
+                    awk -v awkvar_novosplitlog=$novosplit_log '{print "nohup "$0" > "awkvar_novosplitlog}' $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} > $AlignOutputDir/${SampleName}/logs/jobfile.novosplit.${SampleName}.node${OutputFileSuffix}
+                    echo "$AlignOutputDir/${SampleName}/logs/ jobfile.novosplit.${SampleName}.node${OutputFileSuffix}" >> $AlignOutputLogs/novosplit.AnisimovJoblist
                  done # done going through chunks
 
                  mergenovo_log=${AlignOutputDir}/${SampleName}/logs/log.mergenovo.${SampleName}.in
@@ -1162,7 +1171,8 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
         if [ $chunkfastq == "NO" ]
         then
-
+           # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
+           # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
            numalignnodes=$(( inputfastqcounter + 1))
 
            # scheduling the Anisimov Launcher

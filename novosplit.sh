@@ -26,6 +26,7 @@ else
         parameters=$( echo $params | tr "_" " " )
         samprocessing=$( cat $runfile | grep -w SAMPROCESSING | cut -d "=" -f2 )
         sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d "=" -f2 )
+        memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
 
@@ -56,13 +57,13 @@ else
            olog=${13}
            email=${14}
            qsubfile=${15}
-           $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual > $samfile
+           $memprof $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters $qual > $samfile
         else
            elog=${11}
            olog=${12}
            email=${13}
            qsubfile=${14}
-           $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual > $samfile
+           $memprof $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters $qual > $samfile
         fi
 
         exitcode=$?
@@ -88,13 +89,13 @@ else
         if [ $samprocessing == "SAMTOOLS" ]
         then
            echo `date`
-	   $samdir/samtools view -bS -o $bamfile $samfile
+	   $memprof $samdir/samtools view -bS -o $bamfile $samfile
            exitcode=$?
            echo `date`
         elif [ $samprocessing == "SAMBAMBA" ]
         then
            echo `date`
-           $sambambadir/sambamba view -t 32 -f bam -S $samfile -o $bamfile
+           $memprof $sambambadir/sambamba view -t 32 -f bam -S $samfile -o $bamfile
            exitcode=$?
            echo `date`
         fi
