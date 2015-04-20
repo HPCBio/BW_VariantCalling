@@ -655,22 +655,22 @@ else
      if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" ]
      then
             echo " analysis continues with realignment"
-	    qsub2=$output_logs/qsub.main.realn
+	    qsub2=$output_logs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
+	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-	    echo "#PBS -o $output_logs/MAINrealn.ou" >> $qsub2
-	    echo "#PBS -e $output_logs/MAINrealn.in" >> $qsub2
+	    echo "#PBS -o $output_logs/start_realrecal_block.ou" >> $qsub2
+	    echo "#PBS -e $output_logs/start_realrecal_block.in" >> $qsub2
 	    echo "#PBS -q $pbsqueue" >> $qsub2
 	    echo "#PBS -m ae" >> $qsub2
 	    echo "#PBS -M $email" >> $qsub2
             echo "#PBS -W depend=afterany:$pbsids" >> $qsub2
-	    echo "aprun -n 1 -d 1 $scriptdir/realign.sh $runfile $output_logs/MAINrealn.in $output_logs/MAINrealn.ou $email $output_logs/qsub.main.realn" >> $qsub2
+	    echo "aprun -n 1 -d 1 $scriptdir/start_realrecal_block.sh $runfile $output_logs/start_realrecal_block.in $output_logs/start_realrecal_block.ou $email $output_logs/qsub.start_realrecal_block" >> $qsub2
 	    `chmod a+r $qsub2` 
-	    `qsub $qsub2 >> $output_logs/MAINREALNpbs`
+	    `qsub $qsub2 >> $output_logs/REALRECALpbs`
 
             # releasing held jobs; else the above job dependency will never be met
             `qrls -h u $alignids`

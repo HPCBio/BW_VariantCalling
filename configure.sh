@@ -207,7 +207,7 @@ else
             echo "#PBS -q $pbsqueue" >> $qsub1
             echo "#PBS -m ae" >> $qsub1
             echo "#PBS -M $email" >> $qsub1
-            echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.main.aln1" >> $qsub1
+            echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
             `chmod a+r $qsub1`               
             `qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
             echo `date`
@@ -216,21 +216,21 @@ else
 	if [ $analysis == "REALIGNONLY" -o $analysis == "REALIGN_ONLY" ]
         then
 	    echo "Type of analysis to run: REALIGNMENT only. bams provided"
-	    qsub2=$TopOutputLogs/qsub.main.realn
+	    qsub2=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub2
+	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=00:30:00" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub2
-	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub2
+	    echo "#PBS -o $TopOutputLogs/start_realrecal_block.ou" >> $qsub2
+	    echo "#PBS -e $TopOutputLogs/start_realrecal_block.in" >> $qsub2
 	    echo "#PBS -q $pbsqueue" >> $qsub2
 	    echo "#PBS -m ae" >> $qsub2
 	    echo "#PBS -M $email" >> $qsub2
-	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub2
+	    echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
 	    `chmod a+r $qsub2` 
-	    `qsub $qsub2 >> $TopOutputLogs/MAINREALNpbs`
+	    `qsub $qsub2 >> $TopOutputLogs/REALRECALpbs`
 	    echo `date`
             case="realignonly" 
         fi

@@ -1182,7 +1182,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
-              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and realign.sh could depend on it 
+              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it 
 
            ;;
            "SERVER")
@@ -1243,7 +1243,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
            AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 
            echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-           echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and realign.sh could depend on this job, in case when there is no merging: a sigle chunk
+           echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
 
         fi
 
@@ -1342,21 +1342,21 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" ]
 	then
             echo " analysis continues with realignment"
-	    qsub_realign=$TopOutputLogs/qsub.main.realn
+	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
-	    echo "#PBS -N ${pipeid}_MAINrealn" >> $qsub_realign
+	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub_realign
 	    echo "#PBS -l walltime=01:00:00" >> $qsub_realign # 1 hour should be more than enough
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_realign
-	    echo "#PBS -o $TopOutputLogs/MAINrealn.ou" >> $qsub_realign
-	    echo "#PBS -e $TopOutputLogs/MAINrealn.in" >> $qsub_realign
+	    echo "#PBS -o $TopOutputLogs/start_realrecal_block.ou" >> $qsub_realign
+	    echo "#PBS -e $TopOutputLogs/start_realrecal_block.in" >> $qsub_realign
 	    echo "#PBS -q $pbsqueue" >> $qsub_realign
 	    echo "#PBS -m ae" >> $qsub_realign
 	    echo "#PBS -W depend=afterok:$pbsids" >> $qsub_realign
 	    echo "#PBS -M $email" >> $qsub_realign
-	    echo "$scriptdir/realign.sh $runfile $TopOutputLogs/MAINrealn.in $TopOutputLogs/MAINrealn.ou $email $TopOutputLogs/qsub.main.realn" >> $qsub_realign
+	    echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub_realign
 	    `chmod a+r $qsub_realign` 
-	    `qsub $qsub_realign >> $TopOutputLogs/MAINREALNpbs`
+	    `qsub $qsub_realign >> $TopOutputLogs/REALRECALpbs`
 
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`
