@@ -14,7 +14,7 @@ fi
 $@ &
 PROCESS_PID=$!
 
-LOG_FILE="/projects/mayo/BrainGWAS/35PhenosSelectedForTheGrant_TCX_All/memprof-${PROCESS_PID}.csv"
+LOG_FILE="/projects/memprof-${PROCESS_PID}.csv"
 TMP_FILE="/tmp/memprof-${PROCESS_PID}.tmp"
 TMP_FILE2=${TMP_FILE}.2
 LOG_FILE2=${LOG_FILE}.2
