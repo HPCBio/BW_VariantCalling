@@ -45,7 +45,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters -c $threads | $samdir/samtools view -bS -o $bamfile 
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters | $samdir/samtools view -bS -o $bamfile 
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -80,7 +80,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -125,7 +125,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters -c $threads | $samdir/samtools view -bS -o $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters | $samdir/samtools view -bS -o $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               samtools_exitcode=${PIPESTATUS[1]}
               echo `date`
@@ -159,7 +159,7 @@ else
            then
               echo `date`
 
-              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters -c $threads | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
+              $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
               echo `date`
