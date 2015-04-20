@@ -260,22 +260,22 @@ else
         then
 
             echo "variant calling only"
-	    qsub3=$TopOutputLogs/qsub.main.vcallgatk
+	    qsub3=$TopOutputLogs/qsub.start_varcall_block
 	    echo "#PBS -V" > $qsub3
 	    echo "#PBS -A $pbsprj" >> $qsub3
-	    echo "#PBS -N ${pipeid}_MAINvcall" >> $qsub3
+	    echo "#PBS -N ${pipeid}_start_varcall_block" >> $qsub3
 	    echo "#PBS -l epilogue=$epilogue" >> $qsub3
 	    echo "#PBS -l walltime=00:30:00" >> $qsub3
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	    echo "#PBS -o $TopOutputLogs/log.main.vcallgatk.ou" >> $qsub3
-	    echo "#PBS -e $TopOutputLogs/log.main.vcallgatk.in" >> $qsub3
+	    echo "#PBS -o $TopOutputLogs/log.start_varcall_block.ou" >> $qsub3
+	    echo "#PBS -e $TopOutputLogs/log.start_varcall_block.in" >> $qsub3
 	    echo "#PBS -q $pbsqueue" >> $qsub3
 	    echo "#PBS -m ae" >> $qsub3
 	    echo "#PBS -M $email" >> $qsub3
-	    echo "$scriptdir/vcallmain.sh $runfile $TopOutputLogs/log.main.vcallgatk.in $TopOutputLogs/log.main.vcallgatk.ou $email $TopOutputLogs/qsub.main.vcallgatk" >> $qsub3
+	    echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.start_varcall_block.in $TopOutputLogs/log.start_varcall_block.ou $email $TopOutputLogs/qsub.start_varcall_block" >> $qsub3
 	    `chmod a+r $qsub3`
 	    vcalljobid=`qsub $qsub3`
-	    echo $vcalljobid >> $TopOutputLogs/VCALLGATKpbs
+	    echo $vcalljobid >> $TopOutputLogs/VARCALLpbs
             case="vcall_only"  
         fi
         if [ `expr ${#case}` -lt 1 ]
