@@ -414,45 +414,45 @@ echo "##########################################################################
 
 
 
-   # the realign_new should run on a MOM node, so submitting with qsub without aprun
-   echo "$scriptdir/realign_new.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.realign_new.in $RealignOutputLogs/log.realign_new.ou $email $RealignOutputLogs/qsub.realign_new" > $RealignOutputLogs/qsub.realign_new
+   # the schedule_realrecal_per_chromosome should run on a MOM node, so submitting with qsub without aprun
+   echo "$scriptdir/schedule_realrecal_per_chromosome.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
 
 
-   ### schedule the realign_new job(s)
+   ### schedule the schedule_realrecal_per_chromosome job(s)
    case $run_method in
    "APRUN"|"QSUB"|"LAUNCHER")
       # schedule a single qsub for all samples
-      qsub_realignnew=$RealignOutputLogs/qsub.realign_new
+      qsub_schedule_realrecal_per_chromosome=$RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
 
       ################## constructing the qsub by editing the file in place
-      sed -i "1i \ " $qsub_realignnew # this will separate the header from command
+      sed -i "1i \ " $qsub_schedule_realrecal_per_chromosome # this will separate the header from command
 
       # inserting dependencies; 
       # does not  depend on NCSA alignment jobs, as start_realrecal_block.sh depends on them
       if [ `expr ${#JOBSmayo}` -gt 0 ]
       then
-         sed -i "1i #PBS -W depend=afterok:$JOBSmayo" $qsub_realignnew
+         sed -i "1i #PBS -W depend=afterok:$JOBSmayo" $qsub_schedule_realrecal_per_chromosome
       fi
 
       # appending the PBS options to the file in reverse order
-      sed -i "1i #PBS -l walltime=01:00:00" $qsub_realignnew # allowing an hour for realign_new: 
+      sed -i "1i #PBS -l walltime=01:00:00" $qsub_schedule_realrecal_per_chromosome # allowing an hour for schedule_realrecal_per_chromosome: 
       # should be more than enough (it only takes ~5 minutes), and increases job priority
-      sed -i "1i #PBS -l nodes=1:ppn=1" $qsub_realignnew
-      sed -i "1i #PBS -o $RealignOutputLogs/log.realign_new.ou" $qsub_realignnew
-      sed -i "1i #PBS -e $RealignOutputLogs/log.realign_new.in" $qsub_realignnew
+      sed -i "1i #PBS -l nodes=1:ppn=1" $qsub_schedule_realrecal_per_chromosome
+      sed -i "1i #PBS -o $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou" $qsub_schedule_realrecal_per_chromosome
+      sed -i "1i #PBS -e $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in" $qsub_schedule_realrecal_per_chromosome
 
       # appending the generic header to the qsub
-      cat $outputdir/qsubGenericHeader $qsub_realignnew > $qsub_realignnew.tmp && mv $qsub_realignnew.tmp $qsub_realignnew
+      cat $outputdir/qsubGenericHeader $qsub_schedule_realrecal_per_chromosome > $qsub_schedule_realrecal_per_chromosome.tmp && mv $qsub_schedule_realrecal_per_chromosome.tmp $qsub_schedule_realrecal_per_chromosome
 
-      sed -i "1i #PBS -N ${pipeid}_realign_new" $qsub_realignnew
+      sed -i "1i #PBS -N ${pipeid}_schedule_realrecal_per_chromosome" $qsub_schedule_realrecal_per_chromosome
 
-      `chmod a+r $qsub_realignnew`               
-      realrecaljob=`qsub $qsub_realignnew`
+      `chmod a+r $qsub_schedule_realrecal_per_chromosome`               
+      realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
       # `qhold -h u $realrecaljob` 
       echo $realrecaljob >> $TopOutputLogs/RECALLpbs
       ;;
    "SERVER")
-      nohup $RealignOutputLogs/qsub.realign_new > $RealignOutputLogs/log.realign_new.in 
+      nohup $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome > $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in 
       ;;
    esac
 
