@@ -658,7 +658,7 @@ else
 	    qsub2=$output_logs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub2
+	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2

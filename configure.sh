@@ -198,7 +198,7 @@ else
             qsub1=$TopOutputLogs/qsub.start_align_block
             echo "#PBS -V" > $qsub1
             echo "#PBS -A $pbsprj" >> $qsub1
-            echo "#PBS -N ${pipeid}_start_align_block" >> $qsub1
+            echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
             echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
@@ -219,7 +219,7 @@ else
 	    qsub2=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub2
+	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=00:30:00" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
@@ -240,7 +240,7 @@ else
 	    qsub1=$TopOutputLogs/qsub.start_align_block
 	    echo "#PBS -V" > $qsub1
 	    echo "#PBS -A $pbsprj" >> $qsub1
-	    echo "#PBS -N ${pipeid}_start_align_block" >> $qsub1
+	    echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
 	    echo "#PBS -l walltime=00:30:00" >> $qsub1
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
@@ -263,7 +263,7 @@ else
 	    qsub3=$TopOutputLogs/qsub.start_varcall_block
 	    echo "#PBS -V" > $qsub3
 	    echo "#PBS -A $pbsprj" >> $qsub3
-	    echo "#PBS -N ${pipeid}_start_varcall_block" >> $qsub3
+	    echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
 	    echo "#PBS -l epilogue=$epilogue" >> $qsub3
 	    echo "#PBS -l walltime=00:30:00" >> $qsub3
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub3

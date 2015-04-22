@@ -1345,7 +1345,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
-	    echo "#PBS -N ${pipeid}_start_realrecal_block" >> $qsub_realign
+	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK" >> $qsub_realign
 	    echo "#PBS -l walltime=01:00:00" >> $qsub_realign # 1 hour should be more than enough
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_realign
 	    echo "#PBS -o $TopOutputLogs/start_realrecal_block.ou" >> $qsub_realign
