@@ -85,11 +85,11 @@ else
         fi
         `chmod -R 770 $outputdir/`
         `chmod 750 $epilogue`
-	`cp $runfile $outputdir/runfile.tmp.txt`
+	`cp $runfile $outputdir/runfile.txt`
         runfile=$outputdir/runfile.txt
-        oldrun=$outputdir/runfile.tmp.txt
 
         # putting sample names into a file before beginning of the run has been deprecated
+        # oldrun=$outputdir/runfile.tmp.txt
         #dirsamples=`dirname $samplefileinfo`
         #samplename=`basename $samplefileinfo`
         #newsamplename=$outputdir/$samplename
@@ -112,7 +112,7 @@ else
         echo "#PBS -M $email" >> $qsub1
         echo "$scriptdir/configure.sh $runfile batch $outputlogs/CONFIGURE.in $outputlogs/CONFIGURE.ou $email $outputlogs/qsub.configure" >> $qsub1
         `chmod a+r $qsub1`               
-        #jobid=`qsub $qsub1`
+        jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
         echo $pipeid >> $outputlogs/CONFIGUREpbs
         echo `date`
