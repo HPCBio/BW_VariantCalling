@@ -168,6 +168,7 @@ else
 
         #################################
         # QC preprocessing on the samplefileinfo file
+        # it verifies that the samplefileinfo file contains the correct information
         #################################
 
        # WE DO NOT USE SAMPLEDETAIL FILE ANYMORE,INSTEAD GRABBING SAMPLE FILES FROM A GIVEN FOLDER

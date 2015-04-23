@@ -214,7 +214,7 @@ echo "##########################################################################
       exit 1;
    fi
 
-   numsamples=`wc -l $TopOutputLogs/SAMPLENAMES.list | cut -d ' ' -f 1`
+   numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in SAMPLEDIR=$sampledir."

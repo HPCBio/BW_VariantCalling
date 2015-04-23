@@ -736,16 +736,16 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             # if want to profile, then must set up  the environment
             # for now, let us do without this; too much else going on: Aug 22, 2014
             # in other words, do not set the option in the runfile
-            if [ $profiling == 'memprof' ]
-            then
-               ccmgres_string="#PBS -l gres=ccm"
-               run_string="module add ccm; ccmrun "
-               profiler_string="$profiler "
-            else
-               ccmgres_string=""
-               run_string="aprun -n 1 -d $thr "
-               profiler_string=""
-            fi
+            #if [ $profiling == 'memprof' ]
+            #then
+            #   ccmgres_string="#PBS -l gres=ccm"
+            #   run_string="module add ccm; ccmrun "
+            #   profiler_string="$profiler "
+            #else
+            #   ccmgres_string=""
+            #   run_string="aprun -n 1 -d $thr "
+            #   profiler_string=""
+            #fi
             
 
             allfiles=""
@@ -1258,7 +1258,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
         
 	pbsids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" ":" )
-	extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+	#extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
         alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
 
