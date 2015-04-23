@@ -185,13 +185,13 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
       realparms=$realparms":-known:$refdir/$kgenome"
       recalparms=$recalparms":--knownSites:$refdir/$kgenome"
    fi
-   if [ ! -d $RealignOutputLogs ]
-   then
-      MSG="$RealignOutputLogs realignlog directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+   #if [ ! -d $RealignOutputLogs ]
+   #then
+   #   MSG="$RealignOutputLogs realignlog directory not found"
+   #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      exit 1;
-   fi
+   #   exit 1;
+   #fi
 
 
    RealignOutputDir=$outputdir/realign
@@ -421,7 +421,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 
 
          echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
-         echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}
+         echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} $RealignOutputLogs" > $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}
 
          # construct the list of all input files for the GATK real-recal procedure, multisample case
          if [ $multisample == "YES" ]
@@ -473,19 +473,19 @@ echo -e "\n\n\n ###################################       main loops start here 
 
 
 
-#         qsub_split_bam_by_chromosome=$RealignOutputLogs/qsub.sort.${SampleName}.$chr
-#         echo "#PBS -N ${pipeid}_sort_${SampleName}_$chr" >> $qsub_split_bam_by_chromosome
+#         qsub_split_bam_by_chromosome=$RealignOutputLogs/qsub.split.${SampleName}.$chr
+#         echo "#PBS -N ${pipeid}_split_${SampleName}_$chr" >> $qsub_split_bam_by_chromosome
 #         echo "#PBS -l walltime=$pbscpu" >> $qsub_split_bam_by_chromosome
 #         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.ou" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.sort.${SampleName}.$chr.in" >> $qsub_split_bam_by_chromosome
+#         echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.split.${SampleName}.$chr.ou" >> $qsub_split_bam_by_chromosome
+#         echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.split.${SampleName}.$chr.in" >> $qsub_split_bam_by_chromosome
 # 
 #         `chmod a+r $qsub_split_bam_by_chromosome`
-#            sortjobid=`qsub $qsub_split_bam_by_chromosome`
+#            splitjobid=`qsub $qsub_split_bam_by_chromosome`
 #            # new line to avoid hiccup
-#            #`qhold -h u $sortjobid`
-#            echo $sortjobid >> $outputdir/logs/REALSORTEDpbs.$SampleName
-#            echo $sortjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
+#            #`qhold -h u $splitjobid`
+#            echo $splitjobid >> $outputdir/logs/REALSORTEDpbs.$SampleName
+#            echo $splitjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
 #
 #            truncate -s 0 $realrecal.$SampleName.$chr.serialjobs
 #            echo "$RealignOutputLogs realrecal.$SampleName.$chr.serialjobs" >> $RealignOutputLogs/$realrecal.AnisimovJoblist
@@ -500,7 +500,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 #         then
 
 
-#      sortid=$( cat $outputdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
+#      splitid=$( cat $outputdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
 #      outputfile=$chr.realrecal.$bamfile.output.bam
 #      igv_files=${igv_files}":INPUT=${outputfile}"
 #      echo "realign-recalibrate for interval:$chr..."
@@ -515,7 +515,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 #      echo "#PBS -q $pbsqueue" >> $qsub_realrecal
 #      echo "#PBS -m ae" >> $qsub_realrecal
 #      echo "#PBS -M $email" >> $qsub_realrecal
-#      echo "#PBS -W depend=afterok:$sortid" >> $qsub_realrecal
+#      echo "#PBS -W depend=afterok:$splitid" >> $qsub_realrecal
 #
 #      if [ $schedule eq "QSUB" ]
 #      then
@@ -618,7 +618,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          do
             # creating a qsub out of the job file
             # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
-            split_bam_by_chromosome_log=${RealignOutputDir}/${SampleName}/logs/log.sort.$SampleName.$chr.in
+            split_bam_by_chromosome_log=${RealignOutputDir}/${SampleName}/logs/log.split.$SampleName.$chr.in
             awk -v awkvar_split_bam_by_chromosomelog=$split_bam_by_chromosome_log '{print "nohup "$0" > "awkvar_split_bam_by_chromosomelog}' $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/jobfile.split_bam_by_chromosome.${SampleName}.${chr}
             echo "$RealignOutputDir/${SampleName}/logs/ jobfile.split_bam_by_chromosome.${SampleName}.${chr}" >> $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
 
@@ -672,6 +672,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          fi
          echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_split_bam_by_chromosome_anisimov
          echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovLauncher.log" >> $qsub_split_bam_by_chromosome_anisimov
+         echo "cat $RealignOutputLogs/FAILEDmessages | mail -s '[Task #3820]' "$redmine,$email" >> $qsub_split_bam_by_chromosome_anisimov
 
 
 
@@ -715,9 +716,9 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
       ###############
       ############### 
-      echo -e "\n going through chromosomes again to schedule all sort before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
-      # reset the list of SORTNODE pbs ids
-      truncate -s 0 $RealignOutputLogs/SORTNODEpbs
+      echo -e "\n going through chromosomes again to schedule all split before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
+      # reset the list of SPLITBYCHROMOSOME pbs ids
+      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
       truncate -s 0 $VcallOutputLogs/VCALGATKpbs
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
@@ -726,7 +727,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       do
          split_bam_by_chromosome_job=`qsub $RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher`
          `qhold -h u $split_bam_by_chromosome_job` #I am going to allow these to run right away,
-         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/SORTNODEpbs # will read these in to release them later
+         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs # will read these in to release them later
          # add dependency on split_bam_by_chromosome job to realrecal job
          sed -i "2i #PBS -W depend=afterok:$split_bam_by_chromosome_job" $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
       done
@@ -734,7 +735,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       for chr in $indices
       do
          realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher`
-         # I am not going to put these on hold, as they will be helkd back by the dependency on respective sort jobs
+         # I am not going to put these on hold, as they will be helkd back by the dependency on respective split jobs
          # Add dependency on realrecal job to vcallgatk job
          sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
          echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
@@ -748,13 +749,13 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       done 
 
       # now release the split_bam_by_chromosome jobs
-      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SORTNODEpbs | sed "s/\..*//" | tr "\n" " " )
+      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
       qrls -h u $split_bam_by_chromosome_ids
    ;;
    "SERVER")
       while read SampleName
       do
-         nohup $RealignOutputDir/${SampleName}/logs/jobfile.split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.sort.$SampleName.$chr.in
+         nohup $RealignOutputDir/${SampleName}/logs/jobfile.split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.in
          nohup $RealignOutputDir/${SampleName}/logs/jobfile.realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in 
 
          if [ $skipvcall == "NO" ]

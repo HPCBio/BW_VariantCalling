@@ -2,10 +2,11 @@
 # written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
-if [ $# -gt 15 ]
+if [ $# -gt 16 ]
 then
 	MSG="parameter mismatch."
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
+        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
         exit 1;
 else
     set -x
@@ -25,11 +26,18 @@ else
     olog=${13}
     email=${14}
     qsubfile=${15}
+    RealignOutputLogs=${16}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
     memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
+
+    if [ 1 ]
+    then
+       echo "you bad exit code" >> $RealignOutputLogs/FAILEDmessages
+       exit 1;
+    fi
 
     if [ ! -d $outputdir ]
     then
