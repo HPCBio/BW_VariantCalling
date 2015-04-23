@@ -219,7 +219,7 @@ else
 	    qsub2=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
-	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK
+	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK"
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
 	    echo "#PBS -l walltime=00:30:00" >> $qsub2
 	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2

@@ -31,14 +31,16 @@ else
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
-        samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
-        if [ -z $epilogue ]
-        then
-	    MSG="Invalid value for parameter EPILOGUE=$epilogue  in configuration file"
-	    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" 
-	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-            exit 1;
-        fi
+
+        # putting sample names into a file before beginning of the run has been deprecated
+        #samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
+        #if [ -z $epilogue ]
+        #then
+	#    MSG="Invalid value for parameter EPILOGUE=$epilogue  in configuration file"
+	#    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" 
+	#    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        #    exit 1;
+        #fi
 
         if [ ! -d $scriptdir ]
         then
@@ -86,11 +88,13 @@ else
 	`cp $runfile $outputdir/runfile.tmp.txt`
         runfile=$outputdir/runfile.txt
         oldrun=$outputdir/runfile.tmp.txt
-        dirsamples=`dirname $samplefileinfo`
-        samplename=`basename $samplefileinfo`
-        newsamplename=$outputdir/$samplename
-        `cp $samplefileinfo $newsamplename`
-        `perl $scriptdir/lned.pl $oldrun $runfile SAMPLEFILENAMES "$newsamplename"`
+
+        # putting sample names into a file before beginning of the run has been deprecated
+        #dirsamples=`dirname $samplefileinfo`
+        #samplename=`basename $samplefileinfo`
+        #newsamplename=$outputdir/$samplename
+        #`cp $samplefileinfo $newsamplename`
+        #`perl $scriptdir/lned.pl $oldrun $runfile SAMPLEFILENAMES "$newsamplename"`
 
         outputlogs=$outputdir/logs
 	echo "launching the pipeline configuration script"
@@ -108,7 +112,7 @@ else
         echo "#PBS -M $email" >> $qsub1
         echo "$scriptdir/configure.sh $runfile batch $outputlogs/CONFIGURE.in $outputlogs/CONFIGURE.ou $email $outputlogs/qsub.configure" >> $qsub1
         `chmod a+r $qsub1`               
-        jobid=`qsub $qsub1`
+        #jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
         echo $pipeid >> $outputlogs/CONFIGUREpbs
         echo `date`
@@ -116,6 +120,8 @@ else
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
         echo -e "$MSG\n\nDetails:\n\n$LOGS" 
+        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #3819]' "$redmine,$email"
         #echo -e "$MSG\n\nDetails:\n\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+
 
 fi
