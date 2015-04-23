@@ -672,7 +672,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          fi
          echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_split_bam_by_chromosome_anisimov
          echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovLauncher.log" >> $qsub_split_bam_by_chromosome_anisimov
-         echo "cat $RealignOutputLogs/FAILEDmessages | mail -s '[Task #3820]' "$redmine,$email" >> $qsub_split_bam_by_chromosome_anisimov
+         echo "cat $RealignOutputLogs/FAILEDmessages | mail -s '[Task #3820]' "$redmine,$email"" >> $qsub_split_bam_by_chromosome_anisimov
 
 
 

@@ -33,11 +33,11 @@ else
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 
-    if [ 1 ]
-    then
-       echo "you bad exit code" >> $RealignOutputLogs/FAILEDmessages
-       exit 1;
-    fi
+#    if [ 1 ]
+#    then
+#       echo "you bad exit code" >> $RealignOutputLogs/FAILEDmessages
+#       exit 1;
+#    fi
 
     if [ ! -d $outputdir ]
     then
