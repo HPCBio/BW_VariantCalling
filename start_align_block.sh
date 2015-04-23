@@ -120,13 +120,15 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
-        if [ ! -s $samplefileinfo ]
-        then
-           MSG="SAMPLEFILENAMES=$samplefileinfo file not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-           exit 1;
-        fi
+
+        #deprecated
+        #if [ ! -s $samplefileinfo ]
+        #then
+        #   MSG="SAMPLEFILENAMES=$samplefileinfo file not found"
+        #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+        #   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        #   exit 1;
+        #fi
 
         if [ ! -d $outputdir ]
         then
@@ -167,6 +169,12 @@ else
         #################################
         # QC preprocessing on the samplefileinfo file
         #################################
+
+       # WE DO NOT USE SAMPLEDETAIL FILE ANYMORE,INSTEAD GRABBING SAMPLE FILES FROM A GIVEN FOLDER
+       # WHICH IS WHY THIS BLOCK DOES NOT WORK
+       # AND AS A RESULT ONLY INPUT FASTQ CAN BE PROCESSED
+       # MAY NEED TO RECUSCITATE THIS IN A MODIFIED FORM IN ORDER TO BE ABLE TO PROCESS BAMS
+       # ---  LSM April 22, 2014
 
         while read sampledetail 
         do
