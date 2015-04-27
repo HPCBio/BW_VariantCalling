@@ -165,7 +165,7 @@ else
         
     ## step 3: marking and or removing duplicates        
 
-    if [ $markdup == "YES" -a $deldup != "TRUE" ]
+    if [ $markdup == "YES" -a $deldup == "NO" ]
     then
        if [ $markduplicatestool == "PICARD" ]
        then
@@ -260,7 +260,7 @@ else
 	#echo `date`
     else 
         echo "remove duplicates or do nothing"
-	if [ $deldup == "TRUE" ]
+	if [ $markdup == "YES" -a $deldup == "YES" ]
         then
            if [ $markduplicatestool == "PICARD" ]
 	   then
@@ -278,7 +278,7 @@ else
 	      exitcode=$?
            elif [ $markduplicatestool == "SAMBLASTER" ]
            then
-              $samdir/samtools view -h $tmpfilewdups | $samblasterdir/samblaster  | $samdir/samtools view -Sb -> $outfilenodups.namesorted
+              $samdir/samtools view -h $tmpfilewdups | $samblasterdir/samblaster --removeDups | $samdir/samtools view -Sb -> $outfilenodups.namesorted
               exitcode=$?
            fi
 

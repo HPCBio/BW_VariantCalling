@@ -8,7 +8,8 @@ redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 13 ];
 then
 	MSG="parameter mismatch."
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
         exit 1;
 else					
 	set -x
@@ -34,7 +35,8 @@ else
         if [ ! -s $runfile ]
         then
 	    MSG="$runfile configuration file not found"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
@@ -70,20 +72,23 @@ else
         if [ ! -d $samdir ]
         then
 	    MSG="$samdir samtools directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -d $gatk ]
         then
 	    MSG="$gatk GATK directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         if [ -z $javadir ]
         then
 	    MSG="Value for JAVADIR must be specified in configuration file"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         #else
             #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
@@ -93,13 +98,15 @@ else
         if [ ! -d $refdir ]
         then
 	    MSG="$refdir reference genome directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
         if [ ! -s $refdir/$ref ]
         then
 	    MSG="$ref reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -107,7 +114,8 @@ else
         if [ ! -d $inputdir ]
         then
 	    MSG="$inputdir realign directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -128,7 +136,8 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="realignertargetcreator command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`
@@ -136,7 +145,8 @@ else
 		if [ ! -s realign.$chr.bam.list ]
 		then
 		    MSG="realign.$chr.bam.list realignertargetcreator file not created. realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                     exit 1;
 		fi
 		echo `date`
@@ -154,7 +164,8 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="indelrealigner command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`
@@ -162,7 +173,8 @@ else
 		if [ ! -s realign.$chr.realigned.bam ]
 		then
 		    MSG="realigned.bam indelrealigner file not created. realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                     exit 1;
                 fi
 		$memprof mv realign.$chr.realigned.bai realign.$chr.realigned.bam.bai
@@ -174,7 +186,8 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="samtools flagstat command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
@@ -255,7 +268,8 @@ else
 		   if [ $exitcode -ne 0 ]
 		   then
 		       MSG="countcovariates command failed exitcode=$exitcode  realignment-recalibration stopped"
-		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		       exit $exitcode;
 		   fi
 		   echo `date`		
@@ -263,7 +277,8 @@ else
 		   if [ ! -s recal.$chr.recal_data.csv ]
 		   then
 		       MSG="recal.$chr.recal_data.csv countcovariates file not created realignment-recalibration stopped"
-		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		       exit 1;
 		   fi
 		   echo `date`
@@ -280,7 +295,8 @@ else
 		   if [ $exitcode -ne 0 ]
 		   then
 		       MSG="tablerecalibration command failed exitcode=$exitcode  realignment-recalibration stopped"
-		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		       exit $exitcode;
 		   fi
 		   echo `date`		
@@ -289,7 +305,8 @@ else
 		   if [ ! -s recal.$chr.real.recal.bam ]
 		   then
 		       MSG="$chr.real.recal.bam tablerecalibration file not created realignment-recalibration stopped"
-		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		       exit 1;
 		   fi
 		   $memprof cp recal.$chr.real.recal.bam $outputfile
@@ -301,7 +318,7 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="samtools flagstat command failed exitcode=$exitcode "
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
@@ -326,7 +343,7 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="countcovariates command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
@@ -334,7 +351,7 @@ else
 		if [ ! -s recal.$chr.recal_data.csv ]
 		then
 		    MSG="recal.$chr.recal_data.csv countcovariates file not created realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
 	
@@ -352,7 +369,7 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="tablerecalibration command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
@@ -360,7 +377,7 @@ else
 		if [ ! -s recal.$chr.recal.bam ]
 		then
 		    MSG="recal.$chr.recal.bam tablerecalibration file not created realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
                 fi
                 $memprof cp recal.$chr.recal.bam recal.$chr.recal.cleaned.bam
@@ -371,7 +388,7 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="samtools flagstat command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date` 		
@@ -387,14 +404,14 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="realignertargetcreator command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
 		if [ ! -s realign.$chr.recal.bam.list ]
 		then
 		    MSG="realign.$chr.recal.bam.list realigntargetcreator file not created. realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
                     exit 1;
 		fi
 		echo `date`
@@ -411,14 +428,14 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="indelrealigner command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
 		if [ ! -s realign.$chr.recal.realigned.bam ]
 		then
 		    MSG="realign.$chr.recal.realigned.bam indelrealigner file not created. realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
 		$memprof cp realign.$chr.recal.realigned.bam $outputfile
@@ -428,7 +445,7 @@ else
 		if [ $exitcode -ne 0 ]
 		then
 		    MSG="samtools flagstat command failed exitcode=$exitcode  realignment-recalibration stopped"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    exit $exitcode;
 		fi
 		echo `date`		
