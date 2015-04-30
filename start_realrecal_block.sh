@@ -289,7 +289,7 @@ echo "##########################################################################
 
    if [ $resortflag == "YES" -a $analysis == "REALIGN_ONLY" ]
    then
-      echo "alignment was NOT done inhouse. Need to resort bam files. Checking input files"
+      echo "alignment was done separately; starting the workflow with realignment. Need to resort bam files. Checking input files"
       # loop over samples, by reading the SampleName file we constructed above: $TopOutputLogs/SAMPLENAMES.list
       while read SampleName
       do
@@ -365,7 +365,7 @@ echo "##########################################################################
 
    if [ $resortflag == "NO" -a $analysis == "REALIGN_ONLY" ]
    then
-      echo "alignment was NOT done inhouse. BAM files will not be resorted"
+      echo "starting the workflow with realignment, alignment step was done separartely. BAM files will not be resorted"
       if [ $revertsam == "0" -o $revertsam == "NO" ]
       then
 #################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
