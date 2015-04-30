@@ -37,6 +37,7 @@ else
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
 
+        input_format=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
         if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
@@ -133,15 +134,27 @@ else
    if [ ! -e $outputdir/SAMPLENAMES.list ]
    then
       truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
-      for fastqfile in $sampledir/*
-      do
-         # strip path, which read (left/right), and extension from input files
-         # and put that info into the SampleNames file
-         SampleName=$( basename $fastqfile | sed 's/_read.\?\.[^.]*$//' )
-         echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
-      done
+      if  [ $input_format == "FASTQ" ]
+      then
+         for inputfile in $sampledir/*
+         do
+            # strip path, which read (left/right), and extension from input files
+            # and put that info into the SampleNames file
+            SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
+            echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+         done
+      elif [ $input_format == "BAM" ]
+      then
+         for inputfile in $sampledir/*
+         do
+            # strip path, which read (left/right), and extension from input files
+            # and put that info into the SampleNames file
+            SampleName=$( basename $inputfile .bam )
+            echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+         done
+      fi
       # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
-      uniq  $outputdir/SAMPLENAMES.tmp.list >  $outputdir/SAMPLENAMES.list
+      sort $outputdir/SAMPLENAMES.tmp.list | uniq > $outputdir/SAMPLENAMES.list
       sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
       rm  $outputdir/SAMPLENAMES.tmp.list
    fi
