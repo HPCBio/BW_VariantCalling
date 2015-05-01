@@ -1,12 +1,10 @@
 #!/bin/sh
 # written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
-#redmine=lmainzer@igb.illinois.edu
-#redmine=grendon@illinois.edu
 if [ $# != 3 ]
 then
         MSG="Parameter mismatch."
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
 	set -x

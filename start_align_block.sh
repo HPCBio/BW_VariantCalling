@@ -4,12 +4,10 @@
 # start_align_block.sh
 # First module in the GGPS analysis pipeline
 redmine=hpcbio-redmine@igb.illinois.edu
-#redmine=grendon@illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
-        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else 
 	set -x
@@ -32,6 +30,7 @@ else
 
         ## parsing run info file
 
+        reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 	inputdir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )

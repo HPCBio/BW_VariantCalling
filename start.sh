@@ -5,13 +5,10 @@
 #		$1		=	       run info file
 ###########################
 redmine=hpcbio-redmine@igb.illinois.edu
-#redmine=lmainzer@igb.illinois.edu
-#redmine=grendon@illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."
-        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" 
-        #echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
 	set -x
@@ -25,6 +22,8 @@ else
            #echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
+
+        reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
@@ -120,7 +119,7 @@ else
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
         echo -e "$MSG\n\nDetails:\n\n$LOGS" 
-        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #3820]' "$redmine,$email"
+        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
         #echo -e "$MSG\n\nDetails:\n\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 
 

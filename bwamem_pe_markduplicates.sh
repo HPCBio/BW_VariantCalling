@@ -1,11 +1,9 @@
 #!/bin/sh
 redmine=hpcbio-redmine@igb.illinois.edu
-#redmine=grendon@illinois.edu
 if [ $# != 14 ]
 then
         MSG="parameter mismatch"
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
-        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
 	set -x
