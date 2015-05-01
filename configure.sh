@@ -4,7 +4,7 @@ redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 6 ]
 then
         MSG="Parameter mismatch."
-        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+        echo -e "Program $0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
 	set -x
@@ -20,8 +20,7 @@ else
 
         if [ !  -s $runfile ]
         then
-           MSG="$runfile configuration file not found"
-           echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
+           MSG="$runfile configuration file not found."
            exit 1;
         fi
         

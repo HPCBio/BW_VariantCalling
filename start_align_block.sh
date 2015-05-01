@@ -23,8 +23,6 @@ else
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -71,8 +69,7 @@ else
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
             fi
         fi
@@ -80,8 +77,7 @@ else
         if [ $bamtofastqflag != "YES" -a $bamtofastqflag != "NO" -a $bamtofastqflag != "1" -a $bamtofastqflag != "0" ]
         then
             MSG="BM2FASTQFLAG=$bamtofastqflag  invalid value"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
             exit 1;
         else
             if [ $bamtofastqflag == "1" ]
@@ -97,16 +93,14 @@ else
         if [ $aligner != "NOVOALIGN" -a $aligner != "BWA" -a $aligner != "BWA_MEM" ]
         then
             MSG="ALIGNER=$aligner  is not available at this site"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
             exit 1;
         fi
 
         if [ -z $epilogue ]
         then
            MSG="Value for EPILOGUE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         else
            `chmod 750 $epilogue`
@@ -115,19 +109,9 @@ else
         if [ ! -d $scriptdir ]
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         fi
-
-        #deprecated
-        #if [ ! -s $samplefileinfo ]
-        #then
-        #   MSG="SAMPLEFILENAMES=$samplefileinfo file not found"
-        #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-        #   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-        #   exit 1;
-        #fi
 
         if [ ! -d $outputdir ]
         then
@@ -137,8 +121,7 @@ else
         if [ ! -d $alignerdir ]
         then
            MSG="$alignerdir aligner directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         fi
 
@@ -191,32 +174,28 @@ else
               if [ `expr ${#inputformat}` -lt 1 ]
               then
 		MSG="Invalid input format. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
               fi
 
               if [ $inputformat != "BAM" -a $inputformat != "FASTQ" ]
               then
 		MSG="Invalid input format. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
               fi
  
               if [ `expr ${#sampleTag}` -lt 1  ]
               then
 		MSG="Invalid samplename. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
               fi
  
               if [ `expr ${#samplefile}` -lt 1  ]
               then
 		MSG="inputfile was not specified. parsing of line in SAMPLEFILENAMES failed. alignment stopped"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
               fi
 	      if [ $inputformat == "BAM" ]
@@ -224,16 +203,14 @@ else
                   if [ ! -s $samplefile ]
                   then
 		      MSG="$samplefile input file specified in SAMPLEFILENAMES was not found. alignment stopped"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                      echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 		      exit 1;
 		  else
 		      totlines=`tail $samplefile | wc -l`
 		      if [ $totlines -lt 1 ]
 		      then
 			  MSG="$samplefile input file specified in SAMPLEFILENAMES is empty. alignment stopped"
-			  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-			  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                          echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 			  exit 1;
                       fi
                   fi
@@ -243,15 +220,13 @@ else
                   if [ ! -s $R1 ]
                   then
 		      MSG="$R1 input file specified in SAMPLEFILENAMES was not found. alignment stopped"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                      echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 		      exit 1;
 		  else
 		      if [ `tail $R1 | wc -l` -lt 1 ]
 		      then
 			  MSG="$R1 input file specified in SAMPLEFILENMAES is empty. alignment stopped"
-			  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-			  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                          echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 			  exit 1;
                       fi
                   fi
@@ -260,15 +235,13 @@ else
                       if [ ! -s $R2 ]
                       then 
 			  MSG="$R2 input file specified in SAMPLEFILENAMES was not found. alignment stopped"
-			  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-			  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                          echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 			  exit 1;
 		      else
 			  if [ `tail $R2 | wc -l` -lt 1 ]
 			  then
 			      MSG="$R2 input file specified in SAMPLEFILENAMES is empty. alignment stopped"
-			      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-			      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                              echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 			      exit 1;
                           fi
                       fi
@@ -296,8 +269,7 @@ else
             if [ `expr ${#inputdir}` -lt 1 ]
             then
 		MSG="a path must be specified in INPUTDIR when input files are BAMS"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
             else
 		if [ ! -d $inputdir ]
@@ -330,8 +302,7 @@ else
                     if [ $exitcode -ne 0 ]
                     then
 			MSG="$tmpconversion tempdir for bam conversion was not created"
-			echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-			#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+                        echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
 			exit 1;
                     fi
                     newsuffix4fq=${suffix}.preprocessed
@@ -554,8 +525,7 @@ else
         if [ `expr ${#case}` -lt 1 ]
         then
            MSG="Alignment module failed to launch. Incompatible values specified in config files bam2fastqflag=$bamtofastqflag input_format=$inputformat analysis=$analysis"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         fi         
 fi

@@ -18,8 +18,6 @@ else
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found."
-           echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -31,28 +29,16 @@ else
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 
-        # putting sample names into a file before beginning of the run has been deprecated
-        #samplefileinfo=$( cat $runfile | grep -w SAMPLEFILENAMES | cut -d '=' -f2 )
-        #if [ -z $epilogue ]
-        #then
-	#    MSG="Invalid value for parameter EPILOGUE=$epilogue  in configuration file"
-	#    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" 
-	#    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-        #    exit 1;
-        #fi
-
         if [ ! -d $scriptdir ]
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         fi
         if [ -z $email ]
         then
            MSG="Invalid value for parameter PBSEMAIL=$email in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+           echo -e "Program $0 stopped.\n\n$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
            exit 1;
         fi
 
@@ -67,8 +53,7 @@ else
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for parameter INPUTTYPE=$input_type  in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                echo -e "Program $0 stopped.\n\n$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
                 exit 1;
             fi
         fi
@@ -87,13 +72,8 @@ else
 	`cp $runfile $outputdir/runfile.txt`
         runfile=$outputdir/runfile.txt
 
-        # putting sample names into a file before beginning of the run has been deprecated
-        # oldrun=$outputdir/runfile.tmp.txt
-        #dirsamples=`dirname $samplefileinfo`
-        #samplename=`basename $samplefileinfo`
-        #newsamplename=$outputdir/$samplename
-        #`cp $samplefileinfo $newsamplename`
-        #`perl $scriptdir/lned.pl $oldrun $runfile SAMPLEFILENAMES "$newsamplename"`
+
+
 
         outputlogs=$outputdir/logs
 	echo "launching the pipeline configuration script"
@@ -118,9 +98,7 @@ else
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS" 
         echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
-        #echo -e "$MSG\n\nDetails:\n\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 
 
 fi
