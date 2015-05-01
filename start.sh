@@ -8,7 +8,7 @@ redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."
-        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+        echo -e "program=$0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
 	set -x
@@ -32,13 +32,13 @@ else
         if [ ! -d $scriptdir ]
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
-           echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
+           echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
         if [ -z $email ]
         then
            MSG="Invalid value for parameter PBSEMAIL=$email in configuration file"
-           echo -e "Program $0 stopped.\n\n$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
+           echo -e "Program $0 stopped.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
@@ -53,7 +53,7 @@ else
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for parameter INPUTTYPE=$input_type  in configuration file."
-                echo -e "Program $0 stopped.\n\n$MSG" | mail -s '[Task #${reportticket}]' "$redmine,$email"
+                echo -e "Program $0 stopped.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                 exit 1;
             fi
         fi
@@ -98,7 +98,7 @@ else
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s '[Task #${reportticket}]' "$redmine,$email"
+        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task # ${reportticket}]" "$redmine,$email"
 
 
 fi
