@@ -34,7 +34,7 @@ else
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
 
-        input_format=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+        inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
         if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
@@ -59,6 +59,14 @@ else
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                 exit 1;
         fi
+
+        if [ $inputformat != "FASTQ" -a $inputformat != "BAM" ]
+        then
+            MSG="Incorrect value for INPUTFORMAT=$inputformat in the configuration file."
+            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+            exit 1;
+        fi
+
 
         if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
         then
@@ -125,7 +133,7 @@ else
    if [ ! -e $outputdir/SAMPLENAMES.list ]
    then
       truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
-      if  [ $input_format == "FASTQ" ]
+      if  [ $inputformat == "FASTQ" ]
       then
          for inputfile in $sampledir/*
          do
@@ -134,7 +142,7 @@ else
             SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
             echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
          done
-      elif [ $input_format == "BAM" ]
+      elif [ $inputformat == "BAM" ]
       then
          for inputfile in $sampledir/*
          do

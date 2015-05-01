@@ -98,7 +98,7 @@ else
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task # ${reportticket}]" "$redmine,$email"
+        echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 
 fi
