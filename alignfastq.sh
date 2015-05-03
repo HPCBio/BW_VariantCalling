@@ -43,6 +43,7 @@ echo "##########################################################################
 
 
 
+        reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
         run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
@@ -322,7 +323,7 @@ echo "##########################################################################
 ############ checking computational tools
         echo -e "\n\n\n############ checking computational tools\n"
 
-        if [ $aligner != "NOVOALIGN" -a $aligner != "BWA" -a $aligner != "BWA_MEM"]
+        if [ $aligner != "NOVOALIGN" -a $aligner != "BWA_ALN" -a $aligner != "BWA_MEM"]
         then
             MSG="ALIGNER=$aligner  is not available at this site"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
@@ -335,11 +336,11 @@ echo "##########################################################################
             refindexed=$( cat $runfile | grep -w NOVOINDEX | cut -d '=' -f2 )
             alignparms=$( cat $runfile | grep -w NOVOPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
-        if [ $aligner == "BWA" ]
+        if [ $aligner == "BWA_ALN" ]
         then
-            alignerdir=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2 )
-            refindexed=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
-            alignparms=$( cat $runfile | grep -w BWAPARAMS | cut -d '=' -f2 | tr " " "_" )
+            alignerdir=$( cat $runfile | grep -w BWAALNDIR | cut -d '=' -f2 )
+            refindexed=$( cat $runfile | grep -w BWAALNINDEX | cut -d '=' -f2 )
+            alignparms=$( cat $runfile | grep -w BWAALNPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
         if [ $aligner == "BWA_MEM" ]
         then
@@ -1455,7 +1456,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
             else
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_summary
             fi
-	    echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub_summary
+	    echo "$scriptdir/summary.sh $outputdir $email exitok $reportticket"  >> $qsub_summary
 	    `chmod a+r $qsub_summary`
 	    lastjobid=`qsub $qsub_summary`
 	    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
@@ -1475,7 +1476,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 		echo "#PBS -m ae" >> $qsub_summary
 		echo "#PBS -M $email" >> $qsub_summary
 		echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summary
-		echo "aprun -n 1 -d $thr $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub_summary
+		echo "$scriptdir/summary.sh $outputdir $email exitnotok $reportticket"  >> $qsub_summary
 		`chmod a+r $qsub_summary`
 		badjobid=`qsub $qsub_summary`
 		echo $badjobid >> $TopOutputLogs/SUMMARYpbs

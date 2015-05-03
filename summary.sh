@@ -1,10 +1,11 @@
 #!/bin/sh
 # written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# != 3 ]
+if [ $# != 4 ]
 then
         MSG="Parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+        
         exit 1;
 else
 	set -x
@@ -13,6 +14,7 @@ else
         outputdir=$1
         email=$2
         exitstatus=$3
+        reportticket=$4
         numdays=30
 
 	listjobids=$( cat $outputdir/logs/*pbs | tr "\n" "\t" )
@@ -20,20 +22,20 @@ else
 
         if [ $exitstatus == "exitok" ]
         then
-            MSG="GGPS pipeline with id:[$pipeid] finished successfully on iforge by username:$USER at: "$( echo `date` )
+            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished successfully at: "$( echo `date` )
         else
-            MSG="GGPS pipeline with id:[$pipeid] finished on iforge by username:$USER at: "$( echo `date` )
+            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished on iforge at: "$( echo `date` )
         fi
-        LOGS="Results and execution logs can be found on iforge at $outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
+        LOGS="Results and execution logs can be found at \n$outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
         detjobids=""
         nl="\n"
-        for jobid in $listjobids
-        do
-           report=`tracejob -n $numdays $jobid`
-           report=$( echo $report | tr ";" "\t" )
-           detjobids=${detjobids}${nl}$report
-        done
-        #echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+#        for jobid in $listjobids
+#        do
+#           report=`tracejob -q -n $numdays $jobid`
+#           report=$( echo $report | tr ";" "\t" )
+#           detjobids=${detjobids}${nl}$report
+#        done
+        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" > $outputdir/logs/Summary.Report
 
 fi
