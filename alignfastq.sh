@@ -807,7 +807,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     #jobnovo=`qsub $qsub`_novosplit
                     #`qhold -h u $jobnovo`
 		    #echo $jobnovo >> $AlignOutputLogs/ALIGNED_$SampleName
-		elif [ $aligner == "BWA" ] 
+		elif [ $aligner == "BWA_ALN" ] 
                 then
                     echo "bwa is used as aligner. input file format is in fastq"
                     qsub_bwar1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix
@@ -1057,9 +1057,68 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               while read SampleName
               do
                  # ADD LOOP OVER CHUNKS
+                 for i in $(seq 0 $NumChunks)
+                 do
+
+                    if (( $i < 10 ))
+                    then
+                       OutputFileSuffix=0${i}
+                    else
+                       OutputFileSuffix=${i}
+                    fi
+
+                    echo -e "\n\nscheduling qsubs\n\n"
+                    qsub_novosplit=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
+                    # appending the generic header to the qsub
+                    cat $outputdir/qsubGenericHeader > $qsub_novosplit
+
+
+                    ###############################
+                    echo -e "\n################# constructing qsub for novosplit\n"
+                    echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit
+                    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
+                    echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit
+                    echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.in" >> $qsub_novosplit
+                    echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit
+
+                    # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                    sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$OutputFileSuffix >> $qsub_novosplit 
+
+                    novosplit_job=`qsub $qsub_novosplit`
+                    `qhold -h u $novosplit_job`
+                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs_${SampleName} # so that this job could be released in the next section. Should it be held to begin with?
+
+                 done # done looping over chunks of a sample
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
+
+                 qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_mergenovo
+
+
+
+
+                 ###############################
+                 echo -e "\n ################# constructing qsub for mergenovo\n"
+                 echo "#PBS -N ${pipeid}_mergenovo" >> $qsub_mergenovo
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo
+                 echo "#PBS -o $AlignOutputLogs/log.mergenovo.ou" >> $qsub_mergenovo
+                 echo "#PBS -e $AlignOutputLogs/log.mergenovo.in" >> $qsub_mergenovo
+                 # add dependency on novosplit job
+                 echo -e "#PBS -W depend=afterok:$alignids" >> $qsub_mergenovo
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_mergenovo
+
                  # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 sed "1!b;s/^/aprun -n 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$OutputFileSuffix > $AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node$OutputFileSuffix
-                 sed "1!b;s/^/aprun -n 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName} > $AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
+                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName} >> $qsub_mergenovo 
+
+                 mergenovo_job=`qsub $qsub_mergenovo`
+                 `qhold -h u $mergenovo_job`
+                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+
+                 # release all held novosplit jobs for this sample
+                 `qrls -h u $alignids`
+
               done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "QSUB")
@@ -1076,25 +1135,56 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                     fi
 
                     echo -e "\n\nscheduling qsubs\n\n"
-                    qsub_novosplit_anisimov=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
+                    qsub_novosplit=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
 
                     # appending the generic header to the qsub
-                    cat $outputdir/qsubGenericHeader > $qsub_novosplit_anisimov
+                    cat $outputdir/qsubGenericHeader > $qsub_novosplit
 
 
                     ###############################
                     echo -e "\n################# constructing qsub for novosplit\n"
-                    echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit_anisimov
-                    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit_anisimov
-                    echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit_anisimov
-                    echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.in" >> $qsub_novosplit_anisimov
-                    echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit_anisimov
-                    cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit_anisimov
-                    novosplit_job=`qsub $qsub_novosplit_anisimov`
+                    echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit
+                    echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
+                    echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit
+                    echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.in" >> $qsub_novosplit
+                    echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit
+                    cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit
+                    novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
                     echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
 
                  done # done looping over chunks of a sample
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
+
+                 qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_mergenovo
+
+
+
+
+                 ###############################
+                 echo -e "\n ################# constructing qsub for mergenovo\n"
+                 echo "#PBS -N ${pipeid}_mergenovo" >> $qsub_mergenovo
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo
+                 echo "#PBS -o $AlignOutputLogs/log.mergenovo.ou" >> $qsub_mergenovo
+                 echo "#PBS -e $AlignOutputLogs/log.mergenovo.in" >> $qsub_mergenovo
+                 # add dependency on novosplit job
+                 echo -e "#PBS -W depend=afterok:$alignids" >> $qsub_mergenovo
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_mergenovo
+
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName} >> $qsub_mergenovo
+
+                 mergenovo_job=`qsub $qsub_mergenovo`
+                 `qhold -h u $mergenovo_job`
+                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+
+                 # release all held novosplit jobs for this sample
+                 `qrls -h u $alignids`
+
+
               done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "LAUNCHER")
@@ -1208,39 +1298,95 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
         if [ $chunkfastq == "NO" ]
         then
-           # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
-           # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
-           numalignnodes=$(( inputfastqcounter + 1))
 
-           # scheduling the Anisimov Launcher
-           qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
-           echo "#!/bin/bash" > $qsubAlignLauncher
-           echo "#PBS -V" >> $qsubAlignLauncher
-           echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
-           echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
-           echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
-           echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
-           echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
-           echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
-           echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
-           echo "#PBS -m ae" >> $qsubAlignLauncher
-           echo "#PBS -M $email" >> $qsubAlignLauncher
+           case $run_method in
+           "APRUN")
+              while read SampleName
+              do
+                 echo -e "\n\nscheduling qsubs\n\n"
+                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_bwa
+
+
+                 ###############################
+                 echo -e "\n################# constructing qsub for novosplit\n"
+                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
+                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
+
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+
+                 bwa_job=`qsub $qsub_bwa`
+                 `qhold -h u $bwa_job`
+                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              done
+           ;;
+           "QSUB")
+              while read SampleName
+              do
+                 echo -e "\n\nscheduling qsubs\n\n"
+                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_bwa
+
+
+                 ###############################
+                 echo -e "\n################# constructing qsub for novosplit\n"
+                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
+                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
+
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                 echo $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+
+                 bwa_job=`qsub $qsub_bwa`
+                 `qhold -h u $bwa_job`
+                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              done
+           ;;
+           "LAUNCHER")
+
+              # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
+              # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
+              numalignnodes=$(( inputfastqcounter + 1))
    
-           # if not planning to profile in the launcher (string is empty)
-           # then schedule aprun as usual
-#           if [ -z $profiler_string ]
-#           then
-              echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-           # otherwise use ccm
-#           else 
-#              echo $ccmgres_string >> $qsubAlignLauncher
-#              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-#           fi
+              # scheduling the Anisimov Launcher
+              qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
+              echo "#!/bin/bash" > $qsubAlignLauncher
+              echo "#PBS -V" >> $qsubAlignLauncher
+              echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
+              echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
+              echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
+              echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
+              echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
+              echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
+              echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
+              echo "#PBS -m ae" >> $qsubAlignLauncher
+              echo "#PBS -M $email" >> $qsubAlignLauncher
+   
+              # if not planning to profile in the launcher (string is empty)
+              # then schedule aprun as usual
+   #           if [ -z $profiler_string ]
+   #           then
+                 echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+              # otherwise use ccm
+   #           else 
+   #              echo $ccmgres_string >> $qsubAlignLauncher
+   #              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+   #           fi
 
-           AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
+              AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 
-           echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-           echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+           ;;
+           esac
 
         fi
 
