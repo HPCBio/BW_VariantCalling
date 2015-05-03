@@ -36,7 +36,7 @@ echo "##########################################################################
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-	inputdir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
+	sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
@@ -173,6 +173,7 @@ echo "####################################################################"
         CONVERT=""
         case=""
         typeOfupdateconfig=""
+        truncate -s 0 $TopLogsFolder/CONVERTBAMpbs
 
 	if [ $inputformat == "BAM" ]
         then
@@ -192,16 +193,16 @@ echo "####################################################################"
 
                  echo "processing: $SampleName"
                  # make sure this is actually BAM
-                 if [ ! -f ${inputdir}/${SampleName}.bam ]
+                 if [ ! -f ${sampledir}/${SampleName}.bam ]
                  then
-                    MSG="${inputdir}/${SampleName}.bam does not exist"
+                    MSG="${sampledir}/${SampleName}.bam does not exist"
                     echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                     exit 1;
                  else
            
-		    originalBAM=${inputdir}/${SampleName}.bam
+		    originalBAM=${sampledir}/${SampleName}.bam
 		    suffix=$( echo $RANDOM )
-		    tmpconversion=$inputdir/$suffix
+		    tmpconversion=$sampledir/$suffix
                     # weird behavior with this next folder
 
 		    if [ ! -d $tmpconversion ]
@@ -248,7 +249,7 @@ echo "####################################################################"
 			echo "#PBS -q $pbsqueue" >> $qsub1
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
-			echo "aprun -n 1 -d $thr $scriptdir/convertbam2newbam.sh $inputdir $tmpconversion $originalBAM $newsuffix4bam $runfile $TopLogsFolder/log.convertbam2newbam.${suffix}.in $TopLogsFolder/log.convertbam2newbam.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2newbam.$suffix" >> $qsub1
+			echo "aprun -n 1 -d $thr $scriptdir/convertbam2newbam.sh $sampledir $tmpconversion $originalBAM $newsuffix4bam $runfile $TopLogsFolder/log.convertbam2newbam.${suffix}.in $TopLogsFolder/log.convertbam2newbam.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2newbam.$suffix" >> $qsub1
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
@@ -278,7 +279,7 @@ echo "####################################################################"
 			echo "#PBS -q $pbsqueue" >> $qsub1
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
-			echo "aprun -n 1 -d $thr $scriptdir/convertbam2fastq.sh $inputdir $tmpconversion $originalBAM $newsuffix4fq $runfile $TopLogsFolder/log.convertbam2fq.${suffix}.in $TopLogsFolder/log.convertbam2fq.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2fq.$suffix" >> $qsub1
+			echo "aprun -n 1 -d $thr $scriptdir/convertbam2fastq.sh $sampledir $tmpconversion $originalBAM $newsuffix4fq $runfile $TopLogsFolder/log.convertbam2fq.${suffix}.in $TopLogsFolder/log.convertbam2fq.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2fq.$suffix" >> $qsub1
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
@@ -295,9 +296,9 @@ echo "####################################################################"
             ## updating config files
             ###########################
         
-            CONVERTids=$( cat $TopLogsFolder/CONVERTBAMpbs | sed "s/\.[a-z]*//" | tr "\n" ":" )
+            CONVERTids=$( cat $TopLogsFolder/CONVERTBAMpbs | sed "s/\..*//" | tr "\n" ":" )
 
-	    if [ $input_typeOfupdateconfig == "bam2fastq" ]
+	    if [ $bamtofastqflag == "YES" ]
             then
                 ###############################
                 # todo:
@@ -318,13 +319,11 @@ echo "####################################################################"
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
 		echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub2
-		echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewfq.sh $inputdir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
+		echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
 		`chmod a+r $qsub2`       
 		updatejob=`qsub $qsub2` 
 		echo $updatejob >> $TopLogsFolder/UPDATECONFIGpbs
             else
-               if [ $input_typeOfupdateconfig == "bam2newbam" ]
-               then
                    ###############################
                    # todo:
                    # create new script here for updateconfig for newbams
@@ -344,12 +343,10 @@ echo "####################################################################"
 		   echo "#PBS -m ae" >> $qsub3
 		   echo "#PBS -M $email" >> $qsub3
 		   echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub3
-		   echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewbam.sh $inputdir $newbamfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewbam.in $TopLogsFolder/log.updateconfig_wnewbam.ou $email $TopLogsFolder/qsub.updateconfig_wnewbam" >> $qsub3
+		   echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewbam.sh $sampledir $newbamfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewbam.in $TopLogsFolder/log.updateconfig_wnewbam.ou $email $TopLogsFolder/qsub.updateconfig_wnewbam" >> $qsub3
 		   `chmod a+r $qsub3`       
 		   updatejob=`qsub $qsub3` 
 		   echo $updatejob >> $TopLogsFolder/UPDATECONFIGpbs
-
-               fi
             fi
 
             allconjobs=$( echo $CONVERTids | tr ":" " " )
