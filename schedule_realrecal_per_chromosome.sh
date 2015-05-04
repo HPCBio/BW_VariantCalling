@@ -44,7 +44,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
 
 
 
-
+   reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
    pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
    thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
    input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -860,40 +860,45 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       then
          echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"
 
-         realrecalids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+         if [ $skipvcall == "NO" ]
+         then
+            summarydependids=$( cat $RealignOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" ":" )
+         else
+            summarydependids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+         fi
 
          lastjobid=""
          cleanjobid=""
 
          if [ $cleanupflag == "YES" ]
          then
-             qsub_cleanup=$TopOutputLogs/qsub.cleanup.align
+             qsub_cleanup=$TopOutputLogs/qsub.cleanup
              echo "#PBS -V" > $qsub_cleanup
              echo "#PBS -A $pbsprj" >> $qsub_cleanup
-             echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub_cleanup
+             echo "#PBS -N ${pipeid}_cleanup" >> $qsub_cleanup
              echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
              echo "#PBS -l nodes=1:ppn=1" >> $qsub_cleanup
-             echo "#PBS -o $TopOutputLogs/log.cleanup.align.ou" >> $qsub_cleanup
-             echo "#PBS -e $TopOutputLogs/log.cleanup.align.in" >> $qsub_cleanup
+             echo "#PBS -o $TopOutputLogs/log.realign.ou" >> $qsub_cleanup
+             echo "#PBS -e $TopOutputLogs/log.realign.in" >> $qsub_cleanup
              echo "#PBS -q $pbsqueue" >> $qsub_cleanup
              echo "#PBS -m ae" >> $qsub_cleanup
              echo "#PBS -M $email" >> $qsub_cleanup
-             echo "#PBS -W depend=afterok:$realrecalids" >> $qsub_cleanup
-             echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
+             echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_cleanup
+             echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup >> $qsub_cleanup
              `chmod a+r $qsub_cleanup`
              cleanjobid=`qsub $qsub_cleanup`
              echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
          fi
 
          `sleep 30s`
-         qsub_summary=$TopOutputLogs/qsub.summary.aln.allok
+         qsub_summary=$TopOutputLogs/qsub.summary.allok
          echo "#PBS -V" > $qsub_summary
          echo "#PBS -A $pbsprj" >> $qsub_summary
          echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
          echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
          echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-         echo "#PBS -o $TopOutputLogs/log.summary.aln.ou" >> $qsub_summary
-         echo "#PBS -e $TopOutputLogs/log.summary.aln.in" >> $qsub_summary
+         echo "#PBS -o $TopOutputLogs/log.summary.ou" >> $qsub_summary
+         echo "#PBS -e $TopOutputLogs/log.summary.in" >> $qsub_summary
          echo "#PBS -q $pbsqueue" >> $qsub_summary
          echo "#PBS -m ae" >> $qsub_summary
          echo "#PBS -M $email" >> $qsub_summary
@@ -901,7 +906,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          then
              echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summary
          else
-             echo "#PBS -W depend=afterok:$realrecalids" >> $qsub_summary
+             echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summary
          fi
          echo "$scriptdir/summary.sh $outputdir $email exitok $reportticket"  >> $qsub_summary
          `chmod a+r $qsub_summary`
@@ -911,18 +916,18 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          if [ `expr ${#lastjobid}` -lt 1 ]
          then
              echo "at least one job aborted"
-             qsub_summary=$TopOutputLogs/qsub.summary.aln.afterany
+             qsub_summary=$TopOutputLogs/qsub.summary.afterany
              echo "#PBS -V" > $qsub_summary
              echo "#PBS -A $pbsprj" >> $qsub_summary
              echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
              echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
              echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-             echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub_summary
-             echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub_summary
+             echo "#PBS -o $TopOutputLogs/log.summary.afterany.ou" >> $qsub_summary
+             echo "#PBS -e $TopOutputLogs/log.summary.afterany.in" >> $qsub_summary
              echo "#PBS -q $pbsqueue" >> $qsub_summary
              echo "#PBS -m ae" >> $qsub_summary
              echo "#PBS -M $email" >> $qsub_summary
-             echo "#PBS -W depend=afterany:$realrecalids" >> $qsub_summary
+             echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
              echo "$scriptdir/summary.sh $outputdir $email exitnotok $reportticket"  >> $qsub_summary
              `chmod a+r $qsub_summary`
              badjobid=`qsub $qsub_summary`
