@@ -185,7 +185,7 @@ else
    echo "#PBS -V" >> $generic_qsub_header
    echo "#PBS -A $pbsprj" >> $generic_qsub_header
    echo "#PBS -q $pbsqueue" >> $generic_qsub_header
-   echo "#PBS -m ae" >> $generic_qsub_header
+   echo "#PBS -m a" >> $generic_qsub_header
    echo "#PBS -M $email" >> $generic_qsub_header
    # check that this actually worked,
    # because otherwise the bash script will just go on, as if there is no problem
