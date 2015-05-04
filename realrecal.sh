@@ -1,16 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 # written in collaboration with Mayo Bioinformatics core group
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
 redmine=hpcbio-redmine@igb.illinois.edu
+set -x
 if [ $# != 13 ];
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else					
-	set -x
 
 	echo `date`
 	scriptfile=$0

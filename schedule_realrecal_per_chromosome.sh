@@ -177,6 +177,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    then
       realparms="-known:$refdir/$dbSNP"
       recalparms="--knownSites:$refdir/$dbSNP"
+   else
+      MSG="dbSNP not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+      exit 1;
    fi
    if [ -s $refdir/$kgenome ]
    then
@@ -615,7 +619,6 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
             echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.split_bam_by_chromosome.${SampleName}.${chr}.in" >> $qsub_split
             echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
 
-            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
             echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}" >> $qsub_split
 
             split_job=`qsub $qsub_split`
@@ -635,7 +638,6 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
             echo "#PBS -W depend=afterok:$split_job" >> $qsub_realrecal
             echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_realrecal
 
-            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
             echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" >> $qsub_realrecal
 
             realrecal_job=`qsub $qsub_realrecal`
@@ -645,7 +647,6 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
 
 
-            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
             if [ $skipvcall == "NO" ]
             then
                qsub_vcall=$VcallOutputDir/${SampleName}/logs/qsub.vcallgatk.${SampleName}.${chr}
@@ -663,7 +664,6 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
                echo "#PBS -W depend=afterok:$realrecal_job" >> $qsub_vcall
                echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_vcall
    
-               # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
                echo "aprun -n 1 -d $thr /bin/bash $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}" >> $qsub_vcall
    
                vcall_job=`qsub $qsub_vcall`
@@ -684,7 +684,10 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # clear out the joblists
          truncate -s 0 $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
          truncate -s 0 $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
-         truncate -s 0 $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
+         if [ $skipvcall == "NO" ]
+         then
+            truncate -s 0 $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
+         fi
          while read SampleName
          do
             # creating a qsub out of the job file
@@ -709,7 +712,10 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          echo -e "\nscheduling Anisimov Launcher joblists\n"
          qsub_split_bam_by_chromosome_anisimov=$RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher
          qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
-         qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+         if [ $skipvcall == "NO" ]
+         then
+            qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+         fi
 
          # appending the generic header to the qsub
          cat $outputdir/qsubGenericHeader > $qsub_split_bam_by_chromosome_anisimov
@@ -766,21 +772,24 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
 
 
-         ###############
-         ############### constructing the qsub for vcallgatk
-         echo "#PBS -N ${pipeid}_vcallgatk_${chr}" >> $qsub_vcallgatk_anisimov
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov
-         echo "#PBS -o $RealignOutputLogs/log.vcallgatk.${chr}.ou" >> $qsub_vcallgatk_anisimov
-         echo -e "#PBS -e $RealignOutputLogs/log.vcallgatk.${chr}.in\n" >> $qsub_vcallgatk_anisimov
-         # the dependency on realrecal job will be added when it is scheduled in the loop below
+         if [ $skipvcall == "NO" ]
+         then
+            ###############
+            ############### constructing the qsub for vcallgatk
+            echo "#PBS -N ${pipeid}_vcallgatk_${chr}" >> $qsub_vcallgatk_anisimov
+            echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov
+            echo "#PBS -o $RealignOutputLogs/log.vcallgatk.${chr}.ou" >> $qsub_vcallgatk_anisimov
+            echo -e "#PBS -e $RealignOutputLogs/log.vcallgatk.${chr}.in\n" >> $qsub_vcallgatk_anisimov
+            # the dependency on realrecal job will be added when it is scheduled in the loop below
 
-         # realrecal and vcall actually use multithreaded processes, 
-         # so we will give each sample its own node
-         # +1 for the launcher
-         # samplecounter is already more than actual number of samples by 1
-         echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
-         # the actual command
-         echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+            # realrecal and vcall actually use multithreaded processes, 
+            # so we will give each sample its own node
+            # +1 for the launcher
+            # samplecounter is already more than actual number of samples by 1
+            echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
+            # the actual command
+            echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+        fi
 
       done # done going through chromosomes
 
@@ -792,7 +801,10 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       # reset the list of SPLITBYCHROMOSOME pbs ids
       truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
-      truncate -s 0 $VcallOutputLogs/VCALGATKpbs
+      if [ $skipvcall == "NO" ]
+      then
+         truncate -s 0 $VcallOutputLogs/VCALGATKpbs
+      fi
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
       # first split_bam_by_chromosome
       for chr in $indices
@@ -812,13 +824,16 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
          echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
       done
-      # finally submit the vcallgatk
-      cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
-      for chr in $indices
-      do
-         vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
-         echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
-      done 
+      if [ $skipvcall == "NO" ]
+      then
+         # finally submit the vcallgatk
+         cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
+         for chr in $indices
+         do
+            vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
+            echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
+         done 
+      fi
 
       # now release the split_bam_by_chromosome jobs
       split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
