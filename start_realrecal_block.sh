@@ -434,7 +434,7 @@ echo "##########################################################################
       fi
 
       # appending the PBS options to the file in reverse order
-      sed -i "1i #PBS -l walltime=01:00:00" $qsub_schedule_realrecal_per_chromosome # allowing an hour for schedule_realrecal_per_chromosome: 
+      sed -i "1i #PBS -l walltime=03:00:00" $qsub_schedule_realrecal_per_chromosome # allowing an hour for schedule_realrecal_per_chromosome: 
       # should be more than enough (it only takes ~5 minutes), and increases job priority
       sed -i "1i #PBS -l nodes=1:ppn=1" $qsub_schedule_realrecal_per_chromosome
       sed -i "1i #PBS -o $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou" $qsub_schedule_realrecal_per_chromosome
