@@ -590,20 +590,93 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
    case $run_method in
    "APRUN")
+      echo -e "\n\nscheduling qsubs\n\n"
+      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+      truncate -s 0 $RealignOutputLogs/REALRECALpbs
+      truncate -s 0 $VcallOutputLogs/VCALGATKpbs
+
       while read SampleName
       do
-         # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-         sed "1!b;s/^/aprun -n 1 -d $thr /" $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/qsub.split_bam_by_chromosome.${SampleName}.${chr}
-         sed "1!b;s/^/aprun -n 1 -d $thr /" $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/qsub.realrecal.${SampleName}.${chr}
-         if [ $skipvcall == "NO" ]
-         then
-            sed "1!b;s/^/aprun -n 1 -d $thr /" $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/qsub.vcallgatk.${SampleName}.${chr}
-         fi
+
+         for chr in $indices
+         do
+
+            qsub_split=$RealignOutputDir/${SampleName}/logs/qsub.split_bam_by_chromosome.${SampleName}.${chr}
+            qsub_realrecal=$RealignOutputDir/${SampleName}/logs/qsub.realrecal.${SampleName}.${chr}
+
+
+            ###############################
+            echo -e "\n################# constructing qsub for split\n"
+            # appending the generic header to the qsub
+            cat $outputdir/qsubGenericHeader > $qsub_split
+            echo "#PBS -N ${pipeid}_split_bam.${SampleName}.${chr}" >> $qsub_split
+            echo "#PBS -l walltime=$pbscpu" >> $qsub_split
+            echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.split_bam_by_chromosome.${SampleName}.${chr}.ou" >> $qsub_split
+            echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.split_bam_by_chromosome.${SampleName}.${chr}.in" >> $qsub_split
+            echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
+
+            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+            echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}" >> $qsub_split
+
+            split_job=`qsub $qsub_split`
+            `qhold -h u $split_job`
+            echo $split_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+
+
+
+            ###############################
+            echo -e "\n################# constructing qsub for realrecal\n"
+            # appending the generic header to the qsub
+            cat $outputdir/qsubGenericHeader > $qsub_realrecal
+            echo "#PBS -N ${pipeid}_realrecal.${SampleName}.${chr}" >> $qsub_realrecal
+            echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal
+            echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.realrecal.${SampleName}.${chr}.ou" >> $qsub_realrecal
+            echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.realrecal.${SampleName}.${chr}.in" >> $qsub_realrecal
+            echo "#PBS -W depend=afterok:$split_job" >> $qsub_realrecal
+            echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_realrecal
+
+            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+            echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" >> $qsub_realrecal
+
+            realrecal_job=`qsub $qsub_realrecal`
+            `qhold -h u $realrecal_job`
+            `qrls -h u $split_job` 
+            echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
+
+
+
+            # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+            if [ $skipvcall == "NO" ]
+            then
+               qsub_vcall=$VcallOutputDir/${SampleName}/logs/qsub.vcallgatk.${SampleName}.${chr}
+
+
+
+               ###############################
+               echo -e "\n################# constructing qsub for vcall\n"
+               # appending the generic header to the qsub
+               cat $outputdir/qsubGenericHeader > $qsub_vcall
+               echo "#PBS -N ${pipeid}_vcall_${SampleName}.${chr}" >> $qsub_vcall
+               echo "#PBS -l walltime=$pbscpu" >> $qsub_vcall
+               echo "#PBS -o $VcallOutputDir/${SampleName}/logs/log.vcall.${SampleName}.${chr}.ou" >> $qsub_vcall
+               echo "#PBS -e $VcallOutputDir/${SampleName}/logs/log.vcall.${SampleName}.${chr}.in" >> $qsub_vcall
+               echo "#PBS -W depend=afterok:$realrecal_job" >> $qsub_vcall
+               echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_vcall
+   
+               # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+               echo "aprun -n 1 -d $thr /bin/bash $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}" >> $qsub_vcall
+   
+               vcall_job=`qsub $qsub_vcall`
+               `qrls -h u $realrecal_job`
+               echo $vcall_job >> $VcallOutputLogs/VCALGATKpbs
+   
+            fi
+         done # going through chromosomes for this sample
       done <  $outputdir/SAMPLENAMES.list
       # end loop over samples
    ;;
    "QSUB")
-
+      # will add later
    ;;
    "LAUNCHER")
       for chr in $indices
