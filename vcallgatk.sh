@@ -215,7 +215,7 @@ else
         cd $outputdir
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-        $memprof $javadir/java -Xmx2048m -Xms2048m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+        $memprof $javadir/java -Xmx3096m -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $inputdir/$infile \
 	    -T UnifiedGenotyper \
