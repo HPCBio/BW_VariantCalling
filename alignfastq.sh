@@ -464,7 +464,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
         # clear the joblist
-        truncate -s 0 $AlignOutputLogs/Anisimov.joblist
+        truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
 
         while read SampleName
         do
@@ -903,11 +903,11 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                            echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                           echo "$profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs" > $jobfile
                            jobfilename=$( basename $jobfile )
                            echo "$AlignOutputDir/$SampleName/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                         fi
-
+                        `chmod ug=rwx $jobfile`
 
                      else
                         echo "bwa mem aligner. single-end reads"
@@ -1278,8 +1278,8 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
            ;;
            esac
         else 
-           MSG="something went wrong with scheduling alignment: chunking/aligner/sort_tool options not correctly set"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+           MSG="must be chunking the FASTQ, then ... "
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
         fi
 
@@ -1319,12 +1319,14 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                  echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
 
                  # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+#                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
                  echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-              done
+                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "QSUB")
               while read SampleName
@@ -1344,11 +1346,12 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                  echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
 
                  # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 echo $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+                 echo "/bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
                  echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done
            ;;
            "LAUNCHER")
