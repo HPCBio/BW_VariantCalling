@@ -17,7 +17,7 @@ else
         reportticket=$4
         numdays=30
 
-	listjobids=$( cat $outputdir/logs/*pbs | tr "\n" "\t" )
+	listjobids=$( cat $outputdir/logs/*pbs cat $outputdir/logs/*/*pbs | sort | uniq | tr "\n" "\t" )
 	pipeid=$( cat $outputdir/logs/CONFIGUREpbs )
 
         if [ $exitstatus == "exitok" ]
