@@ -5,7 +5,7 @@
 #  This module is called from within the realign module
 ######################################
 
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 10 ];
 then
 	MSG="parameter mismatch."
@@ -56,6 +56,7 @@ else
         #javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
+        dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
 
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
@@ -145,6 +146,13 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+        if [ ! -s $refdir/$dbsnp ]
+        then
+	    MSG="$refdir/$dbsnp dbSNP for reference genome not found"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    exit 1;
+        fi
         if [ -z $snvcaller ]
         then
 	    MSG="$snvcaller snvcaller tool was not specified in configuration file"
@@ -226,7 +234,8 @@ else
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
-	    -o $outfile $region $uparms
+            -dbsnp $region \
+	    -o $outfile  $uparms
 
         exitcode=$?
         if [ $exitcode -ne 0 ]

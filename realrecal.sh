@@ -3,7 +3,7 @@
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 13 ];
 then

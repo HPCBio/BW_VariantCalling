@@ -3,13 +3,14 @@
 # originally written in collaboration with Mayo Bioinformatics core group
 # alignfastq.sh
 # align module to be used for input files in fastq format
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
-else 
+fi
+
 	set -x
 	echo `date`
         scriptfile=$0
@@ -30,17 +31,12 @@ else
 
 
 
-
-
-
 # wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
 echo "####################################################################################################"
 echo "#####################################                       ########################################"
 echo "##################################### PARSING RUN INFO FILE ########################################"
-echo "#####################################                       ########################################"
+echo "##################################### AND SANITY CHECK      ########################################"
 echo "####################################################################################################"
-
-
 
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
@@ -54,7 +50,6 @@ echo "##########################################################################
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         chunkfastq=$( cat $runfile | grep -w CHUNKFASTQ | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-        igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
         fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2 )
         fastqcflag=$( cat $runfile | grep -w FASTQCFLAG | cut -d '=' -f2 )
         fastqcparms=$( cat $runfile | grep -w FASTQCPARMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
@@ -66,7 +61,7 @@ echo "##########################################################################
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
+        sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -75,91 +70,6 @@ echo "##########################################################################
 ################## MUST PUT IN A CHECK FOR CORRECT SETTING ON THE PROFILING VARIABLE
         profiler=$( cat $runfile | grep -w PROFILER | cut -d '=' -f2 )
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-
-
-
-
-
-
-
-
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "#####################################  CREATE  DIRECTORIES  ########################################"
-echo "#####################################                       ########################################"
-echo "####################################################################################################"
-
-
-
-
-        AlignOutputDir=$outputdir/align
-        if [ -d $AlignOutputDir ]
-        then
-           echo "$AlignOutputDir is there; resetting it"
-           `rm -r $AlignOutputDir/*`
-        else
-           mkdir -p $AlignOutputDir
-        fi
-        `chmod -R 770 $AlignOutputDir/`
-
-        TopOutputLogs=$outputdir/logs
-        if [ -d $TopOutputLogs ]
-        then
-           echo "$TopOutputLogs is there; resetting it"
-           #`rm -r $TopOutputLogs/*`
-           pbsids=""
-        else
-           mkdir -p $TopOutputLogs
-        fi
-
-        AlignOutputLogs=$TopOutputLogs/align
-        if [ ! -d $AlignOutputLogs ]
-        then
-            mkdir $AlignOutputLogs
-        fi
-        `chmod -R 770 $AlignOutputLogs/`
-        # where messages about failures will go
-        truncate -s 0 $AlignOutputLogs/FAILEDmessages
-        if [ ! -d $AlignOutputLogs/FAILEDjobs ]
-        then
-            mkdir $AlignOutputLogs/FAILEDjobs
-        else
-            rm -r $AlignOutputLogs/FAILEDjobs/*
-        fi
-        `chmod -R 770 $AlignOutputLogs/FAILEDjobs`
-
-
-
-
-        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
-
-        #chunks=`expr $nodes "-" 1`
-        #if [ $chunks -lt 1 ]
-        #then
-        #    chunks=$nodes
-        #fi
-        nthreads=`expr $thr "-" 1`
-        if [ $nthreads -lt 1 ]
-        then
-            nthreads=$thr
-        fi
-        igv=$outputdir/$igvdir
-        extradir=$outputdir/extractreads
-
-
-
-
-
-
-
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "#####################################   PARAMETER   CHECK   ########################################"
-echo "#####################################                       ########################################"
-echo "####################################################################################################"
-
-
-
 
 
 ############ checking workflow scripts directory
@@ -176,7 +86,6 @@ echo "##########################################################################
         then
            mkdir -p $outputdir
         fi
-
 
 
 ############ checking samples 
@@ -202,7 +111,7 @@ echo "##########################################################################
         # check that sampledir exists
         if [ ! -d $sampledir ]
         then
-           MSG="SAMPLEDIR=$sampledir file not found"
+           MSG="INPUTDIR=$sampledir directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
@@ -226,10 +135,6 @@ echo "##########################################################################
             #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
-
-
-
-
 
 ############ checking settings for marking of duplicates 
         echo -e "\n\n\n############ checking settings for marking of duplicates\n"
@@ -270,9 +175,6 @@ echo "##########################################################################
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
 
 
-
-
-
 ############ checking FastQC settings
         echo -e "\n\n\n############ checking FastQC settings\n"
 
@@ -293,10 +195,6 @@ echo "##########################################################################
             fi
         fi
 
-
-
-
-
 ############ checking Cleanup settings
         echo -e "\n\n\n############ checking Cleanup settings\n"
 
@@ -316,8 +214,6 @@ echo "##########################################################################
                 $cleanupflag="NO"
             fi
         fi
-
-
 
 
 ############ checking computational tools
@@ -414,7 +310,6 @@ echo "##########################################################################
         fi
 
 
-
 ############ checking presence of references 
         echo -e "\n\n\n############ checking presence of references\n"
 
@@ -425,37 +320,85 @@ echo "##########################################################################
            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
-        if [ ! -s $refdir/$refindexed ] 
-        then
-           if  [ ! -s $refdir/$refindexed.fa ]
-           then
-              MSG="$refdir/$refindexed index for reference genome not found"
-              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-              exit 1;
-           fi
-        fi
-
 
 
 ############ checking run method
-   if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
-   then
-      MSG="Invalid value for RUNMETHOD=$run_method"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      exit 1;
-   fi
+       if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
+       then
+          MSG="Invalid value for RUNMETHOD=$run_method"
+          echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+          exit 1;
+       fi
+
+
+echo "############################################################################################################"
+echo "#####################################                                            ###########################"
+echo "#####################################  CREATE  DIRECTORY STRUCTURE               ###########################"
+echo "#####################################  output/align/sample/  for demultiplexed   ###########################"
+echo "#####################################  output/align/lane/    for multiplexed     ###########################"
+echo "#####################################  lane names/sample names must be unique    ###########################"
+echo "############################################################################################################"
 
 
 
 
+        AlignOutputDir=$outputdir/align
+        if [ -d $AlignOutputDir ]
+        then
+           echo "$AlignOutputDir is there; resetting it"
+           `rm -r $AlignOutputDir/*`
+        else
+           mkdir -p $AlignOutputDir
+        fi
+        `chmod -R 770 $AlignOutputDir/`
 
+        TopOutputLogs=$outputdir/logs
+        if [ -d $TopOutputLogs ]
+        then
+           echo "$TopOutputLogs is there; resetting it"
+           #`rm -r $TopOutputLogs/*`
+           pbsids=""
+        else
+           mkdir -p $TopOutputLogs
+        fi
+
+        AlignOutputLogs=$TopOutputLogs/align
+        if [ ! -d $AlignOutputLogs ]
+        then
+            mkdir $AlignOutputLogs
+        fi
+        `chmod -R 770 $AlignOutputLogs/`
+        # where messages about failures will go
+        truncate -s 0 $AlignOutputLogs/FAILEDmessages
+        if [ ! -d $AlignOutputLogs/FAILEDjobs ]
+        then
+            mkdir $AlignOutputLogs/FAILEDjobs
+        else
+            rm -r $AlignOutputLogs/FAILEDjobs/*
+        fi
+        `chmod -R 770 $AlignOutputLogs/FAILEDjobs`
+
+
+
+
+        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+
+        #chunks=`expr $nodes "-" 1`
+        #if [ $chunks -lt 1 ]
+        #then
+        #    chunks=$nodes
+        #fi
+        nthreads=`expr $thr "-" 1`
+        if [ $nthreads -lt 1 ]
+        then
+            nthreads=$thr
+        fi
 
 
 ############################################################################################################
 #####################################                               ########################################
-#################################### ALIGNMENT: LOOP OVER SAMPLES  ########################################
+##################################### ALIGNMENT: LOOP1 OVER SAMPLES  ########################################
 #####################################                               ########################################
 ############################################################################################################
 
@@ -465,99 +408,96 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
         # clear the joblist
         truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
+        
+        # select the file to read sample info from. This file was created in configuration.sh
+        if [ $analysis == "MULTIPLEXED" ]
+        then 
+             TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
+        else
+             TheInputFile=$outputdir/SAMPLENAMES.list
+        fi
 
-        while read SampleName
+
+        while read SampleLine
         do
           echo "processing next sample" 
           # this will evaluate the length of string
-          if [ `expr ${#SampleName}` -lt 1 ]
+          if [ `expr ${#SampleLine}` -lt 1 ]
           then
             echo "skipping empty line"
           else
 
-            echo "aligning: $SampleName"
+	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleLine            ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### SELECTING CASE DEPENDING ON ANALYSIS ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### PARSING READS and CREATING RGLINE    ########################################\n\n\n"
 
-            # form and check the left reads file
-	    LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
-            if [ ! -e $LeftReadsFastq ]
-            then
-                    MSG="$LeftReadsFastq left reads file not found"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                    exit 1;
-            fi
+            if [ $analysis != "MULTIPLEXED" ]
+	    then
+                echo "analysis is DEMULTIPLEXED, current line has ONE field for SAMPLENAME"
+                # form and check the left reads file
+                SampleName=$( echo $SampleLine )
+		LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
+		RightReadsFastq=$( ls $sampledir/${SampleName}_read2.* )
+
+                # form the read group values for the aligner 
+		sID=$SampleName
+		sPU=$SampleName
+		sSM=$SampleName
+		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
+		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
+		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
+	    else
+                echo -e "analysis is MULTIPLEXED."
+                echo -e "current line has SIX fields:\n"
+                echo -e "col1=sampleid col2=lane_num col3=lane_name col4=lib col5=read1 col6=read2\n"
+                #SampleName=$( echo $SampleLine | awk -F"\t" '{print $3}' )
+                SampleName=$( echo -e "$SampleLine" | cut -f 3 )
+                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 5 )
+                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 6 )
+		sID=$( echo -e "$SampleLine" | cut -f 3 )
+		sPU=$( echo -e "$SampleLine" | cut -f 3 )
+		sSM=$( echo -e "$SampleLine" | cut -f 1 )
+		sLB=$( echo -e "$SampleLine" | cut -f 4 )
+		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
+		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
+	    fi
+
+
+	    if [ ! -s $LeftReadsFastq ]
+	    then
+                MSG="$LeftReadsFastq left reads file not found"
+                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                exit 1;
+	    fi
 	    echo `date`
 
-## I used to check the number of lines in left and right fastq, and compare them, 
-## before any further work is scheduled; but, this takes too long.
-## wc -l takes 10-15 minutes on a 50X genome file;
-## multiply that by two, then by number of genomes - and it takes hours
-## just to do that checking; for 45 input genomes the alignfastq.sh
-## takes 11:28:45. Very long. After all, if the files are not complete,
-## then paired-ended bwa mem and novoalign will abort them; 
-## then we can capture that error and compare with results of the FastQC.
-## Same goes for when the input file is empty.
-##
-## Thus I have decided to keep these checks on the number of lines in fastqcommented out for now. 
-##
-#            NumLinesInLeftFastq=`wc -l $LeftReadsFastq | cut -d ' ' -f 1`
-#	    echo `date`
-#            if [ $NumLinesInLeftFastq -lt 1 ]
-#            then
-#                    MSG="$LeftReadsFastq left reads file is empty"
-#                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+
+	    if [ $paired -eq 1 ]
+	    then
+		if [ ! -s $RightReadsFastq ]
+		then
+		    MSG="$RightReadsFastq right reads file not found"
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
                     #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-#                    exit 1;
-#            fi
+		    exit 1;
+		fi
+	    fi
 
-   
-            # form and check the right reads file
-            RightReadsFastq=$( ls $sampledir/${SampleName}_read2.* )
-            if [ $paired -eq 1 ]
-            then
-               if [ ! -e $RightReadsFastq ]
-               then
-                  MSG="$RightReadsFastq right reads file not found"
-                  echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                  #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-                  exit 1;
-#               else
-#                  NumLinesInRightFastq=`wc -l $RightReadsFastq | cut -d ' ' -f 1`
-#                  if [ $NumLinesInRightFastq -lt 1 ]
-#                  then
-#                      MSG="$RightReadsFastq right reads file is empty"
-#                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-#                      exit 1;
-#                  elif [ $NumLinesInRightFastq -ne $NumLinesInLeftFastq ]
-#                  then 
-#                      MSG="number of lines in $RightReadsFastq is not equal to that in $NumLinesInLeftFastq"
-#                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-#                      exit 1;
-#                  fi
-               fi
-            fi
+            if [ `expr ${#sID}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ] 
+	    then
+		MSG="ID=$sID PL=$sPL CN=$sCN invalid values. The RG line cannot be formed"
+		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+		exit 1;
+	    fi
 
+	    RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
-            # form the read group values for the aligner 
-            sID=$SampleName
-            sPU=$SampleName
-            sSM=$SampleName
-            sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
-            sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
-            sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
-            RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
-
-
-
-
-
-###########################   CHECK FASTQ QUALITY ###########################################
 
             if [ $fastqcflag == "YES" ]
             then
-		echo "calculating quality values for fastq file"
+	        echo -e "\n\n\n#################################### PREP WORK FOR $SampleName         ########################################\n\n\n"        
+		echo -e "\n\n\n#################################### RUNNING FASTC ON UNALIGNED READS  ########################################\n\n\n"
                 
                 # check that fastqc tool is there
 		if [ ! -d $fastqcdir ]
@@ -621,10 +561,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
 
-
-
-###########################   CHUNK INPUT FASTQ  ###########################################
-
+	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
 
             # results of alignment for each sample will be placed into its own subfolder 
             if [ ! -d $AlignOutputDir/$SampleName ]
@@ -647,12 +586,10 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             sortedplain=$outputsamfileprefix.wrg.sorted.bam
             outsortnodup=$outputsamfileprefix.nodups.sorted.bam
             outsortwdup=$outputsamfileprefix.wdups.sorted.bam
-
-
-
-
             cd $AlignOutputDir/$SampleName
 
+	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### SELECT TO CHUNK/Not2CHUNK READS      ########################################\n\n\n"
 
             # create new names for chunks of fastq
             # doing this outside the chunkfastq conditional, because
@@ -726,28 +663,17 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
             ## done chunking input fastq
 
+	    echo -e "\n\n\n#################################### CREATING ALL QSUBS FOR ALIGMENT         ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### SELECTING CASE --BASED ON ALIGNER       ########################################\n\n\n"
 
-
-
-###########################   FORM ALIGNMENT QSUBS  ###########################################
-
-            # if want to profile, then must set up  the environment
-            # for now, let us do without this; too much else going on: Aug 22, 2014
-            # in other words, do not set the option in the runfile
-            #if [ $profiling == 'memprof' ]
-            #then
-            #   ccmgres_string="#PBS -l gres=ccm"
-            #   run_string="module add ccm; ccmrun "
-            #   profiler_string="$profiler "
-            #else
-            #   ccmgres_string=""
-            #   run_string="aprun -n 1 -d $thr "
-            #   profiler_string=""
-            #fi
-            
+           
+############################################################################################################
+#####################################                               ########################################
+##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ########################################
+#####################################                               ########################################
+############################################################################################################
 
             allfiles=""
-            # begin loop over chunks of the current input fastq
             for i in $(seq 0 $NumChunks)
             do
                 echo "step 1: aligning chunk $i... "
@@ -958,7 +884,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 ##########################################################################################################################################
 ###########################                                                                    ###########################################
 echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES  ################################### \n\n\n"
-###########################                                                                    ###########################################
+###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                       ###########################################
 ##########################################################################################################################################
 
             cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
@@ -1010,35 +936,106 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 		   echo $mergejob  > $AlignOutputLogs/MERGED_$SampleName
                fi
 
-               ## COMMENTING THIS OUT AS A MAYO IDIOSYNCRACY
-	       #echo `date`
-	       #echo -e "\n extract reads specified in CHRINDEX param\n"
-	       #qsub_extractreads=$AlignOutputLogs/qsub.extractreadsbam.$SampleName
-   	       #echo "#PBS -V" > $qsub_extractreads
-	       #echo "#PBS -A $pbsprj" >> $qsub_extractreads
-	       #echo "#PBS -N ${pipeid}_extrbam_$SampleName" >> $qsub_extractreads
-	       #echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
-	       #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
-	       #echo "#PBS -o $AlignOutputLogs/log.extractreadsbam.$SampleName.ou" >> $qsub_extractreads
-	       #echo "#PBS -e $AlignOutputLogs/log.extractreadsbam.$SampleName.in" >> $qsub_extractreads
-	       #echo "#PBS -q $pbsqueue" >> $qsub_extractreads
-	       #echo "#PBS -m ae" >> $qsub_extractreads
-	       #echo "#PBS -M $email" >> $qsub_extractreads
-	       #echo "#PBS -W depend=afterok:$mergejob" >> $qsub_extractreads
-	       #echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $AlignOutputDir/$SampleName $outsortwdup $runfile $AlignOutputLogs/log.extractreadsbam.$SampleName.in $AlignOutputLogs/log.extractreadsbam.$SampleName.ou $email  $AlignOutputLogs/qsub.extractreadsbam.$SampleName $igv $extradir" >> $qsub_extractreads
-	       #`chmod a+r $qsub_extractreads`
-	       #extrajob=`qsub $qsub_extractreads`
-               #`qhold -h u $extrajob`
-               #echo $extrajob >> $TopOutputLogs/EXTRACTREADSpbs
-
-	       #cat $AlignOutputLogs/MERGED_$SampleName >> $TopOutputLogs/MERGEDpbs
             fi
           fi
           (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
-	done <  $outputdir/SAMPLENAMES.list
+	done <  $TheInputFile
         # end loop over input fastq
 
 
+
+
+#####################################################################################################################
+#####################################                                        ########################################
+echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################\n\n"
+#####################################                                        ########################################
+#####################################################################################################################
+
+
+        if [ $chunkfastq == "NO" -a $aligner == "BWA_MEM" ]
+        then
+
+           case $run_method in
+           "LAUNCHER")
+              # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
+              # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
+              numalignnodes=$(( inputfastqcounter + 1))
+   
+              # scheduling the Anisimov Launcher
+              
+              qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
+              echo "#!/bin/bash" > $qsubAlignLauncher
+              echo "#PBS -V" >> $qsubAlignLauncher
+              echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
+              echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
+              echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
+              echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
+              echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
+              echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
+              echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
+              echo "#PBS -m ae" >> $qsubAlignLauncher
+              echo "#PBS -M $email" >> $qsubAlignLauncher
+              echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+              AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
+              echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+           ;;           
+           "APRUN")
+              while read SampleName
+              do
+                 echo -e "\n\nscheduling qsubs\n\n"
+                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_bwa
+
+
+                 ###############################
+                 echo -e "\n################# constructing qsub for bwamem\n"
+                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
+                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
+
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+#                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
+                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
+
+                 bwa_job=`qsub $qsub_bwa`
+                 `qhold -h u $bwa_job`
+                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
+           ;;
+           "QSUB")
+              while read SampleName
+              do
+                 echo -e "\n\nscheduling qsubs\n\n"
+                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_bwa
+
+
+                 ###############################
+                 echo -e "\n################# constructing qsub for bwamem\n"
+                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
+                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
+
+                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
+                 echo "/bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
+
+                 bwa_job=`qsub $qsub_bwa`
+                 `qhold -h u $bwa_job`
+                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              done
+           ;;
+           esac
+
+        fi
 
 
 
@@ -1277,130 +1274,17 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               # will fill in later
            ;;
            esac
-        else 
-           MSG="must be chunking the FASTQ, then ... "
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
         fi
 
 
 
-
-
-
-
-
-#####################################################################################################################
-#####################################                                        ########################################
-#####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################
-#####################################                                        ########################################
-#####################################################################################################################
-
-
-        if [ $chunkfastq == "NO" ]
-        then
-
-           case $run_method in
-           "APRUN")
-              while read SampleName
-              do
-                 echo -e "\n\nscheduling qsubs\n\n"
-                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
-                 # appending the generic header to the qsub
-                 cat $outputdir/qsubGenericHeader > $qsub_bwa
-
-
-                 ###############################
-                 echo -e "\n################# constructing qsub for novosplit\n"
-                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
-                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
-                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
-                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
-                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
-
-                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-#                 sed "1!b;s/^/aprun -n 1 -N 1 -d $thr /" $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile >> $qsub_bwa
-                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
-
-                 bwa_job=`qsub $qsub_bwa`
-                 `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-              done < $outputdir/SAMPLENAMES.list # done looping over samples
-           ;;
-           "QSUB")
-              while read SampleName
-              do
-                 echo -e "\n\nscheduling qsubs\n\n"
-                 qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
-                 # appending the generic header to the qsub
-                 cat $outputdir/qsubGenericHeader > $qsub_bwa
-
-
-                 ###############################
-                 echo -e "\n################# constructing qsub for novosplit\n"
-                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
-                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
-                 echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
-                 echo "#PBS -e $AlignOutputDir/${SampleName}/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
-                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
-
-                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 echo "/bin/bash $AlignOutputDir/${SampleName}/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
-
-                 bwa_job=`qsub $qsub_bwa`
-                 `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-              done
-           ;;
-           "LAUNCHER")
-
-              # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
-              # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
-              numalignnodes=$(( inputfastqcounter + 1))
-   
-              # scheduling the Anisimov Launcher
-              qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
-              echo "#!/bin/bash" > $qsubAlignLauncher
-              echo "#PBS -V" >> $qsubAlignLauncher
-              echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
-              echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
-              echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
-              echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
-              echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
-              echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
-              echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
-              echo "#PBS -m ae" >> $qsubAlignLauncher
-              echo "#PBS -M $email" >> $qsubAlignLauncher
-   
-              # if not planning to profile in the launcher (string is empty)
-              # then schedule aprun as usual
-   #           if [ -z $profiler_string ]
-   #           then
-                 echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-              # otherwise use ccm
-   #           else 
-   #              echo $ccmgres_string >> $qsubAlignLauncher
-   #              echo "$run_string ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
-   #           fi
-
-              AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
-
-              echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-              echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-           ;;
-           esac
-
-        fi
 
 
 
 
 ########################################################################################################
-#####################################                           ########################################
-#####################################  WRAP UP ALIGNMENT BLOCK  ########################################
-#####################################                           ########################################
+echo -e "#####################################  WRAP UP ALIGNMENT BLOCK                                    ########################################"
+echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE    ########################################"
 ########################################################################################################
 
         
@@ -1486,7 +1370,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 	    fi
 	fi
 
-	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" ]
+	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" -o $analysis == "MULTIPLEXED" ]
 	then
             echo " analysis continues with realignment"
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
@@ -1515,4 +1399,4 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 	`chmod -R 770 $AlignOutputDir`
 	`chmod -R 770 $TopOutputLogs`
 	echo `date`
-fi
+

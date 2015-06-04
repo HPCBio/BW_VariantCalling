@@ -4,8 +4,8 @@
 #  script to revertsam on input bamfiles that need to be realigned-recal
 #
 ######################################
-redmine=hpcbio-redmine@igb.illinois.edu
-#redmine=grendon@illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=grendon@illinois.edu
 if [ $# != 9 ];
 then
 	MSG="parameter mismatch"

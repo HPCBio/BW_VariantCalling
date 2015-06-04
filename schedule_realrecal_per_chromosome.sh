@@ -2,7 +2,7 @@
 # written in collaboration with Mayo Bioinformatics core group
 #
 #  script to realign and recalibrate the aligned file(s)
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."
@@ -253,7 +253,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
       exit 1;
-   elif [ $schedule eq "LAUNCHER" ]
+   elif [ $schedule == "LAUNCHER" ]
       then
       truncate -s 0 $RealignOutputLogs/$realrecal.AnisimovJoblist
    fi
@@ -284,8 +284,8 @@ echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ####
          `rm -r $RealignOutputDir/${SampleName}/*`
       fi
 
-      if [ $multisample == "NO" ]
-      then
+      #if [ $multisample == "NO" ]
+      #then
 
          # when running multiple INDEPENDENT samples, there will be lots of qsubs, logs and jobfiles
          # best keep them in the sample subfolder
@@ -317,7 +317,7 @@ echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ####
                `rm -r $VcallOutputDir/${SampleName}/logs/*`
             fi
          fi
-      fi
+      #fi
    done  <  $outputdir/SAMPLENAMES.list
    # end loop over samples
 
@@ -403,7 +403,27 @@ echo -e "\n\n\n ###################################       main loops start here 
             #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
             exit 1;
          fi
+
+         header=${aligned_bam}.header
+
+         if [ ! -s $header ]
+         then
+            MSG="$header file not found"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            exit 1;
+
+         fi
+         truncate -s 0 ${aligned_bam}.RGline
+	 `grep "RG.*ID" $header | cut -f 2` >> ${aligned_bam}.RGline
+         RGline=${aligned_bam}.RGline
+         RGline=$( sed -i 's/ID/RGID/' "$RGline" )
+         RGline=$( sed -i 's/ / RG/g' "$RGline" )
+         RGparms=$( cat "$RGline" )
+
+
          # now check that there is only one file
+         aligned_bam=$outputdir/align/${SampleName}/${aligned_bam}
          aligned_bam=( $aligned_bam ) # recast variable as an array and count the number of members
          if [ ${#aligned_bam[@]} -ne 1 ]
          then
@@ -414,11 +434,6 @@ echo -e "\n\n\n ###################################       main loops start here 
          fi
 
          aligned_bam="${aligned_bam[*]}" # recast variable back as string
-         aligned_bam=$outputdir/align/${SampleName}/${aligned_bam}
-         sID=$SampleName
-         sPU=$SampleName
-         sSM=$SampleName
-         RGparms=$( echo "RGID=${sID}:RGLB=${sLB}:RGPU=${sPU}:RGSM=${sSM}:RGPL=${sPL}:RGCN=${sCN}" )
 
 
 
@@ -426,11 +441,13 @@ echo -e "\n\n\n ###################################       main loops start here 
          echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} $RealignOutputLogs" > $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}
 
          # construct the list of all input files for the GATK real-recal procedure, multisample case
-         if [ $multisample == "YES" ]
-         then
-            chrinfiles[$chromosomecounter]=${chrinfiles[$chromosomecounter]}":-I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam"
+         #if [ $multisample == "YES" ]
+         #then
+         #   chrinfiles[$chromosomecounter]=${chrinfiles[$chromosomecounter]}":-I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam"
 # not used anymore?          chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$SampleName.$chr.sorted.bam"
-         else
+         #fi
+         if [ $multisample == "NO" ]
+         then         
             echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
             echo "$scriptdir/realrecal.sh $RealignOutputDir/${SampleName} $chr.realrecal.$SampleName.output.bam $chr -I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}
            

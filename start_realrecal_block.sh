@@ -3,13 +3,14 @@
 #
 # start_realrecal_block.sh
 # Second module in the GGPS analysis pipeline
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
    MSG="parameter mismatch. "
    echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
    exit 1;
-else
+fi
+
    set -x
    echo `date`
    scriptfile=$0
@@ -32,11 +33,11 @@ else
    echo "####################################################################################################"
    echo "#####################################                       ########################################"
    echo "##################################### PARSING RUN INFO FILE ########################################"
-   echo "#####################################                       ########################################"
+   echo "##################################### SANITY CHECK          ########################################"
    echo "####################################################################################################"
 
 
-   sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
+   sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
    outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
    thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
@@ -44,14 +45,11 @@ else
    refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
    input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-   igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
-   extradir=$outputdir/extractreads
    realrecalflag=$( cat $runfile | grep -w REALIGNORDER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
    paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
    rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
    multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-   samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 | tr ":" "\n")
    region=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
    resortflag=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    revertsam=$( cat $runfile | grep -w REVERTSAM | cut -d '=' -f2  )
@@ -60,99 +58,11 @@ else
    samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
    run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 )
 
-
-
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "#####################################  CREATE  DIRECTORIES  ########################################"
-echo "#####################################                       ########################################"
-echo "####################################################################################################"
-
-
+   if [ ! -d $outputdir ]
+   then
+       mkdir -p $outputdir
+   fi 
    
-############# what happens when this is a Ralign-only job? where are the folders created?
-#   if [ ! -d $outputdir ]
-#   then
-#      mkdir -p $outputdir
-#   fi  
-#   if [ ! -d $TopOutputLogs ]
-#   then
-#      mkdir  -p $TopOutputLogs
-#   fi  
-
-
-
-   RealignOutputDir=$outputdir/realign
-   if [ -d $RealignOutputDir ]
-   then
-      echo "$RealignOutputDir already exists; resetting it"
-      `rm -r $RealignOutputDir/*`
-   else
-      mkdir -p $RealignOutputDir
-   fi
-
-   if [ $skipvcall == "NO" ]
-   then
-      VarcallOutputDir=$outputdir/variant
-      if [ -d $VarcallOutputDir ]
-      then
-         echo "$VarcallOutputDir already exists; resetting it"
-         `rm -r $VarcallOutputDir/*`
-      else
-         mkdir -p $VarcallOutputDir
-      fi
-   fi
-
-   TopOutputLogs=$outputdir/logs
-   if [ -d $TopOutputLogs ]
-   then
-      echo "$TopOutputLogs already exists"
-      pbsids=""
-   else
-      mkdir -p $TopOutputLogs
-   fi
-   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
-
-
-
-   RealignOutputLogs=$TopOutputLogs/realign
-   if [ ! -d $RealignOutputLogs ]
-   then
-      mkdir $RealignOutputLogs
-   fi
-   `chmod -R 770 $RealignOutputLogs/`
-   # where messages about failures will go
-   truncate -s 0 $RealignOutputLogs/FAILEDmessages
-   if [ ! -d $RealignOutputLogs/FAILEDjobs ]
-   then
-      mkdir $RealignOutputLogs/FAILEDjobs
-   else
-      rm -r $RealignOutputLogs/FAILEDjobs/*
-   fi
-   `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
-
-   if [ $skipvcall == "NO" ]
-   then
-      VarcallOutputLogs=$TopOutputLogs/variant
-      if [ ! -d $VarcallOutputLogs ]
-      then
-         mkdir $VarcallOutputLogs
-      fi
-      `chmod -R 770 $VarcallOutputLogs/`
-      # where messages about failures will go
-      truncate -s 0 $VarcallOutputLogs/FAILEDmessages
-      if [ ! -d $VarcallOutputLogs/FAILEDjobs ]
-      then
-         mkdir $VarcallOutputLogs/FAILEDjobs
-      else
-         rm -r $VarcallOutputLogs/FAILEDjobs/*
-      fi
-      `chmod -R 770 $VarcallOutputLogs/FAILEDjobs`
-   fi
-
-
-
-
    if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
    then
       pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
@@ -192,13 +102,13 @@ echo "##########################################################################
    fi
    if [ ! -d $refdir ]
    then
-      MSG="$refdir directory of reference genome was not found"
+      MSG="$refdir directory of reference genome  not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $picardir ]
    then
-      MSG="$picardir picard directory was not found"
+      MSG="$picardir picard directory  not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
@@ -207,7 +117,7 @@ echo "##########################################################################
    # check that sampledir exists
    if [ ! -d $sampledir ]
    then
-      MSG="SAMPLEDIR=$sampledir file not found"
+      MSG="INPUTDIR=$sampledir input directory not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
@@ -216,7 +126,7 @@ echo "##########################################################################
    numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]
    then
-      MSG="No samples found in SAMPLEDIR=$sampledir."
+      MSG="No samples found in INPUTDIR=$sampledir."
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
@@ -235,10 +145,59 @@ echo "##########################################################################
    if [ $realrecalflag != "1" -a $realrecalflag != "0" ]
    then
       echo "realign-recalibration order flag is not set properly. Default value [1] will be assiged to it"
-      # SHOULDN'T WE ABORT INSTEAD?
       realrecalflag="1"
    fi
       
+echo "####################################################################################################"
+echo "#####################################                       ########################################"
+echo "#####################################  CREATE  DIRECTORIES  ########################################"
+echo "#####################################                       ########################################"
+echo "####################################################################################################"
+
+
+   RealignOutputDir=$outputdir/realign
+   if [ -d $RealignOutputDir ]
+   then
+      echo "$RealignOutputDir already exists; resetting it"
+      `rm -r $RealignOutputDir/*`
+   else
+      mkdir -p $RealignOutputDir
+   fi
+
+
+   TopOutputLogs=$outputdir/logs
+   if [ -d $TopOutputLogs ]
+   then
+      echo "$TopOutputLogs already exists"
+      pbsids=""
+   else
+      mkdir -p $TopOutputLogs
+   fi
+   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+
+
+
+   RealignOutputLogs=$TopOutputLogs/realign
+   if [ ! -d $RealignOutputLogs ]
+   then
+      mkdir $RealignOutputLogs
+   fi
+   `chmod -R 770 $RealignOutputLogs/`
+   # where messages about failures will go
+   truncate -s 0 $RealignOutputLogs/FAILEDmessages
+   if [ ! -d $RealignOutputLogs/FAILEDjobs ]
+   then
+      mkdir $RealignOutputLogs/FAILEDjobs
+   else
+      rm -r $RealignOutputLogs/FAILEDjobs/*
+   fi
+   `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
+
+echo "#############################################################################################################"
+echo "#####################################  FOLLWOING BLOCK FOR           ########################################"
+echo "#####################################  BAM files aligned elsewhere   ########################################"
+echo "#####################################                                ########################################"
+echo "#############################################################################################################"
 
    listfiles="";
    sep=":";
@@ -246,7 +205,7 @@ echo "##########################################################################
 
    # finding all aligned BAMs to be realigned-recalibrated
 
-   if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" ]
+   if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
    then
       echo "alignment was done inhouse. no need to resort"
    else
@@ -259,15 +218,10 @@ echo "##########################################################################
             echo "skip empty line"
          else
             echo "preprocessing for realignment $sampledetail"
-            bamfile=$( echo $sampledetail | cut -d '=' -f2 )
-            sampletag=$( echo $sampledetail | cut -d '=' -f1 | cut -d ':' -f2 )
-            if [ `expr ${#bamfile}` -lt 1 ]
-            then
-               MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-               exit 1;
-            fi
-            if [ `expr ${#sampletag}` -lt 1 ]
+            bamfile=$( echo $sampledetail )
+            #bamfile=$( echo $sampledetail | cut -d '=' -f2 )
+            #sampletag=$( echo $sampledetail | cut -d '=' -f1 | cut -d ':' -f2 )
+            if [ `expr ${#PrefixName}` -lt 1 ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
@@ -281,7 +235,7 @@ echo "##########################################################################
                exit 1;
             fi
          fi
-      done <  $TopOutputLogs/SAMPLENAMES.list
+      done <  $outputdir/SAMPLENAMES.list
       # end loop over input samples
 
    fi   
@@ -335,27 +289,9 @@ echo "##########################################################################
             #`qhold -h u $sortid`
             echo $sortid >> $TopOutputLogs/REALSORTEDMAYOpbs
 
-            echo "extracting reads"
-            qsub_extractreads=$outputlogs/qsub.extractreadsbam.$prefix
-            echo "#PBS -V" > $qsub_extractreads
-            echo "#PBS -A $pbsprj" >> $qsub_extractreads
-            echo "#PBS -N ${pipeid}_extrbam${prefix}" >> $qsub_extractreads
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_extractreads
-            echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_extractreads
-            echo "#PBS -o $outputlogs/log.extractreadsbam.${prefix}.ou" >> $qsub_extractreads
-            echo "#PBS -e $outputlogs/log.extractreadsbam.${prefix}.in" >> $qsub_extractreads
-            echo "#PBS -q $pbsqueue" >> $qsub_extractreads
-            echo "#PBS -m ae" >> $qsub_extractreads
-            echo "#PBS -M $email" >> $qsub_extractreads
-            echo "#PBS -W depend=afterok:$sortid" >> $qsub_extractreads
-            echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $outputalign $sorted $runfile $outputlogs/log.extractreadsbam.${prefix}.in $outputlogs/log.extractreadsbam.${prefix}.ou $outputlogs/qsub.extractreadsbam.$prefix $igvdir $extradir" >> $qsub_extractreads
-            `chmod a+r $qsub_extractreads`               
-            extraid=`qsub $qsub_extractreads`
-            #`qhold -h u $extraid`
-            echo $extraid >> $TopOutputLogs/EXTRACTREADSpbs
             listfiles=$outputalign/$sorted${sep}${listfiles}
          fi # end of if statement checking for empty line in the SampleName file
-      done <  $TopOutputLogs/SAMPLENAMES.list
+      done <  $outputdir/SAMPLENAMES.list
       # end loop over input samples
 
       cp $TopOutputLogs/REALSORTEDMAYOpbs $TopOutputLogs/ALN_MAYO_jobids
@@ -367,24 +303,13 @@ echo "##########################################################################
       echo "starting the workflow with realignment, alignment step was done separartely. BAM files will not be resorted"
       if [ $revertsam == "0" -o $revertsam == "NO" ]
       then
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#################################THIS IS WRONG AND HAS TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
          echo "input is aligned bam that is suitable for realignment and recalibration... no need for preprocessing"
          while read sampledetail
          do
-            bam=$( echo $sampledetail | cut -d "=" -f2 )
+            bam=$( echo $sampledetail )
             listfiles=${bam}${sep}${listfiles}
-         done <  $TopOutputLogs/SAMPLENAMES.list
-            # end loop over input samples
-
+         done <  $outputdir/SAMPLENAMES.list
+         # end loop over input samples
       else
          MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
          echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
@@ -392,12 +317,17 @@ echo "##########################################################################
       fi
    fi
 
+echo "#############################################################################################################"
+echo "#####################################  END OF BLOCK FOR              ########################################"
+echo "#####################################  BAM files aligned elsewhere   ########################################"
+echo "#####################################                                ########################################"
+echo "#############################################################################################################"
 
    # grab job ids for align and for preprocessing done in this module
    alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
    mergeids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
    sortedmayoids=$( cat $TopOutputLogs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
-   extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+
 
 
 
@@ -414,8 +344,13 @@ echo "##########################################################################
 
 
    # the schedule_realrecal_per_chromosome should run on a MOM node, so submitting with qsub without aprun
-   echo "$scriptdir/schedule_realrecal_per_chromosome.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
 
+   if [ $analysis != "MULTIPLEXED" ]
+   then
+       echo "$scriptdir/schedule_realrecal_per_chromosome.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   else
+       echo "$scriptdir/schedule_realrecal_multiplexed.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   fi
 
    ### schedule the schedule_realrecal_per_chromosome job(s)
    case $run_method in
@@ -457,14 +392,8 @@ echo "##########################################################################
 
 
 
-   #`qrls -h u $alignids`
-   #`qrls -h u $mergeids`
-   #`qrls -h u $sortedmayoids`
-   #`qrls -h u $extraids`
-   #`qrls -h u $realrecaljob`
-
    echo "###################### done scheduling realign/recalibrate.#################################"
    echo `date`
    `chmod -R 770 $outputdir/`
    `chmod -R 770 $TopOutputLogs/`
-fi
+

@@ -3,7 +3,7 @@
 # written in collaboration with Mayo Bioinformatics core group
 # start_align_block.sh
 # First module in the GGPS analysis pipeline
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
@@ -30,13 +30,13 @@ else
 echo "####################################################################################################"
 echo "#####################################                       ########################################"
 echo "##################################### PARSING RUN INFO FILE ########################################"
-echo "#####################################                       ########################################"
+echo "##################################### AND SANITY CHECK      ########################################"
 echo "####################################################################################################"
 
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-	sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
+	sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
@@ -45,10 +45,6 @@ echo "##########################################################################
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-        igvdir=$( cat $runfile | grep -w IGVDIR | cut -d '=' -f2 )
-        fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2 )
-        fastqcflag=$( cat $runfile | grep -w FASTQCFLAG | cut -d '=' -f2 )
-        fastqcparms=$( cat $runfile | grep -w FASTQCPARMS | cut -d '=' -f2 | tr " " "_" )
         bamtofastqflag=$( cat $runfile | grep -w BAM2FASTQFLAG | cut -d '=' -f2 )
         bamtofastqparms=$( cat $runfile | grep -w BAM2FASTQPARMS | cut -d '=' -f2 )
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
@@ -57,9 +53,7 @@ echo "##########################################################################
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
-        samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 | tr ":" "\n")
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
@@ -155,10 +149,6 @@ echo -e "\n\n\n#####################    resetting output directories, logs, file
 
         pipeid=$( cat $TopLogsFolder/CONFIGUREpbs )
         pbsids=""
-
-
-
-
 
 
 
@@ -355,11 +345,11 @@ echo "####################################################################"
 
         fi
 
-        #################################
-        # PREPROCESSING OF BAMS --- DONE
-        #################################
-        # ALIGNMENT PROPER CAN PROCEED NOW
-        #################################
+echo "####################################################################" 
+echo "####################################################################" 
+echo "############    done with   preprocessing of BAMs   ################"
+echo "############    alignment case selection is next    ################"
+echo "####################################################################"
 
         if [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
         then
