@@ -58,8 +58,9 @@ fi
 #        chrinputfiles=$( echo $chrinputfiles | tr ":" " " ) # not used anymore?
         RGparms=$( echo $RGparms | tr "::" ":" | sed "s/:/\tRG/g" | sed "s/ID\=/RGID\=/" )
         #rgheader=$( echo $RGparms | tr "=" ":" | tr " " "\t" )
-        realparms=$( echo $realparms | tr ":" " " | sed "s/known /known\=/g" )
-        recalparms=$( echo $recalparms | tr ":" " " | sed "s/knownSites /knownSites\=/g")
+        real2parms=$( echo $realparms | tr ":" " " | sed "s/known /-known /g" )
+        realparms=$( echo $realparms | tr ":" " " | sed "s/known /--known /g" )
+        recalparms=$( echo $recalparms | tr ":" " " | sed "s/knownSites /--knownSites /g")
 
         if [ ! -d $picardir ]
         then
@@ -215,12 +216,12 @@ fi
 	echo "##############################   STEP2: realign              ########################################"
 	echo "realigning lane $lane...."
 		
-        $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+        $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I sorted_wrg.$chr.$infile \
 	    -T RealignerTargetCreator \
             -nt $thr \
-	    -o realign.$chr.$lane.Targetlist $realparms
+	    -o realign.$chr.$lane.list $realparms
 
 	exitcode=$?
 	echo `date`
@@ -233,23 +234,22 @@ fi
 	fi
 
 	
-	if [ ! -s realign.$chr.$lane.Targetlist ]
+	if [ ! -s realign.$chr.$lane.list ]
 	then
-	    MSG="realign.$chr.$lane.Targetlist realignertargetcreator file not created. realignment-recalibration stopped for lane=$lane"
+	    MSG="realign.$chr.$lane.list realignertargetcreator file not created. realignment-recalibration stopped for lane=$lane"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
 	fi
 	echo `date`
 
-
-	$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+	$javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I sorted_wrg.$chr.$infile \
 	    -T IndelRealigner \
             -L $chr \
 	    -o realign.$chr.$lane.realigned.bam \
-	    -targetIntervals realign.$chr.$lane.Targetlist $realignparams $realparms
+	    -targetIntervals realign.$chr.$lane.list $realignparams $real2parms
 
 	exitcode=$?
 	echo `date`
@@ -278,7 +278,7 @@ fi
         then
 	    echo "recalibrator == BQSR"
 
-            $memprov $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprov $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
                 $recalparms \
                 -I realign.$chr.$lane.realigned.bam \
@@ -305,9 +305,9 @@ fi
             echo `date`
 
 
-            $memprov $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+            $memprov $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
-                -I realign.$chr.$lane.real.cleaned.bam \
+                -I realign.$chr.$lane.realigned.bam \
                 -T PrintReads \
                 -BQSR recal.$chr.$lane.recal_report.grp \
                 --out recal.$chr.$lane.real.recal.bam \
@@ -335,7 +335,7 @@ fi
 
         else
 	    echo "recalibrator =! BQSR"
-   	    $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+   	    $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		$recalparms \
 		-I realign.$chr.$lane.realigned.bam \
@@ -365,7 +365,7 @@ fi
 	    fi
 	    echo `date`
 
-	    $memprof $javadir/java -Xmx1024m -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+	    $memprof $javadir/java -Xmx8g -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		-L $chr \
 		-I realign.$chr.$lane.realigned.bam \

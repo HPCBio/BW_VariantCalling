@@ -47,8 +47,8 @@ else
         thr=`expr $threads "-" 1`
         #thr=`expr $threads "/" 2`
 
-        realparms=$( echo $realparms | tr ":" " " )
-
+        real2parms=$( echo $realparms | tr ":" " " | sed "s/known /-known /g" )
+        realparms=$( echo $realparms | tr ":" " " | sed "s/known /--known /g" )
         if [ ! -d $picardir ]
         then
 	    MSG="$picardir picard directory not found"
@@ -141,7 +141,7 @@ else
 	    -I $chr.$infile \
 	    -T RealignerTargetCreator \
             -nt $thr \
-	    -o $chr.${sample}.Targetlist $realparms
+	    -o $chr.${sample}.list $realparms
 
 	exitcode=$?
 	echo `date`
@@ -154,9 +154,9 @@ else
 	    exit $exitcode;
 	fi
 	
-	if [ ! -s ${chr}.${sample}.Targetlist ]
+	if [ ! -s ${chr}.${sample}.list ]
 	then
-	    MSG="${chr}.$sample}.Targetlist realignertargetcreator file not created. realignment for sample $sample stopped"
+	    MSG="${chr}.$sample}.list realignertargetcreator file not created. realignment for sample $sample stopped"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
@@ -170,7 +170,7 @@ else
 	    -T IndelRealigner \
             -L $chr \
 	    -o ${chr}.${sample}.realigned.bam \
-	    -targetIntervals $${chr}.${sample}.Targetlist $realignparams $realparms
+	    -targetIntervals $${chr}.${sample}.list $realignparams $real2parms
 
 	exitcode=$?
 	echo `date`

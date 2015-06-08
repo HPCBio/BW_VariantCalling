@@ -340,9 +340,9 @@ echo -e "\n\n\n ###########################   generating regions, intervals, kno
       #   region[$i]="-L:$chr"
       #fi
       cd $refdir/$indeldir
-      indels=`find ./ -name "${chr}.*.vcf"`
-      realparms[$i]=$( echo $indels | sed "s/\.\//:known:/g" | sed "s/ //g" |tr "\n" ":" )
-      recalparms[$i]=$( echo $indels | sed "s/\.\//:knownSites:/g" | sed "s/ //g" | tr "\n" ":" )
+      indels=`find $PWD -type f -name "${chr}.*.vcf"`
+      realparms[$i]=$( echo $indels | sed "s/\/projects/:known:\/projects/g" | sed "s/ //g" |tr "\n" ":" )
+      recalparms[$i]=$( echo $indels | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
       (( i++ ))
    done
    echo `date`
