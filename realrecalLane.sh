@@ -126,8 +126,9 @@ fi
         fi
 
         infile=`basename $inputfile`
-
-	echo "##############################   STEP1: split aligned bam by chromosome ##############################"
+        echo "#################################################################################"
+	echo "################   STEP1: extract chromosome from aligned bam ###################"
+        echo "#################################################################################"
 
         cd $realrecaldir
 	$samdir/samtools view -b -h $inputfile $chr > presorted_norg.${chr}.$infile  
@@ -212,9 +213,9 @@ fi
 	$samdir/samtools view -H  sorted_wrg.${chr}.$infile > sorted_wrg.${chr}.${infile}.header  
 	echo `date`
 
-
-	echo "##############################   STEP2: realign              ########################################"
-	echo "realigning lane $lane...."
+        echo "#################################################################################"
+	echo "##############################   STEP2: realign              ####################"
+        echo "#################################################################################"
 		
         $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
@@ -270,9 +271,9 @@ fi
             exit 1;
         fi
 
-
-	echo "##############################   STEP3: recalibration       ########################################"
-
+        echo "#################################################################################"
+	echo "##############################   STEP3: recalibration       #####################"
+        echo "#################################################################################"
 
         if [ "$recalibrator" == "BQSR" ]
         then
@@ -330,12 +331,12 @@ fi
                 exit 1;
             fi
             $samdir/samtools index recal.$chr.$lane.real.recal.bam
-            $memprof cp recal.$chr.$lane.real.recal.bam $outputfile
-            $memprof cp recal.$chr.$lane.real.recal.bam.bai $outputfile.bai
+            cp recal.$chr.$lane.real.recal.bam $outputfile
+            cp recal.$chr.$lane.real.recal.bam.bai $outputfile.bai
 
         else
 	    echo "recalibrator =! BQSR"
-   	    $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+   	    $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		$recalparms \
 		-I realign.$chr.$lane.realigned.bam \
@@ -365,7 +366,7 @@ fi
 	    fi
 	    echo `date`
 
-	    $memprof $javadir/java -Xmx8g -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+	    $javadir/java -Xmx8g -Xms1024m  -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		-L $chr \
 		-I realign.$chr.$lane.realigned.bam \
@@ -394,11 +395,11 @@ fi
 
 
             $samdir/samtools index recal.$chr.$lane.real.recal.bam
-            $memprof cp recal.$chr.$lane.real.recal.bam $outputfile
-            $memprof cp recal.$chr.$lane.real.recal.bam.bai $outputfile.bai
+            cp recal.$chr.$lane.real.recal.bam $outputfile
+            cp recal.$chr.$lane.real.recal.bam.bai $outputfile.bai
         fi # end choosing between BQSR and CountCovariates/TableRecalibration
 
-	$memprof $samdir/samtools flagstat $outputfile > $outputfile.flagstat
+	$samdir/samtools flagstat $outputfile > $outputfile.flagstat
 	exitcode=$?
 	echo `date`		
 	if [ $exitcode -ne 0 ]

@@ -70,7 +70,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    
    ########################
    ########################
+   echo "#################################################################################"
    echo -e cheching type of analysis
+   echo "#################################################################################"
+
    if [ $analysis != "MULTIPLEXED" ]
    then
       MSG="ANALYSIS=$analysis Program=$scriptfile Invalid pipeline program for this type of analysis. This program is for the MULTIPLEXED case only"
@@ -80,7 +83,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
    ########################
    ########################
+   echo "#################################################################################"
    echo -e type of sample
+   echo "#################################################################################"
+
    if [ $multisample != "YES" -a $multisample != "1" ]
    then
       MSG="MULTISAMPLE=$multisample Invalid value for this type of analysis. This program is for the MULTIPLEXED case only"
@@ -90,7 +96,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
    ########################
    ########################
+   echo "#################################################################################"
    echo -e checking input type
+   echo "#################################################################################"
+
    if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
    then
       pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
@@ -110,7 +119,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
 
    ########################
    ########################
+   echo "#################################################################################"
    echo -e checking cleanup options
+   echo "#################################################################################"
+
    if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
    then
       MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
@@ -130,7 +142,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
 
    ########################
    ########################
+   echo "#################################################################################"
    echo -e skip/include variant calling module
+   echo "#################################################################################"
+
    if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
    then
       MSG="Invalid value for SKIPVCALL=$skipvcall"
@@ -149,7 +164,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
    ########################
    ########################
+   echo "#################################################################################"
    echo -e java for gatk
+   echo "#################################################################################"
+
    if [ -z $javamodule ]
    then
       MSG="Value for JAVAMODULE must be specified in configuration file"
@@ -159,7 +177,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
    ########################
    ########################
-   echo -e directories for output and tools
+   echo "#################################################################################"
+   echo -e directories for output and for tools
+   echo "#################################################################################"
+
    if [ ! -d $outputdir ]
    then
       MSG="$outputdir ROOT directory for this run of the pipeline not found"
@@ -244,7 +265,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
 
    ########################
    ########################
+   echo "#################################################################################"
    echo -e checking scheduler
+   echo "#################################################################################"
+
    if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
    then
       MSG="Invalid value for RUNMETHOD=$run_method"
@@ -254,7 +278,10 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
    ########################
    ########################
+   echo "#################################################################################"
    echo -e checking files produced from info sheet
+   echo "#################################################################################"
+
    if [ ! -s $outputdir/SAMPLENAMES.list ]
    then
       MSG="$outputdir/SAMPLENAMES.list SAMPLENAMES.list file not found"
@@ -281,7 +308,9 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
 
                 ###########################################################################################################
                 ###########################                                                          ######################"
-echo -e "\n\n\n ###########################      params ok. Now          creating log folders        ############### \n\n\n"
+   echo "####################################################################################################"
+   echo -e "###########################      params ok. Now          creating log folders        ###############"
+   echo "####################################################################################################"
                 ###########################                                                          ######################
                 ###########################################################################################################
 
@@ -312,8 +341,10 @@ echo -e "\n\n\n ###########################      params ok. Now          creatin
    fi
 
                 ###########################################################################################################
-                ###########################                                                          ######################"
-echo -e "\n\n\n ###########################   generating regions, intervals, known/knownSites        ############### \n\n\n"
+                ###########################                                                          ######################
+   echo "####################################################################################################"
+   echo -e "###########################   generating regions, intervals, known/knownSites        ###############"
+   echo "####################################################################################################"
                 ###########################                                                          ######################
                 ###########################################################################################################
 
@@ -350,8 +381,9 @@ echo -e "\n\n\n ###########################   generating regions, intervals, kno
 
                 ####################################################################################################
                 #####################################                        ########################################
-echo -e "\n\n\n #####################################  CREATE  DIRECTORIES   ########################################
-  #####################################  BY SAMPLE/LANE        ######################################## \n\n\n"
+   echo "####################################################################################################"
+   echo -e "#####################################  CREATE  DIRECTORIES   ########################################
+  #####################################  4 RESULTS BY SAMPLE/LANE        ########################################"
                 ####################################################################################################
 
 
@@ -468,7 +500,7 @@ do
 	do
 	    echo "generating real-recal calls for lane=$lane chr=${chr} ..."
 
-            echo -e "\n#######################   assemble the real-recall/var call sub-block for chr=${chr} ...    ################################\n"
+            echo -e "\n#######################   assemble the real-recall sub-block for chr=${chr} ...    ################################\n"
             echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chr]} ${recalparms[$chr]} $runfile $RealignOutputDir/logs/log.realrecalLane.$lane.$chr.in $RealignOutputDir/logs/log.realrecalLane.$lane.$chr.ou $email $RealignOutputDir/logs/realrecalLane.${lane}.${chr}" > $outputdir/$sample/logs/realrecalLane.${lane}.${chr}
            
 
@@ -511,7 +543,7 @@ do
         sLB="multiplexed"
 
         echo -e "\n#######################   assemble the merge call for sample=$sample ...    ################################\n"
-        echo "$scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.bam $outputdir $RealignOutputDir/logs/log.mergeLanes.$sample.in $RealignOutptuDir/logs/log.mergeLanes.$sample.ou $email $RealignOutputDir/logs/mergeLanes.${sample}" > $outputdir/$sample/logs/mergeLanes.${sample}
+        echo "$scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.bam $outputdir $RealignOutputDir/logs/log.mergeLanes.$sample.in $RealignOutputDir/logs/log.mergeLanes.$sample.ou $email $RealignOutputDir/logs/mergeLanes.${sample}" > $outputdir/$sample/logs/mergeLanes.${sample}
     fi   # skipping empty lines
 
     # end loop over sampleLanes
@@ -521,9 +553,10 @@ done <  $outputdir/SAMPLEGROUPS.list
 
                 #############################################################################################################
                 ###################################                                ##########################################
-echo -e "\n\n\n ###################################       loop3      starts    here    ###################################### 
-                ##################################       REALIGN-ONLY  BY SAMPLE              ########################
-                ##################################  outer loop by Sample inner loop by chr    ######################## \n\n\n"
+echo -e " ###################################       loop3      starts    here    ###################################### 
+                ##################################       second REALIGN  -- BY SAMPLE              ########################
+                ##################################       followed by vcall -- BY SAMPLE            ########################
+                ##################################  outer loop by Sample inner loop by chr         ########################"
                 ########################                                                      ###############################
                 #############################################################################################################
 
@@ -548,7 +581,7 @@ do
 	    echo "generating real calls for sample=$sample chr=${chr} with bam=$infile ..."
 
             echo -e "\n#######################   assemble the realign-only call sub-block for chr=${chr} ...    ################################\n"
-            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chr]} $sample $runfile $RealignOutputDir/logs/log.realignSample.$sample.$chr.in $RealignOutptuDir/logs/log.realignSample.$sample.$chr.ou $email $RealignOutputDir/logs/realignSample.${sample}.${chr}" > $outputdir/$sample/logs/realignSample.${sample}.${chr}
+            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chr]} $sample $runfile $RealignOutputDir/logs/log.realignSample.$sample.$chr.in $RealignOutputDir/logs/log.realignSample.$sample.$chr.ou $email $RealignOutputDir/logs/realignSample.${sample}.${chr}" > $outputdir/$sample/logs/realignSample.${sample}.${chr}
            
            if [ $skipvcall == "NO" ]
            then
@@ -568,11 +601,11 @@ do
 done <  $outputdir/SAMPLEGROUPS.list
 
 
-                #############################################################################################################
+    echo -e "\n\n            #############################################################################################################
                 ###################################                             #############################################
-echo -e "\n\n\n ###################################   now schedule these jobs   ###################################### \n\n\n"
+                ###################################   now schedule these jobs   ######################################
                 ###################################   just considering the launcher option for now ##########################
-                #############################################################################################################
+                #############################################################################################################"
 
    case $run_method in
    "LAUNCHER")
@@ -663,7 +696,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
               fi
 
               echo -e "#####################################################################
-              ############### loop2   ################################################"
+              ############### mergelanes per sample   ##########################################"
+
 
 	      mergeLanes_log=$outputdir/$sample/logs/log.mergelLanes.$sample.in
 	      awk -v awkvar_mergeLanes_log=$mergeLanes_log '{print "nohup "$0" > "awkvar_mergeLanes_log}' $outputdir/$sample/logs/mergeLanes.${sample} > $outputdir/$sample/logs/jobfile.mergeLanes.${sample}
@@ -672,8 +706,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
               cat $outputdir/qsubGenericHeader > $qsub_mergeLanes_anisimov
 
               echo -e "####################################################################
-              ############### loop3 #################################################"
-
+              ############### realign per sample/chr #############################################
+              ############### vcall   per sample/chr #############################################"
 	      for chr in $indices
 	      do
 		  realignSample_log=$outputdir/$sample/logs/log.realignSample.$sample.$chr.in

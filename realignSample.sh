@@ -103,9 +103,9 @@ else
 	    exit 1;
         fi
 
-        
+        echo "#################################################################################"
         echo "################## STEP1: splitting sample=$sample by chr=$chr...################"
-
+        echo "#################################################################################"
 
         cd $realigndir
 
@@ -133,7 +133,9 @@ else
 
 	echo `date`
 
-        echo "################## STEP2: realign SAMPLE $sample on chr=$chr"
+        echo "#################################################################################"
+        echo "################## STEP2: realign SAMPLE $sample on chr=$chr  ###################"
+        echo "#################################################################################"
 	
         echo "GATK is creating a target list...."
         $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
