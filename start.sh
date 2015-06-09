@@ -73,6 +73,11 @@ else
         runfile=$outputdir/runfile.txt
 
 
+        # initialize autodocumentation script
+        truncate -s 0 $outputdit/WorkflowAutodocumentationScript.sh
+        echo "#!/bin/bash" > $outputdit/WorkflowAutodocumentationScript.sh
+        WorkflowName=`basename $outputdir`  
+        echo "# @begin $WorkflowName" > $outputdit/WorkflowAutodocumentationScript.sh
 
 
         outputlogs=$outputdir/logs
