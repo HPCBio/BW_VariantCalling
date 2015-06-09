@@ -1,7 +1,7 @@
 #!/bin/sh
 # written in collaboration with Mayo Bioinformatics core group
 #redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# -ne 11 ]
+if [ $# -ne 9 ]
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
@@ -14,14 +14,12 @@ fi
     runfile=$1
     sample=$2
     realignOutput=$3
-    filterflag=$4
-    outfile=$5
-    rootdir=$6
-    elog=$7
-    olog=$8
-    email=$9
-    qsubfile=${10}
-    RealignOutputLogs=${11}
+    outfile=$4
+    rootdir=$5
+    elog=$6
+    olog=$7
+    email=$8
+    qsubfile=$9
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
     echo -e "##########################################################################"
@@ -185,3 +183,21 @@ fi
         filterflag="FAILED"
     fi
     echo `date`
+
+    if [ $filterflag == "FAILED" ]
+    then
+	echo -e "##########################################################################"
+	echo -e "#############  ungracefull exit                          #################"
+	echo -e "#############  needs to be fixed later                   #################"
+	echo -e "##########################################################################"
+	MSG="$sample DID NOT PASS the VerifyBamID filter. Stopping analysis now"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	exit 1;
+    else
+	echo -e "##########################################################################"
+	echo -e "#############  $sample PASSED the verifyBamId filter     #################"
+	echo -e "#############  analysis continues with vcallgatk        #################"
+	echo -e "##########################################################################"
+        exit 0;
+    fi
