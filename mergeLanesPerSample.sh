@@ -1,7 +1,7 @@
 #!/bin/sh
 # written in collaboration with Mayo Bioinformatics core group
 #redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# -ne 11 ]
+if [ $# -ne 10 ]
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
@@ -20,7 +20,6 @@ else
     olog=$8
     email=$9
     qsubfile=${10}
-    RealignOutputLogs=${11}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
     memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
