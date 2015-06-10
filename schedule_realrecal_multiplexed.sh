@@ -571,7 +571,6 @@ do
 	sample=$( echo "$SampleLine" | cut -f 1 )
         RealignLog=$outputdir/${sample}/realign/logs	
         RealignOutputDir=$outputdir/${sample}/realign
-        sampleOutPrefix=${sample}.mergedLanes
         bamfile=$RealignOutputDir/$sampleOutPrefix.bam
 
         echo "sample=$sample about to enter inner loop by chr..."
@@ -689,8 +688,14 @@ done <  $outputdir/SAMPLEGROUPS.list
 	      echo "processing next sample, non-empty line"
 
 	      sample=$( echo "$SampleLine" | cut -f 1 )
+	      lanes=$( echo "$SampleLine" | cut -f 2 )
+              lanes=$( echo $lanes | tr " " ":" )
 
-              RealignOutputDir=$outputdir/$sample/realign
+              RealignLog=$outputdir/${sample}/realign/logs
+              RealignOutputDir=$outputdir/${sample}/realign
+              sampleOutPrefix=$outputdir/${sample}/realign/${sample}.mergedLanes
+              sLB="multiplexed"
+
               truncate -s 0 $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist
               truncate -s 0 $RealignOutputLogs/realignSample.${sample}.AnisimovJoblist
      
@@ -702,6 +707,7 @@ done <  $outputdir/SAMPLEGROUPS.list
 
               echo -e "#####################################################################
               ############### mergelanes per sample   ##########################################"
+              echo -e "############### constructing the qsub for mergeLanes ####################"
 
 
 	      mergeLanes_log=$outputdir/$sample/realign/logs/log.mergelLanes.$sample.in
@@ -709,6 +715,16 @@ done <  $outputdir/SAMPLEGROUPS.list
 	      echo "$outputdir/$sample/realign/logs/ jobfile.mergeLanes.${sample}" >> $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist
               qsub_mergeLanes_anisimov=$RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher
               cat $outputdir/qsubGenericHeader > $qsub_mergeLanes_anisimov
+
+	      echo "#PBS -N ${pipeid}_mergeLanes_${sample}" >> $qsub_mergeLanes_anisimov
+	      echo "#PBS -l walltime=$pbscpu" >> $qsub_mergeLanes_anisimov
+	      echo "#PBS -o $RealignLog/log.mergeLanes.${sample}.ou" >> $qsub_mergeLanes_anisimov
+	      echo "#PBS -e $RealignLog/log.mergeLanes.${sample}.in" >> $qsub_mergeLanes_anisimov
+	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_mergeLanes_anisimov
+              echo "aprun -n 1 -N 1 -d $thr $scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.bam $outputdir $RealignLog/log.mergeLanes.$sample.in $RealignLog/log.mergeLanes.$sample.ou $email $qsub_mergeLanes_anisimov" >> $qsub_mergeLanes_anisimov
+
+
+	      #echo "aprun -n 1 -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/mergeLanes.${sample}.AnisimovLauncher.log" >> $qsub_mergeLanes_anisimov
 
               echo -e "####################################################################
               ############### realign per sample/chr #############################################
@@ -719,7 +735,6 @@ done <  $outputdir/SAMPLEGROUPS.list
 		  awk -v awkvar_realignSample=$realignSample_log '{print "nohup "$0" > "awkvar_realignSample}' $outputdir/$sample/realign/logs/realignSample.${sample}.${chr} > $outputdir/$sample/realign/logs/jobfile.realignSample.${sample}.${chr}
 		  echo "$outputdir/$sample/realign/logs/ jobfile.realignSample.${sample}.${chr}" >> $RealignOutputLogs/realignSample.${sample}.AnisimovJoblist
 
-
                   if [ $skipvcall == "NO" ]
 		  then
 		      vcall_log=$outputdir/$sample/variant/logs/log.vcallgatk.$sample.$chr.in
@@ -728,33 +743,12 @@ done <  $outputdir/SAMPLEGROUPS.list
                   fi
 	      done
 
-              echo -e "########################################################## 
-	      #############   scheduling Anisimov Launcher  joblists
-              ##########################################################\n"  
+              echo -e "################################################################## 
+	      #############   constructing the qsub job  for realignSample
+              ###########################################################################\n"  
 
 	      qsub_realignSample_anisimov=$RealignOutputLogs/qsub.realignSample.${sample}.AnisimovLauncher
               cat $outputdir/qsubGenericHeader > $qsub_realignSample_anisimov
-	      if [ $skipvcall == "NO" ]
-	      then	      
-                  qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher
-		  cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
-	      fi
-
-              ########################################################## 
-              ########################################################## 
-              echo -e "############### constructing the qsub for mergeLanes"
-
-	      echo "#PBS -N ${pipeid}_mergeLanes_${sample}" >> $qsub_mergeLanes_anisimov
-	      echo "#PBS -l walltime=$pbscpu" >> $qsub_mergeLanes_anisimov
-	      echo "#PBS -o $RealignOutputLogs/log.mergeLanes.${sample}.ou" >> $qsub_mergeLanes_anisimov
-	      echo "#PBS -e $RealignOutputLogs/log.mergeLanes.${sample}.in" >> $qsub_mergeLanes_anisimov
-	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_mergeLanes_anisimov
-	      echo "aprun -n 1 -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/mergeLanes.${sample}.AnisimovLauncher.log" >> $qsub_mergeLanes_anisimov
-
-
-              ##########################################################
-              ##########################################################
-              echo -e "############### constructing the qsub for realignSample"
 
 	      echo "#PBS -N ${pipeid}_realignSample_${sample}" >> $qsub_realignSample_anisimov
 	      echo "#PBS -l walltime=$pbscpu" >> $qsub_realignSample_anisimov
@@ -763,11 +757,16 @@ done <  $outputdir/SAMPLEGROUPS.list
 	      echo "#PBS -l nodes=$chromosomecounter:ppn=$thr" >> $qsub_realignSample_anisimov
 	      echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realignSample.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realignSample.${sample}.AnisimovLauncher.log" >> $qsub_realignSample_anisimov
 
+
 	      if [ $skipvcall == "NO" ]
-	      then
-                   ####################################################################
-                   ####################################################################
-                  echo -e "############### constructing the qsub for vcallgatk"
+	      then	      
+
+		  echo -e "################################################################## 
+	      #############   constructing the qsub job  for realignSample
+              ###########################################################################\n"  
+
+                  qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher
+		  cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
 
 		  echo "#PBS -N ${pipeid}_vcallgatk_${sample}" >> $qsub_vcallgatk_anisimov
 		  echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov

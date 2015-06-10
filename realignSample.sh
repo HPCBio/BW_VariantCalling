@@ -138,7 +138,7 @@ else
         echo "#################################################################################"
 	
         echo "GATK is creating a target list...."
-        $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
+        $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $chr.$infile \
 	    -T RealignerTargetCreator \
@@ -166,7 +166,7 @@ else
 	echo `date`
 
         echo "executing GATK IndelRealigner command and generating $outputfile"
-	$memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
+	$memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $chr.$infile \
 	    -T IndelRealigner \

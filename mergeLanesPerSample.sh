@@ -126,7 +126,7 @@ else
         if [ ! -s $mergedLane ]
         then
             # we did not perform this step already
-            $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedLane USE_THREADING=true 
+            $javadir/java -Xmx8g -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedLane USE_THREADING=true 
             exitcode=$?
             `echo date`
             if [ $exitcode -ne 0 ]
@@ -326,12 +326,13 @@ else
  
     cd $RealignOutput
     presorted=$RealignOutput/presorted.$outfile
-    sorted_norg=$RealignOutput/sorted.norg.$outfile
+    withRG=$RealignOutput/presorted_wrg.$outfile
+
 
     #remove this if after we are done with testing
     if [ ! -s $presorted ]
     then
-	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/MergeSamFiles.jar \
+	$javadir/java -Xmx8g -Xms1024m -jar $picardir/MergeSamFiles.jar \
             $good2mergeLanes \
             OUTPUT=$presorted \
             USE_THREADING=true 
@@ -354,33 +355,9 @@ else
 	exit $exitcode;
     fi
 
-    $javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
-        INPUT=$presorted \
-        OUTPUT=${sorted_norg}\
-        TMP_DIR=$RealignOutput \
-        SORT_ORDER=coordinate \
-        CREATE_INDEX=true 
- 
-    exitcode=$?
-    `echo date`
-    if [ $exitcode -ne 0 ]
-    then
-	MSG="picard SortSam command failed exitcode=$exitcode with $presorted"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	exit $exitcode;
-    fi
-    if [ ! -s ${sorted_norg} ]
-    then
-	MSG="picard SortSam command produced an empty file"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	exit $exitcode;
-    fi
-
-    $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
-        INPUT=${sorted_norg} \
-        OUTPUT=$RealignOutput/$outfile \
+    $javadir/java -Xmx8g -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
+        INPUT=${presorted} \
+        OUTPUT=${withRG} \
         TMP_DIR=$RealignOutput \
         SORT_ORDER=coordinate \
         $parameters
@@ -394,13 +371,40 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit $exitcode;
     fi
-    if [ ! -s $outfile ]
+    if [ ! -s $withRG ]
     then
 	MSG="picard addreadgroup command produced an empty file"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit $exitcode;
     fi
+
+
+
+    $javadir/java -Xmx8g -Xms1024m -jar $picardir/SortSam.jar \
+        INPUT=$withRG \
+        OUTPUT=$outfile \
+        TMP_DIR=$RealignOutput \
+        SORT_ORDER=coordinate \
+        CREATE_INDEX=true 
+ 
+    exitcode=$?
+    `echo date`
+    if [ $exitcode -ne 0 ]
+    then
+	MSG="picard SortSam command failed exitcode=$exitcode with $presorted"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	exit $exitcode;
+    fi
+    if [ ! -s $RealignOutput/$outfile ]
+    then
+	MSG="picard SortSam command produced an empty file"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	exit $exitcode;
+    fi
+
 
     $samdir/samtools index $outfile 
     exitcode=$?

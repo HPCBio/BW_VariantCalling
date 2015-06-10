@@ -223,7 +223,7 @@ else
         cd $outputdir
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-        $memprof $javadir/java -Xmx3096m -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+        $memprof $javadir/java -Xmx8g -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $inputdir/$infile \
 	    -T UnifiedGenotyper \
@@ -262,7 +262,7 @@ else
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
             echo "calculating phasebytransmission"
-            $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
 	    -T PhaseByTransmission \
@@ -364,7 +364,7 @@ else
 
             echo "combining VCF files"
 
-            $memprof $javadir/java -Xmx1024m -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    $combparms \
 	    -T CombineVariants \
