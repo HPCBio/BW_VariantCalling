@@ -325,8 +325,8 @@ else
     echo -e "now merging lanes that passed BOTH filters= $good2mergeLanes"
  
     cd $RealignOutput
-    presorted=$RealignOutput/presorted.$outfile
-    withRG=$RealignOutput/presorted_wrg.$outfile
+    presorted=${outfile}.presorted
+    withRG=${outfile}.presorted_wrg
 
 
     #remove this if after we are done with testing
@@ -397,7 +397,7 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit $exitcode;
     fi
-    if [ ! -s $RealignOutput/$outfile ]
+    if [ ! -s $outfile ]
     then
 	MSG="picard SortSam command produced an empty file"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""

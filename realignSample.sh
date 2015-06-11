@@ -109,7 +109,8 @@ else
 
         cd $realigndir
 
-        $samdir/samtools view -b $infile $chr > ${chr}.$infile
+        tmpfile=`basename $infile`
+        $samdir/samtools view -b $infile $chr > ${chr}.$tmpfile
 	exitcode=$?
 	echo `date`
 
@@ -121,15 +122,15 @@ else
 	    exit $exitcode;
 	fi
 	
-	if [ ! -s ${chr}.$infile ]
+	if [ ! -s ${chr}.$tmpfile ]
 	then
-	    MSG="${chr}.$infile bam file not created for chr $chr1. realignment for sample $sample stopped"
+	    MSG="${chr}.$tmpfile bam file not created for chr $chr1. realignment for sample $sample stopped"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
 	fi
-        $samdir/samtools index ${chr}.$infile
-        $samdir/samtools view -H $infile $chr > ${chr}.$infile.header
+        $samdir/samtools index ${chr}.$tmpfile
+        $samdir/samtools view -H $tmpfile $chr > ${chr}.$tmpfile.header
 
 	echo `date`
 
@@ -140,10 +141,10 @@ else
         echo "GATK is creating a target list...."
         $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
-	    -I $chr.$infile \
+	    -I $chr.$tmpfile \
 	    -T RealignerTargetCreator \
             -nt $thr \
-	    -o $chr.${sample}.list $realparms
+	    -o $chr.${tmpfile}.list $realparms
 
 	exitcode=$?
 	echo `date`
@@ -156,9 +157,9 @@ else
 	    exit $exitcode;
 	fi
 	
-	if [ ! -s ${chr}.${sample}.list ]
+	if [ ! -s ${chr}.${tmpfile}.list ]
 	then
-	    MSG="${chr}.$sample}.list realignertargetcreator file not created. realignment for sample $sample stopped"
+	    MSG="${chr}.${tmpfile}.list realignertargetcreator file not created. realignment for sample $sample stopped"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
@@ -168,11 +169,11 @@ else
         echo "executing GATK IndelRealigner command and generating $outputfile"
 	$memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
-	    -I $chr.$infile \
+	    -I $chr.$tmpfile \
 	    -T IndelRealigner \
             -L $chr \
-	    -o ${chr}.${sample}.realigned.bam \
-	    -targetIntervals $${chr}.${sample}.list $realignparams $real2parms
+	    -o ${chr}.${tmpfile}.realigned.bam \
+	    -targetIntervals ${chr}.${tmpfile}.list $realignparams $real2parms
 
 	exitcode=$?
 	echo `date`
@@ -183,15 +184,15 @@ else
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
 	fi
-	if [ ! -s ${chr}.${sample}.realigned.bam ]
+	if [ ! -s ${chr}.${tmpfile}.realigned.bam ]
 	then
-	    MSG="${chr}.${sample}.realigned.bam  indelrealigner file not created. realignment for sample $sample stopped"
+	    MSG="${chr}.${tmpfile}.realigned.bam  indelrealigner file not created. realignment for sample $sample stopped"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
             exit 1;
         fi	
 
-        $samdir/samtools calmd -Erb ${chr}.${sample}.realigned.bam $refdir/$ref > $outputfile
+        $samdir/samtools calmd -Erb ${chr}.${tmpfile}.realigned.bam $refdir/$ref > $outputfile
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]

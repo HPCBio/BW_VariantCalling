@@ -571,21 +571,28 @@ do
 	sample=$( echo "$SampleLine" | cut -f 1 )
         RealignLog=$outputdir/${sample}/realign/logs	
         RealignOutputDir=$outputdir/${sample}/realign
-        bamfile=$RealignOutputDir/$sampleOutPrefix.bam
-
+        bamfile=$outputdir/${sample}/realign/${sample}.mergedLanes.bam
+       
+        echo "#############################################################"
         echo "sample=$sample about to enter inner loop by chr..."
+        echo "#############################################################"
+
 	chromosomecounter=1
 	for chr in $indices
 	do
-            outfile=${chr}.$sampleOutPrefix.realigned.calmd.bam
-	    echo "generating real calls for sample=$sample chr=${chr} with bam=$infile ..."
+            outfile=$outputdir/${sample}/realign/${chr}.${sample}.realignedSample.calmd.bam
+            echo "############################################################################"
+	    echo "generating real calls for sample=$sample chr=${chr} with bam=$bamfile   ####"
+            echo "############################################################################"
 
-            echo -e "\n#######################   assemble the realign-only call sub-block for chr=${chr} ...    ################################\n"
             echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chr]} $sample $runfile $RealignLog/log.realignSample.$sample.$chr.in $RealignLog/log.realignSample.$sample.$chr.ou $email $RealignLog/realignSample.${sample}.${chr}" > $RealignLog/realignSample.${sample}.${chr}
            
            if [ $skipvcall == "NO" ]
            then
-               echo -e "##############assembly vcallgatk block#############"
+               echo "#############################################################################"
+	       echo "generating gatk variant calls for sample=$sample chr=${chr} with bam=$bamfile"
+               echo "#############################################################################"
+
                VcallOutputDir=$outputdir/$sample/variant
 	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr $region $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
 	   fi
