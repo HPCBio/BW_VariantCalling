@@ -17,7 +17,7 @@ else
 	scriptfile=$0
         outputdir=$1
         inputdir=$2
-        infile=$3
+        inputfile=$3
         chr=$4
         region=$5
         runfile=$6
@@ -27,7 +27,13 @@ else
         qsubfile=${10}
 	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-        #sanity check
+
+       echo "##############################################################################"
+       echo "##############################################################################"
+       echo "##########         sanity checks with input params                 ###########"
+       echo "##############################################################################"
+       echo "##############################################################################"
+       
         if [ ! -s $runfile ]
         then
 	    MSG="$runfile configuration file not found"
@@ -87,9 +93,9 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        if [ ! -s $inputdir/$infile ]
+        if [ ! -s $inputfile ]
         then
-	    MSG="$inputdir/$infile realigned bam file not found"
+	    MSG="$inputfile realigned bam file not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -161,8 +167,14 @@ else
 	    exit 1;
         fi
 
+       echo "##############################################################################"
+       echo "##############################################################################"
+       echo "##########      setting up filters and parameters for snvcaller    ###########"
+       echo "##############################################################################"
+       echo "##############################################################################"
 
-       ## setting up filters and parameters for snvcaller
+       infile=`basename $inputfile`
+       cd $outputdir
 
        if [ $snvcaller == "GATK" ]
        then
@@ -217,15 +229,19 @@ else
 	   exit 1;
        fi
 
-       ## now we issue at least one of these calls
-        
-        echo "calculating variant calling w unifiedgenotyper"
-        cd $outputdir
+
+       echo "##############################################################################"
+       echo "##############################################################################"
+       echo "##########      calculating variant calling w unifiedgenotyper     ###########"
+       echo "##############################################################################"
+       echo "##############################################################################"        
+       echo `date`
+	
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
         $memprof $javadir/java -Xmx8g -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
-	    -I $inputdir/$infile \
+	    -I $infile \
 	    -T UnifiedGenotyper \
             -nt 8 -nct 4 \
             -glm $utype \
@@ -238,6 +254,7 @@ else
 	    -o $outfile  $uparms
 
         exitcode=$?
+	echo `date`
         if [ $exitcode -ne 0 ]
         then
 	    MSG="unifiedgenotyper command failed  exitcode=$exitcode. vcall failed."
@@ -245,8 +262,6 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi
-
-	echo `date`
 
         if [ ! -s $outfile ]
         then
@@ -256,12 +271,17 @@ else
 	    exit 1;
         fi
 
-	echo `date`
 
-        echo "calculating phasebytransmission if requested"
+
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
-            echo "calculating phasebytransmission"
+	    echo "##############################################################################"
+	    echo "##############################################################################"
+	    echo "##########      calculating phasebytransmission                    ###########"
+	    echo "##############################################################################"
+	    echo "##############################################################################"        
+	    echo `date`
+
             $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
@@ -270,6 +290,7 @@ else
 	    --out $pedfile
 
             exitcode=$?
+	    echo `date`
             if [ $exitcode -ne 0 ]
             then
 		MSG="phasebytransmission command failed exitcode=$exitcode. vcall failed."
@@ -277,8 +298,6 @@ else
 		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
-
-	    echo `date`
 
             if [ ! -s $pedfile ]
             then
@@ -288,15 +307,22 @@ else
 		exit 1;
             fi
 
-	    echo `date`
+
         elif [ $snvcaller != "GATK" ]
         then
-	    echo "calculating variants by snvmix and then merging results"
+	    echo "##############################################################################"
+	    echo "##############################################################################"
+	    echo "########## calculating variants by snvmix and then merging results ###########"
+	    echo "##############################################################################"
+	    echo "##############################################################################"
+	    echo `date`
+
             pilefile=$outfile.pileup
             tmpfile=$infile.$chr.tmp.snv
             $memprof $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
 
             exitcode=$?
+	    echo `date`
             if [ $exitcode -ne 0 ]
             then
 		MSG="samtools mpileup command failed exitcode=$exitcode . vcall failed."
@@ -304,8 +330,6 @@ else
 		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
-
-	    echo `date`
 
 	    if [ ! -s $pilefile ]
             then
@@ -324,6 +348,7 @@ else
 	    fi
 
             exitcode=$?
+	    echo `date`
             if [ $exitcode -ne 0 ]
             then
 		MSG="snvmix2 command failed.  exitcode=$exitcode vcall failed."
@@ -344,6 +369,7 @@ else
 
 	    $memprof perl $scriptdir/snvmix_to_vcf.pl -i $tmpfile -o $snvfile
             exitcode=$?
+	    echo `date`
             if [ $exitcode -ne 0 ]
             then
 		MSG="snvmix2 command failed.  exitcode=$exitcode vcall failed."
@@ -371,6 +397,7 @@ else
 	    -o  $combfile
 
             exitcode=$?
+	    echo `date`
             if [ $exitcode -ne 0 ]
             then
 		MSG="combinevariants command failed.  exitcode=$exitcode vcall failed."
@@ -389,7 +416,11 @@ else
 		exit 1;
             fi
         else
-	    echo "Skipping PhaseByTransmission and SNVMix"
+	    echo "##############################################################################"
+	    echo "##############################################################################"
+	    echo "##########      Skipping PhaseByTransmission and SNVMix            ###########"
+	    echo "##############################################################################"
+	    echo "##############################################################################"
 	fi
 	
 

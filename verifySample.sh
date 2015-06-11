@@ -13,7 +13,7 @@ fi
     scriptfile=$0
     runfile=$1
     sample=$2
-    realignOutput=$3
+    RealignOutput=$3
     outfile=$4
     rootdir=$5
     elog=$6
@@ -30,9 +30,10 @@ fi
     samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
     picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+    samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
     verifydir=$( cat $runfile | grep -w VERIFYBAMDIR | cut -d '=' -f2 )    
     freemix_cutoff=$( cat $runfile | grep -w FREEMIX_CUTOFF | cut -d '=' -f2 )
-    refdir=$( cat $runfile | grep -w REFDIR | cut -d '=' -f2 )
+    refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
     sites=$refdir/omni.sites.vcf.gz
 
     if [ ! -d $rootdir ]
@@ -44,7 +45,7 @@ fi
     fi
     if [ ! -d $RealignOutput ]
     then
-       MSG="$rootdir output realign directory not found. verifySample failed"
+       MSG="$RealignOutput  realign directory not found. verifySample failed"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
@@ -58,35 +59,38 @@ fi
     fi
     goodSamples=$rootdir/VERIFIED_ok_SAMPLES.list
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
-    mergedfile=${sample}.realigned.calmd.bam
+    mergedfile=${sample}.realignedSample.calmd.bam
 
     if [ ! -s $goodSamples ]
     then
-        truncate -s 0 $goodsamples
+        truncate -s 0 $goodSamples
     fi
     if [ ! -s $badSamples ]
     then
-        truncate -s 0 $badsamples
+        truncate -s 0 $badSamples
     fi
-    if [ $freemix_cutoff -eq $freemix_cutoff 2>/dev/null ]
-    then
-        echo -e "ok val, it is numeric"
-    else
-	MSG="FREEMIX_CUTFF=$freemix_cutff invalid value. verifySample failed"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+    #if [ $freemix_cutoff -eq $freemix_cutoff 2>/dev/null ]
+    #then
+    #    echo -e "ok val, it is numeric"
+    #else
+	#MSG="FREEMIX_CUTFF=$freemix_cutff invalid value. verifySample failed"
+	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	exit $exitcode;
-    fi
+	#exit $exitcode;
+    #fi
 
+    echo -e "##########################################################################"
     echo -e "##########################################################################"
     echo -e "#############  merging all chr files for sample=$sample  #################"
     echo -e "##########################################################################"
+    echo -e "##########################################################################"
     `echo date`
+
     cd $RealignOutput
 
-    chrbamfiles=`find ./ -name "*${sample}.realigned.calmd.bam"`
-    bamsList=$( echo $chrbamfiles | sed "s/\.\// /g" | tr "\n" " " )
-    if [ `expr ${#bamsList}` -lt 1 ]
+    chrbamfiles=`find ./ -name "*${sample}.*.calmd.bam"`
+    bamsList=$( echo $chrbamfiles | sed "s/\.\// INPUT=/g" | tr "\n" " " )
+    if [ `expr ${#bamsList}` -lt 2 ]
     then
             # empty list nothing to merge
 	MSG="$RealignOutput no bam files to merge for sample: $sample. verifySample failed"
@@ -121,9 +125,25 @@ fi
 	    exit $exitcode;
     fi
 
+    echo -e "generating an index file for   $mergedfile because verifyBamID needs it"
+
+
+    $samdir/samtools index $mergedfile 
+    `echo date`
+    if [ ! -s $mergedfile.bai ]
+    then
+	MSG="samtools did not produced index file for $mergedfile  verifySample failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    exit $exitcode;
+    fi
+
+    echo -e "##########################################################################"
     echo -e "##########################################################################"
     echo -e "#############  running verifyBamID for sample=$sample    #################"
     echo -e "##########################################################################"
+    echo -e "##########################################################################"
+
     `echo date`
 
 
@@ -137,9 +157,9 @@ fi
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit $exitcode;
     fi
-    if [ ! -s $outfile ]
+    if [ ! -s $outfile* ]
     then
-	MSG="verifyBamID produced empty file  exitcode=$exitcode verifySample failed"
+	MSG="verifyBamID did not produced output files  exitcode=$exitcode verifySample failed"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit 1;
@@ -154,21 +174,23 @@ fi
 #####################################################################################################################
 #####################################################################################################################
 ######################  editing stopped here   ######################################################################
-    echo -e "produce a parsing statement here"
-    freemix=$( cat $outfile | grep "the right line" | cut -f 7 ) 
+    echo -e "parsing verifybam output file"
+    verifyfile=`find ./ -name "*.selfSM"`
+
+    freemix=$( cat $verifyfile | sed '2q;d' | cut -f 7 ) 
 
     echo -e "checking that we actually grabbed something that is a number"
-
-    if [ $freemix -eq $freemix 2>/dev/null ]
-    then
-        echo -e "ok val it is a number"
-    else
-	MSG="$outfile parsed incorrectly"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+    echo -e "using a weird trick to do the comparison in bash between noninteger variables"
+    #if [ $freemix -eq $freemix 2>/dev/null ]
+    #then
+    #    echo -e "ok val it is a number"
+    #else
+	#MSG="$outfile parsed incorrectly"
+	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	exit $exitcode;
-    fi
-    if [ $freemix  -lt  $freemix_cutoff ]
+	#exit $exitcode;
+    #fi
+    if [ $(echo "$freemix < $freemix_cutoff"|bc) -eq 0 ]
     then
 	echo -e "##########################################################################"
         echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"

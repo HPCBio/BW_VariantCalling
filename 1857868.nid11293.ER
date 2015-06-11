@@ -1,0 +1,101 @@
+++ date
++ echo Thu Jun 11 17:11:31 CDT 2015
++ scriptfile=/var//opt/cray/alps/spool/25128370/verifySample.sh
++ runfile=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
++ sample=NA12878
++ RealignOutput=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign
++ outfile=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/NA12878.realignedSample.calmd.bam.verified.bam
++ rootdir=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/
++ elog=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/log.verifySample.NA12878.in
++ olog=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/log.verifySample.NA12878.1.ou
++ email=grendon@illinois.edu
++ qsubfile=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/qsub.verifySample.NA12878
++ LOGS='jobid:1857868.nid11293\nqsubfile=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/qsub.verifySample.NA12878\nerrorlog=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/log.verifySample.NA12878.in\noutputlog=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign/logs/log.verifySample.NA12878.1.ou'
++ echo -e '##########################################################################'
++ echo -e '################  parse runfile and sanity check #########################'
++ echo -e '##########################################################################'
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w MEMPROFCOMMAND
+++ cut -d = -f2
++ memprof=/projects/sciteam/jq9/builds/memprof/memprof.sh
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w SAMDIR
+++ cut -d = -f2
++ samdir=/projects/sciteam/jq9/builds/samtools-0.1.19
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w JAVADIR
+++ cut -d = -f2
++ javadir=/projects/sciteam/jq9/builds/jdk8/jdk1.8.0_25/bin
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w PICARDIR
+++ cut -d = -f2
++ picardir=/projects/sciteam/jq9/builds/picard-tools-1.77
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w SAMDIR
+++ cut -d = -f2
++ samdir=/projects/sciteam/jq9/builds/samtools-0.1.19
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w VERIFYBAMDIR
+++ cut -d = -f2
++ verifydir=/projects/sciteam/jti/builds/verifyBamID_1.1.2/verifyBamID/bin
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w FREEMIX_CUTOFF
+++ cut -d = -f2
++ freemix_cutoff=0.05
+++ cat /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/runfile.txt
+++ grep -w REFGENOMEDIR
+++ cut -d = -f2
++ refdir=/projects/sciteam/jti/gatk_bundle
++ sites=/projects/sciteam/jti/gatk_bundle/omni.sites.vcf.gz
++ '[' '!' -d /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/ ']'
++ '[' '!' -d /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign ']'
++ '[' '!' -s /projects/sciteam/jti/gatk_bundle/omni.sites.vcf.gz ']'
++ goodSamples=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data//VERIFIED_ok_SAMPLES.list
++ badSamples=/scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data//VERIFIED_notok_SAMPLES.list
++ mergedfile=NA12878.realignedSample.calmd.bam
++ '[' '!' -s /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data//VERIFIED_ok_SAMPLES.list ']'
++ truncate -s 0 /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data//VERIFIED_ok_SAMPLES.list
++ '[' '!' -s /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data//VERIFIED_notok_SAMPLES.list ']'
++ echo -e '##########################################################################'
++ echo -e '##########################################################################'
++ echo -e '#############  merging all chr files for sample=NA12878  #################'
++ echo -e '##########################################################################'
++ echo -e '##########################################################################'
+++ echo date
++ date
++ cd /scratch/sciteam/rendong/test23_AlignRealignVcall_Multiplexed_GIAB_test4data/NA12878/realign
+++ find ./ -name '*NA12878.*.calmd.bam'
++ chrbamfiles='./2.NA12878.realignedSample.calmd.bam
+./4.NA12878.realignedSample.calmd.bam
+./15.NA12878.realignedSample.calmd.bam
+./3.NA12878.realignedSample.calmd.bam
+./19.NA12878.realignedSample.calmd.bam
+./11.NA12878.realignedSample.calmd.bam
+./16.NA12878.realignedSample.calmd.bam
+./12.NA12878.realignedSample.calmd.bam
+./8.NA12878.realignedSample.calmd.bam
+./1.NA12878.realignedSample.calmd.bam
+./14.NA12878.realignedSample.calmd.bam
+./20.NA12878.realignedSample.calmd.bam
+./6.NA12878.realignedSample.calmd.bam
+./18.NA12878.realignedSample.calmd.bam
+./17.NA12878.realignedSample.calmd.bam
+./7.NA12878.realignedSample.calmd.bam
+./13.NA12878.realignedSample.calmd.bam
+./9.NA12878.realignedSample.calmd.bam
+./10.NA12878.realignedSample.calmd.bam
+./5.NA12878.realignedSample.calmd.bam
+./NA12878.realignedSample.calmd.bam'
+++ echo ./2.NA12878.realignedSample.calmd.bam ./4.NA12878.realignedSample.calmd.bam ./15.NA12878.realignedSample.calmd.bam ./3.NA12878.realignedSample.calmd.bam ./19.NA12878.realignedSample.calmd.bam ./11.NA12878.realignedSample.calmd.bam ./16.NA12878.realignedSample.calmd.bam ./12.NA12878.realignedSample.calmd.bam ./8.NA12878.realignedSample.calmd.bam ./1.NA12878.realignedSample.calmd.bam ./14.NA12878.realignedSample.calmd.bam ./20.NA12878.realignedSample.calmd.bam ./6.NA12878.realignedSample.calmd.bam ./18.NA12878.realignedSample.calmd.bam ./17.NA12878.realignedSample.calmd.bam ./7.NA12878.realignedSample.calmd.bam ./13.NA12878.realignedSample.calmd.bam ./9.NA12878.realignedSample.calmd.bam ./10.NA12878.realignedSample.calmd.bam ./5.NA12878.realignedSample.calmd.bam ./NA12878.realignedSample.calmd.bam
+++ sed 's/\.\// INPUT=/g'
+++ tr '\n' ' '
++ bamsList=' INPUT=2.NA12878.realignedSample.calmd.bam  INPUT=4.NA12878.realignedSample.calmd.bam  INPUT=15.NA12878.realignedSample.calmd.bam  INPUT=3.NA12878.realignedSample.calmd.bam  INPUT=19.NA12878.realignedSample.calmd.bam  INPUT=11.NA12878.realignedSample.calmd.bam  INPUT=16.NA12878.realignedSample.calmd.bam  INPUT=12.NA12878.realignedSample.calmd.bam  INPUT=8.NA12878.realignedSample.calmd.bam  INPUT=1.NA12878.realignedSample.calmd.bam  INPUT=14.NA12878.realignedSample.calmd.bam  INPUT=20.NA12878.realignedSample.calmd.bam  INPUT=6.NA12878.realignedSample.calmd.bam  INPUT=18.NA12878.realignedSample.calmd.bam  INPUT=17.NA12878.realignedSample.calmd.bam  INPUT=7.NA12878.realignedSample.calmd.bam  INPUT=13.NA12878.realignedSample.calmd.bam  INPUT=9.NA12878.realignedSample.calmd.bam  INPUT=10.NA12878.realignedSample.calmd.bam  INPUT=5.NA12878.realignedSample.calmd.bam  INPUT=NA12878.realignedSample.calmd.bam '
+++ expr 912
++ '[' 912 -lt 2 ']'
+++ echo date
++ date
++ '[' '!' -s NA12878.realignedSample.calmd.bam ']'
++ echo -e 'making sure  NA12878.realignedSample.calmd.bam was created'
++ '[' '!' -s NA12878.realignedSample.calmd.bam ']'
++ echo -e 'generating an index file for   NA12878.realignedSample.calmd.bam because verifyBamID needs it'
++ /projects/sciteam/jq9/builds/samtools-0.1.19/samtools index NA12878.realignedSample.calmd.bam

@@ -1,0 +1,25 @@
+----------------------------------------
+Begin Torque Prologue on nid25262
+at Thu Jun 11 17:11:29 CDT 2015
+Job Id:			1857868.nid11293
+Username:		rendong
+Group:			ILL_jou
+Job name:		verifySample_NA12878
+Requested resources:	neednodes=1:ppn=32,nodes=1:ppn=32,walltime=05:00:00
+Queue:			low
+Account:		jti
+End Torque Prologue:  0.044 elapsed
+----------------------------------------
+Thu Jun 11 17:11:31 CDT 2015
+##########################################################################
+################  parse runfile and sanity check #########################
+##########################################################################
+##########################################################################
+##########################################################################
+#############  merging all chr files for sample=NA12878  #################
+##########################################################################
+##########################################################################
+Thu Jun 11 17:11:31 CDT 2015
+Thu Jun 11 17:11:31 CDT 2015
+making sure  NA12878.realignedSample.calmd.bam was created
+generating an index file for   NA12878.realignedSample.calmd.bam because verifyBamID needs it
