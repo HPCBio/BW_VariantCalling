@@ -139,7 +139,7 @@ else
         echo "#################################################################################"
 	
         echo "GATK is creating a target list...."
-        $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
+        $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $chr.$tmpfile \
 	    -T RealignerTargetCreator \
@@ -167,7 +167,7 @@ else
 	echo `date`
 
         echo "executing GATK IndelRealigner command and generating $outputfile"
-	$memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
+	$javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $chr.$tmpfile \
 	    -T IndelRealigner \
@@ -211,9 +211,9 @@ else
         fi
 
         echo "generating stats for $outputfile before exiting"
-        $memprof $samdir/samtools index $outputfile
-        $memprof $samdir/samtools view -H  $outputfile > ${outputfile}.header
-        $memprof $samdir/samtools flagstat $outputfile > ${outputfile}.flagstat
+        $samdir/samtools index $outputfile
+        $samdir/samtools view -H  $outputfile > ${outputfile}.header
+        $samdir/samtools flagstat $outputfile > ${outputfile}.flagstat
 
 
 	exitcode=$?

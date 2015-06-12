@@ -190,7 +190,7 @@ fi
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	#exit $exitcode;
     #fi
-    if [ $(echo "$freemix < $freemix_cutoff"|bc) -eq 0 ]
+    if [ $(echo "$freemix < $freemix_cutoff"|bc) -eq 1 ]
     then
 	echo -e "##########################################################################"
         echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"

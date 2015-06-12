@@ -239,9 +239,9 @@ else
 	
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-        $memprof $javadir/java -Xmx8g -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+        $javadir/java -Xmx8g -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
-	    -I $infile \
+	    -I $inputfile \
 	    -T UnifiedGenotyper \
             -nt 8 -nct 4 \
             -glm $utype \
@@ -250,7 +250,7 @@ else
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
-            -dbsnp $region \
+            --dbsnp $region \
 	    -o $outfile  $uparms
 
         exitcode=$?
@@ -282,7 +282,7 @@ else
 	    echo "##############################################################################"        
 	    echo `date`
 
-            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+            $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
 	    -T PhaseByTransmission \
