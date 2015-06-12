@@ -1,0 +1,12 @@
+----------------------------------------
+Begin Torque Prologue on nid25262
+at Fri Jun 12 16:39:38 CDT 2015
+Job Id:			1862876.nid11293
+Username:		rendong
+Group:			ILL_jou
+Job name:		1859788_vcallgatk_NA12878
+Requested resources:	neednodes=21:ppn=32,nodes=21:ppn=32,walltime=05:00:00
+Queue:			normal
+Account:		jti
+End Torque Prologue:  0.028 elapsed
+----------------------------------------

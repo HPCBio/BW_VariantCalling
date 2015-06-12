@@ -250,7 +250,7 @@ else
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
-            --dbsnp $region \
+            --dbsnp $refdir/$dbsnp \
 	    -o $outfile  $uparms
 
         exitcode=$?
