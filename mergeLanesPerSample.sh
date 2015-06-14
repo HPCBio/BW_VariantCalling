@@ -311,8 +311,19 @@ else
         `echo date`
     done
     echo `date`
+
+    echo -e "creating text files one with the list of good and one with the list of discarded"
+    echo -e "bams per lane used for merging and crating a single bam by sample"
+    
+    truncate -s o $RealignOutput/goodLanes4MergingBySample.${sample}.list
+    truncate -s o $RealignOutput/badLanes4MergingBySample.$sample}.list
+
+    echo $good2mergeLanes > $RealignOutput/goodLanes4MergingBySample.${sample}.list
+    echo $bad2mergeLanes  > $RealignOutput/badLanes4MergingBySample.${sample}.list
+    `echo date`
+
     echo -e "now we need to make sure that there are goodlanes to work with"
-    if [ `expr ${#good2mergeLanes}` -lt 1 ]
+    if [ `expr ${#good2mergeLanes}` -lt 2 ]
     then
         echo -e "no good lanes to merge"
 	MSG="no good lanes to merge"
@@ -417,14 +428,5 @@ else
 	exit $exitcode;
     fi
 
-    echo -e "creating text files one with the list of good and one with the list of discarded"
-    echo -e "bams per lane used for merging and crating a single bam by sample"
-    
-    truncate -s o $RealignOutput/goodLanes4MergingBySample.list
-    truncate -s o $RealignOutput/badLanes4MergingBySample.list
-
-    echo $good2mergeLanes > $RealignOutput/goodLanes4MergingBySample.list
-    echo $bad2mergeLanes  > $RealignOutput/badLanes4MergingBySample.list
-    `echo date`
     # exiting now
 fi

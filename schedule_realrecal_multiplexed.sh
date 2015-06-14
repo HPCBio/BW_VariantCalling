@@ -338,30 +338,22 @@ fi
    echo `date`
    i=1
    echo -e "region variable, to be used by vcallgatk-unifiedGenotyper"
-   region=$refdir/$dbSNP
+   #region=$refdir/$dbSNP
 
    echo -e "checking that there are indels to use for the realign-recalibration analysis "
    echo -e "realparms will have indels for  gatk-IndelRealigner"
    echo -e "recalparms will have indels for  gatk-Recalibration"
    for chr in $indices
    do
-      #echo "this chunk with region setup does not apply to H3A dataset"
-      #if [ -d $targetkit ]
-      #then
-      #   if [ `cat $targetkit/${chr}.bed | wc -l` -gt 0 ]
-      #   then
-      #      region[$i]="-L:$targetkit/${chr}.bed"
-      #   else
-      #      region[$i]="-L:$chr"
-      #   fi
-      #else
-      #   region[$i]="-L:$chr"
-      #fi
-      cd $refdir/$indeldir
-      indels=`find $PWD -type f -name "${chr}.*.vcf"`
-      realparms[$i]=$( echo $indels | sed "s/\/projects/:known:\/projects/g" | sed "s/ //g" |tr "\n" ":" )
-      recalparms[$i]=$( echo $indels | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
-      (( i++ ))
+       cd $refdir/vcf_per_chr
+       snps=`find $PWD -type f -name "${chr}.*.vcf.gz"`
+       region[$i]=$( echo $snps | tr "\n" " " | sed "s/ //g" )
+
+       cd $refdir/$indeldir
+       indels=`find $PWD -type f -name "${chr}.*.vcf"`
+       realparms[$i]=$( echo $indels | sed "s/\/projects/:known:\/projects/g" | sed "s/ //g" |tr "\n" ":" )
+       recalparms[$i]=$( echo $indels | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
+       (( i++ ))
    done
    echo `date`
 
@@ -506,45 +498,6 @@ do
 done <  $outputdir/SAMPLENAMES_multiplexed.list
 
 
-
-
-#   echo "####################################################################################################"
-#   echo "####################################################################################################"
-#   echo "###################################   nested loop2      starts    here    ##########################"
-#   echo "########################         MERGE LANES INTO SAMPLES AND FILTER      ##########################"
-#   echo "####################################################################################################"
-#   echo "####################################################################################################"
-
-
-#groupcounter=1 
-#while read SampleLine
-#do
-#    if [ `expr ${#SampleLine}` -gt 1 ]
-#    then
-#	echo "####################################################################################################"
-#	echo "processing next sample, non-empty line"
-#	echo "####################################################################################################"
-#	echo `date`
-
-#	sample=$( echo "$SampleLine" | cut -f 1 )
-#	lanes=$( echo "$SampleLine" | cut -f 2 )
-#        lanes=$( echo $lanes | tr " " ":" )
-
-#	echo "####################################################################################################"
-#	echo "Merging lanes per sample: sample=$sample lanes=$lanes"
-#	echo "####################################################################################################"
-#        RealignLog=$outputdir/${sample}/realign/logs
-#        RealignOutputDir=$outputdir/${sample}/realign
-#        sampleOutPrefix=$outputdir/${sample}/realign/${sample}.mergedLanes
-#        sLB="multiplexed"
-
-#        echo "$scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.bam $outputdir $RealignLog/log.mergeLanes.$sample.in $RealignLog/log.mergeLanes.$sample.ou $email $RealignLog/mergeLanes.${sample}" > $RealignLog/mergeLanes.${sample}
-#    fi   # skipping empty lines
-
-    # end loop over sampleLanes
-#    (( groupcounter++ ))
-#done <  $outputdir/SAMPLEGROUPS.list
-
    echo "####################################################################################################"
    echo "####################################################################################################"
    echo "###################################   NESTED   LOOP2  starts   here    #############################"
@@ -589,7 +542,7 @@ do
                echo "#############################################################################################"
 
                VcallOutputDir=$outputdir/$sample/variant
-	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr $region $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr ${region[$chr]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
 	   fi
 
          # end loop over chromosomes
@@ -682,10 +635,10 @@ echo "##########################################################################
 
 	echo "####################################################################################################"
         echo "####################################################################################################"
-        echo "  mergeLanesPerSample realignSample vcallgatk(sample) "
         echo "  next block collects jobs in *AnisimovJobList and generates the qsub script "
+        echo "  for mergeLanesPerSample realignSample verifySample vcallgatk "
         echo "####################################################################################################"
-
+	echo "####################################################################################################"
 
 
       RealignOutputLogs=$outputdir/logs/realign
@@ -696,7 +649,7 @@ echo "##########################################################################
 	  if [ `expr ${#SampleLine}` -gt 1 ]
 	  then
               echo "####################################################################################################"
-	      echo "processing next sample, non-empty line"
+	      echo "                           processing next sample, non-empty line"
               echo "####################################################################################################"
 
 	      sample=$( echo "$SampleLine" | cut -f 1 )
@@ -705,11 +658,12 @@ echo "##########################################################################
 
               RealignLog=$outputdir/${sample}/realign/logs
               RealignOutputDir=$outputdir/${sample}/realign
-              sampleOutPrefix=$outputdir/${sample}/realign/${sample}.mergedLanes
+              sampleOutPrefix=$outputdir/${sample}/realign/${sample}
               sLB="multiplexed"
 
               truncate -s 0 $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist
               truncate -s 0 $RealignOutputLogs/realignSample.${sample}.AnisimovJoblist
+              truncate -s 0 $RealignOutputLogs/verifySample.${sample}.AnisimovJoblist
      
 	      if [ $skipvcall == "NO" ]
 	      then
@@ -717,14 +671,12 @@ echo "##########################################################################
 		  truncate -s 0 $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
               fi
 
-              echo -e "#####################################################################
-              ############### mergelanes per sample   ##########################################"
-              echo -e "############### constructing the qsub for mergeLanes ####################"
+
+              echo "####################################################################################################"
+              echo "###############     constructing the qsub for mergeLanes                        ####################"
+              echo "####################################################################################################"
 
 
-	      mergeLanes_log=$outputdir/$sample/realign/logs/log.mergelLanes.$sample.in
-	      awk -v awkvar_mergeLanes_log=$mergeLanes_log '{print "nohup "$0" > "awkvar_mergeLanes_log}' $outputdir/$sample/realign/logs/mergeLanes.${sample} > $outputdir/$sample/realign/logs/jobfile.mergeLanes.${sample}
-	      echo "$outputdir/$sample/realign/logs/ jobfile.mergeLanes.${sample}" >> $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist
               qsub_mergeLanes_anisimov=$RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher
               cat $outputdir/qsubGenericHeader > $qsub_mergeLanes_anisimov
 
@@ -733,15 +685,30 @@ echo "##########################################################################
 	      echo "#PBS -o $RealignLog/log.mergeLanes.${sample}.ou" >> $qsub_mergeLanes_anisimov
 	      echo "#PBS -e $RealignLog/log.mergeLanes.${sample}.in" >> $qsub_mergeLanes_anisimov
 	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_mergeLanes_anisimov
-              echo "aprun -n 1 -N 1 -d $thr $scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.bam $outputdir $RealignLog/log.mergeLanes.$sample.in $RealignLog/log.mergeLanes.$sample.ou $email $qsub_mergeLanes_anisimov" >> $qsub_mergeLanes_anisimov
+              echo "aprun -n 1 -N 1 -d $thr $scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.mergedLanes.bam $outputdir $RealignLog/log.mergeLanes.$sample.in $RealignLog/log.mergeLanes.$sample.ou $email $qsub_mergeLanes_anisimov" >> $qsub_mergeLanes_anisimov
 
 
-	      #echo "aprun -n 1 -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/mergeLanes.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/mergeLanes.${sample}.AnisimovLauncher.log" >> $qsub_mergeLanes_anisimov
+              echo "####################################################################################################"
+              echo "###############     constructing the qsub for verifysample                      ####################"
+              echo "####################################################################################################"
 
-              echo -e "###########################################################################
-              ############### collecting jobs in AnsimovJobLists for  ############################
-              ############### realign per sample/chr #############################################
-              ############### vcall   per sample/chr #############################################"
+              qsub_verifySample_anisimov=$RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher
+              cat $outputdir/qsubGenericHeader > $qsub_verifySample_anisimov
+
+	      echo "#PBS -N ${pipeid}_verifySample_${sample}" >> $qsub_verifySample_anisimov
+	      echo "#PBS -l walltime=$pbscpu" >> $qsub_verifySample_anisimov
+	      echo "#PBS -o $RealignLog/log.verifySample.${sample}.ou" >> $qsub_verifySample_anisimov
+	      echo "#PBS -e $RealignLog/log.verifySample.${sample}.in" >> $qsub_verifySample_anisimov
+	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_verifySample_anisimov
+              echo "aprun -n 1 -N 1 -d $thr $scriptdir/verifySample.sh $runfile $sample $outputdir/${sample}/realign  ${sample}.verified $outputdir $RealignLog/log.verifySample.$sample.in $RealignLog/log.verifySample.$sample.ou $email $qsub_verifySample_anisimov" >> $qsub_verifySample_anisimov
+
+
+
+              echo "####################################################################################################"
+              echo "###############         collecting jobs in AnsimovJobLists for          ############################"
+              echo "###############            realignSample and vcallgatk                  ############################"
+              echo "####################################################################################################"
+
 
 	      for chr in $indices
 	      do
@@ -757,9 +724,10 @@ echo "##########################################################################
                   fi
 	      done
 
-              echo -e "################################################################## 
-	      #############   constructing the qsub job  for realignSample
-              ###########################################################################\n"  
+              echo "####################################################################################################"
+	      echo "                                 constructing the qsub job  for realignSample"
+              echo "####################################################################################################"
+
 
 	      qsub_realignSample_anisimov=$RealignOutputLogs/qsub.realignSample.${sample}.AnisimovLauncher
               cat $outputdir/qsubGenericHeader > $qsub_realignSample_anisimov
@@ -774,11 +742,9 @@ echo "##########################################################################
 
 	      if [ $skipvcall == "NO" ]
 	      then	      
-
-		  echo -e "################################################################## 
-	      #############   constructing the qsub job  for vcallgatk(Sample)
-              ###########################################################################\n"  
-
+		  echo "####################################################################################################"
+	          echo "                         constructing the qsub job  for vcallgatk(Sample)"
+		  echo "####################################################################################################"
                   qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher
 		  cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
 
@@ -793,11 +759,11 @@ echo "##########################################################################
       done <  $outputdir/SAMPLEGROUPS.list
 
 
-
-echo -e "#############################################################################################
-#############################################################################################
-####            arranging execution order with job dependencies #############################
-#############################################################################################"
+      echo "####################################################################################################"
+      echo "####################################################################################################"
+      echo "####              arranging execution order with job dependencies            #######################"
+      echo "####################################################################################################"      
+      echo "####################################################################################################"
 
       RealignOutputLogs=$outputdir/logs/realign
       VcallOutputLogs=$outputdir/logs/variant
@@ -805,6 +771,7 @@ echo -e "#######################################################################
       truncate -s 0 $RealignOutputLogs/REALXSAMPLEXCHRpbs
       truncate -s 0 $RealignOutputLogs/REALRECALXLANEXCHRpbs
       truncate -s 0 $RealignOutputLogs/MERGEXSAMPLEpbs
+      truncate -s 0 $RealignOutputLogs/VERIFYXSAMPLEpbs
 
       if [ $skipvcall == "NO" ]
       then
@@ -841,27 +808,35 @@ echo -e "#######################################################################
 
               RealignSample_job=`qsub $RealignOutputLogs/qsub.realignSample.${sample}.AnisimovLauncher`
               `qhold -h u $RealignSample_job`
-              sed -i "2i #PBS -W depend=afterok:$RealignSample_job" $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher             
+              sed -i "2i #PBS -W depend=afterok:$RealignSample_job" $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher    
+
+              VerifySample_job=`qsub $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher`
+              `qhold -h u $verifySample_job`
+
+              sed -i "2i #PBS -W depend=afterok:$VerifySample_job" $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher             
               VcallSample_job=`qsub $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher`  
               `qhold -h u $VcallSample_job`
+
               echo $mergeSample_job   >> $RealignOutputLogs/MERGEXSAMPLEpbs
-              echo $RealignSample_job >> $RealignOutputLogs/REALXSAMPLEXCHRpbs  
+              echo $RealignSample_job >> $RealignOutputLogs/REALXSAMPLEXCHRpbs
+              echo $VerifySample_job  >> $RealignOutputLogs/VERIFYXSAMPLEpbs
               echo $VcallSample_job   >> $VcallOutputLogs/VCALLGATKpbs               
           fi
       done <  $outputdir/SAMPLEGROUPS.list
    ;;
    esac
 
-echo -e "#############################################################################################
-#############################################################################################
-###########################  wrap up and produce summary table   ############################
-#############################################################################################"
+      echo "####################################################################################################"
+      echo "####################################################################################################"
+      echo "###########################    wrap up and produce summary table        ############################"
+      echo "####################################################################################################"
+      echo "####################################################################################################"
 
    if [ $skipvcall == "NO" ]
    then
       summarydependids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/REALXSAMPLEXCHRpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""
@@ -932,13 +907,15 @@ echo -e "#######################################################################
    fi
 
 
+      echo "####################################################################################################"
+      echo "####################################################################################################"
+      echo "###########################    release  all   job                       ############################"
+      echo "####################################################################################################"
+      echo "####################################################################################################"
 
-echo -e "##########################################################################################
-#############################################################################################
-############################## release all jobs now #########################################
-#############################################################################################"
 
      realsampleids=$( cat $RealignOutputLogs/REALXSAMPLEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
+     verifysampleids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
      realrecalids=$( cat $RealignOutputLogs/REALRECALXLANEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
      mergeids=$( cat $RealignOutputLogs/MERGEXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
      if [ $skipvcall == "NO" ]
@@ -946,11 +923,12 @@ echo -e "#######################################################################
          vcallids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" " " )
      fi
 
-    `qrls -h u $realrecalids`   
-    `qrls -h u $mergeids`
-    `qrls -h u $realsampleids`
+     `qrls -h u $realsampleids`    
+     `qrls -h u $verifysampleids`
+     `qrls -h u $realrecalids`   
+     `qrls -h u $mergeids`
      if [ $skipvcall == "NO" ]
      then
-        `qrls -h u $vcallids`
+         `qrls -h u $vcallids`
      fi
 

@@ -14,6 +14,8 @@ then
 else					
 	set -x
 	echo `date`
+        ulimit -s unlimited
+
 	scriptfile=$0
         outputdir=$1
         inputdir=$2
@@ -63,6 +65,7 @@ else
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
         dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+
 
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
@@ -239,7 +242,7 @@ else
 	
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-        $javadir/java -Xmx8g -Xms3096m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+        $javadir/java -Xmx16g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I $inputfile \
 	    -T UnifiedGenotyper \
@@ -250,7 +253,7 @@ else
 	    -A AlleleBalance \
 	    -dcov 250 \
 	    -rf BadCigar \
-            --dbsnp $refdir/$dbsnp \
+            --dbsnp $region \
 	    -o $outfile  $uparms
 
         exitcode=$?
@@ -282,7 +285,7 @@ else
 	    echo "##############################################################################"        
 	    echo `date`
 
-            $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+            $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -v $outfile \
 	    -T PhaseByTransmission \
@@ -390,7 +393,7 @@ else
 
             echo "combining VCF files"
 
-            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=/dev/shm -jar $gatk/GenomeAnalysisTK.jar \
+            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    $combparms \
 	    -T CombineVariants \
