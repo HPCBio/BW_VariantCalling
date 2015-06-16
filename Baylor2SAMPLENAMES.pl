@@ -53,6 +53,7 @@ while ($line = <IN>) {
 	    } else {
 		# parsing filename of read2
 		my $read2=$det[$#det];
+                $read2 =~ s/\s*//g;
 		if ( $read2 !~ /(.*)_S0_(.*)_2.sequence.txt.gz/ ) {
 		    print "failed to parse line $counter\tread2=$read2\n";
 		    exit 1;
