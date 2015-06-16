@@ -91,8 +91,8 @@ else
     echo "####################################################################################################"
     echo "#####################################################################################################"
    
-    truncate -s o $RealignOutput/goodLanes4MergingBySample.${sample}.list
-    truncate -s o $RealignOutput/badLanes4MergingBySample.$sample}.list
+    truncate -s 0 $rootdir/QC_Results.${sample}.txt
+
     good2mergeLanes=""
     bad2mergeLanes=""
 
@@ -336,22 +336,18 @@ else
                   echo -e "adding $lane to list of accepted bams to merge per sample"
 	          good2mergeLanes="INPUT=$mergedLane "$good2mergeLanes
                   detail="$lane\tPASSED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
-
-
-	          echo "$detail" >> $RealignOutput/goodLanes4MergingBySample.${sample}.list
+	          echo -e "$detail" >> $rootdir/QC_Results.${sample}.txt
                else
                   echo -e "$lane DID NOT pass filter percent_mapped value $perc_mapped, minimum cutoff is $map_cutoff"
                   echo -e "adding $lane to list of rejected bams to merge per sample"
                   detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
-       	          bad2mergeLanes="INPUT=$mergedLane "$bad2mergeLanes
-	          echo "$detail"  >> $RealignOutput/badLanes4MergingBySample.${sample}.list
+	          echo -e "$detail"  >> $rootdir/QC_Results.${sample}.txt
                fi
            else
                echo -e "$lane DID NOT pass filter percent_duplicates value $perc_dup, minimum cutoff is $dup_cutoff"
                echo -e "adding $lane to list of rejected bams to merge per sample"
-	       bad2mergeLanes="INPUT=$mergedLane "$bad2mergeLanes
                detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
-	       echo "$detail"  >> $RealignOutput/badLanes4MergingBySample.${sample}.list
+	       echo -e "$detail"  >> $rootdir/QC_Results.${sample}.txt
            fi
         fi # skip empty lines
         # lane processed, next one please
@@ -386,6 +382,7 @@ else
     echo "#####################################################################################################"
  
     cd $RealignOutput
+
     presorted=${outfile}.presorted
     withRG=${outfile}.presorted_wrg
 

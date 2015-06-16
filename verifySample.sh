@@ -60,7 +60,7 @@ fi
     goodSamples=$rootdir/VERIFIED_ok_SAMPLES.list
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
     mergedfile=${sample}.realignedSample.calmd.bam
-
+    qc_result=$rootdir/QC_Results.${sample}.txt
     if [ ! -s $goodSamples ]
     then
         truncate -s 0 $goodSamples
@@ -68,6 +68,10 @@ fi
     if [ ! -s $badSamples ]
     then
         truncate -s 0 $badSamples
+    fi
+    if [ ! -s $rootdir/QC_Results.${sample}.txt ]
+    then
+        truncate -s 0 $rootdir/QC_Results.${sample}.txt
     fi
     #if [ $freemix_cutoff -eq $freemix_cutoff 2>/dev/null ]
     #then
@@ -186,16 +190,18 @@ fi
         echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"
 	echo -e "##########################################################################"
         filterflag="PASSED"	
-        detail="$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n"
-        echo "$detail" >> $goodSamples
+        detail=$( echo -e "$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n" )
+        echo -e "$detail" >> $goodSamples
 
     else
 	echo -e "############################################################################"
         echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
 	echo -e "############################################################################"
         filterflag="FAILED"
-        detail="$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n"
-        echo "$detail" >> $badSamples    
+        detail=$( echo -e "$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n" )
+        echo -e "$detail" >> $badSamples
+        sed -i "1i $detail"  $qc_result
+
     fi
     echo `date`
 
