@@ -167,59 +167,52 @@ fi
 
     echo -e "##########################################################################"
     echo -e "#############  filtering for sample=$sample              #################"
+    echo -e "               parsing verifybam output file"
     echo -e "##########################################################################"
-    `echo date`
-
-#####################################################################################################################
-#####################################################################################################################
-#####################################################################################################################
-######################  editing stopped here   ######################################################################
-    echo -e "parsing verifybam output file"
+   
     verifyfile=`find ./ -name "*.selfSM"`
 
     freemix=$( cat $verifyfile | sed '2q;d' | cut -f 7 ) 
 
+    echo -e "##########################################################################"
     echo -e "checking that we actually grabbed something that is a number"
     echo -e "using a weird trick to do the comparison in bash between noninteger variables"
-    #if [ $freemix -eq $freemix 2>/dev/null ]
-    #then
-    #    echo -e "ok val it is a number"
-    #else
-	#MSG="$outfile parsed incorrectly"
-	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	#exit $exitcode;
-    #fi
+    echo -e "##########################################################################"
+    
+ 
     if [ $(echo "$freemix < $freemix_cutoff"|bc) -eq 1 ]
     then
 	echo -e "##########################################################################"
         echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"
 	echo -e "##########################################################################"
-        echo $sample >> $goodSamples
-        filterflag="PASSED"
+        filterflag="PASSED"	
+        detail="$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n"
+        echo "$detail" >> $goodSamples
+
     else
 	echo -e "############################################################################"
         echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
 	echo -e "############################################################################"
-        echo $sample >> $badSamples
         filterflag="FAILED"
+        detail="$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff\n"
+        echo "$detail" >> $badSamples    
     fi
     echo `date`
 
     if [ $filterflag == "FAILED" ]
     then
 	echo -e "##########################################################################"
-	echo -e "#############  ungracefull exit                          #################"
-	echo -e "#############  needs to be fixed later                   #################"
+	echo -e "#############  $sample FAILED the verifyBamId filter     #################"
+	echo -e "#############  analysis is STOPPED now                  #################"
 	echo -e "##########################################################################"
 	MSG="$sample DID NOT PASS the VerifyBamID filter. Stopping analysis now"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	exit 1;
     else
 	echo -e "##########################################################################"
 	echo -e "#############  $sample PASSED the verifyBamId filter     #################"
-	echo -e "#############  analysis continues with vcallgatk        #################"
+	echo -e "#############  analysis continues with vcallgatk.sh      #################"
 	echo -e "##########################################################################"
         exit 0;
     fi

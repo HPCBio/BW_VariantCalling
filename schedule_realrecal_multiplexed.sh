@@ -753,6 +753,8 @@ echo "##########################################################################
 		  echo "#PBS -o $VcallOutputLogs/log.vcallgatk.${sample}.ou" >> $qsub_vcallgatk_anisimov
 		  echo "#PBS -e $VcallOutputLogs/log.vcallgatk.${sample}.in" >> $qsub_vcallgatk_anisimov
 		  echo "#PBS -l nodes=$chromosomecounter:ppn=$thr" >> $qsub_vcallgatk_anisimov
+                  echo "ulimit -s unlimited " >> $qsub_vcallgatk_anisimov
+                  echo "export APRUN_XFER_LIMITS=1 " >> $qsub_vcallgatk_anisimov
 		  echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${sample}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
 	      fi
 	  fi
