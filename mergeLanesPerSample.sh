@@ -335,18 +335,18 @@ else
                   echo -e "$lane passed filter percent_mapped with value $perc_mapped, minimum cutoff is $map_cutoff"
                   echo -e "adding $lane to list of accepted bams to merge per sample"
 	          good2mergeLanes="INPUT=$mergedLane "$good2mergeLanes
-                  detail="$lane\tPASSED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
+                  detail="$lane\tPASSED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	          echo -e "$detail" >> $rootdir/QC_Results.${sample}.txt
                else
                   echo -e "$lane DID NOT pass filter percent_mapped value $perc_mapped, minimum cutoff is $map_cutoff"
                   echo -e "adding $lane to list of rejected bams to merge per sample"
-                  detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
+                  detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	          echo -e "$detail"  >> $rootdir/QC_Results.${sample}.txt
                fi
            else
                echo -e "$lane DID NOT pass filter percent_duplicates value $perc_dup, minimum cutoff is $dup_cutoff"
                echo -e "adding $lane to list of rejected bams to merge per sample"
-               detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$prec_mapped\tmapping_cutoff=$map_cutoff\n"
+               detail="$lane\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	       echo -e "$detail"  >> $rootdir/QC_Results.${sample}.txt
            fi
         fi # skip empty lines

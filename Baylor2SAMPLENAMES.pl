@@ -29,13 +29,15 @@ while ($line = <IN>) {
 	    $counter++;
 	} else {
             chomp $line;
-	    $line =~ s/\r\n//g;
+	    $line =~ s/\r//g;
+	    $line =~ s/\n//g;
 	    $counter++;
 	    my @det = split(/\t/,$line);
             
 	    if ($det[0] ne "") {
 		# parsing filename of read1
 		my $read1=$det[$#det];
+                $read1 =~ s/\s*//g;
                 my $laneinfo="";
 		if ( $read1 =~ /(.*)_S0_(.*)_1.sequence.txt.gz/ ) {
                     $laneinfo=$1;
