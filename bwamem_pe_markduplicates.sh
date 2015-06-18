@@ -55,7 +55,7 @@ threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
 alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 header=$( echo $RGparms  | tr ":" "\t" )
-rgheader=$( echo -n -e "@RG\t" )$( echo $header  | tr "=" ":" )
+rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
 
 if [ ! -d $picardir ]
 then
@@ -154,7 +154,7 @@ then
 
         cd $outputdir
         echo `date`
-        $aligndir/bwa mem -M $alignparms  $ref $Rone $Rtwo > ${bamprefix}.tmp.sam
+        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo > ${bamprefix}.tmp.sam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -165,28 +165,30 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit $exitcode;
         fi        
-	header=$( echo "${header}"  | sed "s/\t/\tRG/g" | sed "s/ID\=/RGID\=/" )
 
-        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
-             INPUT=${bamprefix}.tmp.sam \
-             OUTPUT=${bamprefix}.tmp_wrg.sam \
-             TMP_DIR=$outputdir \
-             SORT_ORDER=coordinate \
-             MAX_RECORDS_IN_RAM=null \
-             CREATE_INDEX=true \
-             VALIDATION_STRINGENCY=SILENT \
-             $header
-             
-        exitcode=$?
-        echo `date`
-        if [ $exitcode -ne 0 ]
-        then
-            MSG="picard-addorreplacereadgroups commands failed on ${bamprefix}.sorted.bam  exitcode=$exitcode. alignment failed"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-            exit $exitcode;
-        fi
+	#header=$( echo "${header}"  | sed "s/\t/\tRG/g" | sed "s/ID\=/RGID\=/" )
+
+        #$javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
+        #     INPUT=${bamprefix}.tmp.sam \
+        #     OUTPUT=${bamprefix}.tmp_wrg.sam \
+        #     TMP_DIR=$outputdir \
+        #     SORT_ORDER=coordinate \
+        #     MAX_RECORDS_IN_RAM=null \
+        #     CREATE_INDEX=true \
+        #     VALIDATION_STRINGENCY=SILENT \
+        #     $header
+        
+        ln -s ${bamprefix}.tmp.sam ${bamprefix}.tmp_wrg.sam
+        #exitcode=$?
+        #echo `date`
+        #if [ $exitcode -ne 0 ]
+        #then
+        #    MSG="picard-addorreplacereadgroups commands failed on ${bamprefix}.sorted.bam  exitcode=$exitcode. alignment failed"
+	#    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+        #    echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+        #    cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+        #    exit $exitcode;
+        #fi
         if [ ! -s ${bamprefix}.tmp_wrg.sam ]
         then
             MSG="${bamprefix}.tmp_wrg.sam aligned file not created. alignment failed"
@@ -221,7 +223,7 @@ then
         fi        
         $samdir/samtools view -H ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.header
         
-        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MarkDuplicates.jar \
+        $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
              INPUT=${bamprefix}.sorted.bam \
              OUTPUT=${bamprefix}.wdups \
              TMP_DIR=$outputdir \

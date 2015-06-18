@@ -61,6 +61,7 @@ fi
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
     mergedfile=${sample}.realignedSample.calmd.bam
     qc_result=$rootdir/QC_Results.${sample}.txt
+    qc_result2=$RealignOutput/QC_Results.${sample}.txt
     if [ ! -s $goodSamples ]
     then
         truncate -s 0 $goodSamples
@@ -203,6 +204,7 @@ fi
         sed -i "1i $detail"  $qc_result
     fi
     echo `date`
+    cat $qc_result > $qc_result2
 
     if [ $filterflag == "FAILED" ]
     then
