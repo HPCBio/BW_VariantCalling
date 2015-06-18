@@ -150,7 +150,7 @@ fi
 	fi
 
 	
-        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
+        $javadir/java -Xmx8g -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	    INPUT=presorted_norg.${chr}.$infile \
 	    OUTPUT=presorted_wrg.${chr}.$infile \
 	    TMP_DIR=$realrecaldir \
@@ -167,7 +167,7 @@ fi
 	    exit $exitcode;
 	fi
         
-	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
+	$javadir/java -Xmx8g -Xms1024m -jar $picardir/SortSam.jar \
 	    INPUT=presorted_wrg.${chr}.$infile \
 	    OUTPUT=sorted_wrg.${chr}.$infile \
 	    TMP_DIR=$realrecaldir \
