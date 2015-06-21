@@ -126,12 +126,6 @@ echo "##########################################################################
            mkdir -p $outputdir
         fi
 
-        if [ ! -d $alignerdir ]
-        then
-           MSG="$alignerdir aligner directory not found"
-           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-           exit 1;
-        fi
 
 echo -e "\n\n\n#####################    resetting output directories, logs, files     #############################\n\n\n"
 

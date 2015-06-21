@@ -484,7 +484,7 @@ do
 	    echo "generating real-recal calls for lane=$lane chr=${chr} ..."
 	    echo "####################################################################################################"
 
-            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chr]} ${recalparms[$chr]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
+            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
            
 
          # end loop over chromosomes
@@ -533,7 +533,7 @@ do
 	    echo "generating real calls for sample=$sample chr=${chr} with bam=$bamfile"
             echo "################################################################################################"
 
-            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chr]} $sample $runfile $RealignLog/log.realignSample.$sample.$chr.in $RealignLog/log.realignSample.$sample.$chr.ou $email $RealignLog/realignSample.${sample}.${chr}" > $RealignLog/realignSample.${sample}.${chr}
+            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chromosomecounter]} $sample $runfile $RealignLog/log.realignSample.$sample.$chr.in $RealignLog/log.realignSample.$sample.$chr.ou $email $RealignLog/realignSample.${sample}.${chr}" > $RealignLog/realignSample.${sample}.${chr}
            
            if [ $skipvcall == "NO" ]
            then
@@ -542,7 +542,7 @@ do
                echo "#############################################################################################"
 
                VcallOutputDir=$outputdir/$sample/variant
-	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr ${region[$chr]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
 	   fi
 
          # end loop over chromosomes
@@ -813,7 +813,7 @@ echo "##########################################################################
               sed -i "2i #PBS -W depend=afterok:$RealignSample_job" $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher    
 
               VerifySample_job=`qsub $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher`
-              `qhold -h u $verifySample_job`
+              `qhold -h u $VerifySample_job`
 
               sed -i "2i #PBS -W depend=afterok:$VerifySample_job" $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher             
               VcallSample_job=`qsub $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher`  

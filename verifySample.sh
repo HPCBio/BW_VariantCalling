@@ -191,7 +191,7 @@ fi
         echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"
 	echo -e "##########################################################################"
         filterflag="PASSED"	
-        detail=$( echo -e "$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
+        detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $goodSamples
         sed -i "1i $detail"  $qc_result
     else
@@ -199,7 +199,7 @@ fi
         echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
 	echo -e "############################################################################"
         filterflag="FAILED"
-        detail=$( echo -e "$sample\t$filterflag\t$reemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
+        detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $badSamples
         sed -i "1i $detail"  $qc_result
     fi

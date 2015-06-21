@@ -210,7 +210,7 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit $exitcode;
         fi        
-        $novodir/novosort --index --tmpdir $outputdir --threads $threads ${bamprefix}.tmp.bam -o ${bamprefix}.sorted.bam
+        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g ${bamprefix}.tmp.bam -o ${bamprefix}.sorted.bam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -257,7 +257,7 @@ fi
 echo -e "#################      WRAP UP: sort by coordinate and index on the fly: required for creating an indexed bam, ###############"
 echo -e "#################      which in turn is required for extracting alignments by chromosome                       ###############"
 
-    $novodir/novosort --tmpdir $outputdir --threads $threads --index ${bamprefix}.wdups -o ${bamprefix}.wdups.sorted.bam
+    $novodir/novosort --tmpdir $outputdir --threads $threads --index -m 16g ${bamprefix}.wdups -o ${bamprefix}.wdups.sorted.bam
     exitcode=$?
     echo `date`
     if [ $exitcode -ne 0 ]
