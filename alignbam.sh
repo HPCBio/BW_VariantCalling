@@ -620,7 +620,7 @@ else
          else
 	     echo "#PBS -W depend=afterok:$pbsids" >> $qsub4
          fi
-	 echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitok"  >> $qsub4
+	 echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
 	 `chmod a+r $qsub4`
 	 lastjobid=`qsub $qsub4`
 	 echo $lastjobid >> $output_logs/SUMMARYpbs
@@ -641,7 +641,7 @@ else
 	     echo "#PBS -m ae" >> $qsub5
 	     echo "#PBS -M $email" >> $qsub5
 	     echo "#PBS -W depend=afterany:$pbsids" >> $qsub5
-	     echo "aprun -n 1 -d 1 $scriptdir/summary.sh $outputdir $email exitnotok"  >> $qsub5
+	     echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
 	     `chmod a+r $qsub5`
 	     badjobid=`qsub $qsub5`
 	     echo $badjobid >> $output_logs/SUMMARYpbs

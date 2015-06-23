@@ -318,7 +318,7 @@ else
 	     echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub4
          fi         
      fi
-     echo "$scriptdir/summary.sh $outputrootdir $email exitok"  >> $qsub4
+     echo "$scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
      `chmod a+r $qsub4`
      lastjobid=`qsub $qsub4`
      echo $lastjobid >> $outputrootdir/logs/SUMMARYpbs
@@ -339,7 +339,7 @@ else
 	 echo "#PBS -m ae" >> $qsub5
 	 echo "#PBS -M $email" >> $qsub5
 	 echo "#PBS -W depend=afterany:$listjobids" >> $qsub5
-	 echo "$scriptdir/summary.sh $outputrootdir $email exitnotok"  >> $qsub5
+	 echo "$scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
 	 `chmod a+r $qsub5`
 	 badjobid=`qsub $qsub5`
 	 echo $badjobid >> $outputrootdir/logs/SUMMARYpbs

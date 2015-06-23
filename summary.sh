@@ -11,11 +11,20 @@ else
 	set -x
 	echo `date`	
         scriptfile=$0
-        outputdir=$1
+        runfile=$1
         email=$2
         exitstatus=$3
         reportticket=$4
         numdays=30
+        outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+        deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+
+        if [ `expr ${#deliveryfolder}` -lt 2 ]
+        then
+            delivery=$outputdir/delivery
+        else
+	    delivery=$outputdir/$deliveryfolder
+	fi
 
 	listjobids=$( cat $outputdir/logs/*pbs cat $outputdir/logs/*/*pbs | sort | uniq | tr "\n" "\t" )
 	pipeid=$( cat $outputdir/logs/CONFIGUREpbs )
@@ -24,7 +33,7 @@ else
         then
             MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished successfully at: "$( echo `date` )
         else
-            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished on iforge at: "$( echo `date` )
+            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished  at: "$( echo `date` )
         fi
         LOGS="Results and execution logs can be found at \n$outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
         detjobids=""
@@ -36,6 +45,6 @@ else
 #           detjobids=${detjobids}${nl}$report
 #        done
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" > $outputdir/logs/Summary.Report
+        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" > $delivery/Summary.Report
 
 fi

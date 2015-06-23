@@ -923,7 +923,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    else
        echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summary
    fi
-   echo "$scriptdir/summary.sh $outputdir $email exitok $reportticket"  >> $qsub_summary
+   echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
@@ -943,7 +943,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
        echo "#PBS -m a" >> $qsub_summary
        echo "#PBS -M $email" >> $qsub_summary
        echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
-       echo "$scriptdir/summary.sh $outputdir $email exitnotok $reportticket"  >> $qsub_summary
+       echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
        `chmod a+r $qsub_summary`
        badjobid=`qsub $qsub_summary`
        echo $badjobid >> $TopOutputLogs/SUMMARYpbs

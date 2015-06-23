@@ -132,7 +132,7 @@ fi
         echo "#################################################################################"
 
         cd $realrecaldir
-	$samdir/samtools view -b -h $inputfile $chr > presorted_norg.${chr}.$infile  
+	$samdir/samtools view -bu -h $inputfile $chr > presorted_norg.${chr}.$infile  
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]

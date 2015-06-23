@@ -51,7 +51,7 @@ samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
 samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d "=" -f2 )
 sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d "=" -f2 )
 novodir=$( cat $runfile | grep -w NOVODIR | cut -d "=" -f2 )
-threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
+thr=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
 alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
 header=$( echo $RGparms  | tr ":" "\t" )
@@ -63,6 +63,7 @@ then
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
     exit 1;
 fi
+
 if [ ! -d $samdir ]
 then
     MSG="$samdir samtools directory not found"
@@ -94,6 +95,7 @@ then
     exit 1;
 fi
 
+threads=`expr $thr "-" 1`
 
 all_exitcodes=0
 
@@ -154,7 +156,7 @@ then
 
         cd $outputdir
         echo `date`
-        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo > ${bamprefix}.tmp.sam
+        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -165,6 +167,16 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit $exitcode;
         fi        
+        if [ ! -s ${bamprefix}.tmp.bam ]
+        then
+            MSG="${bamprefix}.tmp.bam aligned bam file not created. alignment failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+            exit 1;
+        fi        
+
 
 	#header=$( echo "${header}"  | sed "s/\t/\tRG/g" | sed "s/ID\=/RGID\=/" )
 
@@ -178,7 +190,7 @@ then
         #     VALIDATION_STRINGENCY=SILENT \
         #     $header
         
-        ln -s ${bamprefix}.tmp.sam ${bamprefix}.tmp_wrg.sam
+        #ln -s ${bamprefix}.tmp.sam ${bamprefix}.tmp_wrg.sam
         #exitcode=$?
         #echo `date`
         #if [ $exitcode -ne 0 ]
@@ -189,27 +201,19 @@ then
         #    cp $qsubfile $AlignOutputLogs/FAILEDjobs/
         #    exit $exitcode;
         #fi
-        if [ ! -s ${bamprefix}.tmp_wrg.sam ]
-        then
-            MSG="${bamprefix}.tmp_wrg.sam aligned file not created. alignment failed"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-            exit 1;
-        fi        
 
-        $samdir/samtools view -bS ${bamprefix}.tmp_wrg.sam >  ${bamprefix}.tmp.bam
-        exitcode=$?
-        echo `date`
-        if [ $exitcode -ne 0 ]
-        then
-            MSG="samtools sam2bam conversion  failed on ${bamprefix}.tmp.sam  exitcode=$exitcode. alignment failed"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-            exit $exitcode;
-        fi        
+        #$samdir/samtools view -bS ${bamprefix}.tmp_wrg.sam >  ${bamprefix}.tmp.bam
+        #exitcode=$?
+        #echo `date`
+        #if [ $exitcode -ne 0 ]
+        #then
+            #MSG="samtools sam2bam conversion  failed on ${bamprefix}.tmp.sam  exitcode=$exitcode. alignment failed"
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+            #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            #cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+            #exit $exitcode;
+        #fi
+        
         $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g ${bamprefix}.tmp.bam -o ${bamprefix}.sorted.bam
         exitcode=$?
         echo `date`
@@ -221,6 +225,16 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit $exitcode;
         fi        
+        if [ ! -s ${bamprefix}.sorted.bam ]
+        then
+            MSG="${bamprefix}.srted.bam aligned file not created. alignment failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+            exit 1;
+        fi
+
         $samdir/samtools view -H ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.header
         
         $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
@@ -252,12 +266,12 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit 1;
         fi        
-fi
 
+fi
 echo -e "#################      WRAP UP: sort by coordinate and index on the fly: required for creating an indexed bam, ###############"
 echo -e "#################      which in turn is required for extracting alignments by chromosome                       ###############"
 
-    $novodir/novosort --tmpdir $outputdir --threads $threads --index -m 16g ${bamprefix}.wdups -o ${bamprefix}.wdups.sorted.bam
+    $novodir/novosort --tmpdir $outputdir --threads $threads --index -m 16g -o ${bamprefix}.wdups.sorted.bam ${bamprefix}.wdups
     exitcode=$?
     echo `date`
     if [ $exitcode -ne 0 ]
@@ -270,9 +284,19 @@ echo -e "#################      which in turn is required for extracting alignme
          exit 1;
     fi
 
+    if [ ! -s ${bamprefix}.wdups.sorted.bam ]
+    then
+        MSG="${bamprefix}.wdups.sorted.bam aligned file not created. alignment failed"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+        cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+        exit 1;
+    fi 
 
     $samdir/samtools view -H ${bamprefix}.wdups.sorted.bam > ${bamprefix}.wdups.sorted.bam.header
     exitcode=$?
+    echo `date`
     if [ $exitcode -ne 0 ]
     then
          MSG="samtools view command failed on ${bamprefix}.wdups.sorted.bam.  exitcode=$exitcode. bwamem_pe_markduplicates stopped "
@@ -281,11 +305,9 @@ echo -e "#################      which in turn is required for extracting alignme
          cp $qsubfile $AlignOutputLogs/FAILEDjobs/
          exit $exitcode;
    fi
+
    
    truncate -s 0 ${bamprefix}.wdups.sorted.bam.RGline
    echo $RGparms > ${bamprefix}.wdups.sorted.bam.RGline
    echo `date`
-
-
-
 

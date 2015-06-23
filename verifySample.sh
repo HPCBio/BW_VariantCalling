@@ -31,11 +31,15 @@ fi
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
     picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
     samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+    novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
     verifydir=$( cat $runfile | grep -w VERIFYBAMDIR | cut -d '=' -f2 )    
     freemix_cutoff=$( cat $runfile | grep -w FREEMIX_CUTOFF | cut -d '=' -f2 )
     refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
     sites=$refdir/omni.sites.vcf.gz
-
+    deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+    threads=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
+    thr=`expr $threads "-" 1`
+ 
     if [ ! -d $rootdir ]
     then
        MSG="$rootdir output root directory not found. verifySample failed"
@@ -43,6 +47,18 @@ fi
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
+    if [ `expr ${#deliveryfolder}` -lt 2 ]
+    then
+        delivery=$rootdir/delivery
+    else
+        delivery=$rootdir/$deliveryfolder
+    fi
+    if [ ! -d $delivery ]
+    then
+        mkdir -p $delivery/Cleaned_BAMS
+        mkdir -p $delivery/QC_results
+    fi
+
     if [ ! -d $RealignOutput ]
     then
        MSG="$RealignOutput  realign directory not found. verifySample failed"
@@ -60,8 +76,10 @@ fi
     goodSamples=$rootdir/VERIFIED_ok_SAMPLES.list
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
     mergedfile=${sample}.realignedSample.calmd.bam
+    outputfile=$delivery/Cleaned_BAMS/${sample}.Improved.realignedSample.bam
     qc_result=$rootdir/QC_Results.${sample}.txt
     qc_result2=$RealignOutput/QC_Results.${sample}.txt
+    qc_result3=$delivery/QC_results/QC_Results.${sample}.txt
     if [ ! -s $goodSamples ]
     then
         truncate -s 0 $goodSamples
@@ -94,7 +112,8 @@ fi
     cd $RealignOutput
 
     chrbamfiles=`find ./ -name "*${sample}.*.calmd.bam"`
-    bamsList=$( echo $chrbamfiles | sed "s/\.\// INPUT=/g" | tr "\n" " " )
+    #bamsList=$( echo $chrbamfiles | sed "s/\.\// INPUT=/g" | tr "\n" " " )
+    bamsList=$( echo $chrbamfiles | sed "s/\.\// /g" | tr "\n" " " )
     if [ `expr ${#bamsList}` -lt 2 ]
     then
             # empty list nothing to merge
@@ -108,12 +127,13 @@ fi
     if [ ! -s $mergedfile ]
     then
             # we did not perform this step already
-        $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedfile USE_THREADING=true 
+        #$javadir/java -Xmx1024m -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedfile USE_THREADING=true 
+        $novodir/novosort --index --tmpdir $RealignOutput --threads $thr -m 16g -o $mergedfile $bamsList
         exitcode=$?
         `echo date`
         if [ $exitcode -ne 0 ]
         then
-	    MSG="picard MergeSamFiles command failed exitcode=$exitcode verifySample failed"
+	    MSG="novosort command failed exitcode=$exitcode verifySample failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
@@ -124,7 +144,7 @@ fi
 
     if [ ! -s $mergedfile ]
     then
-	MSG="picard MergeSamFiles command produced an empty file while trying to merge $bamsList verifySample failed"
+	MSG="novosort command produced an empty file while trying to merge $bamsList verifySample failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
@@ -133,14 +153,29 @@ fi
     echo -e "generating an index file for   $mergedfile because verifyBamID needs it"
 
 
-    $samdir/samtools index $mergedfile 
-    `echo date`
+    #$samdir/samtools index $mergedfile 
+    #`echo date`
     if [ ! -s $mergedfile.bai ]
     then
-	MSG="samtools did not produced index file for $mergedfile  verifySample failed"
+	MSG="novosort did not produced index file for $mergedfile  verifySample failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
+    fi
+
+    echo -e "##########################################################################"
+    echo -e "##########################################################################"
+    echo -e "#############  populating delivery folder                #################"
+    echo -e "#############  with improved bam folr sample=$sample     #################"
+    echo -e "##########################################################################"
+    `echo date`
+    cp $mergedfile $outputfile
+
+    if [ ! -s $outputfile ]
+    then
+	MSG="WARNING=$outputfile output file for sample=$sample was not copied properly"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
     fi
 
     echo -e "##########################################################################"
@@ -205,6 +240,7 @@ fi
     fi
     echo `date`
     cat $qc_result > $qc_result2
+    cat $qc_result > $qc_result3
 
     if [ $filterflag == "FAILED" ]
     then
