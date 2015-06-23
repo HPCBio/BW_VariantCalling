@@ -128,7 +128,7 @@ fi
     then
             # we did not perform this step already
         #$javadir/java -Xmx1024m -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedfile USE_THREADING=true 
-        $novodir/novosort --index --tmpdir $RealignOutput --threads $thr -m 16g -o $mergedfile $bamsList
+        $novodir/novosort --index --tmpdir $RealignOutput --threads $thr -m 16g --kt -o $mergedfile $bamsList
         exitcode=$?
         `echo date`
         if [ $exitcode -ne 0 ]

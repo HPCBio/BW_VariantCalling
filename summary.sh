@@ -26,6 +26,10 @@ else
 	    delivery=$outputdir/$deliveryfolder
 	fi
 
+        echo -e "populating the delivery folder with documents runfiles etc"
+        cp $outputdir/*.txt $delivery
+        cp $outputdir/*.list $delivery
+
 	listjobids=$( cat $outputdir/logs/*pbs cat $outputdir/logs/*/*pbs | sort | uniq | tr "\n" "\t" )
 	pipeid=$( cat $outputdir/logs/CONFIGUREpbs )
 

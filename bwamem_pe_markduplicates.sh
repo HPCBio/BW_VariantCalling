@@ -108,7 +108,7 @@ then
         if [ $samprocessing == "SAMTOOLS" ]
         then
            echo `date`
-           $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster |  $samdir/samtools view -bS -> ${bamprefix}.wdups
+           $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster |  $samdir/samtools view -bSu -> ${bamprefix}.wdups
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
@@ -214,7 +214,7 @@ then
             #exit $exitcode;
         #fi
         
-        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g ${bamprefix}.tmp.bam -o ${bamprefix}.sorted.bam
+        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o ${bamprefix}.sorted.bam ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -271,7 +271,7 @@ fi
 echo -e "#################      WRAP UP: sort by coordinate and index on the fly: required for creating an indexed bam, ###############"
 echo -e "#################      which in turn is required for extracting alignments by chromosome                       ###############"
 
-    $novodir/novosort --tmpdir $outputdir --threads $threads --index -m 16g -o ${bamprefix}.wdups.sorted.bam ${bamprefix}.wdups
+    $novodir/novosort --tmpdir $outputdir --threads $threads --index -m 16g --kt --compression 1 -o ${bamprefix}.wdups.sorted.bam ${bamprefix}.wdups
     exitcode=$?
     echo `date`
     if [ $exitcode -ne 0 ]

@@ -170,7 +170,7 @@ else
            if [ ! -s $mergedLane ]
            then
                 #$javadir/java -Xmx8g -Xms1024m -jar $picardir/MergeSamFiles.jar $bamsList OUTPUT=$mergedLane USE_THREADING=true 
-                $novodir/novosort --index --threads $thr --tmpdir $inputdir -m 16g -o $mergedLane $bamsListPlain
+                $novodir/novosort --index --threads $thr --tmpdir $inputdir -m 16g --kt --compression 1 -o $mergedLane $bamsListPlain
                 exitcode=$?
                `echo date`
                if [ $exitcode -ne 0 ]
@@ -219,7 +219,7 @@ else
 
            if [ ! -s $mergedLaneMappedPaired ]
            then
-              $samdir/samtools view -b -F 12 $mergedLane > $mergedLaneMappedPaired 
+              $samdir/samtools view -bu -F 12 $mergedLane > $mergedLaneMappedPaired 
               exitcode=$?
               `echo date`
               if [ $exitcode -ne 0 ]
@@ -459,7 +459,7 @@ else
     #    CREATE_INDEX=true 
  
     
-    $novodir/novosort --index --threads $thr --tmpdir $RealignOutput --rg "${RGline}"  -m 16g -o $outfile $bamsToMerge 
+    $novodir/novosort --index --threads $thr --tmpdir $RealignOutput --rg "${RGline}"  -m 16g --kt --compression 1 -o $outfile $bamsToMerge 
     exitcode=$?
     `echo date`
     if [ $exitcode -ne 0 ]

@@ -110,7 +110,7 @@ else
         cd $realigndir
 
         tmpfile=`basename $infile`
-        $samdir/samtools view -b $infile $chr > ${chr}.$tmpfile
+        $samdir/samtools view -bu $infile $chr > ${chr}.$tmpfile
 	exitcode=$?
 	echo `date`
 
@@ -192,7 +192,7 @@ else
             exit 1;
         fi	
 
-        $samdir/samtools calmd -Erb ${chr}.${tmpfile}.realigned.bam $refdir/$ref > $outputfile
+        $samdir/samtools calmd -Erbu ${chr}.${tmpfile}.realigned.bam $refdir/$ref > $outputfile
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
