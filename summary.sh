@@ -35,9 +35,9 @@ else
 
         if [ $exitstatus == "exitok" ]
         then
-            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished successfully at: "$( echo `date` )
+            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished with ALL  jobs with exit code 0 at: "$( echo `date` )
         else
-            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished  at: "$( echo `date` )
+            MSG="Variant calling workflow with id: [$pipeid] by username: $USER finished with SOME jobs with exit code 0  at: "$( echo `date` )
         fi
         LOGS="Results and execution logs can be found at \n$outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
         detjobids=""

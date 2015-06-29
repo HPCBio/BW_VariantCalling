@@ -865,10 +865,10 @@ echo "##########################################################################
    fi
 
    `sleep 30s`
-   qsub_summary=$TopOutputLogs/qsub.summary.allok
+   qsub_summary=$TopOutputLogs/qsub.summary.afterany
    echo "#PBS -V" > $qsub_summary
    echo "#PBS -A $pbsprj" >> $qsub_summary
-   echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
+   echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
    echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
    echo "#PBS -o $TopOutputLogs/log.summary.ou" >> $qsub_summary
@@ -880,33 +880,33 @@ echo "##########################################################################
    then
        echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summary
    else
-       echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summary
+       echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
    fi
-   echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
+   echo "$scriptdir/summary.sh $runfile $email exitafterany $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
 
-   echo "at least one job aborted"
-   qsub_summaryany=$TopOutputLogs/qsub.summary.afterany
+   echo "rewrite summary report if all jobs finished ok"
+   qsub_summaryany=$TopOutputLogs/qsub.summary.afterok
    echo "#PBS -V" > $qsub_summaryany
    echo "#PBS -A $pbsprj" >> $qsub_summaryany
-   echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summaryany
+   echo "#PBS -N ${pipeid}_summary_afterok" >> $qsub_summaryany
    echo "#PBS -l walltime=01:00:00" >> $qsub_summaryany # 1 hour should be more than enough
    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summaryany
-   echo "#PBS -o $TopOutputLogs/log.summary.afterany.ou" >> $qsub_summaryany
-   echo "#PBS -e $TopOutputLogs/log.summary.afterany.in" >> $qsub_summaryany
+   echo "#PBS -o $TopOutputLogs/log.summary.afterok.ou" >> $qsub_summaryany
+   echo "#PBS -e $TopOutputLogs/log.summary.afterok.in" >> $qsub_summaryany
    echo "#PBS -q $pbsqueue" >> $qsub_summaryany
    echo "#PBS -m a" >> $qsub_summaryany
    echo "#PBS -M $email" >> $qsub_summaryany
    if [ `expr ${#cleanjobid}` -gt 0 ]
    then
-       echo "#PBS -W depend=afterany:$cleanjobid" >> $qsub_summaryany
+       echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summaryany
    else
-       echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summaryany
+       echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summaryany
    fi
-   echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summaryany
+   echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summaryany
    `chmod a+r $qsub_summaryany`
    badjobid=`qsub $qsub_summaryany`
    echo $badjobid >> $TopOutputLogs/SUMMARYpbs

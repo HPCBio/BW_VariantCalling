@@ -59,7 +59,7 @@ else
         snvmixdir=$( cat $runfile | grep -w SNVMIXDIR | cut -d '=' -f2 )
         snvmixparms=$( cat $runfile | grep -w SNVMIX2PARMS | cut -d '=' -f2 )
         snvmixfilter=$( cat $runfile | grep -w SNVMIX2FILTER | cut -d '=' -f2 )
-        uparms=$( cat $runfile | grep -w UNIFIEDGENOINPUTTYPERPARMS | cut -d '=' -f2 )
+        uparms=$( cat $runfile | grep -w UNIFIEDGENOTYPERPARMS | cut -d '=' -f2 )
         onlyontarget=$( cat $runfile | grep -w TARGETTED | cut -d '=' -f2 )
         #javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
