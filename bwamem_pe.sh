@@ -1,5 +1,5 @@
 #!/bin/sh
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 14 ]
 then

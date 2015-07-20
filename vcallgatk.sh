@@ -5,7 +5,7 @@
 #  This module is called from within the realign module
 ######################################
 
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 10 ];
 then
 	MSG="parameter mismatch."

@@ -1,6 +1,6 @@
 #!/bin/sh
 # written in collaboration with Mayo Bioinformatics core group
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# -ne 10 ]
 then
 	MSG="parameter mismatch."

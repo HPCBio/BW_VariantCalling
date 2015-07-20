@@ -4,7 +4,7 @@
 #
 # script to produce improved bams - one per sample 
 # from  multiplexed aligned bams 
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."

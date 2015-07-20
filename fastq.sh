@@ -3,7 +3,7 @@
 #  script to calculate quality information of fastq file
 ######################################
 # written in collaboration with Mayo Bioinformatics core group
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=lmainzer@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 8 ];

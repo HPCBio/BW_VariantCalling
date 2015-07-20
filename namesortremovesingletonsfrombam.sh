@@ -4,7 +4,7 @@
 #  script to sort reads by name and remove singletons
 #
 ######################################
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 11 ];
 then
