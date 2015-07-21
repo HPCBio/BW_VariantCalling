@@ -28,21 +28,23 @@ else
         if [ ! -d $fastqcdir ]
         then
               MSG="fastqcdir not found.  exitcode=$exitcode. Execution of the pipeline continues."
-              echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              #echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
               exit 0;
         fi
         if [ ! -d $outputdir ]
         then
               MSG="directory for depositing results of fastqc was not found.  exitcode=$exitcode. Execution of the pipeline continues."
-              echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              #echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
               exit 0;
         fi
         if [ ! -s $fastqfile ]
         then
               MSG="input reads file for fastqc command was not found.  exitcode=$exitcode. Execution of the pipeline continues."
-              echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              #echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
               exit 0;
         fi
+
+
 
         parameters=$( echo $fastqcparms | tr "_" " " )
         cd $outputdir
@@ -51,14 +53,14 @@ else
         if [ $exitcode -ne 0 ]
         then
               MSG="fastqc command failed.  exitcode=$exitcode. Execution of the pipeline continues."
-              echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              #echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
               exit 0;
         fi
         totlines=`ls -1 *.zip | wc -l | cut -d ' ' -f 1`
         if [ $totlines -lt 1 ]
         then
               MSG="fastqc file for $fastqfile was not created. Execution of the pipeline continues."
-              echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+              #echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
               exit 0;
         fi
 fi

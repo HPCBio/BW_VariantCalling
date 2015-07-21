@@ -379,7 +379,7 @@ fi
       then
           ## parsing non-empty line
 	  sample=$( echo "$SampleLine" | cut -f 1 )
-	  lane=$( echo "$SampleLine" | cut -f 3 )
+	  lane=$( echo "$SampleLine" | cut -f 2 )
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
 	  alignedfile=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam"`
@@ -445,7 +445,7 @@ do
 	echo "####################################################################################################"
         # now parsing the line just being read
 	sample=$( echo "$SampleLine" | cut -f 1 )
-	lane=$( echo "$SampleLine" | cut -f 3 )
+	lane=$( echo "$SampleLine" | cut -f 2 )
 
 	echo "realigning recalibrating per lane: $lane sample: $sample"
 	echo `date`
@@ -588,7 +588,7 @@ echo "##########################################################################
               echo "####################################################################################################"
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
-	      lane=$( echo "$SampleLine" | cut -f 3 )
+	      lane=$( echo "$SampleLine" | cut -f 2 )
 
               RealignOutputDir=$outputdir/$sample/$lane/realign
               truncate -s 0 $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
@@ -788,7 +788,7 @@ echo "##########################################################################
       do
 	  if [ `expr ${#SampleLine}` -gt 1 ]
 	  then
-	      echo "processing next non-empty line in SAMPLENAMES_multiplexed.list."
+	      echo "processing next non-empty line in SAMPLEGROUPS.list"
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
 	      lanes=$( echo "$SampleLine" | cut -f 2 )

@@ -182,7 +182,7 @@ else
         if [ $aligner == "BWA" ]
         then
             alignerdir=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2 )
-            refindexed=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
+            refindexed=$( cat $runfile | grep -w BWAALNINDEX | cut -d '=' -f2 )
             alignparms=$( cat $runfile | grep -w BWAPARAMS | cut -d '=' -f2 | tr " " "_" )_-t_${thr}
         fi
         if [ -z $epilogue ]
