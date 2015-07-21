@@ -190,7 +190,7 @@ else
 	       utype="BOTH"
            else
                pedfile=$infile.$chr.raw.pbt.vcf
-	       outfile=$infile.$chr.raw.vcf
+	       outfile=$infile.$chr.raw.g.vcf.gz
 	       umode="EMIT_VARIANTS_ONLY"
 	       utype="BOTH"
            fi
@@ -242,19 +242,33 @@ else
 	
 
         #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-        $javadir/java -Xmx16g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-	    -R $refdir/$ref \
-	    -I $inputfile \
-	    -T UnifiedGenotyper \
-            -nt 8 -nct 4 \
-            -glm $utype \
-            --output_mode $umode \
-            -A Coverage \
-	    -A AlleleBalance \
-	    -dcov 250 \
-	    -rf BadCigar \
-            --dbsnp $region \
-	    -o $outfile  $uparms
+#        $javadir/java -Xmx16g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+#	    -R $refdir/$ref \
+#	    -I $inputfile \
+#	    -T UnifiedGenotyper \
+#            -nt 8 -nct 4 \
+#            -glm $utype \
+#            --output_mode $umode \
+#            -A Coverage \
+#	    -A AlleleBalance \
+#	    -dcov 250 \
+#	    -rf BadCigar \
+#            --dbsnp $region \
+#	    -o $outfile  $uparms
+
+        $javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+            -T HaplotypeCaller \
+            -R $refdir/$ref \
+            -I $inputfile \
+            --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+            -gt_mode DISCOVERY \
+            -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+            -stand_call_conf 30 \
+            -stand_emit_conf 30 \
+            --sample_ploidy  2 \
+            -nt 1 -nct 1 \
+            --dbsnp $dbsnp \
+            -o $outfile
 
         exitcode=$?
 	echo `date`
