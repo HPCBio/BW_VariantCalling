@@ -541,16 +541,16 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
                 # check whether the file is fastq or fastq.gz, gunzip and rename as necessary
-                LeftReadsFastq_basename=`basename $LeftReadsFastq`
-                extension="${LeftReadsFastq_basename##*.}"
-                if [ $extension == "gz" ]
-                then
-                   LeftReadsFastq_basename=`basename $LeftReadsFastq .gz`
-                   `gunzip -c $LeftReadsFastq > $AlignOutputDir/$SampleName/$LeftReadsFastq_basename`
-                   left_fastqc_input=$AlignOutputDir/$SampleName/$LeftReadsFastq_basename
-                else
+                #LeftReadsFastq_basename=`basename $LeftReadsFastq`
+                #extension="${LeftReadsFastq_basename##*.}"
+                #if [ $extension == "gz" ]
+                #then
+                #   LeftReadsFastq_basename=`basename $LeftReadsFastq .gz`
+                #   `gunzip -c $LeftReadsFastq > $AlignOutputDir/$SampleName/$LeftReadsFastq_basename`
+                #   left_fastqc_input=$AlignOutputDir/$SampleName/$LeftReadsFastq_basename
+                #else
                    left_fastqc_input=$LeftReadsFastq                
-                fi
+                #fi
 
                 qsub_fastqcR1=$TopOutputLogs/fastqc/qsub.fastqcR1.$SampleName
 		echo "#PBS -V" > $qsub_fastqcR1
@@ -569,16 +569,16 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 		if [ $paired -eq 1 ]
 		then
-                    RightReadsFastq_basename=`basename $RightReadsFastq`
-                    extension="${RightReadsFastq_basename##*.}"
-                    if [ $extension == "gz" ]
-                    then
-                       RightReadsFastq_basename=`basename $RightReadsFastq .gz`
-                       `gunzip -c $RightReadsFastq > $AlignOutputDir/$SampleName/$RightReadsFastq_basename`
-                       right_fastqc_input=$AlignOutputDir/$SampleName/$RightReadsFastq_basename
-                    else
+                #    RightReadsFastq_basename=`basename $RightReadsFastq`
+                #    extension="${RightReadsFastq_basename##*.}"
+                #    if [ $extension == "gz" ]
+                #    then
+                #       RightReadsFastq_basename=`basename $RightReadsFastq .gz`
+                #       `gunzip -c $RightReadsFastq > $AlignOutputDir/$SampleName/$RightReadsFastq_basename`
+                #       right_fastqc_input=$AlignOutputDir/$SampleName/$RightReadsFastq_basename
+                #    else
                        right_fastqc_input=$RightReadsFastq
-                    fi
+                #    fi
 
 
                     qsub_fastqcR2=$TopOutputLogs/fastqc/qsub.fastqc_R2_$SampleName
