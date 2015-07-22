@@ -192,7 +192,9 @@ else
           then
              echo `date`
              # convert from novosorted bam to sam, mark duplicates, then convert back to bam
-             $sambambadir/sambamba view -h -t 32 -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -t 32 -f bam -S /dev/stdin -o $outfilewdups.namesorted
+             # samblaster is single-threaded; don't really know how fast it can ingest from the multithreaded sambamba, but at least we need to give it a free uncontested thread
+             sambamba_threads=$((threads-1))
+             $sambambadir/sambamba view -h -t $sambamba_threads -f sam $tmpfilewdups | $samblasterdir/samblaster | $sambambadir/sambamba view -t $sambamba_threads -f bam -S /dev/stdin -o $outfilewdups.namesorted
              echo `date`
              exitcode=$?
           fi

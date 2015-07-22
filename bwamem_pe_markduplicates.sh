@@ -120,7 +120,7 @@ then
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
            
-           $memprof $sambambadir/sambamba view -t 32 -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
+           $memprof $sambambadir/sambamba view -t $thr -f bam -S ${bamprefix}.sam.wdups -o ${bamprefix}.wdups
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))           
