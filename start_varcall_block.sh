@@ -1,5 +1,4 @@
 #!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
 #
 #  script to realign and recalibrate the aligned file(s)
 redmine=hpcbio-redmine@igb.illinois.edu
@@ -22,7 +21,7 @@ else
         if [ ! -s $runfile ]
         then
 	    MSG="$runfile configuration file not found"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -61,7 +60,7 @@ else
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit 1;
             fi
         fi
@@ -69,7 +68,7 @@ else
         if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
         then
            MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $cleanupflag == "1" ]
@@ -85,7 +84,7 @@ else
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
            MSG="Invalid value for SKIPVCALL=$skipvcall"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $skipvcall == "1" ]
@@ -102,7 +101,7 @@ else
         if [ -z $epilogue ]
         then
            MSG="Value for EPILOGUE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         else
            `chmod 750 $epilogue`
@@ -111,38 +110,38 @@ else
         if [ ! -d $picardir ]
         then
 	    MSG="$picardir picard directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -d $samdir ]
         then
 	    MSG="$samdir samtools directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -d $gatk ]
         then
 	    MSG="$gatk GATK directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         if [ ! -d $refdir ]
         then
 	    MSG="$refdir reference genome directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -s $refdir/$ref ]
         then
 	    MSG="$ref reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -s $samplefileinfo ]
         then
 	    MSG="$samplefileinfo file not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -192,13 +191,13 @@ else
 		if [ `expr ${#bam}` -lt 1  ]
 		then
 		    MSG="parsing of line in SAMPLEFILENAMES failed. variant calling stopped"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                     exit 1;
                 else 
                   if [ ! -s $bam ]
                   then
 		      MSG="Empty BAM file $bam. variant calling stopped"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                       exit 1;
                   fi
 		fi

@@ -1,5 +1,4 @@
 #!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
 ######################################
 #  script to revertsam on input bamfiles that need to be realigned-recal
 #
@@ -9,7 +8,7 @@ redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 9 ];
 then
 	MSG="parameter mismatch"
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else					
 	set -x
@@ -29,21 +28,21 @@ else
         if [ ! -s $infile ]
         then
 	    MSG="$infile input bam file not found"
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         if [ ! -d $picardir ]
         then
 	    MSG="PICARDIR=$picardir  directory not found"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
 
         if [ ! -d $samdir ]
         then
 	    MSG="SAMDIR=$samdir  directory not found"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
 	outputdir=`dirname $outfile`
@@ -63,13 +62,13 @@ else
         if [ $exitcode -ne 0 ]
         then
 	    MSG="revertsam command failed. exitcode=$exitcode "
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi
         if [ ! -s $samfile ]
         then
 	    MSG="$samfile file not created. revertsam failed"
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -79,14 +78,14 @@ else
         if [ $exitcode -ne 0 ]
         then
 	    MSG="samtools view command failed. exitcode=$exitcode "
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi
 
         if [ ! -s $outfile ]
         then
 	    MSG="$outfile file not created. revertsam failed"
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 fi

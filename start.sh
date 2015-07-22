@@ -1,5 +1,4 @@
 #!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
 
 ########################### 
 #		$1		=	       run info file

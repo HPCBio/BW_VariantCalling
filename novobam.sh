@@ -1,11 +1,10 @@
 #!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# -gt 14 ]
 then
 	MSG="parameter mismatch."
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else
 
@@ -44,14 +43,14 @@ else
         if [ $exitcode -ne 0 ]
         then
            MSG="novoalign command failed.  exitcode=$exitcode alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit $exitcode;
         fi
 
         if [ ! -s $samfile ]
         then
            MSG="$samfile aligned BAM file not created. alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -62,14 +61,14 @@ else
         if [ $exitcode -ne 0 ]
         then
            MSG="samtools view command failed.  exitcode=$exitcode  novobam alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit $exitcode;
         fi
 
 	if [ ! -s $bamfile ]
 	then
 	    MSG="$bamfile BAM file not created. sam2bam step failed during  novobam alignment."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
 	fi       
 
@@ -80,7 +79,7 @@ else
         if [ $exitcode -ne 0 ]
         then
            MSG="samtools index command failed.  exitcode=$exitcode  novobam alignment failed"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit $exitcode;
         fi
         echo `date`

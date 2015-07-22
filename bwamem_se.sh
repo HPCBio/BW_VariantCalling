@@ -5,7 +5,7 @@ if [ $# != 13 ]
 then
         MSG="parameter mismatch"
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
-        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else
 	set -x
@@ -36,14 +36,14 @@ else
         then
             MSG="bwa aln command failed on $R.  exitcode=$exitcode. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
         fi
         if [ ! -s $samfile ]
         then
             MSG="$samfile aligned file not created. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
         echo `date`
@@ -55,14 +55,14 @@ else
         then
             MSG="samtools view command failed.  exitcode=$exitcode. alignment failed"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" |  myproxy-logon -s tfca.ncsa.illinois.edu -p 7512 "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" |  myproxy-logon -s tfca.ncsa.illinois.edu -p 7512 "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
         fi
         if [ ! -s $bamfile ]
         then
             MSG="$bamfile bam file not created. sam2bam step failed during alignment."
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" |  myproxy-logon -s tfca.ncsa.illinois.edu -p 7512 "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" |  myproxy-logon -s tfca.ncsa.illinois.edu -p 7512 "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
         echo `date`

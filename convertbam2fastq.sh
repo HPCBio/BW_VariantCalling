@@ -3,7 +3,6 @@
 #  script to convert bam files back to fastq as pre requisite to alignment
 #
 ######################################
-# written in collaboration with Mayo Bioinformatics core group
 redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=lmainzer@igb.illinois.edu
 ##redmine=grendon@illinois.edu
@@ -11,7 +10,7 @@ if [ $# != 9 ];
 then
 	MSG= "parameter mismatch"
         echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" 
-        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else					
 	set -x
@@ -33,7 +32,7 @@ else
         then
 	    MSG="$runfile configuration file not found"
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -54,7 +53,7 @@ else
         then
 	    MSG="PICARDIR=$picardir  directory not found"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
 
@@ -62,7 +61,7 @@ else
         then
 	    MSG="Value for JAVAMODULE must be specified in configuration file"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         else 
             #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
@@ -72,7 +71,7 @@ else
         then
 	    MSG="Invalid value for PROVENANCE=$provenance"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -80,7 +79,7 @@ else
         then
 	    MSG="Invalid value for REVERTSAM=$revertsam"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
 
@@ -105,7 +104,7 @@ else
         then
 		MSG="sortbyname command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -113,7 +112,7 @@ else
         then
 		MSG="${temfile}.name_sorted  -preprocessing of bam file failed to create bam file sorted by name"
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit 1;
 	fi
 	echo `date`
@@ -125,7 +124,7 @@ else
         then
 		MSG="bam2sam command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -136,7 +135,7 @@ else
         then
                 MSG="header generation failed. exitcode=$exitcode "
                 echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit $exitcode;
         fi
 
@@ -151,7 +150,7 @@ else
         then
 		MSG="extracting name tags from sam file, command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -162,7 +161,7 @@ else
         then
 		MSG="counting tags, command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -173,7 +172,7 @@ else
         then
 		MSG="finding unique tags, command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -184,7 +183,7 @@ else
         then
 		MSG="FindDifferencesInOutput program failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
 
@@ -197,7 +196,7 @@ else
         then
 		MSG="sam2bam command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
         ############################
@@ -220,7 +219,7 @@ else
             then
 		MSG="revertsam command failed. exitcode=$exitcode "
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi            
 
@@ -228,7 +227,7 @@ else
             then
 		MSG="revertsam failed to create file ${temfile}.proprocessed.reverted.bam"
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit 1;
 	    fi
             `mv ${temfile}.preprocessed.reverted.bam $cleanbam`
@@ -244,7 +243,7 @@ else
         then
 	    MSG="no bam file produced for the final conversion step samtofastq. exitcode=$exitcode "
 	    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi            
 
@@ -253,7 +252,7 @@ else
         then
 	    MSG="no bam file produced for the final conversion step samtofastq"
 	    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
 	fi
 
@@ -278,14 +277,14 @@ else
 	    then
 	       MSG="samtofastq command failed.  exitcode=$exitcode  bam2fastq conversion failed"
 	       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-	       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+	       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
 	       exit $exitcode;
 	    fi
             if [ `find -name "*.fastq" | wc -l` -lt 1 ]
             then
 		MSG="samtofastq command did not produced fastq files"
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit 1;
 	    fi
 	    echo `date`
@@ -315,7 +314,7 @@ else
 		then
 		   MSG="samtofastq command failed.  exitcode=$exitcode  bam2fastq conversion failed"
 		   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
 		   exit $exitcode;
 		fi
 		echo `date`
@@ -323,7 +322,7 @@ else
 		then
 		   MSG="$R1 $R2 FASTQ files not created. bam2fastq conversion failed."
 		   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		   exit 1;
 		 fi
             else
@@ -340,7 +339,7 @@ else
 		then
 		   MSG="samtofastq command failed.  exitcode=$exitcode  bam2fastq conversion failed"
 		   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
 		   exit $exitcode;
 		fi
 		echo `date`
@@ -348,7 +347,7 @@ else
 		then
 		   MSG="$R1 Empty fasq file. bam2fastq conversion failed."
 		   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		   exit 1;
 		fi
 	    fi
