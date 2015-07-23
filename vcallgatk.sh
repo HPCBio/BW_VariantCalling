@@ -267,7 +267,7 @@ else
             -stand_emit_conf 30 \
             --sample_ploidy  2 \
             -nt 1 -nct 1 \
-            --dbsnp $dbsnp \
+            --dbsnp $region \
             -o $outfile
 
         exitcode=$?
