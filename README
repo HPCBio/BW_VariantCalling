@@ -1,2 +1,4 @@
 This workflow originated of collaboration with Mayo Bioinformatics core group, 
 and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large HPC systems.
+
+

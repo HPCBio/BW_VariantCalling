@@ -6,6 +6,7 @@ then
         echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
+        echo -e "\n\n############# BEGIN VARIANT CALLING WORKFLOW ###############\n\n"
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -17,6 +18,11 @@ else
         qsubfile=$6
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+
+
+
+
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found."
