@@ -170,8 +170,8 @@ else
         pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
 
 
-	echo -e "constructing files with list(s) of input files to analyze in this run of the pipelien"
-        echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created"
+	set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline";
+        echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created\n\n"; set -x;
  
 	if [ $analysis == "MULTIPLEXED" ]
 	then
@@ -244,7 +244,7 @@ else
 
 
 
-	echo -e "One more configuration task: generate a qsub header so we would not have to repeat the same lines"
+	set +x; echo -e "\n\nOne more configuration task: generate a qsub header so we would not have to repeat the same lines\n\n"; set -x;
 	generic_qsub_header=$outputdir/qsubGenericHeader
 	truncate -s 0 $generic_qsub_header
 	echo "#!/bin/bash" > $generic_qsub_header
@@ -263,9 +263,10 @@ else
 	fi
 
 
+        set +x; echo -e "\n\n"; 
         echo -e "done with preprocessing and configuration steps"
 	echo -e "now we select analysis or analyses to run"
-	echo -e "based on the value specified in runfile in line ANALYSIS"
+	echo -e "based on the value specified in runfile in line ANALYSIS" echo -e "\n\n"; set -x;
 
 
 	case=""
