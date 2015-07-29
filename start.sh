@@ -10,6 +10,8 @@ then
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
+        echo -e "\n\n############# BEGIN VARIANT CALLING WORKFLOW ###############\n\n"
+
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -19,6 +21,8 @@ else
            MSG="$runfile configuration file not found."
            exit 1;
         fi
+
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
@@ -72,7 +76,7 @@ else
         runfile=$outputdir/runfile.txt
 
 
-        # initialize autodocumentation script
+        set +x; echo -e "\n ### initialize autodocumentation script ### \n"; set -x;
         truncate -s 0 $outputdit/WorkflowAutodocumentationScript.sh
         echo "#!/bin/bash" > $outputdit/WorkflowAutodocumentationScript.sh
         WorkflowName=`basename $outputdir`  
@@ -80,7 +84,7 @@ else
 
 
         outputlogs=$outputdir/logs
-	echo "launching the pipeline configuration script"
+	set +x; echo -e "\n ### launching the pipeline configuration script ### \n"; set -x;
         qsub1=$outputlogs/qsub.configure
         echo "#PBS -V" > $qsub1
         echo "#PBS -A $pbsprj" >> $qsub1

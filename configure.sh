@@ -6,7 +6,7 @@ then
         echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
-        echo -e "\n\n############# BEGIN VARIANT CALLING WORKFLOW ###############\n\n"
+        echo -e "\n\n############# CONFIGURE CALLING WORKFLOW ###############\n\n"
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -30,7 +30,7 @@ else
         fi
 
  
-        echo -e "additional variable assignment from runfile and sanity check"
+        set +x; echo -e "\nadditional variable assignment from runfile and sanity check\n"; set -x;
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
