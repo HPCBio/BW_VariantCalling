@@ -85,27 +85,27 @@ else
 
         outputlogs=$outputdir/logs
 	set +x; echo -e "\n ### launching the pipeline configuration script ### \n"; set -x;
-        qsub1=$outputlogs/qsub.configure
+        qsub1=$outputlogs/qsub.CONFIGURE
         echo "#PBS -V" > $qsub1
         echo "#PBS -A $pbsprj" >> $qsub1
         echo "#PBS -N CONFIGURE" >> $qsub1
         echo "#PBS -l epilogue=$epilogue" >> $qsub1
 	echo "#PBS -l walltime=00:03:00" >> $qsub1
 	echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	echo "#PBS -o $outputlogs/CONFIGURE.ou" >> $qsub1
-	echo "#PBS -e $outputlogs/CONFIGURE.in" >> $qsub1
+	echo "#PBS -o $outputlogs/log.CONFIGURE.ou" >> $qsub1
+	echo "#PBS -e $outputlogs/log.CONFIGURE.in" >> $qsub1
         echo "#PBS -q debug" >> $qsub1
         echo "#PBS -m ae" >> $qsub1
         echo "#PBS -M $email" >> $qsub1
-        echo "$scriptdir/configure.sh $runfile batch $outputlogs/CONFIGURE.in $outputlogs/CONFIGURE.ou $email $outputlogs/qsub.configure" >> $qsub1
+        echo "$scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE" >> $qsub1
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
-        echo $pipeid >> $outputlogs/CONFIGUREpbs
+        echo $pipeid >> $outputlogs/pbsCONFIGURE
         echo `date`
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
-        LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
+        LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.CONFIGURE\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/log.CONFIGURE.in\noutputlog=$outputlogs/log.CONFIGURE.ou"
         echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 
