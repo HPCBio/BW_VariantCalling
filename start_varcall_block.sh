@@ -226,7 +226,7 @@ else
 		     echo "$scriptdir/vcallgatk.sh $vardir $dirname $prefix $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.${preffix}.$chr.in $varlogdir/log.vcallgatk.${preffix}.$chr.ou $email $varlogdir/qsub.vcallgatk.${preffix}.$chr" >> $qsub3
 		     `chmod a+r $qsub3`
 		     vcalljobid=`qsub $qsub3`
-		     echo $vcalljobid >> $outputrootdir/logs/VARCALLpbs
+		     echo $vcalljobid >> $outputrootdir/logs/pbs.VARCALL
 		done
             else
                  echo "skipping empty line"
@@ -235,7 +235,7 @@ else
      done < $samplefileinfo
 
      `chmod -R 770 $vardir/`
-     listjobids=$( cat $outputrootdir/logs/VARCALLpbs | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+     listjobids=$( cat $outputrootdir/logs/pbs.VARCALL | sed "s/\.[a-z]*//g" | tr "\n" ":" )
      lastjobid=""
      mergevcfjobid=""
      cleanjobid=""
@@ -261,7 +261,7 @@ else
 	 echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.in $varlogdir/log.mergevcf.ou $email $varlogdir/qsub.mergevcf"  >> $qsub1
 	 `chmod a+r $qsub1`
 	 mergevcfjobid=`qsub $qsub1`
-	 echo $mergevcfjobid >> $outputrootdir/logs/MERGEVCFpbs
+	 echo $mergevcfjobid >> $outputrootdir/logs/pbs.MERGEVCF
      fi
 
      # removing temporary files
@@ -289,7 +289,7 @@ else
 	 echo "$scriptdir/cleanup.sh $outputrootdir $analysis $outputrootdir/logs/log.cleanup.vcall.in $outputrootdir/logs/log.cleanup.vcall.ou $email $outputrootdir/logs/qsub.cleanup.vcall"  >> $qsub6
 	 `chmod a+r $qsub6`
 	 cleanjobid=`qsub $qsub6`
-	 echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs
+	 echo $cleanjobid >> $outputrootdir/logs/pbs.CLEANUP
      fi
 
      # producing summary report
@@ -320,7 +320,7 @@ else
      echo "$scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
      `chmod a+r $qsub4`
      lastjobid=`qsub $qsub4`
-     echo $lastjobid >> $outputrootdir/logs/SUMMARYpbs
+     echo $lastjobid >> $outputrootdir/logs/pbs.SUMMARY
 
      if [ `expr ${#lastjobid}` -lt 1 ]
      then
@@ -341,7 +341,7 @@ else
 	 echo "$scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
 	 `chmod a+r $qsub5`
 	 badjobid=`qsub $qsub5`
-	 echo $badjobid >> $outputrootdir/logs/SUMMARYpbs
+	 echo $badjobid >> $outputrootdir/logs/pbs.SUMMARY
      fi
      `chmod -R 770 $outputroordir/logs`
      echo `date`

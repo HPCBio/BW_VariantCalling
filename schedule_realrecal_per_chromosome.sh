@@ -502,7 +502,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 #            splitjobid=`qsub $qsub_split_bam_by_chromosome`
 #            # new line to avoid hiccup
 #            #`qhold -h u $splitjobid`
-#            echo $splitjobid >> $outputdir/logs/REALSORTEDpbs.$SampleName
+#            echo $splitjobid >> $outputdir/logs/pbs.REALSORTED.$SampleName
 #            echo $splitjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
 #
 #            truncate -s 0 $realrecal.$SampleName.$chr.serialjobs
@@ -542,7 +542,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 #         #recaljobid=`qsub $qsub_realrecal`
 #         # new line to avoid hiccup
 #         #`qhold -h u $recaljobid`
-#         echo $recaljobid >> $outputdir/logs/REALRECALpbs.$bamfile
+#         echo $recaljobid >> $outputdir/logs/pbs.REALRECAL.$bamfile
 #      else 
 #         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
 #         echo "nohup $scriptdir/realrecal.sh $????#####outputdir $outputfile $chr ${chrinfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr > $RealignOutputLogs/log.realrecal.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
@@ -572,7 +572,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 #            echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
 #            `chmod a+r $qsub_vcallgatk`
 ##            vcalljobid=`qsub $qsub_vcallgatk`
-#            echo $vcalljobid >> $outputdir/logs/VCALLGATKpbs.$bamfile
+#            echo $vcalljobid >> $outputdir/logs/pbs.VCALLGATK.$bamfile
 #         else
 #            # something is messed up with redirection here
 #            echo "nohup $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
@@ -611,9 +611,9 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    case $run_method in
    "APRUN")
       echo -e "\n\nscheduling qsubs\n\n"
-      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
-      truncate -s 0 $RealignOutputLogs/REALRECALpbs
-      truncate -s 0 $VcallOutputLogs/VCALGATKpbs
+      truncate -s 0 $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
+      truncate -s 0 $RealignOutputLogs/pbs.REALRECAL
+      truncate -s 0 $VcallOutputLogs/pbs.VCALGATK
 
       while read SampleName
       do
@@ -639,7 +639,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
             split_job=`qsub $qsub_split`
             `qhold -h u $split_job`
-            echo $split_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+            echo $split_job >> $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
 
 
 
@@ -659,7 +659,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
             realrecal_job=`qsub $qsub_realrecal`
             `qhold -h u $realrecal_job`
             #`qrls -h u $split_job` 
-            echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
+            echo $realrecal_job >> $RealignOutputLogs/pbs.REALRECAL
 
 
 
@@ -684,7 +684,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    
                vcall_job=`qsub $qsub_vcall`
                #`qrls -h u $realrecal_job`
-               echo $vcall_job >> $VcallOutputLogs/VCALGATKpbs
+               echo $vcall_job >> $VcallOutputLogs/pbs.VCALGATK
             #else
                #`qrls -h u $realrecal_job` 
             fi
@@ -816,11 +816,11 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       ############### 
       echo -e "\n going through chromosomes again to schedule all split before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
       # reset the list of SPLITBYCHROMOSOME pbs ids
-      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
-      truncate -s 0 $RealignOutputLogs/REALRECALpbs
+      truncate -s 0 $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
+      truncate -s 0 $RealignOutputLogs/pbs.REALRECAL
       if [ $skipvcall == "NO" ]
       then
-         truncate -s 0 $VcallOutputLogs/VCALGATKpbs
+         truncate -s 0 $VcallOutputLogs/pbs.VCALGATK
       fi
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
       # first split_bam_by_chromosome
@@ -828,7 +828,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       do
          split_bam_by_chromosome_job=`qsub $RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher`
          `qhold -h u $split_bam_by_chromosome_job` #I am not going to allow these to run right away,
-         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs # will read these in to release them later
+         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/pbs.SPLITBYCHROMOSOME # will read these in to release them later
          # add dependency on split_bam_by_chromosome job to realrecal job
          sed -i "2i #PBS -W depend=afterok:$split_bam_by_chromosome_job" $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
       done
@@ -839,7 +839,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          # I am not going to put these on hold, as they will be helkd back by the dependency on respective split jobs
          # Add dependency on realrecal job to vcallgatk job
          sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
-         echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
+         echo $realrecal_job >> $RealignOutputLogs/pbs.REALRECAL
       done
       if [ $skipvcall == "NO" ]
       then
@@ -848,12 +848,12 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          for chr in $indices
          do
             vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
-            echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
+            echo $vcallgatk_job >> $VcallOutputLogs/pbs.VCALGATK
          done 
       fi
 
       # now release the split_bam_by_chromosome jobs
-      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
+      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/pbs.SPLITBYCHROMOSOME | sed "s/\..*//" | tr "\n" " " )
       #qrls -h u $split_bam_by_chromosome_ids
    ;;
    "SERVER")
@@ -876,9 +876,9 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
    if [ $skipvcall == "NO" ]
    then
-      summarydependids=$( cat $VcallOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $VcallOutputLogs/pbs.VCALGATK | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/pbs.REALRECAL | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""
@@ -901,7 +901,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
        `chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
-       echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+       echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
    fi
 
    `sleep 30s`
@@ -925,7 +925,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
-   echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
+   echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
    if [ `expr ${#lastjobid}` -lt 1 ]
    then
@@ -945,19 +945,19 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
        echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
        `chmod a+r $qsub_summary`
        badjobid=`qsub $qsub_summary`
-       echo $badjobid >> $TopOutputLogs/SUMMARYpbs
+       echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
    fi
 
 
    # release all jobs now
-   splitids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
+   splitids=$( cat $RealignOutputLogs/pbs.SPLITBYCHROMOSOME | sed "s/\..*//" | tr "\n" " " )
    `qrls -h u $splitids`
-   realrecalids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" " " )
+   realrecalids=$( cat $RealignOutputLogs/pbs.REALRECAL | sed "s/\..*//" | tr "\n" " " )
    `qrls -h u $realrecalids`
 
    if [ $skipvcall == "NO" ]
    then
-      vcalids=$( cat $VcallOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" " " )
+      vcalids=$( cat $VcallOutputLogs/pbs.VCALGATK | sed "s/\..*//" | tr "\n" " " )
       `qrls -h u $vcalids`
    fi
 

@@ -564,7 +564,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -M $email" >> $qsub_fastqcR1
 		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
 		`chmod a+r $qsub_fastqcR1`
-                `qsub $qsub_fastqcR1 >> $TopOutputLogs/FASTQCpbs`
+                `qsub $qsub_fastqcR1 >> $TopOutputLogs/pbs.FASTQC`
 
 		if [ $paired -eq 1 ]
 		then
@@ -593,7 +593,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		    echo "#PBS -M $email" >> $qsub_fastqcR2
 		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
 		    `chmod a+r $qsub_fastqcR2`
-                    `qsub $qsub_fastqcR2 >> $TopOutputLogs/FASTQCpbs`
+                    `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
 		fi
             else
 		echo "quality information for fastq files will NOT be calculated."
@@ -910,7 +910,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 ###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                       ###########################################
 ##########################################################################################################################################
 
-            cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+            cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
 
             if [ $chunkfastq == "YES" ]
             then
@@ -1000,8 +1000,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
               echo "#PBS -M $email" >> $qsubAlignLauncher
               echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
               AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
-              echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-              echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+              echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
            ;;           
            "APRUN")
               while read SampleName
@@ -1026,8 +1026,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "QSUB")
@@ -1052,8 +1052,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done
            ;;
            esac
@@ -1107,10 +1107,10 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                     novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
-                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs_${SampleName} # so that this job could be released in the next section. Should it be held to begin with?
+                    echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED_${SampleName} # so that this job could be released in the next section. Should it be held to begin with?
 
                  done # done looping over chunks of a sample
-                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
                  alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
 
                  qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
@@ -1135,7 +1135,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
-                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+                 echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
 
                  # release all held novosplit jobs for this sample
                  `qrls -h u $alignids`
@@ -1172,10 +1172,10 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                     cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit
                     novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
-                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+                    echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 
                  done # done looping over chunks of a sample
-                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
                  alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
 
                  qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
@@ -1200,7 +1200,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
-                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+                 echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
 
                  # release all held novosplit jobs for this sample
                  `qrls -h u $alignids`
@@ -1271,7 +1271,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               novosplit_job=`qsub $qsub_novosplit_anisimov`
               `qhold -h u $novosplit_job`
-              echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 
 
               ###############################
@@ -1290,7 +1290,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
-              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it 
+              echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it 
 
            ;;
            "SERVER")
@@ -1311,10 +1311,10 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 ########################################################################################################
 
         
-	pbsids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" ":" )
-	#extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+	pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )
+	#extraids=$( cat $TopOutputLogs/pbs.EXTRACTREADS | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
-        alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
+        alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
 
         ## generating summary redmine email if analysis ends here
 	echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"
@@ -1345,7 +1345,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
 		`chmod a+r $qsub_cleanup`
 		cleanjobid=`qsub $qsub_cleanup`
-		echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+		echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
             fi
 
             `sleep 30s`
@@ -1369,7 +1369,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 	    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
 	    `chmod a+r $qsub_summary`
 	    lastjobid=`qsub $qsub_summary`
-	    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
+	    echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
 	    then
@@ -1389,7 +1389,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 		echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
 		`chmod a+r $qsub_summary`
 		badjobid=`qsub $qsub_summary`
-		echo $badjobid >> $TopOutputLogs/SUMMARYpbs
+		echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
 	    fi
 	fi
 
@@ -1410,7 +1410,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 	    echo "#PBS -M $email" >> $qsub_realign
 	    echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub_realign
 	    `chmod a+r $qsub_realign` 
-	    `qsub $qsub_realign >> $TopOutputLogs/REALRECALpbs`
+	    `qsub $qsub_realign >> $TopOutputLogs/pbs.REALRECAL`
 
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`

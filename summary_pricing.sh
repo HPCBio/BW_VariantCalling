@@ -13,7 +13,7 @@ else
         email=$2
         exitstatus=$3
         
-	listjobids=$( cat $outputdir/logs/*pbs | sed "s/\.[a-z]*//g" | tr "\n" "\t" )        
+	listjobids=$( cat $outputdir/logs/pbs.* | sed "s/\.[a-z]*//g" | tr "\n" "\t" )        
         if [ $exitstatus == "exitok" ]
         then
             MSG="GGPS pipeline finished successfully on iforge by username:$USER at: "$( echo `date` )

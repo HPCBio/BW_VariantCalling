@@ -769,14 +769,14 @@ echo "##########################################################################
       RealignOutputLogs=$outputdir/logs/realign
       VcallOutputLogs=$outputdir/logs/variant
       
-      truncate -s 0 $RealignOutputLogs/REALXSAMPLEXCHRpbs
-      truncate -s 0 $RealignOutputLogs/REALRECALXLANEXCHRpbs
-      truncate -s 0 $RealignOutputLogs/MERGEXSAMPLEpbs
-      truncate -s 0 $RealignOutputLogs/VERIFYXSAMPLEpbs
+      truncate -s 0 $RealignOutputLogs/pbs.REALXSAMPLEXCHR
+      truncate -s 0 $RealignOutputLogs/pbs.REALRECALXLANEXCHR
+      truncate -s 0 $RealignOutputLogs/pbs.MERGEXSAMPLE
+      truncate -s 0 $RealignOutputLogs/pbs.VERIFYXSAMPLE
 
       if [ $skipvcall == "NO" ]
       then
-          truncate -s 0 $VcallOutputLogs/VCALLGATKpbs
+          truncate -s 0 $VcallOutputLogs/pbs.VCALLGATK
       fi
       
       cd $RealignOutputLogs 
@@ -791,16 +791,16 @@ echo "##########################################################################
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
 	      lanes=$( echo "$SampleLine" | cut -f 2 )
-	      truncate -s 0 $RealignOutputLogs/${sample}_REALRECALpbs
+	      truncate -s 0 $RealignOutputLogs/pbs.${sample}_REALRECAL
 	      for lane in $lanes
 	      do
               	realrecalXlane_job=`qsub $RealignOutputLogs/qsub.realrecalLane.${lane}.AnisimovLauncher`
               	`qhold -h u $realrecalXlane_job` 
-              	echo $realrecalXlane_job >> $RealignOutputLogs/REALRECALXLANEXCHRpbs 
-              	echo $realrecalXlane_job >> $RealignOutputLogs/${sample}_REALRECALpbs              	
+              	echo $realrecalXlane_job >> $RealignOutputLogs/pbs.REALRECALXLANEXCHR 
+              	echo $realrecalXlane_job >> $RealignOutputLogs/pbs.${sample}_REALRECAL              	
               
               done
-              realrecalxsamplexlane=$( cat $RealignOutputLogs/${sample}_REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+              realrecalxsamplexlane=$( cat $RealignOutputLogs/pbs.${sample}_REALRECAL | sed "s/\..*//" | tr "\n" ":" )
               sed -i "2i #PBS -W depend=afterok:$realrecalxsamplexlane" $RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher
      
               mergeSample_job=`qsub $RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher`
@@ -818,10 +818,10 @@ echo "##########################################################################
               VcallSample_job=`qsub $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher`  
               `qhold -h u $VcallSample_job`
 
-              echo $mergeSample_job   >> $RealignOutputLogs/MERGEXSAMPLEpbs
-              echo $RealignSample_job >> $RealignOutputLogs/REALXSAMPLEXCHRpbs
-              echo $VerifySample_job  >> $RealignOutputLogs/VERIFYXSAMPLEpbs
-              echo $VcallSample_job   >> $VcallOutputLogs/VCALLGATKpbs               
+              echo $mergeSample_job   >> $RealignOutputLogs/pbs.MERGEXSAMPLE
+              echo $RealignSample_job >> $RealignOutputLogs/pbs.REALXSAMPLEXCHR
+              echo $VerifySample_job  >> $RealignOutputLogs/pbs.VERIFYXSAMPLE
+              echo $VcallSample_job   >> $VcallOutputLogs/pbs.VCALLGATK
           fi
       done <  $outputdir/SAMPLEGROUPS.list
    ;;
@@ -835,9 +835,9 @@ echo "##########################################################################
 
    if [ $skipvcall == "NO" ]
    then
-      summarydependids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $VcallOutputLogs/pbs.VCALLGATK | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/pbs.VERIFYXSAMPLE | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""
@@ -860,7 +860,7 @@ echo "##########################################################################
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
        `chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
-       echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+       echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
    fi
 
    `sleep 30s`
@@ -884,7 +884,7 @@ echo "##########################################################################
    echo "$scriptdir/summary.sh $runfile $email exitafterany $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
-   echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
+   echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
 
    echo "rewrite summary report if all jobs finished ok"
@@ -908,7 +908,7 @@ echo "##########################################################################
    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summaryany
    `chmod a+r $qsub_summaryany`
    badjobid=`qsub $qsub_summaryany`
-   echo $badjobid >> $TopOutputLogs/SUMMARYpbs
+   echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
 
 
 
@@ -919,13 +919,13 @@ echo "##########################################################################
       echo "####################################################################################################"
 
 
-     realsampleids=$( cat $RealignOutputLogs/REALXSAMPLEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
-     verifysampleids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
-     realrecalids=$( cat $RealignOutputLogs/REALRECALXLANEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
-     mergeids=$( cat $RealignOutputLogs/MERGEXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
+     realsampleids=$( cat $RealignOutputLogs/pbs.REALXSAMPLEXCHR | sed "s/\..*//" | tr "\n" " " )
+     verifysampleids=$( cat $RealignOutputLogs/pbs.VERIFYXSAMPLE | sed "s/\..*//" | tr "\n" " " )
+     realrecalids=$( cat $RealignOutputLogs/pbs.REALRECALXLANEXCHR | sed "s/\..*//" | tr "\n" " " )
+     mergeids=$( cat $RealignOutputLogs/pbs.MERGEXSAMPLE | sed "s/\..*//" | tr "\n" " " )
      if [ $skipvcall == "NO" ]
      then
-         vcallids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" " " )
+         vcallids=$( cat $VcallOutputLogs/pbs.VCALLGATK | sed "s/\..*//" | tr "\n" " " )
      fi
 
      `qrls -h u $realsampleids`    

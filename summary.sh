@@ -29,8 +29,8 @@ else
         cp $outputdir/*.txt $delivery
         cp $outputdir/*.list $delivery
 
-	listjobids=$( cat $outputdir/logs/*pbs cat $outputdir/logs/*/*pbs | sort | uniq | tr "\n" "\t" )
-	pipeid=$( cat $outputdir/logs/CONFIGUREpbs )
+	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )
+	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
 
         if [ $exitstatus == "exitok" ]
         then

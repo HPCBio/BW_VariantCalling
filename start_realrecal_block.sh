@@ -286,14 +286,14 @@ echo "##########################################################################
             `chmod a+r $qsub_sortbammayo`
             sortid=`qsub $qsub_sortbammayo`
             #`qhold -h u $sortid`
-            echo $sortid >> $TopOutputLogs/REALSORTEDMAYOpbs
+            echo $sortid >> $TopOutputLogs/pbs.REALSORTEDMAYO
 
             listfiles=$outputalign/$sorted${sep}${listfiles}
          fi # end of if statement checking for empty line in the SampleName file
       done <  $outputdir/SAMPLENAMES.list
       # end loop over input samples
 
-      cp $TopOutputLogs/REALSORTEDMAYOpbs $TopOutputLogs/ALN_MAYO_jobids
+      cp $TopOutputLogs/pbs.REALSORTEDMAYO $TopOutputLogs/ALN_MAYO_jobids
       JOBSmayo=$( cat $TopOutputLogs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
    fi
 
@@ -323,9 +323,9 @@ echo "#####################################                                #####
 echo "#############################################################################################################"
 
    # grab job ids for align and for preprocessing done in this module
-   alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
-   mergeids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
-   sortedmayoids=$( cat $TopOutputLogs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
+   alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
+   mergeids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" " " )
+   sortedmayoids=$( cat $TopOutputLogs/pbs.REALSORTEDMAYO | sed "s/\..*//" | tr "\n" " " )
 
 
 
@@ -382,7 +382,7 @@ echo "##########################################################################
       `chmod a+r $qsub_schedule_realrecal_per_chromosome`               
       realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
       # `qhold -h u $realrecaljob` 
-      echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+      echo $realrecaljob >> $TopOutputLogs/pbs.RECALL
       ;;
    "SERVER")
       nohup $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome > $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in 

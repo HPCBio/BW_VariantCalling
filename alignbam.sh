@@ -553,9 +553,9 @@ else
 	    `chmod a+r $qsub5`
 	    extrajob=`qsub $qsub5`
             `qhold -h u $extrajob`
-            echo $extrajob >> $output_logs/EXTRACTREADSpbs
-            cat $outputlogs/MERGED_$dirname >> $output_logs/MERGEDpbs
-	    cat $outputlogs/ALIGNED_$dirname >> $output_logs/ALIGNEDpbs
+            echo $extrajob >> $output_logs/pbs.EXTRACTREADS
+            cat $outputlogs/MERGED_$dirname >> $output_logs/pbs.MERGED
+	    cat $outputlogs/ALIGNED_$dirname >> $output_logs/pbs.ALIGNED
           fi
 	done < $samplefileinfo
 
@@ -563,10 +563,10 @@ else
      ## wrapup if analysis ends here
      ##################
 
-     pbsids=$( cat $output_logs/MERGEDpbs | sed "s/\.[a-z]*//" | tr "\n" ":" )
-     extraids=$( cat $output_logs/EXTRACTREADSpbs | sed "s/\.[a-z]*//" | tr "\n" " " )
+     pbsids=$( cat $output_logs/pbs.MERGED | sed "s/\.[a-z]*//" | tr "\n" ":" )
+     extraids=$( cat $output_logs/pbs.EXTRACTREADS | sed "s/\.[a-z]*//" | tr "\n" " " )
      mergeids=$( echo $pbsids | tr ":" " " )
-     alignids=$( cat $output_logs/ALIGNEDpbs | sed "s/\.[a-z]*//" | tr "\n" " " )
+     alignids=$( cat $output_logs/pbs.ALIGNED | sed "s/\.[a-z]*//" | tr "\n" " " )
      echo $pbsids >> $output_logs/ALIGN_NCSA_jobids
 
      if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
@@ -596,7 +596,7 @@ else
 	     echo "aprun -n 1 -d 1 $scriptdir/cleanup.sh $outputdir $analysis $output_logs/log.cleanup.align.in $output_logs/log.cleanup.align.ou $email $output_logs/qsub.cleanup.align"  >> $qsub6
 	     `chmod a+r $qsub6`
 	     cleanjobid=`qsub $qsub6`
-	     echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+	     echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
          fi
 
          `sleep 30s`
@@ -622,7 +622,7 @@ else
 	 echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
 	 `chmod a+r $qsub4`
 	 lastjobid=`qsub $qsub4`
-	 echo $lastjobid >> $output_logs/SUMMARYpbs
+	 echo $lastjobid >> $output_logs/pbs.SUMMARY
 
 	 if [ `expr ${#lastjobid}` -lt 1 ]
 	 then
@@ -643,7 +643,7 @@ else
 	     echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
 	     `chmod a+r $qsub5`
 	     badjobid=`qsub $qsub5`
-	     echo $badjobid >> $output_logs/SUMMARYpbs
+	     echo $badjobid >> $output_logs/pbs.SUMMARY
 	 fi
      fi
 
@@ -669,7 +669,7 @@ else
             echo "#PBS -W depend=afterany:$pbsids" >> $qsub2
 	    echo "aprun -n 1 -d 1 $scriptdir/start_realrecal_block.sh $runfile $output_logs/start_realrecal_block.in $output_logs/start_realrecal_block.ou $email $output_logs/qsub.start_realrecal_block" >> $qsub2
 	    `chmod a+r $qsub2` 
-	    `qsub $qsub2 >> $output_logs/REALRECALpbs`
+	    `qsub $qsub2 >> $output_logs/pbs.REALRECAL`
 
             # releasing held jobs; else the above job dependency will never be met
             `qrls -h u $alignids`
