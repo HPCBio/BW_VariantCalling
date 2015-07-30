@@ -297,7 +297,7 @@ else
 		echo "#PBS -M $email" >> $qsub1
 		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
 		`chmod a+r $qsub1`               
-		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
+		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		case="alignonly"
 	    fi
@@ -318,7 +318,7 @@ else
 		echo "#PBS -M $email" >> $qsub2
 		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.start_realrecal_block.in $TopOutputLogs/log.start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
 		`chmod a+r $qsub2` 
-		`qsub $qsub2 >> $TopOutputLogs/REALRECALpbs`
+		`qsub $qsub2 >> $TopOutputLogs/pbs.REALRECAL`
 		echo `date`
 		case="realignonly" 
 	    fi
@@ -339,7 +339,7 @@ else
 		echo "#PBS -M $email" >> $qsub1
 		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 		`chmod a+r $qsub1`               
-		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
+		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		echo "Note: realign module will be scheduled after align module ends"
 		case="align and realign"  
@@ -362,7 +362,7 @@ else
 		echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.start_varcall_block.in $TopOutputLogs/log.start_varcall_block.ou $email $TopOutputLogs/qsub.start_varcall_block" >> $qsub3
 		`chmod a+r $qsub3`
 		vcalljobid=`qsub $qsub3`
-		echo $vcalljobid >> $TopOutputLogs/VARCALLpbs
+		echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL
 		case="vcall_only"  
 	    fi
 	    if [ `expr ${#case}` -lt 1 ]
