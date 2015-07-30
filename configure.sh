@@ -170,6 +170,10 @@ else
         pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
 
+
+
+
+        #############################
 	set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline";
         echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created\n\n"; set -x;
  
@@ -207,8 +211,8 @@ else
 		do
                    # strip path, which read (left/right), and extension from input files
                    # and put that info into the SampleNames file
-		    SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
-		    echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		   SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
+		   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
 		done
 	    elif [ $inputformat == "BAM" ]
 	    then
@@ -216,8 +220,8 @@ else
 		do
                    # strip path, which read (left/right), and extension from input files
                    # and put that info into the SampleNames file
-		    SampleName=$( basename $inputfile .bam )
-		    echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		   SampleName=$( basename $inputfile .bam )
+		   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
 		done
 	    fi
             # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
@@ -244,6 +248,8 @@ else
 
 
 
+
+        ###################################################
 	set +x; echo -e "\n\nOne more configuration task: generate a qsub header so we would not have to repeat the same lines\n\n"; set -x;
 	generic_qsub_header=$outputdir/qsubGenericHeader
 	truncate -s 0 $generic_qsub_header
@@ -263,6 +269,10 @@ else
 	fi
 
 
+
+
+
+        ###################################################
         set +x; echo -e "\n\n"; 
         echo -e "done with preprocessing and configuration steps"
 	echo -e "now we select analysis or analyses to run"
@@ -280,12 +290,12 @@ else
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
 		`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
 		echo `date`
@@ -301,12 +311,12 @@ else
 		echo "#pbs -l epilogue=$epilogue" >> $qsub2
 		echo "#PBS -l walltime=00:30:00" >> $qsub2
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-		echo "#PBS -o $TopOutputLogs/start_realrecal_block.ou" >> $qsub2
-		echo "#PBS -e $TopOutputLogs/start_realrecal_block.in" >> $qsub2
+		echo "#PBS -o $TopOutputLogs/log.start_realrecal_block.ou" >> $qsub2
+		echo "#PBS -e $TopOutputLogs/log.start_realrecal_block.in" >> $qsub2
 		echo "#PBS -q $pbsqueue" >> $qsub2
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
-		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
+		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.start_realrecal_block.in $TopOutputLogs/log.start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
 		`chmod a+r $qsub2` 
 		`qsub $qsub2 >> $TopOutputLogs/REALRECALpbs`
 		echo `date`
@@ -322,12 +332,12 @@ else
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 		`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
 		echo `date`
