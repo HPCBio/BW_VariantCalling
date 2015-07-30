@@ -381,7 +381,7 @@ echo "##########################################################################
 
 
 
-        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+        pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
         #chunks=`expr $nodes "-" 1`
         #if [ $chunks -lt 1 ]

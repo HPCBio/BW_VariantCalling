@@ -27,7 +27,7 @@ else
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
-        pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
+        p.gzbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -101,7 +101,7 @@ else
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
-        echo $pipeid >> $outputlogs/pbsCONFIGURE
+        echo $pipeid >> $outputlogs/pbs.CONFIGURE
         echo `date`
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )

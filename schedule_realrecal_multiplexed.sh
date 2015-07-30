@@ -321,7 +321,7 @@ fi
    then
       mkdir -p $VcallOutputLogs
    fi
-   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+   pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
    if [ $schedule == "LAUNCHER" ]
    then

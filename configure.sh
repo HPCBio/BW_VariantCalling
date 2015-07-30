@@ -167,7 +167,7 @@ else
 	`chmod -R 770 $outputdir`
         `chmod 750 $epilogue`
         TopOutputLogs=$outputdir/logs
-        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+        pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
 
 	set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline";

@@ -140,7 +140,7 @@ echo -e "\n\n\n#####################    resetting output directories, logs, file
            mkdir -p $AlignmentOutputFolder
         fi
 
-        pipeid=$( cat $TopLogsFolder/CONFIGUREpbs )
+        pipeid=$( cat $TopLogsFolder/pbs.CONFIGURE )
         pbsids=""
 
 
