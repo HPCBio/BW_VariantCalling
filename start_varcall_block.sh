@@ -208,7 +208,7 @@ else
 		for chr in $indices
 		do
 		    vcf_files=${vcf_files}":${prefix}"
-		    inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
+		    inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/MT/27/' )
 
                      echo "invoking variant calling..."
 		     qsub3=$varlogdir/qsub.vcallgatk.${preffix}.$chr
