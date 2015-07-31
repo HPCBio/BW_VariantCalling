@@ -128,7 +128,6 @@ Runfile options
 
 ## i/o
 INPUTDIR=/full/path/to/folder/with/input/files
-SAMPLEDIR=/full/path/to/folder/with/input/files
 SAMPLEFILENAMES=/full/path/file.samplenames
 OUTPUTDIR=/projects/mayo/GGPSresults/meaningful_output_dir_name
 EMAIL=you@email
