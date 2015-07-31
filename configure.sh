@@ -206,7 +206,8 @@ else
 	    fi
 	elif [ ! -e $outputdir/SAMPLENAMES.list ]
 	then
-            set +x; echo -e "\n ###### produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
+            set +x; echo -e "\n ###### ANALYSIS = $analysis, IS NOT = MULTIPLEXED ########" >&2;
+            echo -e "\n ###### produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
 	    truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
 	    if  [ $inputformat == "FASTQ" ]
 	    then
@@ -289,7 +290,7 @@ else
 	    then
 		echo "Type of analysis to run: ALIGNMENT only"      
 		qsub1=$TopOutputLogs/qsub.start_align_block
-		echo "#PBS -V" > $qsub1
+                echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
@@ -310,7 +311,7 @@ else
 	    then
 		echo "Type of analysis to run: REALIGNMENT only. bams provided"
 		qsub2=$TopOutputLogs/qsub.start_realrecal_block
-		echo "#PBS -V" > $qsub2
+                echo "#!/bin/bash" > $qsub2
 		echo "#PBS -A $pbsprj" >> $qsub2
 		echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK"
 		echo "#pbs -l epilogue=$epilogue" >> $qsub2
@@ -331,7 +332,7 @@ else
 	    then
 		echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
 		qsub1=$TopOutputLogs/qsub.start_align_block
-		echo "#PBS -V" > $qsub1
+                echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
@@ -353,7 +354,7 @@ else
 	    then
 		echo "variant calling only"
 		qsub3=$TopOutputLogs/qsub.start_varcall_block
-		echo "#PBS -V" > $qsub3
+		echo "#!/bin/bash" > $qsub3
 		echo "#PBS -A $pbsprj" >> $qsub3
 		echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
 		echo "#PBS -l epilogue=$epilogue" >> $qsub3
