@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash 
 #	
 #  script to perform variant calling with unifiedgenotyper ONLY
 #  This module is called from within the realign module

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # start_realrecal_block.sh
 # Second module in the GGPS analysis pipeline

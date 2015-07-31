@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# -gt 16 ]
 then

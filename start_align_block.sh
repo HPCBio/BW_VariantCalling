@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # start_align_block.sh
 # First module in the GGPS analysis pipeline

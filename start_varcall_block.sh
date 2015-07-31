@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #  script to realign and recalibrate the aligned file(s)
 redmine=hpcbio-redmine@igb.illinois.edu

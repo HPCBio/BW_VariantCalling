@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # alignbam.sh
 # align module to be used for input files in bam format

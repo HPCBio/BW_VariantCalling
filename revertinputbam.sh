@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ######################################
 #  script to revertsam on input bamfiles that need to be realigned-recal
 #

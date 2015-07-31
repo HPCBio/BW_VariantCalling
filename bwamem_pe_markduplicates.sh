@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 14 ]
 then

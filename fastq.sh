@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ######################################
 #  script to calculate quality information of fastq file
 ######################################

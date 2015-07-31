@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ######################################
 #  script to convert bam files back to fastq as pre requisite to alignment
 #

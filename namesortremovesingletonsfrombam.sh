@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ######################################
 #  script to sort reads by name and remove singletons
 #

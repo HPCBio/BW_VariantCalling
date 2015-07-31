@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###############################
 # input files are sorted bam files with readgroup info added to each file
 # files were the result of splitting input file prior to running alignment
