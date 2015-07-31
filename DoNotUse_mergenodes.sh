@@ -1,15 +1,14 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
+#!/bin/bash
 ###############################
 # input files are sorted bam files with readgroup info added to each file
 # files were the result of splitting input file prior to running alignment
 ###############################
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 11 ] 
 then
     MSG="parameter mismatch."
-    echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+    echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
     exit 1;
 else
     set -x
@@ -45,31 +44,31 @@ else
     if [ ! -d $outputdir ]
     then
        MSG="$outputdir results directory not found"
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
     if [ ! -d $picardir ]
     then
        MSG="$picardir picard directory not found"
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
     if [ ! -d $samdir ]
     then
        MSG="$samdir samtools directory not found"
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
     if [ `expr ${#infiles}` -lt 1 ]
     then
        MSG="$infiles empty list of files to merge"
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
     if [ -z $javamodule ]
     then
        MSG="Value for JAVAMODULE must be specified in configuration file"
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     else
 	#`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
@@ -93,7 +92,7 @@ else
     if [ $exitcode -ne 0 ]
     then
         MSG="mergesamfiles command failed.  exitcode=$exitcode mergenodes failed"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
         exit $exitcode;
     fi
     echo `date`
@@ -101,7 +100,7 @@ else
     if [ ! -s $tmpfilewdups ]
     then
         MSG="$tmpfilewdups file not created. picard-merge step failed mergenodes failed "
-       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email"" 
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email"" 
         exit 1;
     fi
 
@@ -111,7 +110,7 @@ else
     if [ $exitcode -ne 0 ]
     then
          MSG="samtools index command failed.  exitcode=$exitcode mergenodes stopped"
-         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
          exit $exitcode;
     fi
     echo `date`
@@ -121,7 +120,7 @@ else
     if [ $exitcode -ne 0 ]
     then
          MSG="samtools view command failed.  exitcode=$exitcode mergenodes stopped"
-         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
          exit $exitcode;
     fi
     echo `date`
@@ -135,7 +134,7 @@ else
      if [ $exitcode -ne 0 ]
      then
          MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenodes stopped"
-         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
          exit $exitcode;
      fi
     echo `date`
@@ -158,7 +157,7 @@ else
 	if [ $exitcode -ne 0 ]
 	then
             MSG="markduplicates command failed.  exitcode=$exitcode mergenodes stopped"
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
 	fi
 	    
@@ -166,7 +165,7 @@ else
 	if [ ! -s $outfilewdups ]
 	then
 	    MSG="$outfilewdups file not created. markDuplicates step failed"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
 	fi
         echo "indexing bam file w marked duplicates"
@@ -175,7 +174,7 @@ else
 	if [ $exitcode -ne 0 ]
 	then
             MSG="samtools index command failed.  exitcode=$exitcode mergenodes stopped"
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
 	fi
 	echo `date`
@@ -185,7 +184,7 @@ else
 	if [ $exitcode -ne 0 ]
 	then
             MSG="samtools view command failed.  exitcode=$exitcode mergenodes stopped"
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
 	fi
 	echo `date`
@@ -198,7 +197,7 @@ else
 	if [ $exitcode -ne 0 ]
 	then
             MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenodes stopped"
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit $exitcode;
 	fi
 	echo `date`
@@ -221,7 +220,7 @@ else
 	    if [ $exitcode -ne 0 ]
 	    then
 		MSG="markduplicates command failed.  exitcode=$exitcode mergenodes stopped"
-		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
 	    fi
 	    
@@ -229,7 +228,7 @@ else
 	    if [ ! -s $outfilenodups ]
 	    then
 		MSG="$outfilenodups file not created. RemoveDuplicates step failed.  mergenodes failed "
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit 1;
 	    fi
             echo "indexing bam file w removed duplicates"
@@ -238,7 +237,7 @@ else
 	    if [ $exitcode -ne 0 ]
 	    then
 		MSG="samtools index command failed.  exitcode=$exitcode mergenodes stopped"
-		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
 	    fi
 	    
@@ -249,7 +248,7 @@ else
 	    if [ $exitcode -ne 0 ]
 	    then
 		MSG="samtools view command failed.  exitcode=$exitcode mergenodes stopped"
-		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
 	    fi
 	    
@@ -263,7 +262,7 @@ else
 	    if [ $exitcode -ne 0 ]
 	    then
 		MSG="collectalignmentsummarymetrics command failed.  exitcode=$exitcode mergenodes stopped"
-		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
 	    fi
 	    echo `date`

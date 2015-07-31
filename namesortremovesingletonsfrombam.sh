@@ -1,15 +1,14 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
+#!/bin/bash
 ######################################
 #  script to sort reads by name and remove singletons
 #
 ######################################
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 11 ];
 then
 	MSG="parameter mismatch"
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else					
 	set -x
@@ -31,14 +30,14 @@ else
         if [ ! -s $infile ]
         then
 	    MSG="$infile input bam file not found"
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         if [ ! -d $sortdir ]
         then
 	    MSG="$sortdir  directory not found"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi      
 
@@ -57,14 +56,14 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="sortbyname command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
 
             if [ ! -s $temfile".name_sorted" ]
             then
 		MSG="${temfile}.name_sorted  -preprocessing of bam file failed to create bam file sorted by name"
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit 1;
 	    fi
 	    echo `date`
@@ -75,7 +74,7 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="bam2sam command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
 
@@ -85,7 +84,7 @@ else
             if [ $exitcode -ne 0 ]
             then
                 MSG="header generation failed. exitcode=$exitcode "
-                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit $exitcode;
             fi
 
@@ -96,7 +95,7 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="extracting name tags from sam file, command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
 
@@ -106,7 +105,7 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="counting tags, command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
             awk '{if ($1==2) print $2}' $temfile".name_sorted.sam.names_only.counted" > $temfile".name_sorted.sam.names_only.counted.occur_only_twice"
@@ -115,7 +114,7 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="finding unique tags, command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
 
@@ -125,7 +124,7 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="FindDifferencesInOutput program failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
             cat $temfile".name_sorted.header" $temfile".preprocessed_no_header.sam" > $temfile".preprocessed.sam"
@@ -135,14 +134,14 @@ else
             if [ $exitcode -ne 0 ]
             then
 		MSG="sam2bam command failed. exitcode=$exitcode "
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi            
 
         if [ ! -s $outfile ]
         then
 	    MSG="$outfile  -preprocessing of bam file failed to create file"
-	    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
 	fi
 	echo `date`
@@ -157,7 +156,7 @@ else
         if [ $exitcode -ne 0 ]
         then
 	    MSG="CollectAlignmentSummaryMetrics command failed on outfile $outfile. exitcode=$exitcode "
-            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi
 

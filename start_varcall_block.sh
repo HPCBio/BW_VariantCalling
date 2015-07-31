@@ -1,8 +1,7 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
+#!/bin/bash
 #
 #  script to realign and recalibrate the aligned file(s)
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
     MSG="parameter mismatch."
@@ -22,7 +21,7 @@ else
         if [ ! -s $runfile ]
         then
 	    MSG="$runfile configuration file not found"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
@@ -61,7 +60,7 @@ else
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit 1;
             fi
         fi
@@ -69,7 +68,7 @@ else
         if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
         then
            MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $cleanupflag == "1" ]
@@ -85,7 +84,7 @@ else
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
            MSG="Invalid value for SKIPVCALL=$skipvcall"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $skipvcall == "1" ]
@@ -102,7 +101,7 @@ else
         if [ -z $epilogue ]
         then
            MSG="Value for EPILOGUE must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         else
            `chmod 750 $epilogue`
@@ -111,44 +110,44 @@ else
         if [ ! -d $picardir ]
         then
 	    MSG="$picardir picard directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -d $samdir ]
         then
 	    MSG="$samdir samtools directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -d $gatk ]
         then
 	    MSG="$gatk GATK directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         if [ ! -d $refdir ]
         then
 	    MSG="$refdir reference genome directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -s $refdir/$ref ]
         then
 	    MSG="$ref reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
         if [ ! -s $samplefileinfo ]
         then
 	    MSG="$samplefileinfo file not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
 
         vardir=$outputrootdir/variant
         varlogdir=$outputrootdir/logs/variant
-        pipeid=$( cat $outputrootdir/logs/CONFIGUREpbs )
+        pipeid=$( cat $outputrootdir/logs/pbs.CONFIGURE )
         vcf_files=""
 
         if [ ! -d $vardir ]
@@ -192,13 +191,13 @@ else
 		if [ `expr ${#bam}` -lt 1  ]
 		then
 		    MSG="parsing of line in SAMPLEFILENAMES failed. variant calling stopped"
-                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                     exit 1;
                 else 
                   if [ ! -s $bam ]
                   then
 		      MSG="Empty BAM file $bam. variant calling stopped"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                       exit 1;
                   fi
 		fi
@@ -227,7 +226,7 @@ else
 		     echo "$scriptdir/vcallgatk.sh $vardir $dirname $prefix $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.${preffix}.$chr.in $varlogdir/log.vcallgatk.${preffix}.$chr.ou $email $varlogdir/qsub.vcallgatk.${preffix}.$chr" >> $qsub3
 		     `chmod a+r $qsub3`
 		     vcalljobid=`qsub $qsub3`
-		     echo $vcalljobid >> $outputrootdir/logs/VARCALLpbs
+		     echo $vcalljobid >> $outputrootdir/logs/pbs.VARCALL
 		done
             else
                  echo "skipping empty line"
@@ -236,7 +235,7 @@ else
      done < $samplefileinfo
 
      `chmod -R 770 $vardir/`
-     listjobids=$( cat $outputrootdir/logs/VARCALLpbs | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+     listjobids=$( cat $outputrootdir/logs/pbs.VARCALL | sed "s/\.[a-z]*//g" | tr "\n" ":" )
      lastjobid=""
      mergevcfjobid=""
      cleanjobid=""
@@ -262,7 +261,7 @@ else
 	 echo "$scriptdir/mergevcf.sh $vardir $vcf_files $tabixdir $vcftoolsdir $varlogdir/log.mergevcf.in $varlogdir/log.mergevcf.ou $email $varlogdir/qsub.mergevcf"  >> $qsub1
 	 `chmod a+r $qsub1`
 	 mergevcfjobid=`qsub $qsub1`
-	 echo $mergevcfjobid >> $outputrootdir/logs/MERGEVCFpbs
+	 echo $mergevcfjobid >> $outputrootdir/logs/pbs.MERGEVCF
      fi
 
      # removing temporary files
@@ -290,7 +289,7 @@ else
 	 echo "$scriptdir/cleanup.sh $outputrootdir $analysis $outputrootdir/logs/log.cleanup.vcall.in $outputrootdir/logs/log.cleanup.vcall.ou $email $outputrootdir/logs/qsub.cleanup.vcall"  >> $qsub6
 	 `chmod a+r $qsub6`
 	 cleanjobid=`qsub $qsub6`
-	 echo $cleanjobid >> $outputrootdir/logs/CLEANUPpbs
+	 echo $cleanjobid >> $outputrootdir/logs/pbs.CLEANUP
      fi
 
      # producing summary report
@@ -318,10 +317,10 @@ else
 	     echo "#PBS -W depend=afterok:$mergevcfjobid" >> $qsub4
          fi         
      fi
-     echo "$scriptdir/summary.sh $outputrootdir $email exitok"  >> $qsub4
+     echo "$scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
      `chmod a+r $qsub4`
      lastjobid=`qsub $qsub4`
-     echo $lastjobid >> $outputrootdir/logs/SUMMARYpbs
+     echo $lastjobid >> $outputrootdir/logs/pbs.SUMMARY
 
      if [ `expr ${#lastjobid}` -lt 1 ]
      then
@@ -339,10 +338,10 @@ else
 	 echo "#PBS -m ae" >> $qsub5
 	 echo "#PBS -M $email" >> $qsub5
 	 echo "#PBS -W depend=afterany:$listjobids" >> $qsub5
-	 echo "$scriptdir/summary.sh $outputrootdir $email exitnotok"  >> $qsub5
+	 echo "$scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
 	 `chmod a+r $qsub5`
 	 badjobid=`qsub $qsub5`
-	 echo $badjobid >> $outputrootdir/logs/SUMMARYpbs
+	 echo $badjobid >> $outputrootdir/logs/pbs.SUMMARY
      fi
      `chmod -R 770 $outputroordir/logs`
      echo `date`

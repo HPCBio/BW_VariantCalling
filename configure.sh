@@ -1,12 +1,13 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
-#redmine=hpcbio-redmine@igb.illinois.edu
+#!/bin/bash
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 6 ]
 then
         MSG="Parameter mismatch."
         echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
+        
+        echo -e "\n\n############# CONFIGURE VARIANT CALLING WORKFLOW ###############\n\n" >&2
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -18,6 +19,11 @@ else
         qsubfile=$6
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+
+
+
+
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found."
@@ -25,7 +31,7 @@ else
         fi
 
  
-        echo -e "additional variable assignment from runfile and sanity check"
+        set +x; echo -e "\nadditional variable assignment from runfile and sanity check\n" >&2; set -x;
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -76,8 +82,8 @@ else
         if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
         then
            MSG="Invalid value for RESORTBAM=$resortbam"
-            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-            exit 1;
+           echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
         else
             if [ $resortbam == "1" ]
             then
@@ -135,11 +141,11 @@ else
             exit 1;
         elif [ $multisample == "YES" -a $analysis == "MULTIPLEXED" ]
         then 
-            echo -e "Checking that a tab delimited file with information about samples and lanes must exist for the MULTIPLEXED analysis pipeline to start."
+            set +x; echo -e "\nChecking that a tab delimited file with information about samples and lanes must exist for the MULTIPLEXED analysis pipeline to start.\n" >&2; set -x;
             if [ ! -s $sampleinfo ]
             then
 		MSG="SAMPLEINFORMATION=$sampleinfo invalid value. A tab delimited file with lanes and samples must be specified. "
-		echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
             fi
         fi
@@ -156,45 +162,52 @@ else
             mkdir -p $outputdir/logs
 	elif [ $runmode != "batch" ]
         then
-	    echo "resetting logs"
+	    set +x; echo -e "\n resetting logs\n" >&2; set -x; 
 	    `rm -r $outputdir/logs/*`
         fi
 	`chmod -R 770 $outputdir`
         `chmod 750 $epilogue`
         TopOutputLogs=$outputdir/logs
-        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+        pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
 
-	echo -e "constructing files with list(s) of input files to analyze in this run of the pipelien"
-        echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created"
+
+
+
+        #############################
+	set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline" >&2;
+        echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created\n\n" >&2; set -x;
  
 	if [ $analysis == "MULTIPLEXED" ]
 	then
-	    echo -e "produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list "
-	    echo -e "from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo."
+            set +x; echo -e "\n\n ############# ANALYSIS IS MULTIPLEXED ! ############\n\n" >&2; 
+            echo -e "produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
+            echo -e "from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
 	    perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
-            echo -e "testing that the perl script actually worked"
+            
+            set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
 	    if [ ! -s $outputdir/SAMPLENAMES.list ]
 	    then
 		MSG="$outputdir/SAMPLENAMES.list is empty"
-		echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    fi
 	    if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 	    then
 		MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
-		echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    fi
 	    if [ ! -s $outputdir/SAMPLEGROUPS.list ]
 	    then
 		MSG="$outputdir/SAMPLEGROUPS.list is empty"
-		echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    fi
 	elif [ ! -e $outputdir/SAMPLENAMES.list ]
 	then
-	    echo -e "produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir"
+            set +x; echo -e "\n ###### ANALYSIS = $analysis, IS NOT = MULTIPLEXED ########" >&2;
+            echo -e "\n ###### produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
 	    truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
 	    if  [ $inputformat == "FASTQ" ]
 	    then
@@ -202,8 +215,8 @@ else
 		do
                    # strip path, which read (left/right), and extension from input files
                    # and put that info into the SampleNames file
-		    SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
-		    echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		   SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
+                   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
 		done
 	    elif [ $inputformat == "BAM" ]
 	    then
@@ -211,8 +224,8 @@ else
 		do
                    # strip path, which read (left/right), and extension from input files
                    # and put that info into the SampleNames file
-		    SampleName=$( basename $inputfile .bam )
-		    echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		   SampleName=$( basename $inputfile .bam )
+                   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
 		done
 	    fi
             # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
@@ -220,12 +233,12 @@ else
 	    sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
 	    rm  $outputdir/SAMPLENAMES.tmp.list
 	fi
-        # check that this actually worked, 
-        # because otherwise the bash script will just go on, as if there is no problem
+        set +x; echo -e "\n### check that this actually worked, " >&2
+        echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
 	if [ ! -s $outputdir/SAMPLENAMES.list ]
 	then
 	    MSG="$outputdir/SAMPLENAMES.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit 1;
 	fi
 
@@ -233,34 +246,43 @@ else
 	if [ $numsamples -lt 1 ]
 	then
 	    MSG="No samples found in INPUTDIR=$sampledir."
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit 1;
 	fi
 
 
 
-	echo -e "One more configuration task: generate a qsub header so we would not have to repeat the same lines"
+
+        ###################################################
+	set +x; echo -e "\n\nOne more configuration task: generate a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
 	generic_qsub_header=$outputdir/qsubGenericHeader
 	truncate -s 0 $generic_qsub_header
 	echo "#!/bin/bash" > $generic_qsub_header
 	echo "#PBS -V" >> $generic_qsub_header
 	echo "#PBS -A $pbsprj" >> $generic_qsub_header
 	echo "#PBS -q $pbsqueue" >> $generic_qsub_header
-	echo "#PBS -m a" >> $generic_qsub_header
+	echo "#PBS -m ae" >> $generic_qsub_header
 	echo "#PBS -M $email" >> $generic_qsub_header
-        # check that this actually worked,
-        # because otherwise the bash script will just go on, as if there is no problem
+        set +x; echo -e "\n### check that this actually worked, " >&2
+        echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
         if [ ! -s $generic_qsub_header ]
 	then 
 	    MSG="$generic_qsub_header is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit 1;
 	fi
 
 
-        echo -e "done with preprocessing and configuration steps"
-	echo -e "now we select analysis or analyses to run"
-	echo -e "based on the value specified in runfile in line ANALYSIS"
+
+
+
+        ###################################################
+        set +x; 
+        echo -e "\n\n"; 
+        echo -e "done with preprocessing and configuration steps" >&2
+        echo -e "now we select analysis or analyses to run" >&2
+        echo -e "based on the value specified in runfile in line ANALYSIS"  >&2 
+        echo -e "\n\n" >&2; set -x;
 
 
 	case=""
@@ -268,20 +290,20 @@ else
 	    then
 		echo "Type of analysis to run: ALIGNMENT only"      
 		qsub1=$TopOutputLogs/qsub.start_align_block
-		echo "#PBS -V" > $qsub1
+                echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
 		`chmod a+r $qsub1`               
-		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
+		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		case="alignonly"
 	    fi
@@ -289,20 +311,20 @@ else
 	    then
 		echo "Type of analysis to run: REALIGNMENT only. bams provided"
 		qsub2=$TopOutputLogs/qsub.start_realrecal_block
-		echo "#PBS -V" > $qsub2
+                echo "#!/bin/bash" > $qsub2
 		echo "#PBS -A $pbsprj" >> $qsub2
 		echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK"
 		echo "#pbs -l epilogue=$epilogue" >> $qsub2
 		echo "#PBS -l walltime=00:30:00" >> $qsub2
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-		echo "#PBS -o $TopOutputLogs/start_realrecal_block.ou" >> $qsub2
-		echo "#PBS -e $TopOutputLogs/start_realrecal_block.in" >> $qsub2
+		echo "#PBS -o $TopOutputLogs/log.start_realrecal_block.ou" >> $qsub2
+		echo "#PBS -e $TopOutputLogs/log.start_realrecal_block.in" >> $qsub2
 		echo "#PBS -q $pbsqueue" >> $qsub2
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
-		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
+		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.start_realrecal_block.in $TopOutputLogs/log.start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
 		`chmod a+r $qsub2` 
-		`qsub $qsub2 >> $TopOutputLogs/REALRECALpbs`
+		`qsub $qsub2 >> $TopOutputLogs/pbs.REALRECAL`
 		echo `date`
 		case="realignonly" 
 	    fi
@@ -310,20 +332,20 @@ else
 	    then
 		echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
 		qsub1=$TopOutputLogs/qsub.start_align_block
-		echo "#PBS -V" > $qsub1
+                echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/start_align_block.in $TopOutputLogs/start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 		`chmod a+r $qsub1`               
-		`qsub $qsub1 >> $TopOutputLogs/ALIGNpbs`
+		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		echo "Note: realign module will be scheduled after align module ends"
 		case="align and realign"  
@@ -332,7 +354,7 @@ else
 	    then
 		echo "variant calling only"
 		qsub3=$TopOutputLogs/qsub.start_varcall_block
-		echo "#PBS -V" > $qsub3
+		echo "#!/bin/bash" > $qsub3
 		echo "#PBS -A $pbsprj" >> $qsub3
 		echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
 		echo "#PBS -l epilogue=$epilogue" >> $qsub3
@@ -346,13 +368,13 @@ else
 		echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.start_varcall_block.in $TopOutputLogs/log.start_varcall_block.ou $email $TopOutputLogs/qsub.start_varcall_block" >> $qsub3
 		`chmod a+r $qsub3`
 		vcalljobid=`qsub $qsub3`
-		echo $vcalljobid >> $TopOutputLogs/VARCALLpbs
+		echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL
 		case="vcall_only"  
 	    fi
 	    if [ `expr ${#case}` -lt 1 ]
 	    then
 		MSG="Invalid value for parameter ANALYSIS=$analysis in configuration file."
-		echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1; 
 	    fi
 fi

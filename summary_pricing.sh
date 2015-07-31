@@ -1,10 +1,9 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
-#redmine=hpcbio-redmine@igb.illinois.edu
+#!/bin/bash
+redmine=hpcbio-redmine@igb.illinois.edu
 
 if [ $# != 3 ]
         MSG="Parameter mismatch."
-        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine""
+        echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO. Reason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine""
         exit 1;
 else
 	set -x
@@ -14,7 +13,7 @@ else
         email=$2
         exitstatus=$3
         
-	listjobids=$( cat $outputdir/logs/*pbs | sed "s/\.[a-z]*//g" | tr "\n" "\t" )        
+	listjobids=$( cat $outputdir/logs/pbs.* | sed "s/\.[a-z]*//g" | tr "\n" "\t" )        
         if [ $exitstatus == "exitok" ]
         then
             MSG="GGPS pipeline finished successfully on iforge by username:$USER at: "$( echo `date` )
@@ -38,6 +37,6 @@ else
            echo $report
 
         done
-        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 
 fi

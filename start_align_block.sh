@@ -1,9 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 #
-# written in collaboration with Mayo Bioinformatics core group
 # start_align_block.sh
 # First module in the GGPS analysis pipeline
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
@@ -126,12 +125,6 @@ echo "##########################################################################
            mkdir -p $outputdir
         fi
 
-        if [ ! -d $alignerdir ]
-        then
-           MSG="$alignerdir aligner directory not found"
-           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-           exit 1;
-        fi
 
 echo -e "\n\n\n#####################    resetting output directories, logs, files     #############################\n\n\n"
 
@@ -147,7 +140,7 @@ echo -e "\n\n\n#####################    resetting output directories, logs, file
            mkdir -p $AlignmentOutputFolder
         fi
 
-        pipeid=$( cat $TopLogsFolder/CONFIGUREpbs )
+        pipeid=$( cat $TopLogsFolder/pbs.CONFIGURE )
         pbsids=""
 
 
@@ -163,7 +156,7 @@ echo "####################################################################"
         CONVERT=""
         case=""
         typeOfupdateconfig=""
-        truncate -s 0 $TopLogsFolder/CONVERTBAMpbs
+        truncate -s 0 $TopLogsFolder/pbs.CONVERTBAM
 
 	if [ $inputformat == "BAM" ]
         then
@@ -243,7 +236,7 @@ echo "####################################################################"
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
-			echo $convertjob >> $TopLogsFolder/CONVERTBAMpbs
+			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
 			echo `date`
 
                     else
@@ -273,7 +266,7 @@ echo "####################################################################"
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
-			echo $convertjob >> $TopLogsFolder/CONVERTBAMpbs
+			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
 			echo `date`
                     fi
 		fi
@@ -286,7 +279,7 @@ echo "####################################################################"
             ## updating config files
             ###########################
         
-            CONVERTids=$( cat $TopLogsFolder/CONVERTBAMpbs | sed "s/\..*//" | tr "\n" ":" )
+            CONVERTids=$( cat $TopLogsFolder/pbs.CONVERTBAM | sed "s/\..*//" | tr "\n" ":" )
 
 	    if [ $bamtofastqflag == "YES" ]
             then
@@ -312,7 +305,7 @@ echo "####################################################################"
 		echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
 		`chmod a+r $qsub2`       
 		updatejob=`qsub $qsub2` 
-		echo $updatejob >> $TopLogsFolder/UPDATECONFIGpbs
+		echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
             else
                    ###############################
                    # todo:
@@ -336,7 +329,7 @@ echo "####################################################################"
 		   echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewbam.sh $sampledir $newbamfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewbam.in $TopLogsFolder/log.updateconfig_wnewbam.ou $email $TopLogsFolder/qsub.updateconfig_wnewbam" >> $qsub3
 		   `chmod a+r $qsub3`       
 		   updatejob=`qsub $qsub3` 
-		   echo $updatejob >> $TopLogsFolder/UPDATECONFIGpbs
+		   echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
             fi
 
             allconjobs=$( echo $CONVERTids | tr ":" " " )
@@ -368,7 +361,7 @@ echo "####################################################################"
 	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub1
 	    echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/alnFQ.afterbam2fastq.in $TopLogsFolder/alnFQ.afterbam2fastq.ou $email $TopLogsFolder/qsub.main.alnFQ.afterbam2fastq" >> $qsub1
 	    `chmod a+r $qsub1`               
-	    `qsub $qsub1 >> $TopLogsFolder/ALIGNpbs`
+	    `qsub $qsub1 >> $TopLogsFolder/pbs.ALIGN`
             case="bam2fastq"
 	    echo `date`
 	fi
@@ -398,7 +391,7 @@ echo "####################################################################"
 	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub2
             echo "$scriptdir/alignbam.sh $runfile $TopLogsFolder/log.alignbams.in $TopLogsFolder/log.alignbams.ou $email $TopLogsFolder/qsub.alignbams" >> $qsub2
             `chmod a+r $qsub2`               
-            `qsub $qsub2 >> $TopLogsFolder/ALIGNpbs`
+            `qsub $qsub2 >> $TopLogsFolder/pbs.ALIGN`
             case="alignbams"
             echo `date`
         fi
@@ -420,7 +413,7 @@ echo "####################################################################"
             echo "#PBS -M $email" >> $qsub3
             echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/log.alignfastq.in $TopLogsFolder/log.alignfastq.ou $email $TopLogsFolder/qsub.alignfastq" >> $qsub3
             `chmod a+r $qsub3` 
-            `qsub $qsub3 >> $TopLogsFolder/ALIGNpbs`
+            `qsub $qsub3 >> $TopLogsFolder/pbs.ALIGN`
             case="alignfastq"
             echo `date`
         fi

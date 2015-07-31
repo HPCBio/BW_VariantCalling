@@ -1,16 +1,17 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
+#!/bin/bash
 
 ########################### 
 #		$1		=	       run info file
 ###########################
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
+        echo -e "\n\n############# BEGIN VARIANT CALLING WORKFLOW ###############\n\n"
+
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -20,6 +21,8 @@ else
            MSG="$runfile configuration file not found."
            exit 1;
         fi
+
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
@@ -73,7 +76,7 @@ else
         runfile=$outputdir/runfile.txt
 
 
-        # initialize autodocumentation script
+        set +x; echo -e "\n ### initialize autodocumentation script ### \n"; set -x;
         truncate -s 0 $outputdit/WorkflowAutodocumentationScript.sh
         echo "#!/bin/bash" > $outputdit/WorkflowAutodocumentationScript.sh
         WorkflowName=`basename $outputdir`  
@@ -81,28 +84,28 @@ else
 
 
         outputlogs=$outputdir/logs
-	echo "launching the pipeline configuration script"
-        qsub1=$outputlogs/qsub.configure
+	set +x; echo -e "\n ### launching the pipeline configuration script ### \n"; set -x;
+        qsub1=$outputlogs/qsub.CONFIGURE
         echo "#PBS -V" > $qsub1
         echo "#PBS -A $pbsprj" >> $qsub1
         echo "#PBS -N CONFIGURE" >> $qsub1
         echo "#PBS -l epilogue=$epilogue" >> $qsub1
 	echo "#PBS -l walltime=00:03:00" >> $qsub1
 	echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	echo "#PBS -o $outputlogs/CONFIGURE.ou" >> $qsub1
-	echo "#PBS -e $outputlogs/CONFIGURE.in" >> $qsub1
+	echo "#PBS -o $outputlogs/log.CONFIGURE.ou" >> $qsub1
+	echo "#PBS -e $outputlogs/log.CONFIGURE.in" >> $qsub1
         echo "#PBS -q debug" >> $qsub1
         echo "#PBS -m ae" >> $qsub1
         echo "#PBS -M $email" >> $qsub1
-        echo "$scriptdir/configure.sh $runfile batch $outputlogs/CONFIGURE.in $outputlogs/CONFIGURE.ou $email $outputlogs/qsub.configure" >> $qsub1
+        echo "$scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE " >> $qsub1
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
-        echo $pipeid >> $outputlogs/CONFIGUREpbs
+        echo $pipeid >> $outputlogs/pbs.CONFIGURE
         echo `date`
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
-        LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.configure\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/CONFIGURE.in\noutputlog=$outputlogs/CONFIGURE.ou"
+        LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.CONFIGURE\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/log.CONFIGURE.in\noutputlog=$outputlogs/log.CONFIGURE.ou"
         echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 

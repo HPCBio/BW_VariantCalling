@@ -1,10 +1,9 @@
 #!/bin/bash
-# written in collaboration with Mayo Bioinformatics core group
 # and H3A Africa
 #
 # script to produce improved bams - one per sample 
 # from  multiplexed aligned bams 
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."
@@ -27,8 +26,8 @@ fi
    if [ ! -s $runfile ]
    then
       MSG="$runfile configuration file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
    fi
 
@@ -75,8 +74,8 @@ fi
    if [ $analysis != "MULTIPLEXED" ]
    then
       MSG="ANALYSIS=$analysis Program=$scriptfile Invalid pipeline program for this type of analysis. This program is for the MULTIPLEXED case only"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    fi
 
@@ -87,8 +86,8 @@ fi
    if [ $multisample != "YES" -a $multisample != "1" ]
    then
       MSG="MULTISAMPLE=$multisample Invalid value for this type of analysis. This program is for the MULTIPLEXED case only"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    fi
 
@@ -107,8 +106,8 @@ fi
          pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
       else
          MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-         #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+         #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
          exit 1;
       fi
    fi
@@ -121,8 +120,8 @@ fi
    if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
    then
       MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    else
       if [ $cleanupflag == "1" ]
@@ -143,8 +142,8 @@ fi
    if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
    then
       MSG="Invalid value for SKIPVCALL=$skipvcall"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    else
       if [ $skipvcall == "1" ]
@@ -164,8 +163,8 @@ fi
    if [ -z $javamodule ]
    then
       MSG="Value for JAVAMODULE must be specified in configuration file"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
@@ -176,66 +175,66 @@ fi
    if [ ! -d $outputdir ]
    then
       MSG="$outputdir ROOT directory for this run of the pipeline not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
    if [ ! -d $picardir ]
    then
       MSG="$picardir picard directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $samdir ]
    then
       MSG="$samdir samtools directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $gatk ]
    then
       MSG="$gatk GATK directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
    if [ ! -d $refdir ]
    then
       MSG="$refdir reference genome directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -s $refdir/$ref ]
    then
       MSG="$ref reference genome not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
   if [ ! -s $refdir/$dbSNP ]
    then
       MSG="$refdir/$dbSNP dbSNP for reference genome not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $refdir/$indeldir ]
    then
       MSG="$indeldir indel directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -s $sampleinfo ]
    then
       MSG="$sampleinfo SAMPLEINFORMATION file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
@@ -263,8 +262,8 @@ fi
    if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
    then
       MSG="Invalid value for RUNMETHOD=$run_method"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    fi
 
@@ -275,24 +274,24 @@ fi
    if [ ! -s $outputdir/SAMPLENAMES.list ]
    then
       MSG="$outputdir/SAMPLENAMES.list SAMPLENAMES.list file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
       exit 1;
    fi
 
    if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
    then
       MSG="$outputdir/SAMPLENAMES_multiplexed.list SAMPLENAMES_multiplexed.list file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
       exit 1;
    fi
 
    if [ ! -s $outputdir/SAMPLEGROUPS.list ]
    then
       MSG="$outputdir/SAMPLEGROUPS.list SAMPLEGROUPS.list file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
       exit 1;
    fi
 
@@ -310,8 +309,8 @@ fi
    if [ ! -d $TopOutputLogs ]
    then
       MSG="$TopOutputLogs realign directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
       exit 1;
    fi
    if [ ! -d $RealignOutputLogs ]
@@ -322,7 +321,7 @@ fi
    then
       mkdir -p $VcallOutputLogs
    fi
-   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+   pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
    if [ $schedule == "LAUNCHER" ]
    then
@@ -379,7 +378,7 @@ fi
       then
           ## parsing non-empty line
 	  sample=$( echo "$SampleLine" | cut -f 1 )
-	  lane=$( echo "$SampleLine" | cut -f 3 )
+	  lane=$( echo "$SampleLine" | cut -f 2 )
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
 	  alignedfile=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam"`
@@ -390,7 +389,7 @@ fi
               echo -e "alignment files for this lane $lane were found"
           else
               MSG="No aligned bam file(s) found at $outputdir/align/${lane}"
-              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline
               exit 1;              
 	  fi
           echo -e "################################################################################"
@@ -417,7 +416,7 @@ fi
               mkdir -p $outputdir/${sample}/${lane}/logs
 	  else
              MSG="lane $lane for sample $samplealready exists. Error. Lane name has to be unique"
-	     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+	     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
              exit 1;
           fi
       fi
@@ -445,7 +444,7 @@ do
 	echo "####################################################################################################"
         # now parsing the line just being read
 	sample=$( echo "$SampleLine" | cut -f 1 )
-	lane=$( echo "$SampleLine" | cut -f 3 )
+	lane=$( echo "$SampleLine" | cut -f 2 )
 
 	echo "realigning recalibrating per lane: $lane sample: $sample"
 	echo `date`
@@ -461,8 +460,8 @@ do
         if [ `expr ${#input_bam}` -lt 1 -o ! -s $input_bam ]
         then
             MSG="No bam file(s) found to perform realign-recalibrate at $outputdir/${lane}/align"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline
             exit 1;
         fi
         echo "####################################################################################################"
@@ -484,7 +483,7 @@ do
 	    echo "generating real-recal calls for lane=$lane chr=${chr} ..."
 	    echo "####################################################################################################"
 
-            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chr]} ${recalparms[$chr]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
+            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
            
 
          # end loop over chromosomes
@@ -533,7 +532,7 @@ do
 	    echo "generating real calls for sample=$sample chr=${chr} with bam=$bamfile"
             echo "################################################################################################"
 
-            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chr]} $sample $runfile $RealignLog/log.realignSample.$sample.$chr.in $RealignLog/log.realignSample.$sample.$chr.ou $email $RealignLog/realignSample.${sample}.${chr}" > $RealignLog/realignSample.${sample}.${chr}
+            echo "$scriptdir/realignSample.sh $RealignOutputDir $outfile $chr $bamfile  ${realparms[$chromosomecounter]} $sample $runfile $RealignLog/log.realignSample.$sample.$chr.in $RealignLog/log.realignSample.$sample.$chr.ou $email $RealignLog/realignSample.${sample}.${chr}" > $RealignLog/realignSample.${sample}.${chr}
            
            if [ $skipvcall == "NO" ]
            then
@@ -542,7 +541,7 @@ do
                echo "#############################################################################################"
 
                VcallOutputDir=$outputdir/$sample/variant
-	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr ${region[$chr]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+	       echo "$scriptdir/vcallgatk.sh $VcallOutputDir $RealignOutputDir  $outfile $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
 	   fi
 
          # end loop over chromosomes
@@ -588,7 +587,7 @@ echo "##########################################################################
               echo "####################################################################################################"
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
-	      lane=$( echo "$SampleLine" | cut -f 3 )
+	      lane=$( echo "$SampleLine" | cut -f 2 )
 
               RealignOutputDir=$outputdir/$sample/$lane/realign
               truncate -s 0 $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
@@ -770,14 +769,14 @@ echo "##########################################################################
       RealignOutputLogs=$outputdir/logs/realign
       VcallOutputLogs=$outputdir/logs/variant
       
-      truncate -s 0 $RealignOutputLogs/REALXSAMPLEXCHRpbs
-      truncate -s 0 $RealignOutputLogs/REALRECALXLANEXCHRpbs
-      truncate -s 0 $RealignOutputLogs/MERGEXSAMPLEpbs
-      truncate -s 0 $RealignOutputLogs/VERIFYXSAMPLEpbs
+      truncate -s 0 $RealignOutputLogs/pbs.REALXSAMPLEXCHR
+      truncate -s 0 $RealignOutputLogs/pbs.REALRECALXLANEXCHR
+      truncate -s 0 $RealignOutputLogs/pbs.MERGEXSAMPLE
+      truncate -s 0 $RealignOutputLogs/pbs.VERIFYXSAMPLE
 
       if [ $skipvcall == "NO" ]
       then
-          truncate -s 0 $VcallOutputLogs/VCALLGATKpbs
+          truncate -s 0 $VcallOutputLogs/pbs.VCALLGATK
       fi
       
       cd $RealignOutputLogs 
@@ -788,20 +787,20 @@ echo "##########################################################################
       do
 	  if [ `expr ${#SampleLine}` -gt 1 ]
 	  then
-	      echo "processing next non-empty line in SAMPLENAMES_multiplexed.list."
+	      echo "processing next non-empty line in SAMPLEGROUPS.list"
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
 	      lanes=$( echo "$SampleLine" | cut -f 2 )
-	      truncate -s 0 $RealignOutputLogs/${sample}_REALRECALpbs
+	      truncate -s 0 $RealignOutputLogs/pbs.${sample}_REALRECAL
 	      for lane in $lanes
 	      do
               	realrecalXlane_job=`qsub $RealignOutputLogs/qsub.realrecalLane.${lane}.AnisimovLauncher`
               	`qhold -h u $realrecalXlane_job` 
-              	echo $realrecalXlane_job >> $RealignOutputLogs/REALRECALXLANEXCHRpbs 
-              	echo $realrecalXlane_job >> $RealignOutputLogs/${sample}_REALRECALpbs              	
+              	echo $realrecalXlane_job >> $RealignOutputLogs/pbs.REALRECALXLANEXCHR 
+              	echo $realrecalXlane_job >> $RealignOutputLogs/pbs.${sample}_REALRECAL              	
               
               done
-              realrecalxsamplexlane=$( cat $RealignOutputLogs/${sample}_REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+              realrecalxsamplexlane=$( cat $RealignOutputLogs/pbs.${sample}_REALRECAL | sed "s/\..*//" | tr "\n" ":" )
               sed -i "2i #PBS -W depend=afterok:$realrecalxsamplexlane" $RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher
      
               mergeSample_job=`qsub $RealignOutputLogs/qsub.mergeLanes.${sample}.AnisimovLauncher`
@@ -813,16 +812,16 @@ echo "##########################################################################
               sed -i "2i #PBS -W depend=afterok:$RealignSample_job" $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher    
 
               VerifySample_job=`qsub $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher`
-              `qhold -h u $verifySample_job`
+              `qhold -h u $VerifySample_job`
 
               sed -i "2i #PBS -W depend=afterok:$VerifySample_job" $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher             
               VcallSample_job=`qsub $VcallOutputLogs/qsub.vcallgatk.${sample}.AnisimovLauncher`  
               `qhold -h u $VcallSample_job`
 
-              echo $mergeSample_job   >> $RealignOutputLogs/MERGEXSAMPLEpbs
-              echo $RealignSample_job >> $RealignOutputLogs/REALXSAMPLEXCHRpbs
-              echo $VerifySample_job  >> $RealignOutputLogs/VERIFYXSAMPLEpbs
-              echo $VcallSample_job   >> $VcallOutputLogs/VCALLGATKpbs               
+              echo $mergeSample_job   >> $RealignOutputLogs/pbs.MERGEXSAMPLE
+              echo $RealignSample_job >> $RealignOutputLogs/pbs.REALXSAMPLEXCHR
+              echo $VerifySample_job  >> $RealignOutputLogs/pbs.VERIFYXSAMPLE
+              echo $VcallSample_job   >> $VcallOutputLogs/pbs.VCALLGATK
           fi
       done <  $outputdir/SAMPLEGROUPS.list
    ;;
@@ -836,9 +835,9 @@ echo "##########################################################################
 
    if [ $skipvcall == "NO" ]
    then
-      summarydependids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $VcallOutputLogs/pbs.VCALLGATK | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/pbs.VERIFYXSAMPLE | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""
@@ -861,14 +860,14 @@ echo "##########################################################################
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
        `chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
-       echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+       echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
    fi
 
    `sleep 30s`
-   qsub_summary=$TopOutputLogs/qsub.summary.allok
+   qsub_summary=$TopOutputLogs/qsub.summary.afterany
    echo "#PBS -V" > $qsub_summary
    echo "#PBS -A $pbsprj" >> $qsub_summary
-   echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
+   echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
    echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
    echo "#PBS -o $TopOutputLogs/log.summary.ou" >> $qsub_summary
@@ -880,33 +879,37 @@ echo "##########################################################################
    then
        echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summary
    else
-       echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summary
+       echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
    fi
-   echo "$scriptdir/summary.sh $outputdir $email exitok $reportticket"  >> $qsub_summary
+   echo "$scriptdir/summary.sh $runfile $email exitafterany $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
-   echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
+   echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
-   if [ `expr ${#lastjobid}` -lt 1 ]
+
+   echo "rewrite summary report if all jobs finished ok"
+   qsub_summaryany=$TopOutputLogs/qsub.summary.afterok
+   echo "#PBS -V" > $qsub_summaryany
+   echo "#PBS -A $pbsprj" >> $qsub_summaryany
+   echo "#PBS -N ${pipeid}_summary_afterok" >> $qsub_summaryany
+   echo "#PBS -l walltime=01:00:00" >> $qsub_summaryany # 1 hour should be more than enough
+   echo "#PBS -l nodes=1:ppn=1" >> $qsub_summaryany
+   echo "#PBS -o $TopOutputLogs/log.summary.afterok.ou" >> $qsub_summaryany
+   echo "#PBS -e $TopOutputLogs/log.summary.afterok.in" >> $qsub_summaryany
+   echo "#PBS -q $pbsqueue" >> $qsub_summaryany
+   echo "#PBS -m a" >> $qsub_summaryany
+   echo "#PBS -M $email" >> $qsub_summaryany
+   if [ `expr ${#cleanjobid}` -gt 0 ]
    then
-       echo "at least one job aborted"
-       qsub_summary=$TopOutputLogs/qsub.summary.afterany
-       echo "#PBS -V" > $qsub_summary
-       echo "#PBS -A $pbsprj" >> $qsub_summary
-       echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
-       echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
-       echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-       echo "#PBS -o $TopOutputLogs/log.summary.afterany.ou" >> $qsub_summary
-       echo "#PBS -e $TopOutputLogs/log.summary.afterany.in" >> $qsub_summary
-       echo "#PBS -q $pbsqueue" >> $qsub_summary
-       echo "#PBS -m a" >> $qsub_summary
-       echo "#PBS -M $email" >> $qsub_summary
-       echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
-       echo "$scriptdir/summary.sh $outputdir $email exitnotok $reportticket"  >> $qsub_summary
-       `chmod a+r $qsub_summary`
-       badjobid=`qsub $qsub_summary`
-       echo $badjobid >> $TopOutputLogs/SUMMARYpbs
+       echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summaryany
+   else
+       echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summaryany
    fi
+   echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summaryany
+   `chmod a+r $qsub_summaryany`
+   badjobid=`qsub $qsub_summaryany`
+   echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
+
 
 
       echo "####################################################################################################"
@@ -916,13 +919,13 @@ echo "##########################################################################
       echo "####################################################################################################"
 
 
-     realsampleids=$( cat $RealignOutputLogs/REALXSAMPLEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
-     verifysampleids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
-     realrecalids=$( cat $RealignOutputLogs/REALRECALXLANEXCHRpbs | sed "s/\..*//" | tr "\n" " " )
-     mergeids=$( cat $RealignOutputLogs/MERGEXSAMPLEpbs | sed "s/\..*//" | tr "\n" " " )
+     realsampleids=$( cat $RealignOutputLogs/pbs.REALXSAMPLEXCHR | sed "s/\..*//" | tr "\n" " " )
+     verifysampleids=$( cat $RealignOutputLogs/pbs.VERIFYXSAMPLE | sed "s/\..*//" | tr "\n" " " )
+     realrecalids=$( cat $RealignOutputLogs/pbs.REALRECALXLANEXCHR | sed "s/\..*//" | tr "\n" " " )
+     mergeids=$( cat $RealignOutputLogs/pbs.MERGEXSAMPLE | sed "s/\..*//" | tr "\n" " " )
      if [ $skipvcall == "NO" ]
      then
-         vcallids=$( cat $VcallOutputLogs/VCALLGATKpbs | sed "s/\..*//" | tr "\n" " " )
+         vcallids=$( cat $VcallOutputLogs/pbs.VCALLGATK | sed "s/\..*//" | tr "\n" " " )
      fi
 
      `qrls -h u $realsampleids`    

@@ -1,9 +1,8 @@
-#!/bin/sh
-# written in collaboration with Mayo Bioinformatics core group
+#!/bin/bash
 #
 # start_realrecal_block.sh
 # Second module in the GGPS analysis pipeline
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
    MSG="parameter mismatch. "
@@ -23,7 +22,7 @@ fi
    if [ !  -s $runfile ]
    then
       MSG="$runfile configuration file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
@@ -73,7 +72,7 @@ fi
       pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
    else
       MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-      #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
       exit 1;
    fi
@@ -81,7 +80,7 @@ fi
    if [ $resortflag != "1" -a $resortflag != "0" -a $resortflag != "YES" -a $resortflag != "NO" ]
    then
       MSG="Invalid value for RESORTBAM=$resortflag"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
       exit 1;
    else
       if [ $resortflag == "1" ]
@@ -97,19 +96,19 @@ fi
    if [ ! -d $scriptdir ]
    then
       MSG="$scriptdir script directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $refdir ]
    then
       MSG="$refdir directory of reference genome  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $picardir ]
    then
       MSG="$picardir picard directory  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
@@ -119,7 +118,7 @@ fi
    then
       MSG="INPUTDIR=$sampledir input directory not found"
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
@@ -128,7 +127,7 @@ fi
    then
       MSG="No samples found in INPUTDIR=$sampledir."
       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ $numsamples -gt 1 -a $multisample == "YES" ]
@@ -173,7 +172,7 @@ echo "##########################################################################
    else
       mkdir -p $TopOutputLogs
    fi
-   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+   pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
 
 
@@ -224,14 +223,14 @@ echo "##########################################################################
             if [ `expr ${#PrefixName}` -lt 1 ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                exit 1;
             fi
          
             if [ ! -s $bamfile ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start"
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                exit 1;
             fi
          fi
@@ -287,14 +286,14 @@ echo "##########################################################################
             `chmod a+r $qsub_sortbammayo`
             sortid=`qsub $qsub_sortbammayo`
             #`qhold -h u $sortid`
-            echo $sortid >> $TopOutputLogs/REALSORTEDMAYOpbs
+            echo $sortid >> $TopOutputLogs/pbs.REALSORTEDMAYO
 
             listfiles=$outputalign/$sorted${sep}${listfiles}
          fi # end of if statement checking for empty line in the SampleName file
       done <  $outputdir/SAMPLENAMES.list
       # end loop over input samples
 
-      cp $TopOutputLogs/REALSORTEDMAYOpbs $TopOutputLogs/ALN_MAYO_jobids
+      cp $TopOutputLogs/pbs.REALSORTEDMAYO $TopOutputLogs/ALN_MAYO_jobids
       JOBSmayo=$( cat $TopOutputLogs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
    fi
 
@@ -312,7 +311,7 @@ echo "##########################################################################
          # end loop over input samples
       else
          MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
-         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
          exit 1;
       fi
    fi
@@ -324,9 +323,9 @@ echo "#####################################                                #####
 echo "#############################################################################################################"
 
    # grab job ids for align and for preprocessing done in this module
-   alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
-   mergeids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" " " )
-   sortedmayoids=$( cat $TopOutputLogs/REALSORTEDMAYOpbs | sed "s/\..*//" | tr "\n" " " )
+   alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
+   mergeids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" " " )
+   sortedmayoids=$( cat $TopOutputLogs/pbs.REALSORTEDMAYO | sed "s/\..*//" | tr "\n" " " )
 
 
 
@@ -383,7 +382,7 @@ echo "##########################################################################
       `chmod a+r $qsub_schedule_realrecal_per_chromosome`               
       realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
       # `qhold -h u $realrecaljob` 
-      echo $realrecaljob >> $TopOutputLogs/RECALLpbs
+      echo $realrecaljob >> $TopOutputLogs/pbs.RECALL
       ;;
    "SERVER")
       nohup $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome > $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in 

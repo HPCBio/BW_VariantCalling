@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# originally written in collaboration with Mayo Bioinformatics core group
 # alignfastq.sh
 # align module to be used for input files in fastq format
-#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
@@ -25,7 +24,7 @@ fi
         then
            MSG="$runfile configuration file not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -61,7 +60,7 @@ echo "##########################################################################
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-        sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
+        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -79,7 +78,7 @@ echo "##########################################################################
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
         if [ ! -d $outputdir ]
@@ -103,7 +102,7 @@ echo "##########################################################################
             else
 		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit 1;
             fi
         fi
@@ -111,9 +110,9 @@ echo "##########################################################################
         # check that sampledir exists
         if [ ! -d $sampledir ]
         then
-           MSG="INPUTDIR=$sampledir directory not found"
+           MSG="SAMPLEDIR=$sampledir directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -132,7 +131,7 @@ echo "##########################################################################
         then
             MSG="CHUNKFASTQ variable must be binary YES/NO; incorrect value encountered"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
 
@@ -143,7 +142,7 @@ echo "##########################################################################
         then
            MSG="Invalid value for MARKDUP=$dup"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $dup == "1" ]
@@ -160,7 +159,7 @@ echo "##########################################################################
         then
            MSG="Invalid value for REMOVE_DUP=$dupflag"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $dupflag == "1" ]
@@ -182,7 +181,7 @@ echo "##########################################################################
         then
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $fastqcflag == "1" ]
@@ -202,7 +201,7 @@ echo "##########################################################################
         then
            MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
         else
             if [ $cleanupflag == "1" ]
@@ -223,7 +222,7 @@ echo "##########################################################################
         then
             MSG="ALIGNER=$aligner  is not available at this site"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
         if [ $aligner == "NOVOALIGN" ]
@@ -249,14 +248,14 @@ echo "##########################################################################
         then
            MSG="Value for SORTOOL must be specified in configuration file"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         else
            if [ $sortool != "NOVOSORT" -a $sortool != "PICARD" ]
            then
                MSG="Invalid value for SORTOOL=$sortool in configuration file"
                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                exit 1;
            fi
         fi      
@@ -265,14 +264,14 @@ echo "##########################################################################
         then
            MSG="Value for MARKDUPLICATESTOOL must be specified in configuration file"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         else
            if [ $markduplicatestool != "PICARD" -a $markduplicatestool != "SAMBLASTER" ]
             then
                MSG="Invalid value for SORTOOL=$sortool in configuration file"
                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                exit 1;
            fi
         fi
@@ -281,7 +280,7 @@ echo "##########################################################################
         then
            MSG="$alignerdir aligner directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -289,7 +288,7 @@ echo "##########################################################################
         then
            MSG="PICARDIR=$picardir directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -297,7 +296,7 @@ echo "##########################################################################
         then
            MSG="SAMDIR=$samdir directory not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -305,7 +304,7 @@ echo "##########################################################################
         then
            MSG="PROFILER=$profiler not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -317,7 +316,7 @@ echo "##########################################################################
         then
            MSG="$refdir/$ref reference genome not found"
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         fi
 
@@ -326,8 +325,8 @@ echo "##########################################################################
        if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
        then
           MSG="Invalid value for RUNMETHOD=$run_method"
-          echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+          echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
           exit 1;
        fi
 
@@ -382,7 +381,7 @@ echo "##########################################################################
 
 
 
-        pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
+        pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
         #chunks=`expr $nodes "-" 1`
         #if [ $chunks -lt 1 ]
@@ -448,16 +447,15 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 	    else
                 echo -e "analysis is MULTIPLEXED."
-                echo -e "current line has SIX fields:\n"
-                echo -e "col1=sampleid col2=lane_num col3=lane_name col4=lib col5=read1 col6=read2\n"
-                #SampleName=$( echo $SampleLine | awk -F"\t" '{print $3}' )
-                SampleName=$( echo -e "$SampleLine" | cut -f 3 )
-                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 5 )
-                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 6 )
-		sID=$( echo -e "$SampleLine" | cut -f 3 )
-		sPU=$( echo -e "$SampleLine" | cut -f 3 )
+                echo -e "current line has FIVE fields:\n"
+                echo -e "col1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2\n"
+                SampleName=$( echo -e "$SampleLine" | cut -f 2 )
+                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 4 )
+                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 5 )
+		sID=$( echo -e "$SampleLine" | cut -f 2 )
+		sPU=$( echo -e "$SampleLine" | cut -f 2 )
 		sSM=$( echo -e "$SampleLine" | cut -f 1 )
-		sLB=$( echo -e "$SampleLine" | cut -f 4 )
+		sLB=$( echo -e "$SampleLine" | cut -f 3 )
 		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 	    fi
@@ -467,7 +465,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    then
                 MSG="$LeftReadsFastq left reads file not found"
                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                 exit 1;
 	    fi
 	    echo `date`
@@ -479,7 +477,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		then
 		    MSG="$RightReadsFastq right reads file not found"
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
 	    fi
@@ -504,7 +502,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		then
 		    MSG="FASTQCDIR=$fastqcdir directory not found"
 		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		    exit 1;
 		fi
 
@@ -520,6 +518,38 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     `chmod -R 770 $TopOutputLogs/fastqc`
                 fi
 
+                echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
+                echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
+                echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
+
+                # results of alignment for each sample will be placed into its own subfolder 
+                if [ ! -d $AlignOutputDir/$SampleName ]
+                then
+                    mkdir $AlignOutputDir/$SampleName
+                    outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
+                else
+                    outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
+                fi
+                `chmod -R 770 $AlignOutputDir/$SampleName/`
+                # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
+                # best keep them in the sample subfolder
+                if [ ! -d $AlignOutputDir/$SampleName/logs ]
+                then
+                    mkdir $AlignOutputDir/$SampleName/logs
+                fi
+
+
+                # check whether the file is fastq or fastq.gz, gunzip and rename as necessary
+                #LeftReadsFastq_basename=`basename $LeftReadsFastq`
+                #extension="${LeftReadsFastq_basename##*.}"
+                #if [ $extension == "gz" ]
+                #then
+                #   LeftReadsFastq_basename=`basename $LeftReadsFastq .gz`
+                #   `gunzip -c $LeftReadsFastq > $AlignOutputDir/$SampleName/$LeftReadsFastq_basename`
+                #   left_fastqc_input=$AlignOutputDir/$SampleName/$LeftReadsFastq_basename
+                #else
+                   left_fastqc_input=$LeftReadsFastq                
+                #fi
 
                 qsub_fastqcR1=$TopOutputLogs/fastqc/qsub.fastqcR1.$SampleName
 		echo "#PBS -V" > $qsub_fastqcR1
@@ -532,12 +562,24 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -q $pbsqueue" >> $qsub_fastqcR1
 		echo "#PBS -m ae" >> $qsub_fastqcR1
 		echo "#PBS -M $email" >> $qsub_fastqcR1
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $LeftReadsFastq $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
+		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
 		`chmod a+r $qsub_fastqcR1`
-                `qsub $qsub_fastqcR1 >> $TopOutputLogs/FASTQCpbs`
+                `qsub $qsub_fastqcR1 >> $TopOutputLogs/pbs.FASTQC`
 
 		if [ $paired -eq 1 ]
 		then
+                #    RightReadsFastq_basename=`basename $RightReadsFastq`
+                #    extension="${RightReadsFastq_basename##*.}"
+                #    if [ $extension == "gz" ]
+                #    then
+                #       RightReadsFastq_basename=`basename $RightReadsFastq .gz`
+                #       `gunzip -c $RightReadsFastq > $AlignOutputDir/$SampleName/$RightReadsFastq_basename`
+                #       right_fastqc_input=$AlignOutputDir/$SampleName/$RightReadsFastq_basename
+                #    else
+                       right_fastqc_input=$RightReadsFastq
+                #    fi
+
+
                     qsub_fastqcR2=$TopOutputLogs/fastqc/qsub.fastqc_R2_$SampleName
 		    echo "#PBS -V" > $qsub_fastqcR2
 		    echo "#PBS -A $pbsprj" >> $qsub_fastqcR2
@@ -549,9 +591,9 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		    echo "#PBS -q $pbsqueue" >> $qsub_fastqcR2
 		    echo "#PBS -m ae" >> $qsub_fastqcR2
 		    echo "#PBS -M $email" >> $qsub_fastqcR2
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $RightReadsFastq $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
+		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
 		    `chmod a+r $qsub_fastqcR2`
-                    `qsub $qsub_fastqcR2 >> $TopOutputLogs/FASTQCpbs`
+                    `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
 		fi
             else
 		echo "quality information for fastq files will NOT be calculated."
@@ -561,25 +603,6 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
 
-	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
-
-            # results of alignment for each sample will be placed into its own subfolder 
-            if [ ! -d $AlignOutputDir/$SampleName ]
-            then
-		mkdir $AlignOutputDir/$SampleName
-		outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
-	    else
-		outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
-	    fi
-	    `chmod -R 770 $AlignOutputDir/$SampleName/`
-            # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
-            # best keep them in the sample subfolder
-            if [ ! -d $AlignOutputDir/$SampleName/logs ]
-            then
-		mkdir $AlignOutputDir/$SampleName/logs
-            fi
 
 
 
@@ -629,7 +652,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                then
                       MSG="splitting of read file $LeftReadsFastq failed. exitcode=$exitcode"
                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                       exit $exitcode;
                fi
                if [ $paired -eq 1 ]
@@ -641,7 +664,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                    then
                        MSG="splitting of read file $RightReadsFastq failed.  exitcode=$exitcode"
                        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                        exit $exitcode;
 	   	   fi
                fi
@@ -690,7 +713,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                 then
                    MSG="chunk $i of read file $LeftReadsFastq file not found"
                    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
                    exit 1;
                 fi
 		if [ $paired -eq 1 ]
@@ -705,7 +728,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     then
 			MSG="chunk $i of read file $RightReadsFastq file not found"
                         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+                        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 			exit 1;
                     fi
                 fi
@@ -826,10 +849,10 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                         if [ $chunkfastq == "YES" ]
                         then
 			   ### MUST FIX QSUB VARIABLE NAME PROPERLY
-                           echo "$run_string $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix" >> $qsub3
+                           echo "nohup $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix > $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" >> $qsub3
                         elif [ $chunkfastq == "NO" ]
                         then
-                           echo "$profiler_string $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs" > $jobfile
+                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $runfile $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/$SampleName/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                            jobfilename=$( basename $jobfile )
                            echo "$AlignOutputDir/$SampleName/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                         fi
@@ -887,7 +910,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 ###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                       ###########################################
 ##########################################################################################################################################
 
-            cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+            cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
 
             if [ $chunkfastq == "YES" ]
             then
@@ -977,8 +1000,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
               echo "#PBS -M $email" >> $qsubAlignLauncher
               echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
               AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
-              echo $AlignAnisimovJoblistId >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-              echo $AlignAnisimovJoblistId > $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+              echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
            ;;           
            "APRUN")
               while read SampleName
@@ -1003,8 +1026,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            "QSUB")
@@ -1029,8 +1052,8 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
                  bwa_job=`qsub $qsub_bwa`
                  `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/MERGEDpbs # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done
            ;;
            esac
@@ -1084,10 +1107,10 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                     novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
-                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs_${SampleName} # so that this job could be released in the next section. Should it be held to begin with?
+                    echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED_${SampleName} # so that this job could be released in the next section. Should it be held to begin with?
 
                  done # done looping over chunks of a sample
-                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
                  alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
 
                  qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
@@ -1112,7 +1135,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
-                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+                 echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
 
                  # release all held novosplit jobs for this sample
                  `qrls -h u $alignids`
@@ -1149,10 +1172,10 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                     cat $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node${OutputFileSuffix} >> $qsub_novosplit
                     novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
-                    echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+                    echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 
                  done # done looping over chunks of a sample
-                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/ALIGNEDpbs
+                 cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
                  alignids=$( cat $TopOutputLogs/ALIGNED_$SampleName | sed "s/\..*//" | tr "\n" ":" )
 
                  qsub_mergenovo=$AlignOutputDir/${SampleName}/logs/qsub.mergenovo.${SampleName}
@@ -1177,7 +1200,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
-                 echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
+                 echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it
 
                  # release all held novosplit jobs for this sample
                  `qrls -h u $alignids`
@@ -1248,7 +1271,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               novosplit_job=`qsub $qsub_novosplit_anisimov`
               `qhold -h u $novosplit_job`
-              echo $novosplit_job >> $TopOutputLogs/ALIGNEDpbs # so that this job could be released in the next section. Should it be held to begin with?
+              echo $novosplit_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 
 
               ###############################
@@ -1267,7 +1290,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
-              echo $mergenovo_job > $TopOutputLogs/MERGEDpbs # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it 
+              echo $mergenovo_job > $TopOutputLogs/pbs.MERGED # so that this job could be released in the next section, and start_realrecal_block.sh could depend on it 
 
            ;;
            "SERVER")
@@ -1288,10 +1311,10 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 ########################################################################################################
 
         
-	pbsids=$( cat $TopOutputLogs/MERGEDpbs | sed "s/\..*//" | tr "\n" ":" )
-	#extraids=$( cat $TopOutputLogs/EXTRACTREADSpbs | sed "s/\..*//" | tr "\n" " " )
+	pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )
+	#extraids=$( cat $TopOutputLogs/pbs.EXTRACTREADS | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
-        alignids=$( cat $TopOutputLogs/ALIGNEDpbs | sed "s/\..*//" | tr "\n" " " )
+        alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
 
         ## generating summary redmine email if analysis ends here
 	echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"
@@ -1322,7 +1345,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
 		`chmod a+r $qsub_cleanup`
 		cleanjobid=`qsub $qsub_cleanup`
-		echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
+		echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
             fi
 
             `sleep 30s`
@@ -1343,10 +1366,10 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
             else
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_summary
             fi
-	    echo "$scriptdir/summary.sh $outputdir $email exitok $reportticket"  >> $qsub_summary
+	    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
 	    `chmod a+r $qsub_summary`
 	    lastjobid=`qsub $qsub_summary`
-	    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
+	    echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
 	    then
@@ -1363,10 +1386,10 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 		echo "#PBS -m ae" >> $qsub_summary
 		echo "#PBS -M $email" >> $qsub_summary
 		echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summary
-		echo "$scriptdir/summary.sh $outputdir $email exitnotok $reportticket"  >> $qsub_summary
+		echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
 		`chmod a+r $qsub_summary`
 		badjobid=`qsub $qsub_summary`
-		echo $badjobid >> $TopOutputLogs/SUMMARYpbs
+		echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
 	    fi
 	fi
 
@@ -1387,7 +1410,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 	    echo "#PBS -M $email" >> $qsub_realign
 	    echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub_realign
 	    `chmod a+r $qsub_realign` 
-	    `qsub $qsub_realign >> $TopOutputLogs/REALRECALpbs`
+	    `qsub $qsub_realign >> $TopOutputLogs/pbs.REALRECAL`
 
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`
