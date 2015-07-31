@@ -6,7 +6,7 @@ then
         echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 else
-        echo -e "\n\n############# CONFIGURE CALLING WORKFLOW ###############\n\n"
+        echo -e "\n\n############# CONFIGURE VARIANT CALLING WORKFLOW ###############\n\n"
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -179,6 +179,7 @@ else
  
 	if [ $analysis == "MULTIPLEXED" ]
 	then
+            set +x; echo -e "\n\n ############# ANALYSIS IS MULTIPLEXED ! ############\n\n"; set -x;
 	    echo -e "produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list "
 	    echo -e "from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo."
 	    perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list

@@ -27,7 +27,7 @@ else
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
-        p.gzbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
+        pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -97,7 +97,7 @@ else
         echo "#PBS -q debug" >> $qsub1
         echo "#PBS -m ae" >> $qsub1
         echo "#PBS -M $email" >> $qsub1
-        echo "$scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE" >> $qsub1
+        echo "nohup $scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE > $outputlogs/log.CONFIGURE.in" >> $qsub1
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
