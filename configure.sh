@@ -166,7 +166,7 @@ else
 	    `rm -r $outputdir/logs/*`
         fi
 	`chmod -R 770 $outputdir`
-        `chmod 750 $epilogue`
+        `chmod 740 $epilogue`
         TopOutputLogs=$outputdir/logs
         pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 

@@ -104,7 +104,7 @@ else
            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
            exit 1;
         else
-           `chmod 750 $epilogue`
+           `chmod 740 $epilogue`
         fi
 
         if [ ! -d $picardir ]

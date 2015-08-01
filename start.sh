@@ -71,7 +71,7 @@ else
             mkdir -p $outputdir/logs
         fi
         `chmod -R 770 $outputdir/`
-        `chmod 750 $epilogue`
+        `chmod 740 $epilogue`
 	`cp $runfile $outputdir/runfile.txt`
         runfile=$outputdir/runfile.txt
 

@@ -110,7 +110,7 @@ echo "##########################################################################
            echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         else
-           `chmod 750 $epilogue`
+           `chmod 740 $epilogue`
         fi
 
         if [ ! -d $scriptdir ]
