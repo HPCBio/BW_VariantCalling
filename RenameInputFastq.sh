@@ -40,7 +40,7 @@ do
    OldName=`basename $fastq`
    NewName=${file_name_base}_read${ReadSide}.fq.${file_extension}
    echo "renaming $OldName into $NewName"
-   #mv $fastq ${InputFolder}/${NewName}
+   mv $fastq ${InputFolder}/${NewName}
 
 done
 

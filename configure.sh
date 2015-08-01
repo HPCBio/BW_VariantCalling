@@ -215,7 +215,7 @@ else
 		do
                    # strip path, which read (left/right), and extension from input files
                    # and put that info into the SampleNames file
-		   SampleName=$( basename $inputfile | sed 's/_read.\?\.[^.]*$//' )
+		   SampleName=$( basename $inputfile | sed 's/_read.\?\..*$//' )
                    echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
 		done
 	    elif [ $inputformat == "BAM" ]
