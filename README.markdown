@@ -10,3 +10,7 @@ and has now evolved mostly for testing the scalability of variant calling on man
 
 * there are a few jobs that delineate major blocks of computation; their log files are in CAPS:
 log.CONFIGURE.in
+
+## Error capture
+
+echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
