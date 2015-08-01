@@ -204,8 +204,7 @@ else
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    fi
-	elif [ ! -e $outputdir/SAMPLENAMES.list ]
-	then
+	else 
             set +x; echo -e "\n ###### ANALYSIS = $analysis, IS NOT = MULTIPLEXED ########" >&2;
             echo -e "\n ###### produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
 	    truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
