@@ -3,6 +3,12 @@ and has now evolved mostly for testing the scalability of variant calling on man
 
 # Workflow file naming conventions
 
+*Input files*
+
+Convention on input fastq names: must be in form of samplename_read?.fq(.gz) or samplename_read?.fastq(.gz)
+
+*Scripts*
+
 * qsub.whatever = qsub scripts
 * log.whatever.in = output log for that qsub
 * log.whatever.ou = pbs output message log for that qsub
