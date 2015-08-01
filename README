@@ -1,7 +1,7 @@
 This workflow originated of collaboration with Mayo Bioinformatics core group, 
-and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large HPC systems.
+and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
 
-Workflow file naming conventions
+# Workflow file naming conventions
 
 * qsub.whatever = qsub scripts
 * log.whatever.in = output log for that qsub
