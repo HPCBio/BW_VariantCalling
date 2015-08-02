@@ -31,9 +31,9 @@ else
 
 # wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
 set +x
-echo -e "\n\n####################################################################################################"
-echo        "##################################### PARSING RUN INFO FILE ########################################"
-echo        "##################################### AND SANITY CHECK      ########################################"
+echo -e "\n\n####################################################################################################" >&2
+echo        "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo        "##################################### AND SANITY CHECK      ########################################" >&2
 echo -e "\n\n####################################################################################################\n\n" >&2; set -x;
 
 
@@ -346,16 +346,16 @@ echo -e "\n\n###################################################################
 
         fi
 
-        set +x; echo -e "\n\n";
+        set +x; echo -e "\n\n" >&2
         echo "####################################################################" >&2
-        echo "############    done with   preprocessing of BAMs   ################" >&2
+        echo "############    done with preprocessing of BAMs   ################" >&2
         echo "############    alignment case selection is next    ################" >&2
         echo "####################################################################" >&2
-        set -x; echo -e "\n\n"; 
+        echo -e "\n\n" >&2; set -x;
 
         if [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
         then
-            set +x; echo "# input is BAM, convert to fastq\n" >&2;  set -x;
+            set +x; echo -e "\n# input is BAM, convert to fastq\n" >&2;  set -x;
 	    qsub1=$TopLogsFolder/qsub.main.alnFQ.afterbam2fastq
 	    echo "#PBS -V" > $qsub1
 	    echo "#PBS -A $pbsprj" >> $qsub1
@@ -408,7 +408,7 @@ echo -e "\n\n###################################################################
 
         if [ $bamtofastqflag == "NO" -a $inputformat == "FASTQ" ]
         then
-            set +x; echo "# aligning fastq files directly\n" >&2;  set -x;
+            set +x; echo -e "\n# aligning fastq files directly\n" >&2;  set -x;
             qsub3=$TopLogsFolder/qsub.alignfastq
             echo "#PBS -V" > $qsub3
             echo "#PBS -A $pbsprj" >> $qsub3
