@@ -288,19 +288,19 @@ else
 	    if [ $analysis == "ALIGN" -o $analysis == "ALIGNMENT" ]
 	    then
 		echo "Type of analysis to run: ALIGNMENT only"      
-		qsub1=$TopOutputLogs/qsub.start_align_block
+		qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
                 echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.START_ALIGN_BLOCK.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.START_ALIGN_BLOCK.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.start_align_block" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.START_ALIGN_BLOCK" >> $qsub1
 		`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
@@ -309,19 +309,19 @@ else
 	    if [ $analysis == "REALIGNONLY" -o $analysis == "REALIGN_ONLY" ]
 	    then
 		echo "Type of analysis to run: REALIGNMENT only. bams provided"
-		qsub2=$TopOutputLogs/qsub.start_realrecal_block
+		qsub2=$TopOutputLogs/qsub.START_REALRECAL_BLOCK
                 echo "#!/bin/bash" > $qsub2
 		echo "#PBS -A $pbsprj" >> $qsub2
 		echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK"
 		echo "#pbs -l epilogue=$epilogue" >> $qsub2
 		echo "#PBS -l walltime=00:30:00" >> $qsub2
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-		echo "#PBS -o $TopOutputLogs/log.start_realrecal_block.ou" >> $qsub2
-		echo "#PBS -e $TopOutputLogs/log.start_realrecal_block.in" >> $qsub2
+		echo "#PBS -o $TopOutputLogs/log.START_REALRECAL_BLOCK.ou" >> $qsub2
+		echo "#PBS -e $TopOutputLogs/log.START_REALRECAL_BLOCK.in" >> $qsub2
 		echo "#PBS -q $pbsqueue" >> $qsub2
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
-		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.start_realrecal_block.in $TopOutputLogs/log.start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub2
+		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.START_REALRECAL_BLOCK.in $TopOutputLogs/log.START_REALRECAL_BLOCK.ou $email $TopOutputLogs/qsub.START_REALRECAL_BLOCK" >> $qsub2
 		`chmod a+r $qsub2` 
 		`qsub $qsub2 >> $TopOutputLogs/pbs.REALRECAL`
 		echo `date`
@@ -330,19 +330,19 @@ else
 	    if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
 	    then
 		echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
-		qsub1=$TopOutputLogs/qsub.start_align_block
+		qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
                 echo "#!/bin/bash" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
 		echo "#pbs -l epilogue=$epilogue" >> $qsub1
 		echo "#PBS -l walltime=00:30:00" >> $qsub1
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-		echo "#PBS -o $TopOutputLogs/log.start_align_block.ou" >> $qsub1
-		echo "#PBS -e $TopOutputLogs/log.start_align_block.in" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.START_ALIGN_BLOCK.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.START_ALIGN_BLOCK.in" >> $qsub1
 		echo "#PBS -q $pbsqueue" >> $qsub1
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
-		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.start_align_block.in $TopOutputLogs/log.start_align_block.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
+		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
 		`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
@@ -352,19 +352,19 @@ else
 	    if [ $analysis == "VCALL_ONLY" -o $analysis == "VCALL" ]
 	    then
 		echo "variant calling only"
-		qsub3=$TopOutputLogs/qsub.start_varcall_block
+		qsub3=$TopOutputLogs/qsub.START_VARCALL_BLOCK
 		echo "#!/bin/bash" > $qsub3
 		echo "#PBS -A $pbsprj" >> $qsub3
 		echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
 		echo "#PBS -l epilogue=$epilogue" >> $qsub3
 		echo "#PBS -l walltime=00:30:00" >> $qsub3
 		echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-		echo "#PBS -o $TopOutputLogs/log.start_varcall_block.ou" >> $qsub3
-		echo "#PBS -e $TopOutputLogs/log.start_varcall_block.in" >> $qsub3
+		echo "#PBS -o $TopOutputLogs/log.START_VARCALL_BLOCK.ou" >> $qsub3
+		echo "#PBS -e $TopOutputLogs/log.START_VARCALL_BLOCK.in" >> $qsub3
 		echo "#PBS -q $pbsqueue" >> $qsub3
 		echo "#PBS -m ae" >> $qsub3
 		echo "#PBS -M $email" >> $qsub3
-		echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.start_varcall_block.in $TopOutputLogs/log.start_varcall_block.ou $email $TopOutputLogs/qsub.start_varcall_block" >> $qsub3
+		echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.START_VARCALL_BLOCK.in $TopOutputLogs/log.START_VARCALL_BLOCK.ou $email $TopOutputLogs/qsub.START_VARCALL_BLOCK" >> $qsub3
 		`chmod a+r $qsub3`
 		vcalljobid=`qsub $qsub3`
 		echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL

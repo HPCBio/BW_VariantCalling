@@ -9,6 +9,9 @@ then
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else 
+
+        echo -e "\n\n############# START ALIGN BLOCK ###############\n\n" >&2
+
 	set -x
 	echo `date`
         scriptfile=$0
@@ -19,6 +22,7 @@ else
         qsubfile=$5
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found"
@@ -26,11 +30,11 @@ else
         fi
 
 # wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "##################################### PARSING RUN INFO FILE ########################################"
-echo "##################################### AND SANITY CHECK      ########################################"
-echo "####################################################################################################"
+set +x
+echo -e "\n\n####################################################################################################"
+echo        "##################################### PARSING RUN INFO FILE ########################################"
+echo        "##################################### AND SANITY CHECK      ########################################"
+echo -e "\n\n####################################################################################################\n\n" >&2; set -x;
 
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
@@ -126,7 +130,7 @@ echo "##########################################################################
         fi
 
 
-echo -e "\n\n\n#####################    resetting output directories, logs, files     #############################\n\n\n"
+        set +x; echo -e "\n\n#####################    resetting output directories, logs, files     #############################\n\n" >&2; set -x; 
 
 
         AlignmentOutputFolder=$outputdir/align
@@ -145,13 +149,13 @@ echo -e "\n\n\n#####################    resetting output directories, logs, file
 
 
 
-
-echo "####################################################################" 
-echo "####################################################################" 
-echo "############      preprocessing BAM files         ##################"
-echo "####################################################################"
-echo "####################################################################"
-
+        set +x; echo -e "\n\n" >&2
+        echo "####################################################################" >&2
+        echo "####################################################################" >&2
+        echo "############      preprocessing BAM files         ##################" >&2
+        echo "####################################################################" >&2
+        echo "####################################################################" >&2
+        echo -e "\n\n" >&2; set -x
 
         CONVERT=""
         case=""
@@ -160,21 +164,22 @@ echo "####################################################################"
 
 	if [ $inputformat == "BAM" ]
         then
-            echo "input files are BAMs; preprocessing is required before aligning files"
+            set +x; echo -e "\n #input files are BAMs; preprocessing is required before aligning files \n" >&2; set -x;
             newfqfiles=""
             newbamfiles=""
             sep=":"
 
+           set +x; echo -e "\n\n #### Begin loop over samples! #### \n\n" >&2; set -x; 
            while read SampleName
            do
-              echo "processing next sample" 
-              # this will evaluate the length of string
+              set +x; echo -e "\n # processing next sample\n" >&2; set -x;
+              # this will evaluate the length of string; 
               if [ `expr ${#SampleName}` -lt 1 ]
               then
                 echo "skipping empty line"
               else
 
-                 echo "processing: $SampleName"
+                 set +x; echo -e "\n # processing: $SampleName \n" >&2; set -x;
                  # make sure this is actually BAM
                  if [ ! -f ${sampledir}/${SampleName}.bam ]
                  then
@@ -211,7 +216,7 @@ echo "####################################################################"
 
 		    if [ $bamtofastqflag == "NO" ] 
                     then
-                        echo "bam2newbam preprocessing..."
+                        set +x; echo -e "\n # bam2newbam preprocessing... \n" >&2; set -x;
 			typeOfupdateconfig="bam2newbam"
                         
                         #########################
@@ -272,12 +277,15 @@ echo "####################################################################"
 		fi
              fi 
 	    done < $outputdir/SAMPLENAMES.list
-            # end loop over samples
+            set +x; echo -e "\n\n #### End loop over samples! #### \n\n" >&2; set -x; 
             echo `date`
 
-            ###########################
-            ## updating config files
-            ###########################
+
+
+
+            set +x; echo -e "\n\n ########################### " >&2
+                    echo -e " ## updating config files " >&2
+                    echo -e " ########################### \n\n" >&2; set -x;
         
             CONVERTids=$( cat $TopLogsFolder/pbs.CONVERTBAM | sed "s/\..*//" | tr "\n" ":" )
 
@@ -338,14 +346,16 @@ echo "####################################################################"
 
         fi
 
-echo "####################################################################" 
-echo "####################################################################" 
-echo "############    done with   preprocessing of BAMs   ################"
-echo "############    alignment case selection is next    ################"
-echo "####################################################################"
+        set +x; echo -e "\n\n";
+        echo "####################################################################" >&2
+        echo "############    done with   preprocessing of BAMs   ################" >&2
+        echo "############    alignment case selection is next    ################" >&2
+        echo "####################################################################" >&2
+        set -x; echo -e "\n\n"; 
 
         if [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
         then
+            set +x; echo "# input is BAM, convert to fastq\n" >&2;  set -x;
 	    qsub1=$TopLogsFolder/qsub.main.alnFQ.afterbam2fastq
 	    echo "#PBS -V" > $qsub1
 	    echo "#PBS -A $pbsprj" >> $qsub1
@@ -368,7 +378,7 @@ echo "####################################################################"
 
         if [ $bamtofastqflag == "NO" -a $inputformat == "BAM" ]
         then
-            echo "aligning bam files directly"
+            set +x; echo "# aligning bam files directly\n" >&2;  set -x;
 
 
             ####################################
@@ -398,7 +408,7 @@ echo "####################################################################"
 
         if [ $bamtofastqflag == "NO" -a $inputformat == "FASTQ" ]
         then
-            echo "aligning fastq files directly"
+            set +x; echo "# aligning fastq files directly\n" >&2;  set -x;
             qsub3=$TopLogsFolder/qsub.alignfastq
             echo "#PBS -V" > $qsub3
             echo "#PBS -A $pbsprj" >> $qsub3
