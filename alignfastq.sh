@@ -1001,6 +1001,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
               echo "exitcode=\$?" >> $qsubAlignLauncher
               echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
               echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
+              echo "   exit 1" >> $qsubAlignLauncher
               echo "fi" >> $qsubAlignLauncher
 
               AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
