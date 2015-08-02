@@ -60,7 +60,7 @@ echo "##########################################################################
         input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-        sampledir=$( cat $runfile | grep -w SAMPLEDIR | cut -d '=' -f2 )
+        sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
         multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
         sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -539,17 +539,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                 fi
 
 
-                # check whether the file is fastq or fastq.gz, gunzip and rename as necessary
-                #LeftReadsFastq_basename=`basename $LeftReadsFastq`
-                #extension="${LeftReadsFastq_basename##*.}"
-                #if [ $extension == "gz" ]
-                #then
-                #   LeftReadsFastq_basename=`basename $LeftReadsFastq .gz`
-                #   `gunzip -c $LeftReadsFastq > $AlignOutputDir/$SampleName/$LeftReadsFastq_basename`
-                #   left_fastqc_input=$AlignOutputDir/$SampleName/$LeftReadsFastq_basename
-                #else
-                   left_fastqc_input=$LeftReadsFastq                
-                #fi
+                left_fastqc_input=$LeftReadsFastq                
 
                 qsub_fastqcR1=$TopOutputLogs/fastqc/qsub.fastqcR1.$SampleName
 		echo "#PBS -V" > $qsub_fastqcR1
@@ -563,21 +553,21 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		echo "#PBS -m ae" >> $qsub_fastqcR1
 		echo "#PBS -M $email" >> $qsub_fastqcR1
 		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
+
+                echo -e "\n\n" >> $qsub_fastqcR1
+                echo "exitcode=\$?" >> $qsub_fastqcR1
+                echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_fastqcR1
+                echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_fastqcR1
+                echo -e "  exit 1" >> $qsub_fastqcR1
+                echo "fi" >> $qsub_fastqcR1
+
+
 		`chmod a+r $qsub_fastqcR1`
                 `qsub $qsub_fastqcR1 >> $TopOutputLogs/pbs.FASTQC`
 
 		if [ $paired -eq 1 ]
 		then
-                #    RightReadsFastq_basename=`basename $RightReadsFastq`
-                #    extension="${RightReadsFastq_basename##*.}"
-                #    if [ $extension == "gz" ]
-                #    then
-                #       RightReadsFastq_basename=`basename $RightReadsFastq .gz`
-                #       `gunzip -c $RightReadsFastq > $AlignOutputDir/$SampleName/$RightReadsFastq_basename`
-                #       right_fastqc_input=$AlignOutputDir/$SampleName/$RightReadsFastq_basename
-                #    else
-                       right_fastqc_input=$RightReadsFastq
-                #    fi
+                    right_fastqc_input=$RightReadsFastq
 
 
                     qsub_fastqcR2=$TopOutputLogs/fastqc/qsub.fastqc_R2_$SampleName
@@ -592,6 +582,14 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		    echo "#PBS -m ae" >> $qsub_fastqcR2
 		    echo "#PBS -M $email" >> $qsub_fastqcR2
 		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
+
+                    echo -e "\n\n" >> $qsub_fastqcR2
+                    echo "exitcode=\$?" >> $qsub_fastqcR2
+                    echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_fastqcR2
+                    echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_fastqcR2
+                    echo -e "  exit 1" >> $qsub_fastqcR2
+                    echo "fi" >> $qsub_fastqcR2
+
 		    `chmod a+r $qsub_fastqcR2`
                     `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
 		fi
@@ -999,6 +997,12 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
               echo "#PBS -m ae" >> $qsubAlignLauncher
               echo "#PBS -M $email" >> $qsubAlignLauncher
               echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+
+              echo "exitcode=\$?" >> $qsubAlignLauncher
+              echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
+              echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
+              echo "fi" >> $qsubAlignLauncher
+
               AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
               echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
               echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk

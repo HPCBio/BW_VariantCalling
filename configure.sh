@@ -27,6 +27,7 @@ else
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found."
+           echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
            exit 1;
         fi
 

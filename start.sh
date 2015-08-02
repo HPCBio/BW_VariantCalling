@@ -99,10 +99,11 @@ else
         echo "#PBS -M $email" >> $qsub1
         echo "$scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE " >> $qsub1
         echo -e "\n\n" >> $qsub1
-        echo "exitcode=$?" >> $qsub1
-        echo "if [ $exitcode -ne 0 ] then "
-        echo "   echo -e \"\n\n configure.sh failed with exit code = $exitcode \n\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\" " >> $qsub1 
+        echo "exitcode=\$?" >> $qsub1
+        echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
+        echo "   echo -e \"\n\n configure.sh failed with exit code = \$exitcode \n runfile=$outputdir/runfile.txt\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1 
         echo "fi" >> $qsub1
+        echo -e "\n\n exit 1" >> $qsub1
 
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`

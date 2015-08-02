@@ -238,6 +238,13 @@ echo -e "\n\n###################################################################
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
 			echo "aprun -n 1 -d $thr $scriptdir/convertbam2newbam.sh $sampledir $tmpconversion $originalBAM $newsuffix4bam $runfile $TopLogsFolder/log.convertbam2newbam.${suffix}.in $TopLogsFolder/log.convertbam2newbam.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2newbam.$suffix" >> $qsub1
+                        echo -e "\n\n" >> $qsub1
+                        echo "exitcode=\$?" >> $qsub1
+                        echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
+                        echo "   echo -e \"\n\n convertbam2newbam.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.convertbam2newbam.${suffix}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1
+                        echo "fi" >> $qsub1
+                        echo -e "\n\n exit 1" >> $qsub1
+
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
@@ -268,6 +275,13 @@ echo -e "\n\n###################################################################
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
 			echo "aprun -n 1 -d $thr $scriptdir/convertbam2fastq.sh $sampledir $tmpconversion $originalBAM $newsuffix4fq $runfile $TopLogsFolder/log.convertbam2fq.${suffix}.in $TopLogsFolder/log.convertbam2fq.${suffix}.ou $email $TopLogsFolder/qsub.convertbam2fq.$suffix" >> $qsub1
+
+                        echo "exitcode=\$?" >> $qsub1
+                        echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
+                        echo "   echo -e \"\n\n convertbam2fastq.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.convertbam2fq.${suffix}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1
+                        echo "fi" >> $qsub1
+                        echo -e "\n\n exit 1" >> $qsub1
+
 			`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
@@ -311,6 +325,13 @@ echo -e "\n\n###################################################################
 		echo "#PBS -M $email" >> $qsub2
 		echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub2
 		echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
+
+                echo "exitcode=\$?" >> $qsub2
+                echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub2
+                echo "   echo -e \"\n\n updateconfig.wnewfq.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.updateconfig_wnewfq.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub2
+                echo "fi" >> $qsub2
+                echo -e "\n\n exit 1" >> $qsub2
+
 		`chmod a+r $qsub2`       
 		updatejob=`qsub $qsub2` 
 		echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
@@ -335,6 +356,14 @@ echo -e "\n\n###################################################################
 		   echo "#PBS -M $email" >> $qsub3
 		   echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub3
 		   echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewbam.sh $sampledir $newbamfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewbam.in $TopLogsFolder/log.updateconfig_wnewbam.ou $email $TopLogsFolder/qsub.updateconfig_wnewbam" >> $qsub3
+
+                   echo "exitcode=\$?" >> $qsub3
+                   echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub3
+                   echo "   echo -e \"\n\n updateconfig.wnewbam.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.updateconfig_wnewbam.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub3
+                   echo "fi" >> $qsub3
+                   echo -e "\n\n exit 1" >> $qsub3
+
+
 		   `chmod a+r $qsub3`       
 		   updatejob=`qsub $qsub3` 
 		   echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
@@ -370,6 +399,7 @@ echo -e "\n\n###################################################################
 	    echo "#PBS -M $email" >> $qsub1
 	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub1
 	    echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/alnFQ.afterbam2fastq.in $TopLogsFolder/alnFQ.afterbam2fastq.ou $email $TopLogsFolder/qsub.main.alnFQ.afterbam2fastq" >> $qsub1
+
 	    `chmod a+r $qsub1`               
 	    `qsub $qsub1 >> $TopLogsFolder/pbs.ALIGN`
             case="bam2fastq"
