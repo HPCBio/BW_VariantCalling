@@ -558,7 +558,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                 echo "exitcode=\$?" >> $qsub_fastqcR1
                 echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_fastqcR1
                 echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_fastqcR1
-                echo -e "  exit 1" >> $qsub_fastqcR1
+                echo -e "   exit 1" >> $qsub_fastqcR1
                 echo "fi" >> $qsub_fastqcR1
 
 
