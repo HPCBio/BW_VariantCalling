@@ -1,4 +1,11 @@
 #!/usr/bin/perl
+# first argument: full path to the output folder of the workflow
+# second argument: full path to, and name of the information sheet provided by Baylor
+# third argument: output file name where sample names will be recorded
+# fourth argument: output filename where the processed information about samples and lanes etc will be recorded in a way that the workflow can ingest
+# fifth argument: output filename where all this information is grouped across lanes, to facilitate merging of data per flowcell.
+
+
 use strict;
 
 
@@ -18,10 +25,9 @@ open(MERGED,">$outfile2") || die("cannot open $outfile2\n");
 open(GROUPS,">$outfile3") || die("cannot open $outfile3\n");
 
 my $prevsampleid="";
-my $prevlane="";
 my %samplexlane=();
 
-# we will construct a hash : {sample id} {flowcell} {lane} {library, read1 or read2}
+# we will construct a hash : {sample id} {name_of_flowcell_and_lane} {library, read1 or read2}
 my %sampledet=();
 my $counter=0;
 while (my $line = <IN>) {
@@ -41,9 +47,9 @@ while (my $line = <IN>) {
             
             # parsing filename of read, assumed to be the last element of the array
             my $read=$det[$#det];
-
             # remove whitespace 
             $read =~ s/\s*//g;
+
 
             # build flowcell information
             my $flowcell="";

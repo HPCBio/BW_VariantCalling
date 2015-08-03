@@ -102,8 +102,8 @@ else
         echo "exitcode=\$?" >> $qsub1
         echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
         echo "   echo -e \"\n\n configure.sh failed with exit code = \$exitcode \n runfile=$outputdir/runfile.txt\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1 
+        echo -e "\n\n   exit 1" >> $qsub1
         echo "fi" >> $qsub1
-        echo -e "\n\n exit 1" >> $qsub1
 
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`

@@ -1000,7 +1000,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
               echo "exitcode=\$?" >> $qsubAlignLauncher
               echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
-              echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
+              echo "   echo -e \"\n\n AlignAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.AlignAnisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
               echo "   exit 1" >> $qsubAlignLauncher
               echo "fi" >> $qsubAlignLauncher
 
@@ -1059,7 +1059,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
                  `qhold -h u $bwa_job`
                  echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
                  echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-              done
+              done < $outputdir/SAMPLENAMES.list # done looping over samples
            ;;
            esac
 
