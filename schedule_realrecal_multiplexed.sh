@@ -378,7 +378,7 @@ fi
       then
           ## parsing non-empty line
 	  sample=$( echo "$SampleLine" | cut -f 1 )
-	  lane=$( echo "$SampleLine" | cut -f 2 )
+	  lane=$( echo "$SampleLine" | cut -f 3 )
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
 	  alignedfile=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam"`
@@ -444,7 +444,7 @@ do
 	echo "####################################################################################################"
         # now parsing the line just being read
 	sample=$( echo "$SampleLine" | cut -f 1 )
-	lane=$( echo "$SampleLine" | cut -f 2 )
+	lane=$( echo "$SampleLine" | cut -f 3 )
 
 	echo "realigning recalibrating per lane: $lane sample: $sample"
 	echo `date`
@@ -480,8 +480,10 @@ do
 	for chr in $indices
 	do
 	    echo "####################################################################################################"
-	    echo "generating real-recal calls for lane=$lane chr=${chr} ..."
+	    echo "generating real-recal calls for lane=$lane chr=${chr} ...", chromosomecounter=${chromosomecounter}
 	    echo "####################################################################################################"
+
+            echo "${realparms[23]}, ${realparms[24]}, ${realparms[25]}"
 
             echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
            
@@ -587,7 +589,7 @@ echo "##########################################################################
               echo "####################################################################################################"
               # now parsing the line just being read
 	      sample=$( echo "$SampleLine" | cut -f 1 )
-	      lane=$( echo "$SampleLine" | cut -f 2 )
+	      lane=$( echo "$SampleLine" | cut -f 3 )
 
               RealignOutputDir=$outputdir/$sample/$lane/realign
               truncate -s 0 $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
