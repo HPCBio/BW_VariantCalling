@@ -518,26 +518,6 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     `chmod -R 770 $TopOutputLogs/fastqc`
                 fi
 
-                echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
-                echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
-                echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
-
-                # results of alignment for each sample will be placed into its own subfolder 
-                if [ ! -d $AlignOutputDir/$SampleName ]
-                then
-                    mkdir $AlignOutputDir/$SampleName
-                    outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
-                else
-                    outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
-                fi
-                `chmod -R 770 $AlignOutputDir/$SampleName/`
-                # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
-                # best keep them in the sample subfolder
-                if [ ! -d $AlignOutputDir/$SampleName/logs ]
-                then
-                    mkdir $AlignOutputDir/$SampleName/logs
-                fi
-
 
                 left_fastqc_input=$LeftReadsFastq                
 
@@ -598,6 +578,30 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             fi
             
             ## done with generating quality info for each read file
+
+
+
+
+            echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
+            echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
+            echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
+
+            # results of alignment for each sample will be placed into its own subfolder 
+            if [ ! -d $AlignOutputDir/$SampleName ]
+            then
+                mkdir $AlignOutputDir/$SampleName
+                outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
+            else
+                outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
+            fi
+            # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
+            # best keep them in the sample subfolder
+            if [ ! -d $AlignOutputDir/$SampleName/logs ]
+            then
+                mkdir $AlignOutputDir/$SampleName/logs
+            fi
+            `chmod -R ug=rwX $AlignOutputDir`
+
 
 
 
