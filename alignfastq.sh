@@ -10,6 +10,8 @@ then
         exit 1;
 fi
 
+        echo -e "\n\n############# BEGIN ALIGNFASTQ PROCEDURE: schedule fastqc, parse sample information and create alignment jobs  ###############\n\n" >&2
+
 	set -x
 	echo `date`
         scriptfile=$0
@@ -20,22 +22,22 @@ fi
         qsubfile=$5
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
         if [ !  -s $runfile ]
         then
-           MSG="$runfile configuration file not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           MSG="$runfile configuration file not found."
+           echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
            exit 1;
         fi
 
 
-
-# wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "##################################### PARSING RUN INFO FILE ########################################" >&2; set -x;
-echo "##################################### AND SANITY CHECK      ########################################"
-echo "####################################################################################################"
+set +x; echo -e "\n\n" >&2; 
+# wrapping commends in echoes, so that the output logs would be easier to read: they will have more structure
+echo "####################################################################################################" >&2
+echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo "##################################### AND SANITY CHECK      ########################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
@@ -71,14 +73,12 @@ echo "##########################################################################
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
 
-############ checking workflow scripts directory
-        echo -e "\n\n\n############ checking workflow scripts directory\n"
+        set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
 
         if [ ! -d $scriptdir ]
         then
            MSG="SCRIPTDIR=$scriptdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
         if [ ! -d $outputdir ]
@@ -87,8 +87,7 @@ echo "##########################################################################
         fi
 
 
-############ checking samples 
-        echo -e "\n\n\n############ checking samples\n"
+        set +x; echo -e "\n\n\n############ checking samples\n" >&2; set -x
 
         if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
         then
@@ -101,21 +100,22 @@ echo "##########################################################################
 		pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
             else
 		MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                 exit 1;
             fi
         fi
 
-        # check that sampledir exists
+
+        set +x; echo -e "\n\n\n# check that sampledir exists\n" >&2; set -x
         if [ ! -d $sampledir ]
         then
            MSG="SAMPLEDIR=$sampledir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
+
+        set +x; echo -e "\n\n\n# check number of samples\n" >&2; set -x
         numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
         if [ $numsamples -gt 1 -a $multisample == "YES" ]
         then
@@ -127,23 +127,22 @@ echo "##########################################################################
            fi
         fi
 
+
+        set +x; echo -e "\n\n\n# check whether fastq will be chunked\n" >&2; set -x
         if [ $chunkfastq != "YES" -a $chunkfastq != "NO" ]
         then
             MSG="CHUNKFASTQ variable must be binary YES/NO; incorrect value encountered"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
             exit 1;
         fi
 
-############ checking settings for marking of duplicates 
-        echo -e "\n\n\n############ checking settings for marking of duplicates\n"
 
+        set +x; echo -e "\n\n\n############ checking settings for marking of duplicates\n" >&2; set -x
         if [ $dup != "1" -a $dup != "0" -a $dup != "YES" -a $dup != "NO" ]
         then
            MSG="Invalid value for MARKDUP=$dup"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            exit 1;
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
         else
             if [ $dup == "1" ]
             then
@@ -154,13 +153,11 @@ echo "##########################################################################
                 $dup="NO"
             fi
         fi
-
         if [ $dupflag != "1" -a $dupflag != "0" -a $dupflag != "YES" -a $dupflag != "NO" ]
         then
            MSG="Invalid value for REMOVE_DUP=$dupflag"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            exit 1;
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
         else
             if [ $dupflag == "1" ]
             then
@@ -174,15 +171,12 @@ echo "##########################################################################
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
 
 
-############ checking FastQC settings
-        echo -e "\n\n\n############ checking FastQC settings\n"
-
+        set +x; echo -e "\n\n\n############ checking FastQC settings\n" >&2; set -x
         if [ $fastqcflag != "1" -a $fastqcflag != "0" -a $fastqcflag != "YES" -a $fastqcflag != "NO" ]
         then
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            exit 1;
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
         else
             if [ $fastqcflag == "1" ]
             then
@@ -194,15 +188,12 @@ echo "##########################################################################
             fi
         fi
 
-############ checking Cleanup settings
-        echo -e "\n\n\n############ checking Cleanup settings\n"
-
+        set +x; echo -e "\n\n\n############ checking Cleanup settings\n" >&2; set -x
         if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
         then
            MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            exit 1;
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
         else
             if [ $cleanupflag == "1" ]
             then
@@ -215,14 +206,11 @@ echo "##########################################################################
         fi
 
 
-############ checking computational tools
-        echo -e "\n\n\n############ checking computational tools\n"
-
+        set +x; echo -e "\n\n\n############ checking computational tools\n" >&2; set -x
         if [ $aligner != "NOVOALIGN" -a $aligner != "BWA_ALN" -a $aligner != "BWA_MEM"]
         then
             MSG="ALIGNER=$aligner  is not available at this site"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
             exit 1;
         fi
         if [ $aligner == "NOVOALIGN" ]
@@ -243,35 +231,29 @@ echo "##########################################################################
             refindexed=$( cat $runfile | grep -w BWAMEMINDEX | cut -d '=' -f2 )
             alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )
         fi
-
         if [ -z $sortool ]
         then
            MSG="Value for SORTOOL must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         else
            if [ $sortool != "NOVOSORT" -a $sortool != "PICARD" ]
            then
                MSG="Invalid value for SORTOOL=$sortool in configuration file"
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
            fi
         fi      
-
         if [ -z $markduplicatestool ]
         then
            MSG="Value for MARKDUPLICATESTOOL must be specified in configuration file"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         else
            if [ $markduplicatestool != "PICARD" -a $markduplicatestool != "SAMBLASTER" ]
             then
                MSG="Invalid value for SORTOOL=$sortool in configuration file"
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-               #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
            fi
         fi
@@ -279,65 +261,58 @@ echo "##########################################################################
         if [ ! -d $alignerdir ]
         then
            MSG="$alignerdir aligner directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
         if [ ! -d $picardir ]
         then
            MSG="PICARDIR=$picardir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
         if [ ! -d $samdir ]
         then
            MSG="SAMDIR=$samdir directory not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
         if [ ! -e $profiler ]
         then
            MSG="PROFILER=$profiler not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
 
-############ checking presence of references 
-        echo -e "\n\n\n############ checking presence of references\n"
-
+        set +x; echo -e "\n\n\n############ checking presence of references\n" >&2; set -x
         if [ ! -s $refdir/$ref ]
         then
            MSG="$refdir/$ref reference genome not found"
-           echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-           #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
         fi
 
 
-############ checking run method
+       set +x; echo -e "\n\n\n############ checking run method\n" >&2; set -x
        if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
        then
           MSG="Invalid value for RUNMETHOD=$run_method"
-          echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+          echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
           exit 1;
        fi
 
 
-echo "############################################################################################################"
-echo "#####################################                                            ###########################"
-echo "#####################################  CREATE  DIRECTORY STRUCTURE               ###########################"
-echo "#####################################  output/align/sample/  for demultiplexed   ###########################"
-echo "#####################################  output/align/lane/    for multiplexed     ###########################"
-echo "#####################################  lane names/sample names must be unique    ###########################"
-echo "############################################################################################################"
+set +x; echo -e "\n\n">&2
+echo "############################################################################################################" >&2
+echo "#####################################  CREATE  DIRECTORY STRUCTURE               ###########################" >&2
+echo "#####################################  output/align/sample/  for demultiplexed   ###########################" >&2
+echo "#####################################  output/align/lane/    for multiplexed     ###########################" >&2
+echo "#####################################  lane names/sample names must be unique    ###########################" >&2
+echo "############################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
 
@@ -345,7 +320,7 @@ echo "##########################################################################
         AlignOutputDir=$outputdir/align
         if [ -d $AlignOutputDir ]
         then
-           echo "$AlignOutputDir is there; resetting it"
+           set +x; echo -e "\n\n $AlignOutputDir is there; resetting it" >&2; set -x;
            `rm -r $AlignOutputDir/*`
         else
            mkdir -p $AlignOutputDir
@@ -355,7 +330,8 @@ echo "##########################################################################
         TopOutputLogs=$outputdir/logs
         if [ -d $TopOutputLogs ]
         then
-           echo "$TopOutputLogs is there; resetting it"
+           # not sure if we want to reset this: useful for debugging ....
+           #set +x; echo -e "$TopOutputLogs is there; resetting it" >&2; set -x;
            #`rm -r $TopOutputLogs/*`
            pbsids=""
         else
@@ -395,13 +371,15 @@ echo "##########################################################################
         fi
 
 
-############################################################################################################
-#####################################                               ########################################
-##################################### ALIGNMENT: LOOP1 OVER SAMPLES  ########################################
-#####################################                               ########################################
-############################################################################################################
+set +x; echo -e "\n\n">&2
+echo "############################################################################################################" >&2
+echo "#####################################                               ########################################" >&2
+echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
+echo "#####################################                               ########################################" >&2
+echo "############################################################################################################" >&2
 
-echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES  ########################################\n\n\n"
+echo -e "\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES  ########################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
 
@@ -419,20 +397,23 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
         while read SampleLine
         do
-          echo "processing next sample" 
+          set +x; echo -e "\n\n processing next sample \n" >&2; set -x;
           # this will evaluate the length of string
           if [ `expr ${#SampleLine}` -lt 1 ]
           then
-            echo "skipping empty line"
+             set +x; echo -e "\n\n skipping empty line \n" >&2; set -x;
           else
 
-	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleLine            ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### SELECTING CASE DEPENDING ON ANALYSIS ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### PARSING READS and CREATING RGLINE    ########################################\n\n\n"
+            
+            set +x; echo -e "\n\n">&2
+	    echo -e "#################################### PREP WORK FOR $SampleLine            ########################################\n" >&2
+	    echo -e "#################################### SELECTING CASE DEPENDING ON ANALYSIS ########################################\n" >&2
+	    echo -e "#################################### PARSING READS and CREATING RGLINE    ########################################\n" >&2
+            echo -e "\n\n" >&2; set -x;
 
             if [ $analysis != "MULTIPLEXED" ]
 	    then
-                echo "analysis is DEMULTIPLEXED, current line has ONE field for SAMPLENAME"
+                set +x; echo -e "\n\nanalysis is DEMULTIPLEXED, current line has ONE field for SAMPLENAME \n" >&2; set -x;
                 # form and check the left reads file
                 SampleName=$( echo $SampleLine )
 		LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
@@ -446,9 +427,12 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 	    else
-                echo -e "analysis is MULTIPLEXED."
-                echo -e "current line has FIVE fields:\n"
-                echo -e "col1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2\n"
+                set +x; echo -e "\n" >&2
+                echo "analysis is MULTIPLEXED." >&2
+                echo "current line has FIVE fields:" >&2
+                echo "ncol1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2" >&2; 
+                echo -w "\n" >&2; set -x;
+
                 SampleName=$( echo -e "$SampleLine" | cut -f 2 )
                 LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 4 )
                 RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 5 )
@@ -464,8 +448,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 	    if [ ! -s $LeftReadsFastq ]
 	    then
                 MSG="$LeftReadsFastq left reads file not found"
-                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                 exit 1;
 	    fi
 	    echo `date`
@@ -476,8 +459,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 		if [ ! -s $RightReadsFastq ]
 		then
 		    MSG="$RightReadsFastq right reads file not found"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-                    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
 		fi
 	    fi
@@ -485,24 +467,26 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             if [ `expr ${#sID}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ] 
 	    then
 		MSG="ID=$sID PL=$sPL CN=$sCN invalid values. The RG line cannot be formed"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    fi
 
 	    RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
 
+            set +x; echo -e "\n\n" >&2; 
+            echo -e "\n\n" >&2; set -x;
             if [ $fastqcflag == "YES" ]
             then
-	        echo -e "\n\n\n#################################### PREP WORK FOR $SampleName         ########################################\n\n\n"        
-		echo -e "\n\n\n#################################### RUNNING FASTC ON UNALIGNED READS  ########################################\n\n\n"
-                
+                set +x; echo -e "\n\n" >&2; 
+		echo "#################################### RUNNING FASTC ON UNALIGNED READS of $SampleName ########################################" >&2
+                echo -e "\n\n" >&2; set -x;
+
                 # check that fastqc tool is there
 		if [ ! -d $fastqcdir ]
 		then
 		    MSG="FASTQCDIR=$fastqcdir directory not found"
-		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-		    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
 		fi
 
@@ -574,7 +558,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
                     `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
 		fi
             else
-		echo "quality information for fastq files will NOT be calculated."
+		set +x; echo -e "\n\n quality information for fastq files will NOT be calculated." >&2; set -x;
             fi
             
             ## done with generating quality info for each read file
@@ -582,9 +566,10 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
 
 
 
-            echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
-            echo -e "\n\n\n#################################### CREATING OUTPUT DIRECTORY            ########################################\n\n\n"
-            echo -e "\n\n\n#################################### CREATING OUTPUT FILENAMES            ########################################\n\n\n"
+            set +x; echo -e "\n\n" >&2;
+            echo -e "#################################### CREATING OUTPUT DIRECTORY for $SampleName ########################################\n" >&2
+            echo -e "#################################### CREATING OUTPUT FILENAMES for $SampleName ########################################\n" >&2
+            echo -e "\n\n" >&2; set -x;
 
             # results of alignment for each sample will be placed into its own subfolder 
             if [ ! -d $AlignOutputDir/$SampleName ]
@@ -613,8 +598,7 @@ echo -e "\n\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES
             outsortwdup=$outputsamfileprefix.wdups.sorted.bam
             cd $AlignOutputDir/$SampleName
 
-	    echo -e "\n\n\n#################################### PREP WORK FOR $SampleName            ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### SELECT TO CHUNK/Not2CHUNK READS      ########################################\n\n\n"
+	    echo -e "\n\n\n#################################### SELECT TO CHUNK/Not2CHUNK READS for $SampleName  ########################################\n\n\n"
 
             # create new names for chunks of fastq
             # doing this outside the chunkfastq conditional, because
