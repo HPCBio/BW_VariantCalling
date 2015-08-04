@@ -231,7 +231,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
       mkdir $RealignOutputLogs
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      exit 1;
+      #exit 1;
    fi
 
    if [ $skipvcall == "NO" ]
@@ -243,7 +243,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
          mkdir $VcallOutputLogs
          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
          #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
-         exit 1;
+         #exit 1;
       fi
    fi
 
