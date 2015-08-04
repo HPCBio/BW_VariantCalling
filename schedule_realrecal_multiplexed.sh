@@ -592,6 +592,7 @@ echo "##########################################################################
 	      lane=$( echo "$SampleLine" | cut -f 2 )
 
               RealignOutputDir=$outputdir/$sample/$lane/realign
+              RealignLog=$outputdir/${sample}/realign/logs	
               truncate -s 0 $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
      
               echo "####################################################################################################"
@@ -628,6 +629,14 @@ echo "##########################################################################
               echo "#PBS -l nodes=$chromosomecounter:ppn=$thr" >> $qsub_realrecal_anisimov
               # the actual command
               echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecalLane.${lane}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
+              echo -e "\n\n" >> $qsub_realrecal_anisimov
+              echo "exitcode=\$?" >> $qsub_realrecal_anisimov
+              echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_realrecal_anisimov
+              echo -e "   MSG=\`cat $RealignLog/FAILED_realrecalLane.${lane}.Anisimov.msg\`" >> $qsub_realrecal_anisimov
+              echo "   echo -e \"\n\n realrecalLane.${lane}.Anisimov failed with exit code = \$exitcode \n\n \$MSG \n log=$RealignOutputLogs/realrecalLane.${lane}.AnisimovLauncher.log\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_realrecal_anisimov
+              echo -e "\n\n   exit 1" >> $qsub_realrecal_anisimov
+              echo "fi" >> $qsub_realrecal_anisimov
+
 
           fi
           #end loop over lanes
@@ -687,6 +696,14 @@ echo "##########################################################################
 	      echo "#PBS -e $RealignLog/log.mergeLanes.${sample}.in" >> $qsub_mergeLanes_anisimov
 	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_mergeLanes_anisimov
               echo "aprun -n 1 -N 1 -d $thr $scriptdir/mergeLanesPerSample.sh $runfile $sample $sLB $lanes ${sampleOutPrefix}.mergedLanes.bam $outputdir $RealignLog/log.mergeLanes.$sample.in $RealignLog/log.mergeLanes.$sample.ou $email $qsub_mergeLanes_anisimov" >> $qsub_mergeLanes_anisimov
+              echo -e "\n\n" >> $qsub_mergeLanes_anisimov
+              echo "exitcode=\$?" >> $qsub_mergeLanes_anisimov
+              echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_mergeLanes_anisimov
+              echo -e "   MSG=\`cat $RealignLog/FAILED_mergeLanesPerSample.$sample.msg\`" >> $qsub_mergeLanes_anisimov
+              echo "   echo -e \"\n\n mergeLanesPerSample.sh failed with exit code = \$exitcode \n\n \$MSG \n log=$RealignLog/log.mergeLanes.$sample.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_mergeLanes_anisimov
+              echo -e "\n\n   exit 1" >> $qsub_mergeLanes_anisimov
+              echo "fi" >> $qsub_mergeLanes_anisimov
+
 
 
               echo "####################################################################################################"
@@ -702,6 +719,14 @@ echo "##########################################################################
 	      echo "#PBS -e $RealignLog/log.verifySample.${sample}.in" >> $qsub_verifySample_anisimov
 	      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_verifySample_anisimov
               echo "aprun -n 1 -N 1 -d $thr $scriptdir/verifySample.sh $runfile $sample $outputdir/${sample}/realign  ${sample}.verified $outputdir $RealignLog/log.verifySample.$sample.in $RealignLog/log.verifySample.$sample.ou $email $qsub_verifySample_anisimov" >> $qsub_verifySample_anisimov
+              echo -e "\n\n" >> $qsub_verifySample_anisimov
+              echo "exitcode=\$?" >> $qsub_verifySample_anisimov
+              echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_verifySample_anisimov
+              echo -e "   MSG=\`cat $RealignLog/FAILED_verifySample.${sample}.msg\`" >> $qsub_verifySample_anisimov
+              echo "   echo -e \"\n\n verifySample.sh failed with exit code = \$exitcode \n\n \$MSG \n log=$RealignLog/log.verifySample.$sample.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_verifySample_anisimov
+              echo -e "\n\n   exit 1" >> $qsub_verifySample_anisimov
+              echo "fi" >> $qsub_verifySample_anisimov
+
 
 
 
@@ -739,6 +764,14 @@ echo "##########################################################################
 	      echo "#PBS -e $RealignOutputLogs/log.realignSample.${sample}.in" >> $qsub_realignSample_anisimov
 	      echo "#PBS -l nodes=$chromosomecounter:ppn=$thr" >> $qsub_realignSample_anisimov
 	      echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realignSample.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realignSample.${sample}.AnisimovLauncher.log" >> $qsub_realignSample_anisimov
+              echo -e "\n\n" >> $qsub_realignSample_anisimov
+              echo "exitcode=\$?" >> $qsub_realignSample_anisimov
+              echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_realignSample_anisimov
+              echo -e "   MSG=\`cat $outputdir/$sample/realign/logs/FAILED_realignSample.${sample}.AnisimovLauncher.msg\`" >> $qsub_realignSample_anisimov
+              echo "   echo -e \"\n\n realignSample.${sample}.Anisimov failed with exit code = \$exitcode \n\n \$MSG \n log=$RealignOutputLogs/realignSample.${sample}.AnisimovLauncher.log\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_realignSample_anisimov
+              echo -e "\n\n   exit 1" >> $qsub_realignSample_anisimov
+              echo "fi" >> $qsub_realignSample_anisimov
+
 
 
 	      if [ $skipvcall == "NO" ]
@@ -757,6 +790,14 @@ echo "##########################################################################
                   echo "ulimit -s unlimited " >> $qsub_vcallgatk_anisimov
                   echo "export APRUN_XFER_LIMITS=1 " >> $qsub_vcallgatk_anisimov
 		  echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${sample}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+                  echo -e "\n\n" >> $qsub_vcallgatk_anisimov
+                  echo "exitcode=\$?" >> $qsub_vcallgatk_anisimov
+                  echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_vcallgatk_anisimov
+                  echo -e "   MSG=\`cat $outputdir/$sample/variant/logs/FAILED_vcallgatk.${sample}.AnisimovLauncher.msg\`" >> $qsub_vcallgatk_anisimov
+                  echo "   echo -e \"\n\n vcallgatk.${sample}.Anisimov failed with exit code = \$exitcode \n\n \$MSG \n log=$VcallOutputLogs/vcallgatk.${sample}.AnisimovLauncher.log\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_vcallgatk_anisimov
+                  echo -e "\n\n   exit 1" >> $qsub_vcallgatk_anisimov
+                  echo "fi" >> $qsub_vcallgatk_anisimov
+
 	      fi
 	  fi
       done <  $outputdir/SAMPLEGROUPS.list
