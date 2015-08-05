@@ -95,9 +95,9 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        if [ ! -s $inputfile ]
+        if [ ! -s ${inputdir}/${inputfile} ]
         then
-	    MSG="$inputfile realigned bam file not found"
+	    MSG="${inputdir}/${inputfile} realigned bam file not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -175,7 +175,8 @@ else
        echo "##############################################################################"
        echo "##############################################################################"
 
-       infile=`basename $inputfile`
+       #infile=`basename $inputfile`
+       infile=$inputfile
        cd $outputdir
 
        if [ $snvcaller == "GATK" ]
@@ -258,7 +259,7 @@ else
         $javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
             -T HaplotypeCaller \
             -R $refdir/$ref \
-            -I $inputfile \
+            -I ${inputdir}/${inputfile}
             --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
             -gt_mode DISCOVERY \
             -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
