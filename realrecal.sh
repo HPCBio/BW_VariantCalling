@@ -193,7 +193,7 @@ else
 
                 if [ "$recalibrator" == "BQSR" ]
                 then
-                   $memprov $javadir/java -Xmx2048m -Xms2048m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+                   $memprov $javadir/java -Xmx4096m -Xms4096m-Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                        -R $refdir/$ref \
                        $recalparms \
                        -I realign.$chr.real.cleaned.bam \
