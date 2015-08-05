@@ -259,7 +259,7 @@ else
         $javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
             -T HaplotypeCaller \
             -R $refdir/$ref \
-            -I ${inputdir}/${inputfile}
+            -I ${inputdir}/${inputfile} \
             --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
             -gt_mode DISCOVERY \
             -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
