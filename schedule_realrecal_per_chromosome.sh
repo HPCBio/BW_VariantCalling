@@ -415,12 +415,15 @@ echo -e "\n\n\n ###################################       main loops start here 
             exit 1;
 
          fi
-         truncate -s 0 ${aligned_bam}.RGline
-	 `grep "RG.*ID" $header | cut -f 2` >> ${aligned_bam}.RGline
-         RGline=${aligned_bam}.RGline
-         RGline=$( sed -i 's/ID/RGID/' "$RGline" )
-         RGline=$( sed -i 's/ / RG/g' "$RGline" )
-         RGparms=$( cat "$RGline" )
+         # create read groups line that will be input to Picard AddOrReplaceGroups
+         RGparms=$( grep "^@RG" $header | sed 's/@RG//' | tr ":" "=" | tr " " ":" | sed 's/\t/:RG/g' | sed "s/ //g" )
+         #truncate -s 0 ${aligned_bam}.RGline
+	 #`grep "RG.*ID" $header | cut -f 2` >> ${aligned_bam}.RGline
+         
+         #RGline=${aligned_bam}.RGline
+         #RGline=$( sed -i 's/ID/RGID/' "$RGline" )
+         #RGline=$( sed -i 's/ / RG/g' "$RGline" )
+         #RGparms=$( cat "$RGline" )
 
 
          # now check that there is only one file
