@@ -206,32 +206,68 @@ else
 		exit 1;
 	    fi
 	else 
-            set +x; echo -e "\n ###### ANALYSIS = $analysis, IS NOT = MULTIPLEXED ########" >&2;
-            echo -e "\n ###### produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
-	    truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
-	    if  [ $inputformat == "FASTQ" ]
+            set +x; 
+            echo -e "\n ######               ANALYSIS = $analysis, IS NOT = MULTIPLEXED                                ########" >&2;
+            echo -e "\n ###### we still have two cases to consider: with infoSheet or without infoSheet.               ########" >&2;
+
+            if [ -s $sampleinfo ]
 	    then
-		for inputfile in $sampledir/*
-		do
-                   # strip path, which read (left/right), and extension from input files
-                   # and put that info into the SampleNames file
-		   SampleName=$( basename $inputfile | sed 's/_read.\?\..*$//' )
-                   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
-		done
-	    elif [ $inputformat == "BAM" ]
-	    then
-		for inputfile in $sampledir/*
-		do
-                   # strip path, which read (left/right), and extension from input files
-                   # and put that info into the SampleNames file
-		   SampleName=$( basename $inputfile .bam )
-                   echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
-		done
+		echo +x; echo -e "\n ###### CASE1: aka The Baylor case.\nUse an info sheet specified in $sampleinfo and parse it as we did in the multiplexed case" >&2;
+                echo -e "\n ###### we will have three files instead of just one file.\n" >&2;
+                echo -e "\n ###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2 set -x;
+
+		perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
+            
+		set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
+		if [ ! -s $outputdir/SAMPLENAMES.list ]
+		then
+		    MSG="$outputdir/SAMPLENAMES.list is empty"
+                    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+		    exit 1;
+		fi
+		if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
+		then
+		    MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
+                    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+		    exit 1;
+		fi
+		if [ ! -s $outputdir/SAMPLEGROUPS.list ]
+		then
+		    MSG="$outputdir/SAMPLEGROUPS.list is empty"
+                    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+		    exit 1;
+		fi
+
+            else
+		echo +x; echo -e "\n ###### CASE2: SAMPLEINFORMATION=$sampleinfo file not found. Assume that there is no info sheet." >&2;
+		echo -e "\n ###### Produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
+
+		truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
+		if  [ $inputformat == "FASTQ" ]
+		then
+		    for inputfile in $sampledir/*
+		    do
+                        # strip path, which read (left/right), and extension from input files
+                        # and put that info into the SampleNames file
+			SampleName=$( basename $inputfile | sed 's/_read.\?\..*$//' )
+			echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		    done
+		elif [ $inputformat == "BAM" ]
+		then
+		    for inputfile in $sampledir/*
+		    do
+                        # strip path, which read (left/right), and extension from input files
+                        # and put that info into the SampleNames file
+			SampleName=$( basename $inputfile .bam )
+			echo -e "$SampleName" >> $outputdir/SAMPLENAMES.tmp.list
+		    done
+		fi
+                # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
+	        sort $outputdir/SAMPLENAMES.tmp.list | uniq > $outputdir/SAMPLENAMES.list
+	        sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
+	        rm  $outputdir/SAMPLENAMES.tmp.list
 	    fi
-            # paired-ended fastq will produce duplicate lines in the SampleNames file, so remove the duplicates
-	    sort $outputdir/SAMPLENAMES.tmp.list | uniq > $outputdir/SAMPLENAMES.list
-	    sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
-	    rm  $outputdir/SAMPLENAMES.tmp.list
+            # end of two cases that are not multiplexed
 	fi
         set +x; echo -e "\n### check that this actually worked, " >&2
         echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
@@ -249,8 +285,6 @@ else
             echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit 1;
 	fi
-
-
 
 
         ###################################################
