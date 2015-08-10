@@ -598,7 +598,8 @@ echo -e "\n\n" >&2; set -x;
             outsortwdup=$outputsamfileprefix.wdups.sorted.bam
             cd $AlignOutputDir/$SampleName
 
-	    echo -e "\n\n\n#################################### SELECT TO CHUNK/Not2CHUNK READS for $SampleName  ########################################\n\n\n"
+            set +x; echo -e "\n\n" >&2;
+	    echo -e "#################################### SELECT TO CHUNK/Not2CHUNK READS for $SampleName  ########################################\n\n" >&2
 
             # create new names for chunks of fastq
             # doing this outside the chunkfastq conditional, because
@@ -627,11 +628,11 @@ echo -e "\n\n" >&2; set -x;
                NumLinesPerChunk=`expr $NumReadsPerChunk "*" 4`
                if [ $RemainderReads -eq 0  ]
                then
-	   	echo "mod is 0; no reads for last chunk file, one idle node"
+	   	set +x; echo -e "\n # mod is 0; no reads for last chunk file, one idle node \n" >&2; set -x;
 	   	let NumChunks-=1
                fi
 
-               echo "splitting read file1=$LeftReadsFastq"
+               set +x; echo -e "\n # splitting read file1=$LeftReadsFastq \n" >&2; set -x;
                `split -l $NumLinesPerChunk -a 2 -d $LeftReadsFastq $LeftReadsChunkNamePrefix`
                exitcode=$?
                if [ $exitcode -ne 0 ]
@@ -643,7 +644,7 @@ echo -e "\n\n" >&2; set -x;
                fi
                if [ $paired -eq 1 ]
                then
-                   echo "splitting read file2=$RightReadsFastq"
+                   set +x; echo -e "\n # splitting read file2=$RightReadsFastq \n" >&2; set -x;
  	     	   `split -l $NumLinesPerChunk -a 2 -d $RightReadsFastq $RightReadsChunkNamePrefix`
 	   	   exitcode=$?
 	   	   if [ $exitcode -ne 0 ]
@@ -656,10 +657,12 @@ echo -e "\n\n" >&2; set -x;
                fi
             else
                NumChunks=0
-               echo "copying original fastq into a single chunk takes too long for whole genome"
-               echo "instead, we will create symbolic link to the original file"
-               echo "adding double-0 to the chunk name, because expecting to chunk files into tens of pieces"
-               echo "need consistency in naming: two digits for chunk number"
+               set +x; echo -e "\n\n" >&2; 
+               echo "# copying original fastq into a single chunk takes too long for whole genome" >&2;
+               echo "# instead, we will create symbolic link to the original file" >&2;
+               echo "# adding double-0 to the chunk name, because expecting to chunk files into tens of pieces" >&2;
+               echo "# need consistency in naming: two digits for chunk number" >&2;
+               echo -e "\n\n" >&2; set -x; 
                #   `cp $LeftReadsFastq ${LeftReadsChunkNamePrefix}0`
                ln -s $LeftReadsFastq leftreads_chunk00
 
@@ -672,8 +675,10 @@ echo -e "\n\n" >&2; set -x;
 
             ## done chunking input fastq
 
-	    echo -e "\n\n\n#################################### CREATING ALL QSUBS FOR ALIGMENT         ########################################\n\n\n"
-	    echo -e "\n\n\n#################################### SELECTING CASE --BASED ON ALIGNER       ########################################\n\n\n"
+            set +x; echo -e "\n\n\n" >&2;
+	    echo -e "#################################### CREATING ALL QSUBS FOR ALIGMENT         ########################################" >&2
+	    echo -e "#################################### SELECTING CASE --BASED ON ALIGNER       ########################################" >&2
+            echo -e "\n\n" >&2; set -x
 
            
 ############################################################################################################
@@ -685,7 +690,7 @@ echo -e "\n\n" >&2; set -x;
             allfiles=""
             for i in $(seq 0 $NumChunks)
             do
-                echo "step 1: aligning chunk $i... "
+                set +x; echo -e "\n # step 1: aligning chunk $i... " >&2; set -x
 		echo `date`
                 if (( $i < 10 ))
                 then
@@ -720,7 +725,7 @@ echo -e "\n\n" >&2; set -x;
                 fi
                 if [ $aligner == "NOVOALIGN"  ]
 		then
-                    echo -e "\n###############   novoalign is used as aligner. input file in fastq format ################\n"
+                    set +x; echo -e "\n###############   novoalign is used as aligner. input file in fastq format ################\n" >&2; set -x
                     #qsub_novosplit=$AlignOutputLogs/qsub_novosplit.novoaln.$SampleName.node$i
                     #echo "#PBS -V" > $qsub_novosplit
                     #echo "#PBS -A $pbsprj" >> $qsub_novosplit
@@ -745,7 +750,7 @@ echo -e "\n\n" >&2; set -x;
 		    #echo $jobnovo >> $AlignOutputLogs/ALIGNED_$SampleName
 		elif [ $aligner == "BWA_ALN" ] 
                 then
-                    echo "bwa is used as aligner. input file format is in fastq"
+                    set +x; echo -e "\n############# bwa is used as aligner. input file format is in fastq ###############\n" >&2; set -x
                     qsub_bwar1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix
                     echo "#PBS -V" > $qsub_bwar1
                     echo "#PBS -N ${pipeid}_bwar1_${SampleName}_$OutputFileSuffix" >> $qsub_bwar1
@@ -766,7 +771,7 @@ echo -e "\n\n" >&2; set -x;
                     echo $jobr1 >> $AlignOutputLogs/ALIGNED_$SampleName
                     if [ $paired -eq 1 ]
                     then
-                        echo "bwa aligner. paired-end reads"
+                        set +x; echo -e "\n########## bwa aligner. paired-end reads #################\n" >&2; set -x
 			qsub_bwar2=$AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix
 			echo "#PBS -V" > $qsub_bwar2
 			echo "#PBS -N ${pipeid}_bwar2_${SampleName}_$OutputFileSuffix" >> $qsub_bwar2
@@ -804,7 +809,7 @@ echo -e "\n\n" >&2; set -x;
 			`qhold -h u $jobwa`
 			echo $jobwa >> $AlignOutputLogs/ALIGNED_$SampleName
                     else
-                        echo "bwa aligner. single read"
+                        set +x; echo -e "\n############# bwa aligner. single read #################\n" >&2; set -x
 			qsub_bwasamse=$AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix
 			echo "#PBS -V" > $qsub_bwasamse
 			echo "#PBS -N ${pipeid}_bwasamse_${SampleName}_$OutputFileSuffix" >> $qsub_bwasamse
@@ -826,10 +831,10 @@ echo -e "\n\n" >&2; set -x;
                     fi
                 elif [ $aligner == "BWA_MEM" ]
                 then
-                    echo "bwa mem is used as aligner. input file format is in fastq"
+                    set +x; echo -e "\n################ bwa mem is used as aligner. input file format is in fastq #################\n" >&2; set -x
                     if [ $paired -eq 1 ]
                     then
-                        echo "bwa mem aligner. paired-end reads"
+                        set +x; echo -e "\n############### bwa mem aligner. paired-end reads ###################\n" >&2; set -x
                         jobfile=$AlignOutputDir/$SampleName/logs/bwamem.$SampleName.node$OutputFileSuffix.jobfile
 
                         if [ $chunkfastq == "YES" ]
@@ -845,7 +850,7 @@ echo -e "\n\n" >&2; set -x;
                         `chmod ug=rwx $jobfile`
 
                      else
-                        echo "bwa mem aligner. single-end reads"
+                        set +x; echo -e "\n################ bwa mem aligner. single-end reads ################\n" >&2; set -x
                         qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix
                         echo "#PBS -V" > $qsub_bwamem
                         echo "#PBS -N ${pipeid}_bwamem_${SampleName}_$OutputFileSuffix" >> $qsub_bwamem
@@ -889,12 +894,14 @@ echo -e "\n\n" >&2; set -x;
 
 
 
-
-##########################################################################################################################################
-###########################                                                                    ###########################################
-echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES  ################################### \n\n\n"
-###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                       ###########################################
-##########################################################################################################################################
+set +x; echo -e "\n\n\n" >&2
+echo"##########################################################################################################################################" >&2
+echo"###########################                                                                            ###################################" >&2
+echo"###########################   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES          ###################################"
+echo"###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ###################################" >&2
+echo"###########################                                                                            ###################################" >&2
+echo"##########################################################################################################################################" >&2
+echo -e "\n\n\n" >&2; set -x
 
             cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
 
@@ -906,7 +913,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 	       listfiles=$( echo $allfiles  | tr " " ":" | sed "s/::/:/g" )
                if [ $sortool == "NOVOSORT" ]
                then
-                   echo -e "\n merging aligned chunks with novosort\n"
+                   set +x; echo -e "\n # merging aligned chunks with novosort \n" >&2; set -x
 		   #qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
 		   #echo "#PBS -V" > $qsub_sortmerge
 		   #echo "#PBS -A $pbsprj" >> $qsub_sortmerge
@@ -925,7 +932,7 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 		   #`qhold -h u $mergejob`
 		   #echo $mergejob  > $AlignOutputLogs/MERGED_$SampleName
                else
-                   echo "merging aligned chunks with picard"
+                   set +x; echo -e "\n # merging aligned chunks with picard \n" >&2; set -x 
 		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
 		   echo "#PBS -V" > $qsub_sortmerge
 		   echo "#PBS -A $pbsprj" >> $qsub_sortmerge
@@ -954,11 +961,13 @@ echo -e "\n\n\n ###########   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKI
 
 
 
-#####################################################################################################################
-#####################################                                        ########################################
-echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################\n\n"
-#####################################                                        ########################################
-#####################################################################################################################
+set +x; echo -e "\n\n\n" >&2
+echo "#####################################################################################################################" >&2
+echo "#####################################                                        ########################################" >&2
+echo "#####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################" >&2
+echo "#####################################                                        ########################################" >&2
+echo "#####################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x
 
 
         if [ $chunkfastq == "NO" -a $aligner == "BWA_MEM" ]
@@ -970,7 +979,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
               # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
               numalignnodes=$(( inputfastqcounter + 1))
    
-              # scheduling the Anisimov Launcher
+              set +x; echo -e "\n # scheduling the Anisimov Launcher\n" >&2; set -x
               
               qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
               echo "#!/bin/bash" > $qsubAlignLauncher
@@ -999,7 +1008,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
            "APRUN")
               while read SampleName
               do
-                 echo -e "\n\nscheduling qsubs\n\n"
+                 set +x; echo -e "\n # scheduling qsubs\n" >&2; set -x
                  qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
                  # appending the generic header to the qsub
                  cat $outputdir/qsubGenericHeader > $qsub_bwa
@@ -1026,7 +1035,7 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
            "QSUB")
               while read SampleName
               do
-                 echo -e "\n\nscheduling qsubs\n\n"
+                 set +x; echo -e "\n # scheduling qsubs\n" >&2; set -x
                  qsub_bwa=$AlignOutputDir/${SampleName}/logs/qsub.bwa.${SampleName}
                  # appending the generic header to the qsub
                  cat $outputdir/qsubGenericHeader > $qsub_bwa
@@ -1056,11 +1065,13 @@ echo -e "\n\n####################################  SCHEDULE BWA-MEM QSUBS CREATE
 
 
 
-#####################################################################################################################################
-#####################################                                                        ########################################
-echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CREATED ABOVE  #################################\n\n\n"
-#####################################                                                        ########################################
-#####################################################################################################################################
+set +x; echo -e "\n\n\n" >&2
+echo "#####################################################################################################################################" >&2;
+echo "#####################################                                                        ########################################" >&2;
+echo "#####################################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CREATED ABOVE  ########################################" >&2;
+echo "#####################################                                                        ########################################" >&2;
+echo "#####################################################################################################################################" >&2;
+echo -e "\n\n" >&2; set -x
 
 
         if [ $chunkfastq == "YES" -a $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
@@ -1081,14 +1092,14 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                        OutputFileSuffix=${i}
                     fi
 
-                    echo -e "\n\nscheduling qsubs\n\n"
+                    set +x; echo -e "\n # scheduling qsubs\n" >&2; set -x
                     qsub_novosplit=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
                     # appending the generic header to the qsub
                     cat $outputdir/qsubGenericHeader > $qsub_novosplit
 
 
                     ###############################
-                    echo -e "\n################# constructing qsub for novosplit\n"
+                    set +x; echo -e "\n # constructing qsub for novosplit\n" >&2; set -x
                     echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit
                     echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
                     echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit
@@ -1114,7 +1125,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
                  ###############################
-                 echo -e "\n ################# constructing qsub for mergenovo\n"
+                 set +x; echo -e "\n # constructing qsub for mergenovo\n" >&2; set -x
                  echo "#PBS -N ${pipeid}_mergenovo" >> $qsub_mergenovo
                  echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo
                  echo "#PBS -o $AlignOutputLogs/log.mergenovo.ou" >> $qsub_mergenovo
@@ -1148,7 +1159,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
                        OutputFileSuffix=${i}
                     fi
 
-                    echo -e "\n\nscheduling qsubs\n\n"
+                    set +x; echo -e "\n # scheduling qsubs\n" >&2; set -x
                     qsub_novosplit=$AlignOutputDir/${SampleName}/logs/qsub.novosplit.${SampleName}.node${OutputFileSuffix}
 
                     # appending the generic header to the qsub
@@ -1156,7 +1167,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
                     ###############################
-                    echo -e "\n################# constructing qsub for novosplit\n"
+                    set +x; echo -e "\n # constructing qsub for novosplit\n" >&2; set -x
                     echo "#PBS -N ${pipeid}_novoalign.${SampleName}.node${OutputFileSuffix}" >> $qsub_novosplit
                     echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
                     echo "#PBS -o $AlignOutputDir/${SampleName}/logs/log.novosplit.${SampleName}.node${OutputFileSuffix}.ou" >> $qsub_novosplit
@@ -1179,7 +1190,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
                  ###############################
-                 echo -e "\n ################# constructing qsub for mergenovo\n"
+                 set +x; echo -e "\n # constructing qsub for mergenovo\n" >&2; set -x
                  echo "#PBS -N ${pipeid}_mergenovo" >> $qsub_mergenovo
                  echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo
                  echo "#PBS -o $AlignOutputLogs/log.mergenovo.ou" >> $qsub_mergenovo
@@ -1231,7 +1242,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
               done < $outputdir/SAMPLENAMES.list # done looping over samples
 
 
-              echo -e "\n\nscheduling Anisimov Launcher joblists\n\n"
+              set +x; echo -e "\n\n ########### scheduling Anisimov Launcher joblists #############\n\n" >&2; set -x
               qsub_novosplit_anisimov=$AlignOutputLogs/qsub.novosplit.AnisimovLauncher
               qsub_mergenovo_anisimov=$AlignOutputLogs/qsub.mergenovo.AnisimovLauncher
 
@@ -1241,7 +1252,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
               ###############################
-              echo -e "\n################# constructing qsub for novosplit\n"
+              set +x; echo -e "\n ################# constructing qsub for novosplit\n" >&2; set -x
               echo "#PBS -N ${pipeid}_novoalign_Anisimov" >> $qsub_novosplit_anisimov
               echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit_anisimov
               echo "#PBS -o $AlignOutputLogs/log.novosplit.Anisimov.ou" >> $qsub_novosplit_anisimov
@@ -1268,7 +1279,7 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
               ###############################
-              echo -e "\n ################# constructing qsub for mergenovo\n"
+              set +x; echo -e "\n ################# constructing qsub for mergenovo\n" >&2; set -x
               echo "#PBS -N ${pipeid}_mergenovo_Anisimov" >> $qsub_mergenovo_anisimov
               echo "#PBS -l walltime=$pbscpu" >> $qsub_mergenovo_anisimov
               echo "#PBS -o $AlignOutputLogs/log.mergenovo.Anisimov.ou" >> $qsub_mergenovo_anisimov
@@ -1298,10 +1309,12 @@ echo -e "\n\n\n######################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CR
 
 
 
-########################################################################################################
-echo -e "#####################################  WRAP UP ALIGNMENT BLOCK                                    ########################################"
-echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE    ########################################"
-########################################################################################################
+set +x; echo -e "\n\n\n" >&2
+echo "#####################################################################################################################################" >&2
+echo "###############################     WRAP UP ALIGNMENT BLOCK                                  ########################################" >&2
+echo "###############################     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE  ########################################" >&2
+echo "#####################################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x
 
         
 	pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )
@@ -1310,7 +1323,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
         alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
 
         ## generating summary redmine email if analysis ends here
-	echo "wrap up and produce summary table if analysis ends here or call realign if analysis continues"
+	set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 	then
             # release all held jobs
@@ -1366,7 +1379,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
 	    then
-		echo "at least one job aborted"
+		set +x; echo -e "\n # at least one job aborted\n" > &2; set -x
 		qsub_summary=$TopOutputLogs/qsub.summary.aln.afterany
 		echo "#PBS -V" > $qsub_summary
 		echo "#PBS -A $pbsprj" >> $qsub_summary
@@ -1388,7 +1401,7 @@ echo -e "#####################################  ALL QSUB SCRIPTS BELOW WILL RUN 
 
 	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" -o $analysis == "MULTIPLEXED" ]
 	then
-            echo " analysis continues with realignment"
+            set +x; echo -e "\n # analysis continues with realignment\n" >&2; set -x
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
