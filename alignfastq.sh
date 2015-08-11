@@ -377,8 +377,7 @@ echo "#####################################                               ######
 echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
 echo "#####################################                               ########################################" >&2
 echo "############################################################################################################" >&2
-
-echo -e "\n\n#################################### ALIGNMENT: LOOP OVER SAMPLES  ########################################" >&2
+echo "######           select the file to read sample info from. This file was created in configuration.sh  ######" >&2
 echo -e "\n\n" >&2; set -x;
 
 
@@ -386,8 +385,8 @@ echo -e "\n\n" >&2; set -x;
         # clear the joblist
         truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
         
-        # select the file to read sample info from. This file was created in configuration.sh
-        if [ $analysis == "MULTIPLEXED" ]
+        # select the file to read
+        if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
         then 
              TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
         else
@@ -407,13 +406,15 @@ echo -e "\n\n" >&2; set -x;
             
             set +x; echo -e "\n\n">&2
 	    echo -e "#################################### PREP WORK FOR $SampleLine            ########################################\n" >&2
-	    echo -e "#################################### SELECTING CASE DEPENDING ON ANALYSIS ########################################\n" >&2
 	    echo -e "#################################### PARSING READS and CREATING RGLINE    ########################################\n" >&2
             echo -e "\n\n" >&2; set -x;
 
-            if [ $analysis != "MULTIPLEXED" ]
+            #if [ $analysis != "MULTIPLEXED" ]
+            if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 	    then
-                set +x; echo -e "\n\nanalysis is DEMULTIPLEXED, current line has ONE field for SAMPLENAME \n" >&2; set -x;
+                set +x; echo -e "\n\nSAMPLENAMES_multiplexed.list DOES NOT exist." >&2
+		echo -e "\n ###### Current line has ONE field for SAMPLENAME." >&2;
+		echo -e "\n ###### The code parses PL CN and LB values from runfile\n" >&2; set -x;
                 # form and check the left reads file
                 SampleName=$( echo $SampleLine )
 		LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
@@ -428,9 +429,10 @@ echo -e "\n\n" >&2; set -x;
 		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 	    else
                 set +x; echo -e "\n" >&2
-                echo "analysis is MULTIPLEXED." >&2
-                echo "current line has FIVE fields:" >&2
-                echo "ncol1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2" >&2; 
+                echo -e "\n ###### SAMPLENAMES_multiplexed.list DOES exist." >&2
+                echo -e "\n ###### Current line has FIVE fields:" >&2
+                echo -e "\n ###### col1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2." >&2
+		echo -e "\n ###### The code parses PL and CN from runfile\n" >&2; 
                 echo -w "\n" >&2; set -x;
 
                 SampleName=$( echo -e "$SampleLine" | cut -f 2 )
@@ -474,12 +476,14 @@ echo -e "\n\n" >&2; set -x;
 	    RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
 
-            set +x; echo -e "\n\n" >&2; 
-            echo -e "\n\n" >&2; set -x;
+            set +x; echo -e "\n\n ###################################   END PREP WORK  ###################################### " >&2
+	    echo -e "\n\n #######                       PRE-ALIGNMENT BLOCK BEGINS                            ####### " >&2
+            echo -e "\n\n #######          CHECKING IF WE NEED TO LAUNCH PRE-ALIGNMENT TASK                   ####### " >&2; set -x;
+
             if [ $fastqcflag == "YES" ]
             then
                 set +x; echo -e "\n\n" >&2; 
-		echo "#################################### RUNNING FASTC ON UNALIGNED READS of $SampleName ########################################" >&2
+		echo "#################################### FASTQFLAG == YES RUNNING FASTQC ON UNALIGNED READS of $SampleName #####################" >&2
                 echo -e "\n\n" >&2; set -x;
 
                 # check that fastqc tool is there
@@ -558,7 +562,7 @@ echo -e "\n\n" >&2; set -x;
                     `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
 		fi
             else
-		set +x; echo -e "\n\n quality information for fastq files will NOT be calculated." >&2; set -x;
+		set +x; echo -e "\n\n ############ FASTQCFLAG == NO. Quality information for fastq files will NOT be calculated." >&2; set -x;
             fi
             
             ## done with generating quality info for each read file
@@ -566,7 +570,7 @@ echo -e "\n\n" >&2; set -x;
 
 
 
-            set +x; echo -e "\n\n" >&2;
+            set +x; echo -e "\n\n ######     PRE-ALIGNMENT BLOCK ENDS                     ###### " >&2;
             echo -e "#################################### CREATING OUTPUT DIRECTORY for $SampleName ########################################\n" >&2
             echo -e "#################################### CREATING OUTPUT FILENAMES for $SampleName ########################################\n" >&2
             echo -e "\n\n" >&2; set -x;
@@ -588,11 +592,7 @@ echo -e "\n\n" >&2; set -x;
             `chmod -R ug=rwX $AlignOutputDir`
 
 
-
-
-
-
-
+            # filenames of temp files go here
             sortedplain=$outputsamfileprefix.wrg.sorted.bam
             outsortnodup=$outputsamfileprefix.nodups.sorted.bam
             outsortwdup=$outputsamfileprefix.wdups.sorted.bam
@@ -1314,7 +1314,7 @@ echo "##########################################################################
 echo "###############################     WRAP UP ALIGNMENT BLOCK                                  ########################################" >&2
 echo "###############################     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE  ########################################" >&2
 echo "#####################################################################################################################################" >&2
-echo -e "\n\n" >&2; set -x
+echo -e "\n\n" >&2; set -x;
 
         
 	pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )
@@ -1323,19 +1323,21 @@ echo -e "\n\n" >&2; set -x
         alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
 
         ## generating summary redmine email if analysis ends here
-	set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x
+	set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x;
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 	then
+	    set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
             # release all held jobs
             `qrls -h u $alignids`
             `qrls -h u $mergeids`
-            `qrls -h u $extraids`
+            #`qrls -h u $extraids`
      
 	    lastjobid=""
             cleanjobid=""
 
             if [ $cleanupflag == "YES" ]
             then 
+		set +x; echo -e "\n ###### Removing temporary files  ######\n" >&2; set -x;
 		qsub_cleanup=$TopOutputLogs/qsub.cleanup.align
 		echo "#PBS -V" > $qsub_cleanup
 		echo "#PBS -A $pbsprj" >> $qsub_cleanup
@@ -1355,6 +1357,7 @@ echo -e "\n\n" >&2; set -x
             fi
 
             `sleep 30s`
+	    set +x; echo -e "\n ###### Generating Summary report   ######\n" >&2; set -x;
 	    qsub_summary=$TopOutputLogs/qsub.summary.aln.allok
 	    echo "#PBS -V" > $qsub_summary
 	    echo "#PBS -A $pbsprj" >> $qsub_summary
@@ -1379,7 +1382,7 @@ echo -e "\n\n" >&2; set -x
 
 	    if [ `expr ${#lastjobid}` -lt 1 ]
 	    then
-		set +x; echo -e "\n # at least one job aborted\n" > &2; set -x
+
 		qsub_summary=$TopOutputLogs/qsub.summary.aln.afterany
 		echo "#PBS -V" > $qsub_summary
 		echo "#PBS -A $pbsprj" >> $qsub_summary
@@ -1401,7 +1404,7 @@ echo -e "\n\n" >&2; set -x
 
 	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" -o $analysis == "MULTIPLEXED" ]
 	then
-            set +x; echo -e "\n # analysis continues with realignment\n" >&2; set -x
+            set +x; echo -e "\n ###### analysis continues with realignment   ###### \n" >&2; set -x;
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
@@ -1421,7 +1424,7 @@ echo -e "\n\n" >&2; set -x
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`
             `qrls -h u $mergeids`
-            `qrls -h u $extraids`
+            #`qrls -h u $extraids`
 	    echo `date`
 	fi
 
