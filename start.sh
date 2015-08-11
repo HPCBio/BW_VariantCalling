@@ -108,7 +108,7 @@ else
         `chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )
-        echo $pipeid >> $outputlogs/pbs.CONFIGURE
+        echo $pipeid >> $outputlogs/CONFIGUREpbs
         echo `date`
 
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )

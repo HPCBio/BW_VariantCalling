@@ -1,7 +1,9 @@
 #!/bin/bash
+# written in collaboration with Mayo Bioinformatics core group
 #
 #  script to realign and recalibrate the aligned file(s)
 redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=grendon@illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."
@@ -25,8 +27,8 @@ else
    if [ ! -s $runfile ]
    then
       MSG="$runfile configuration file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
        exit 1;
    fi
 
@@ -74,6 +76,22 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
    cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
+   echo "#################################################################################"
+   echo -e cheching type of analysis
+   echo "#################################################################################"
+
+   if [ $analysis == "MULTIPLEXED" ]
+   then
+      MSG="ANALYSIS=$analysis Program=$scriptfile Invalid pipeline program for this type of analysis. This program is for the NON-MULTIPLEXED case only"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      exit 1;
+   fi
+
+   echo "#################################################################################"
+   echo -e checking input type
+   echo "#################################################################################"
+
    if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
    then
       pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
@@ -85,17 +103,22 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
          pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
       else
          MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-         #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+         #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
          exit 1;
       fi
    fi
 
+
+   echo "#################################################################################"
+   echo -e checking cleanup options
+   echo "#################################################################################"
+
    if [ $cleanupflag != "1" -a $cleanupflag != "0" -a $cleanupflag != "YES" -a $cleanupflag != "NO" ]
    then
       MSG="Invalid value for REMOVETEMPFILES=$cleanupflag"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
       exit 1;
    else
       if [ $cleanupflag == "1" ]
@@ -109,12 +132,15 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
 
 
+   echo "#################################################################################"
+   echo -e skip/include variant calling module
+   echo "#################################################################################"
 
    if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
    then
       MSG="Invalid value for SKIPVCALL=$skipvcall"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
       exit 1;
    else
       if [ $skipvcall == "1" ]
@@ -127,142 +153,144 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
       fi
    fi
 
+   echo "#################################################################################"
+   echo -e java for gatk
+   echo "#################################################################################"
+
    if [ -z $javamodule ]
    then
       MSG="Value for JAVAMODULE must be specified in configuration file"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      exit 1;
+   fi
+
+   echo "#################################################################################"
+   echo -e directories for output and for tools
+   echo "#################################################################################"
+
+   if [ ! -d $outputdir ]
+   then
+      MSG="$outputdir ROOT directory for this run of the pipeline not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
    if [ ! -d $picardir ]
    then
       MSG="$picardir picard directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $samdir ]
    then
       MSG="$samdir samtools directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -d $gatk ]
    then
       MSG="$gatk GATK directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
    if [ ! -d $refdir ]
    then
       MSG="$refdir reference genome directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
    if [ ! -s $refdir/$ref ]
    then
       MSG="$ref reference genome not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
-   if [ -s $refdir/$dbSNP ]
+  # if [ -s $refdir/$dbSNP ]
+  # then
+  #    realparms="-known:$refdir/$dbSNP"
+  #    recalparms="--knownSites:$refdir/$dbSNP"
+  # else
+  #    MSG="dbSNP not found"
+  #    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+  #    exit 1;
+  # fi
+   
+   if [ ! -d $refdir/$indeldir ]
    then
-      realparms="-known:$refdir/$dbSNP"
-      recalparms="--knownSites:$refdir/$dbSNP"
-   else
-      MSG="dbSNP not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-      exit 1;
-   fi
-   if [ -s $refdir/$kgenome ]
-   then
-      realparms=$realparms":-known:$refdir/$kgenome"
-      recalparms=$recalparms":--knownSites:$refdir/$kgenome"
-   fi
-   #if [ ! -d $RealignOutputLogs ]
-   #then
-   #   MSG="$RealignOutputLogs realignlog directory not found"
-   #   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-   #   exit 1;
-   #fi
-
-
-   RealignOutputDir=$outputdir/realign
-   if [ ! -d $RealignOutputDir ]
-   then
-      MSG="$RealignOutputDir realign directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      MSG="$indeldir indel directory not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$redmine,$email""
       exit 1;
    fi
 
-   if [ $skipvcall == "NO" ]
-   then
-      VcallOutputDir=$outputdir/variant
-      if [ ! -d $VcallOutputDir ]
-      then
-         echo "$VcallOutputDir variant directory not found, creating it"
-         mkdir $VcallOutputDir
-      fi
-   fi
 
+  echo "####################################################################################################"
+   echo "####################################################################################################"
+   echo "###########################      params ok. Now          creating log folders        ###############"
+   echo "####################################################################################################"
+   echo "####################################################################################################"
+  
 
    TopOutputLogs=$outputdir/logs
+   RealignOutputLogs=$outputdir/logs/realign
+   VcallOutputLogs=$outputdir/logs/variant
    if [ ! -d $TopOutputLogs ]
    then
       MSG="$TopOutputLogs realign directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
+      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeli
       exit 1;
    fi
-
-   RealignOutputLogs=$outputdir/logs/realign
    if [ ! -d $RealignOutputLogs ]
    then
-      MSG="$RealignOutputLogs realign directory not found, creating it"
-      mkdir $RealignOutputLogs
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      #exit 1;
+      mkdir -p $RealignOutputLogs
    fi
-
-   if [ $skipvcall == "NO" ]
+   if [ ! -d $VcallOutputLogs ]
    then
-      VcallOutputLogs=$outputdir/logs/variant
-      if [ ! -d $VcallOutputLogs ]
-      then
-         MSG="$VcallOutputLogs realign directory not found, creating it"
-         mkdir $VcallOutputLogs
-         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeli
-         #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeli
-         #exit 1;
-      fi
+      mkdir -p $VcallOutputLogs
    fi
 
+   pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )
 
-   if [ $run_method != "LAUNCHER" -a $run_method != "QSUB" -a $run_method != "APRUN" -a $run_method != "SERVER" ]
+   if [ $schedule == "LAUNCHER" ]
    then
-      MSG="Invalid value for RUNMETHOD=$run_method"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-      exit 1;
-   elif [ $schedule == "LAUNCHER" ]
-      then
-      truncate -s 0 $RealignOutputLogs/$realrecal.AnisimovJoblist
+      truncate -s 0 $RealignOutputLogs/realrecal.AnisimovJoblist
    fi
 
+   echo "####################################################################################################"
+   echo "####################################################################################################"
+   echo -e "###########################   generating regions, intervals, known/knownSites        ###############"
+   echo "####################################################################################################"
+   echo "####################################################################################################"
+   echo -e "region is the array with snps per chr which will be used by vcallgatk-unifiedGenotyper/haplotypeCaller"
+   echo -e "realparms is the array with indels per chr which will be used for  gatk-IndelRealigner"
+   echo -e "recalparms is the array with indels per chr which will be used for  gatk-Recalibration"
 
-   pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
+   echo `date`
+   i=1
 
+   for chr in $indices
+   do
+       cd $refdir/vcf_per_chr
+       snps=`find $PWD -type f -name "${chr}.*.vcf.gz"`
+       region[$i]=$( echo $snps | tr "\n" " " | sed "s/ //g" )
 
+       cd $refdir/$indeldir
+       indels=`find $PWD -type f -name "${chr}.*.vcf"`
+       realparms[$i]=$( echo $indels | sed "s/\/projects/:known:\/projects/g" | sed "s/ //g" |tr "\n" ":" )
+       recalparms[$i]=$( echo $indels | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
+       (( i++ ))
+   done
+   echo `date`
 
 
 
@@ -273,97 +301,63 @@ echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ####
                 #####################################                       ########################################
                 ####################################################################################################
 
+   if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+   then 
+        TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
+   else
+        TheInputFile=$outputdir/SAMPLENAMES.list
+   fi
 
 
-   while read SampleName
+   while read SampleLine
    do
-      if [ ! -d $RealignOutputDir/${SampleName} ]
+      if [ `expr ${#SampleLine}` -gt 1 ]
       then
-         mkdir -p $RealignOutputDir/${SampleName}
-      else
-         echo "$RealignOutputDir/${SampleName} already exists. resetting it"
-         `rm -r $RealignOutputDir/${SampleName}/*`
-      fi
+          ## parsing non-empty line
+          
+          if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+          then
+              echo -e "this line has five fields, we just need the first field to create folders"
+	      sample=$( echo "$SampleLine" | cut -f 1 )
+	  else
+              echo -e "this line has one field, we need to parse the sample name out of the filename"
+	      sample=$( echo "$SampleLine" )
+	  fi
+	  
+          echo -e "######################################################################"
+	  echo -e "########## first, let's checking that alignment info exists  #########"
 
-      #if [ $multisample == "NO" ]
-      #then
+	  alignedfile=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam"`
+	  alignedfilehdr=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam.header"`
+	  alignedfilebai=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam.bai"`
 
-         # when running multiple INDEPENDENT samples, there will be lots of qsubs, logs and jobfiles
-         # best keep them in the sample subfolder
-         if [ ! -d $RealignOutputDir/${SampleName}/logs ]
-         then
-            mkdir $RealignOutputDir/${SampleName}/logs
-         else
-            echo "$RealignOutputDir/${SampleName}/logs already exists. resetting it"
-            `rm -r $RealignOutputDir/${SampleName}/logs/*`
-         fi
+	  if [ -s $alignedfile -a -s $alignedfilehdr -a -s $alignedfilebai ]
+	  then
+              echo -e "alignment files for this sample $sample were found"
+          else
+              MSG="No aligned bam file(s) found at $outputdir/align/${sample}"
+              echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+              exit 1;              
+	  fi
 
-         if [ $skipvcall == "NO" ]
-         then
-            if [ ! -d $VcallOutputDir/${SampleName} ]
-            then
-               mkdir -p $VcallOutputDir/${SampleName}
-            else 
-               echo "$VcallOutputDir/${SampleName} already exists. resetting it"
-               `rm -r $VcallOutputDir/${SampleName}/*`
-            fi
+          echo -e "################################################################################"
+          echo -e "########## now we can create the folders for the rest of the analysis  #########"
+	  if [ ! -d $outputdir/${sample} ]
+	  then
+              echo -e "creating output folders for sample=$sample"
 
-            # when running multiple samples, there will be lots of qsubs, logs and jobfiles
-            # best keep them in the sample subfolder
-            if [ ! -d $VcallOutputDir/${SampleName}/logs ]
-            then
-               mkdir $VcallOutputDir/${SampleName}/logs
-            else
-               echo "$VcallOutputDir/${SampleName}/logs already exists. resetting it"
-               `rm -r $VcallOutputDir/${SampleName}/logs/*`
-            fi
-         fi
-      #fi
-   done  <  $outputdir/SAMPLENAMES.list
+              mkdir -p $outputdir/${sample}/realign/logs
+              mkdir -p $outputdir/${sample}/variant/logs
+              mkdir -p $outputdir/${sample}/logs
+              ln -s    $outputdir/align/$sample $outputdir/${sample}/align
+	  else
+              MSG="results for sample=$sample already exists. Error, sample name has to be unique"
+	      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
+              exit 1;
+          fi
+      fi  # end processing non-empty lines
+   done  <  $TheInputFile
    # end loop over samples
-
-
-
-
-
-
-
-
-                ###########################################################################################################
-                ###########################                                                          ######################"
-echo -e "\n\n\n ###########################   generating regions and intervals files in BED format   ############### \n\n\n"
-                ###########################                                                          ######################
-                ###########################################################################################################
-
-
-
-
-   echo `date`
-   i=1
-   for chr in $indices
-   do
-      #i=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
-      if [ -d $targetkit ]
-      then
-         if [ `cat $targetkit/${chr}.bed | wc -l` -gt 0 ]
-         then
-            region[$i]="-L:$targetkit/${chr}.bed"
-         else
-            region[$i]="-L:$chr"
-         fi
-      else
-         region[$i]="-L:$chr"
-      fi
-      (( i++ ))
-   done
-   echo `date`
-
-   igv_files=""
-   vcf_files=""
-   sep=":"
-
-
-
 
 
 
@@ -380,225 +374,101 @@ echo -e "\n\n\n ###################################       main loops start here 
    chromosomecounter=1
    for chr in $indices
    do
-      echo "generating real-recal calls for chr=${chr} ..."
+      echo -e "\n #########################################################################################################\n"
+      echo -e "\n ######                   generating real-recal calls for chr=${chr}                                ######\n"
+      echo -e "\n #########################################################################################################\n"      
       echo `date`
-      #inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
 
       samplecounter=1 
-      while read SampleName
+      while read SampleLine
       do
-         echo "processing next sample"
-         echo "realigning: $SampleName"
+          if [ `expr ${#SampleLine}` -gt 1 ]
+          then
+              ## processing non-empty line
+              if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+              then
+                   echo -e "this line has five fields, we just need the first field to create folders"
+	           sample=$( echo "$SampleLine" | cut -f 1 )
+	      else
+                   echo -e "this line has one field, we will use filename as samplename"
+	           sample=$( echo "$SampleLine" )
+	      fi
 
-         echo -e "\n######################################  get aligned bam files  #####################################\n"
+              echo -e "\n####################################################################################################"	       
+              echo -e "\n######################################  get aligned bam files  #####################################"
+              echo -e "\n####################################################################################################"
+              echo -e "\n## we already checked that these file exist when we were creating folders in the previous block  ###"
+              echo -e "\n####################################################################################################"
+              
+              cd $outputdir/${sample}/align
+	      aligned_bam=`find ./ -name "*.wdups.sorted.bam"`
+	      
+              # now check that there is only one bam file
+              aligned_bam=$outputdir/${sample}/align/${aligned_bam}
+              aligned_bam=( $aligned_bam ) # recast variable as an array and count the number of members
+              if [ ${#aligned_bam[@]} -ne 1 ]
+              then
+                 MSG="more than one bam file found in $outputdir/${sample}/align"
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+                 #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
+                 exit 1;
+              fi
 
-         cd $outputdir/align/${SampleName}
-         # look for aligned, sorted bams with duplicates marked, inside the align folder for that particular sample
-         # there should be only one such file
-         aligned_bam=`find ./ -name "*.wdups.sorted.bam"`
-         #  the ${# tells the length of the string
-         if [ `expr ${#aligned_bam}` -lt 1 ]
-         then
-            MSG="No bam file(s) found to perform realign-recalibrate at $outputdir/align/${SampleName}"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            exit 1;
-         fi
+              aligned_bam="${aligned_bam[*]}" # recast variable back as string	      
+              header=${aligned_bam}.header
+ 
+              echo -e "\n####################################################################################################"
+              echo -e "\n##########                   now putting together the RG line for RGparms                ###########"
+	      echo -e "\n####################################################################################################"
+ 
+              #truncate -s 0 ${aligned_bam}.RGline
+	      #`grep "RG.*ID" $header | cut -f 2` >> ${aligned_bam}.RGline
+              RGline=${aligned_bam}.RGline
+              #RGline=$( sed -i 's/ID/RGID/' "$RGline" )
+              #RGline=$( sed -i 's/ / RG/g' "$RGline" )
+              #RGparms=$( cat "$RGline" )
+              
+              if [ `expr ${#RGline}` -lt 1 -o ! -s $RGline ]
+              then
+                 echo -e "RGparms line needs to be recreated from scratch" 
+                 RGparms=$( grep "^@RG" *wdups*header | sed 's/@RG//' | tr ":" "=" | tr " " ":" | tr "\t" ":" | sed "s/ //g" )
+              else 
+                 RGparms=$( cat $RGline )
+              fi
 
-         header=${aligned_bam}.header
+ 
+              echo -e "\n####################################################################################################"
+              echo -e "\n##########                   now defining paths to output folders                        ###########"
+	      echo -e "\n####################################################################################################"
+              
+              RealignOutputDir=$outputdir/${sample}/realign
+              VcallOutputDir=$outputdir/${sample}/variant
+              
+              echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
+              echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir $aligned_bam ${sample}.$chr.bam ${sample}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/logs/log.split.$sample.$chr.in $RealignOutputDir/logs/log.split.$sample.$chr.ou $email $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} $RealignOutputLogs" > $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}
 
-         if [ ! -s $header ]
-         then
-            MSG="$header file not found"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            exit 1;
-
-         fi
-         # create read groups line that will be input to Picard AddOrReplaceGroups
-         RGparms=$( grep "^@RG" $header | sed 's/@RG//' | tr ":" "=" | tr " " ":" | sed 's/\t/:RG/g' | sed "s/ //g" )
-         #truncate -s 0 ${aligned_bam}.RGline
-	 #`grep "RG.*ID" $header | cut -f 2` >> ${aligned_bam}.RGline
-         
-         #RGline=${aligned_bam}.RGline
-         #RGline=$( sed -i 's/ID/RGID/' "$RGline" )
-         #RGline=$( sed -i 's/ / RG/g' "$RGline" )
-         #RGparms=$( cat "$RGline" )
-
-
-         # now check that there is only one file
-         aligned_bam=$outputdir/align/${SampleName}/${aligned_bam}
-         aligned_bam=( $aligned_bam ) # recast variable as an array and count the number of members
-         if [ ${#aligned_bam[@]} -ne 1 ]
-         then
-            MSG="more than one bam file found in $outputdir/align/${SampleName}"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline
-            exit 1;
-         fi
-
-         aligned_bam="${aligned_bam[*]}" # recast variable back as string
-
-
-
-         echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
-         echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir/$SampleName $aligned_bam ${SampleName}.$chr.bam ${SampleName}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} $RealignOutputLogs" > $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}
-
-         # construct the list of all input files for the GATK real-recal procedure, multisample case
-         #if [ $multisample == "YES" ]
-         #then
-         #   chrinfiles[$chromosomecounter]=${chrinfiles[$chromosomecounter]}":-I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam"
-# not used anymore?          chrinputfiles[$inx]=${chrinputfiles[$inx]}":INPUT=$outputdir/$SampleName.$chr.sorted.bam"
-         #fi
-         if [ $multisample == "NO" ]
-         then         
-            echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
-            echo "$scriptdir/realrecal.sh $RealignOutputDir/${SampleName} $chr.realrecal.$SampleName.output.bam $chr -I:$RealignOutputDir/${SampleName}/${SampleName}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.ou $email $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" > $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}
+              if [ $multisample == "NO" ]
+              then         
+                 echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
+                 echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr -I:$RealignOutputDir/${sample}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
            
-            if [ $skipvcall == "NO" ]
-            then
-               echo "$scriptdir/vcallgatk.sh $VcallOutputDir/${SampleName}  $RealignOutputDir/${SampleName} ${chr}.realrecal.${SampleName}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.ou $email $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}" >> $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}
-            fi
-         fi
-
-         (( samplecounter++ ))
-
-      done <  $outputdir/SAMPLENAMES.list
+                 if [ $skipvcall == "NO" ]
+                 then
+                   echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+                 fi
+              else
+                 echo -e "## we are not considering this case in this script. Try again with ANALYSIS=MULTIPLEXED"
+              fi
+              (( samplecounter++ ))
+          fi # done processing non-empty lines
+      done <  $TheInputFile
       # end loop over samples
       echo `date`
-      
-
-
-#      if [ $multisample == "YES" ]
-#      then      
-#         echo "##"
-#         echo "###################    assemble the split_bam_by_chromosome sub-block for MULTISAMPLE experiment    ############################"
-#         echo "##" # this line makes output logs more readable
-###############################################################################
-###############################################################################
-#########################   NOT CLEAR HOW TO HANDLE BAMFILE AND rg VARIABLES HERE IN THE MULTISAMPLE CASE
-#######################3          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-#####################################################3333
-         #echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.output.bam $chr ${chrinfiles[$chromosomecounter]} ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecal
-#      fi
-
-
       ((  chromosomecounter++ )) 
    done # done going through chromosomes 
    # at the end of this set of nested loops, the variables chromosomecounter and samplecounter
    # reflect, respectively, number_of_chromosomes+1 and number_of_samples+1,
    # which is exactly the number of nodes required for anisimov launcher 
-
-
-
-
-
-
-
-
-#         qsub_split_bam_by_chromosome=$RealignOutputLogs/qsub.split.${SampleName}.$chr
-#         echo "#PBS -N ${pipeid}_split_${SampleName}_$chr" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -l walltime=$pbscpu" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.split.${SampleName}.$chr.ou" >> $qsub_split_bam_by_chromosome
-#         echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.split.${SampleName}.$chr.in" >> $qsub_split_bam_by_chromosome
-# 
-#         `chmod a+r $qsub_split_bam_by_chromosome`
-#            splitjobid=`qsub $qsub_split_bam_by_chromosome`
-#            # new line to avoid hiccup
-#            #`qhold -h u $splitjobid`
-#            echo $splitjobid >> $outputdir/logs/pbs.REALSORTED.$SampleName
-#            echo $splitjobid >> $outputdir/logs/REALSORTED.$SampleName$chr
-#
-#            truncate -s 0 $realrecal.$SampleName.$chr.serialjobs
-#            echo "$RealignOutputLogs realrecal.$SampleName.$chr.serialjobs" >> $RealignOutputLogs/$realrecal.AnisimovJoblist
-#
-
-
-
-
-
-
-#         if [ $multisample == "NO" ]
-#         then
-
-
-#      splitid=$( cat $outputdir/logs/REALSORTED.$bamfile_$chr | sed "s/\..*//g" | tr "\n" ":" )
-#      outputfile=$chr.realrecal.$bamfile.output.bam
-#      igv_files=${igv_files}":INPUT=${outputfile}"
-#      echo "realign-recalibrate for interval:$chr..."
-#      qsub_realrecal=$RealignOutputLogs/qsub.realrecal.$bamfile.$chr
-#      echo "#PBS -V" > $qsub_realrecal
-#      echo "#PBS -A $pbsprj" >> $qsub_realrecal
-#      echo "#PBS -N ${pipeid}_realrecal_$bamfile.$chr" >> $qsub_realrecal
-#      echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal
-#      echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_realrecal
-#      echo "#PBS -o $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou" >> $qsub_realrecal
-#      echo "#PBS -e $RealignOutputLogs/log.realrecal.$bamfile.$chr.in" >> $qsub_realrecal
-#      echo "#PBS -q $pbsqueue" >> $qsub_realrecal
-#      echo "#PBS -m a" >> $qsub_realrecal
-#      echo "#PBS -M $email" >> $qsub_realrecal
-#      echo "#PBS -W depend=afterok:$splitid" >> $qsub_realrecal
-#
-#      if [ $schedule eq "QSUB" ]
-#      then
-#         echo "aprun -n 1 -d $thr $scriptdir/realrecal.sh $????#####outputdir $outputfile $chr ${chrinfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr" >> $qsub_realrecal
-#         `chmod a+r $qsub_realrecal`
-#         #recaljobid=`qsub $qsub_realrecal`
-#         # new line to avoid hiccup
-#         #`qhold -h u $recaljobid`
-#         echo $recaljobid >> $outputdir/logs/pbs.REALRECAL.$bamfile
-#      else 
-#         # this block constructs the list of jobs to perform in serial on that chromosome, on that sample
-#         echo "nohup $scriptdir/realrecal.sh $????#####outputdir $outputfile $chr ${chrinfiles[$inx]} ${region[$inx]} $realparms $recalparms $runfile $flag $RealignOutputLogs/log.realrecal.$bamfile.$chr.in $RealignOutputLogs/log.realrecal.$bamfile.$chr.ou $email $RealignOutputLogs/qsub.realrecal.$bamfile.$chr > $RealignOutputLogs/log.realrecal.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
-#      fi
-
-#      if [ $skipvcall == "NO" ]
-#      then
-#         vardir=$( echo $????#####outputdir | sed 's/realign/variant/' )
-#         varlogdir=$( echo $RealignOutputLogs | sed 's/realign/variant/' )
-#  
-#         vcf_files=${vcf_files}":${outputfile}"
-#         echo "variant calling call.."
-#         qsub_vcallgatk=$varlogdir/qsub.vcallgatk.$bamfile.$chr
-#         echo "#PBS -V" > $qsub_vcallgatk
-#         echo "#PBS -A $pbsprj" >> $qsub_vcallgatk
-#         echo "#PBS -N ${pipeid}_vcall_$chr" >> $qsub_vcallgatk
-#         echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk
-#         echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_vcallgatk
-#         echo "#PBS -o $varlogdir/log.vcallgatk.$bamfile.$chr.ou" >> $qsub_vcallgatk
-#         echo "#PBS -e $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $qsub_vcallgatk
-#         echo "#PBS -q $pbsqueue" >> $qsub_vcallgatk
-#         echo "#PBS -m a" >> $qsub_vcallgatk
-#         echo "#PBS -M $email" >> $qsub_vcallgatk
-#         echo "#PBS -W depend=afterok:$recaljobid" >> $qsub_vcallgatk
-#         if [ $schedule eq "QSUB" ]
-#         then
-#            echo "aprun -n 1 -d $thr $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr" >> $qsub_vcallgatk
-#            `chmod a+r $qsub_vcallgatk`
-##            vcalljobid=`qsub $qsub_vcallgatk`
-#            echo $vcalljobid >> $outputdir/logs/pbs.VCALLGATK.$bamfile
-#         else
-#            # something is messed up with redirection here
-#            echo "nohup $scriptdir/vcallgatk.sh $vardir $????#####outputdir $outputfile $chr ${region[$inx]} $runfile $varlogdir/log.vcallgatk.$bamfile.$chr.in $varlogdir/log.vcallgatk.$bamfile.$chr.ou $email $varlogdir/qsub.vcallgatk.$bamfile.$chr >> $qsub_vcallgatk > $varlogdir/log.vcallgatk.$bamfile.$chr.in" >> $RealignOutputLogs/realrecal.$bamfile.$chr.serialjobs
-#         fi
-#      else
-#         echo "variant calling will not be run"
-#      fi
-#
-#
-#      echo `date`
-#      echo "bottom of the loop over chromosomes"
-#   done
-#   echo `date`
-#
-#
-#     
-#
-
-
-
-
 
 
 
@@ -610,91 +480,102 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
                 #############################################################################################################
 
 
-
-
-
    case $run_method in
    "APRUN")
       echo -e "\n\nscheduling qsubs\n\n"
-      truncate -s 0 $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
-      truncate -s 0 $RealignOutputLogs/pbs.REALRECAL
-      truncate -s 0 $VcallOutputLogs/pbs.VCALGATK
+      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+      truncate -s 0 $RealignOutputLogs/REALRECALpbs
+      truncate -s 0 $VcallOutputLogs/VCALGATKpbs
 
       while read SampleName
       do
 
-         for chr in $indices
-         do
+          if [ `expr ${#SampleLine}` -gt 1 ]
+          then
+              ## processing non-empty line
+              if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+              then
+                   echo -e "this line has five fields, we just need the first field to create folders"
+	           sample=$( echo "$SampleLine" | cut -f 1 )
+	      else
+                   echo -e "this line has one field, we will use filename as samplename"
+	           sample=$( echo "$SampleLine" )
+	      fi
+              RealignOutputDir=$outputdir/$sample/realign
+              VcallOutputDir=$outputdir/${sample}/variant 
+              
+              for chr in $indices
+              do
 
-            qsub_split=$RealignOutputDir/${SampleName}/logs/qsub.split_bam_by_chromosome.${SampleName}.${chr}
-            qsub_realrecal=$RealignOutputDir/${SampleName}/logs/qsub.realrecal.${SampleName}.${chr}
-
-
-            ###############################
-            echo -e "\n################# constructing qsub for split\n"
-            # appending the generic header to the qsub
-            cat $outputdir/qsubGenericHeader > $qsub_split
-            echo "#PBS -N ${pipeid}_split_bam.${SampleName}.${chr}" >> $qsub_split
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_split
-            echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.split_bam_by_chromosome.${SampleName}.${chr}.ou" >> $qsub_split
-            echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.split_bam_by_chromosome.${SampleName}.${chr}.in" >> $qsub_split
-            echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_split
-
-            echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr}" >> $qsub_split
-
-            split_job=`qsub $qsub_split`
-            `qhold -h u $split_job`
-            echo $split_job >> $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
+                 qsub_split=$RealignOutputDir/logs/qsub.split_bam_by_chromosome.${sample}.${chr}
+                 qsub_realrecal=$RealignOutputDir/logs/qsub.realrecal.${sample}.${chr}
 
 
+                 ###############################
+                 echo -e "\n################# constructing qsub for split\n"
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_split
+                 echo "#PBS -N ${pipeid}_split_bam.${sample}.${chr}" >> $qsub_split
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_split
+                 echo "#PBS -o $RealignOutputDir/logs/log.split_bam_by_chromosome.${sample}.${chr}.ou" >> $qsub_split
+                 echo "#PBS -e $RealignOutputDir/logs/log.split_bam_by_chromosome.${sample}.${chr}.in" >> $qsub_split
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_split
 
-            ###############################
-            echo -e "\n################# constructing qsub for realrecal\n"
-            # appending the generic header to the qsub
-            cat $outputdir/qsubGenericHeader > $qsub_realrecal
-            echo "#PBS -N ${pipeid}_realrecal.${SampleName}.${chr}" >> $qsub_realrecal
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal
-            echo "#PBS -o $RealignOutputDir/${SampleName}/logs/log.realrecal.${SampleName}.${chr}.ou" >> $qsub_realrecal
-            echo "#PBS -e $RealignOutputDir/${SampleName}/logs/log.realrecal.${SampleName}.${chr}.in" >> $qsub_realrecal
-            echo "#PBS -W depend=afterok:$split_job" >> $qsub_realrecal
-            echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_realrecal
+                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}" >> $qsub_split
 
-            echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr}" >> $qsub_realrecal
-
-            realrecal_job=`qsub $qsub_realrecal`
-            `qhold -h u $realrecal_job`
-            #`qrls -h u $split_job` 
-            echo $realrecal_job >> $RealignOutputLogs/pbs.REALRECAL
+                 split_job=`qsub $qsub_split`
+                 `qhold -h u $split_job`
+                 echo $split_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
 
 
 
-            if [ $skipvcall == "NO" ]
-            then
-               qsub_vcall=$VcallOutputDir/${SampleName}/logs/qsub.vcallgatk.${SampleName}.${chr}
+                 ###############################
+                 echo -e "\n################# constructing qsub for realrecal\n"
+                 # appending the generic header to the qsub
+                 cat $outputdir/qsubGenericHeader > $qsub_realrecal
+                 echo "#PBS -N ${pipeid}_realrecal.${sample}.${chr}" >> $qsub_realrecal
+                 echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal
+                 echo "#PBS -o $RealignOutputDir/logs/log.realrecal.${sample}.${chr}.ou" >> $qsub_realrecal
+                 echo "#PBS -e $RealignOutputDir/logs/log.realrecal.${sample}.${chr}.in" >> $qsub_realrecal
+                 echo "#PBS -W depend=afterok:$split_job" >> $qsub_realrecal
+                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_realrecal
+
+                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/logs/realrecal.${sample}.${chr}" >> $qsub_realrecal
+
+                 realrecal_job=`qsub $qsub_realrecal`
+                 `qhold -h u $realrecal_job`
+                 #`qrls -h u $split_job` 
+                 echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
 
 
 
-               ###############################
-               echo -e "\n################# constructing qsub for vcall\n"
-               # appending the generic header to the qsub
-               cat $outputdir/qsubGenericHeader > $qsub_vcall
-               echo "#PBS -N ${pipeid}_vcall_${SampleName}.${chr}" >> $qsub_vcall
-               echo "#PBS -l walltime=$pbscpu" >> $qsub_vcall
-               echo "#PBS -o $VcallOutputDir/${SampleName}/logs/log.vcall.${SampleName}.${chr}.ou" >> $qsub_vcall
-               echo "#PBS -e $VcallOutputDir/${SampleName}/logs/log.vcall.${SampleName}.${chr}.in" >> $qsub_vcall
-               echo "#PBS -W depend=afterok:$realrecal_job" >> $qsub_vcall
-               echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_vcall
+                 if [ $skipvcall == "NO" ]
+                 then
+                     qsub_vcall=$VcallOutputDir/logs/qsub.vcallgatk.${sample}.${chr}
+
+
+
+                     ###############################
+                     echo -e "\n################# constructing qsub for vcall\n"
+                     # appending the generic header to the qsub
+                     cat $outputdir/qsubGenericHeader > $qsub_vcall
+                     echo "#PBS -N ${pipeid}_vcall_${SampleName}.${chr}" >> $qsub_vcall
+                     echo "#PBS -l walltime=$pbscpu" >> $qsub_vcall
+                     echo "#PBS -o $VcallOutputDir/logs/log.vcall.${sample}.${chr}.ou" >> $qsub_vcall
+                     echo "#PBS -e $VcallOutputDir/logs/log.vcall.${sample}.${chr}.in" >> $qsub_vcall
+                     echo "#PBS -W depend=afterok:$realrecal_job" >> $qsub_vcall
+                     echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_vcall
    
-               echo "aprun -n 1 -d $thr /bin/bash $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr}" >> $qsub_vcall
+                     echo "aprun -n 1 -d $thr /bin/bash $VcallOutputDir/logs/vcallgatk.${SampleName}.${chr}" >> $qsub_vcall
    
-               vcall_job=`qsub $qsub_vcall`
-               #`qrls -h u $realrecal_job`
-               echo $vcall_job >> $VcallOutputLogs/pbs.VCALGATK
-            #else
-               #`qrls -h u $realrecal_job` 
-            fi
-         done # going through chromosomes for this sample
-      done <  $outputdir/SAMPLENAMES.list
+                     vcall_job=`qsub $qsub_vcall`
+                     #`qrls -h u $realrecal_job`
+                     echo $vcall_job >> $VcallOutputLogs/VCALGATKpbs
+
+                 fi
+              done # going through chromosomes for this sample
+         fi  # non-empty line of file
+      done <  $TheInputFile
       # end loop over samples
    ;;
    "QSUB")
@@ -710,25 +591,44 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          then
             truncate -s 0 $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
          fi
+         
+
+         
          while read SampleName
          do
-            # creating a qsub out of the job file
-            # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
-            split_bam_by_chromosome_log=${RealignOutputDir}/${SampleName}/logs/log.split.$SampleName.$chr.in
-            awk -v awkvar_split_bam_by_chromosomelog=$split_bam_by_chromosome_log '{print "nohup "$0" > "awkvar_split_bam_by_chromosomelog}' $RealignOutputDir/${SampleName}/logs/split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/jobfile.split_bam_by_chromosome.${SampleName}.${chr}
-            echo "$RealignOutputDir/${SampleName}/logs/ jobfile.split_bam_by_chromosome.${SampleName}.${chr}" >> $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
+              if [ `expr ${#SampleLine}` -gt 1 ]
+              then
+                 ## processing non-empty line
+                 if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+                 then
+                     echo -e "this line has five fields, we just need the first field to create folders"
+	             sample=$( echo "$SampleLine" | cut -f 1 )
+	         else
+                     echo -e "this line has one field, we will use filename as samplename"
+	             sample=$( echo "$SampleLine" )
+	         fi
+                 RealignOutputDir=$outputdir/$sample/realign
+                 VcallOutputDir=$outputdir/${sample}/variant                   
+         
+         
+                # creating a qsub out of the job file
+                # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
+                split_bam_by_chromosome_log=${RealignOutputDir}/logs/log.split.${sample}.$chr.in
+                awk -v awkvar_split_bam_by_chromosomelog=$split_bam_by_chromosome_log '{print "nohup "$0" > "awkvar_split_bam_by_chromosomelog}' $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} > $RealignOutputDir/logs/jobfile.split_bam_by_chromosome.${sample}.${chr}
+                echo "$RealignOutputDir/logs/ jobfile.split_bam_by_chromosome.${sample}.${chr}" >> $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
 
-            realrecal_log=$RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in
-            awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/${SampleName}/logs/realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/jobfile.realrecal.${SampleName}.${chr}
-            echo "$RealignOutputDir/${SampleName}/logs/ jobfile.realrecal.${SampleName}.${chr}" >> $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
+                realrecal_log=$RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
+                awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/logs/realrecal.${sample}.${chr} > $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
+                echo "$RealignOutputDir/logs/ jobfile.realrecal.${sample}.${chr}" >> $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
 
-            if [ $skipvcall == "NO" ]
-            then
-               vcall_log=$VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in
-               awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/${SampleName}/logs/vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/jobfile.vcallgatk.${SampleName}.${chr}
-               echo "$VcallOutputDir/${SampleName}/logs/ jobfile.vcallgatk.${SampleName}.${chr}" >> $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
-            fi
-         done <  $outputdir/SAMPLENAMES.list
+                if [ $skipvcall == "NO" ]
+                then
+                     vcall_log=$VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in
+                     awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/logs/vcallgatk.${sample}.${chr} > $VcallOutputDir/logs/jobfile.vcallgatk.${sample}.${chr}
+                     echo "$VcallOutputDir/logs/ jobfile.vcallgatk.${sample}.${chr}" >> $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
+                fi
+              fi # non-empty line in file
+         done <  $TheInputFile
          # end loop over samples
 
          echo -e "\nscheduling Anisimov Launcher joblists\n"
@@ -737,12 +637,13 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          if [ $skipvcall == "NO" ]
          then
             qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+            cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
+
          fi
 
          # appending the generic header to the qsub
          cat $outputdir/qsubGenericHeader > $qsub_split_bam_by_chromosome_anisimov
          cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
-         cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
 
 
 
@@ -821,11 +722,11 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       ############### 
       echo -e "\n going through chromosomes again to schedule all split before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
       # reset the list of SPLITBYCHROMOSOME pbs ids
-      truncate -s 0 $RealignOutputLogs/pbs.SPLITBYCHROMOSOME
-      truncate -s 0 $RealignOutputLogs/pbs.REALRECAL
+      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+      truncate -s 0 $RealignOutputLogs/REALRECALpbs
       if [ $skipvcall == "NO" ]
       then
-         truncate -s 0 $VcallOutputLogs/pbs.VCALGATK
+         truncate -s 0 $VcallOutputLogs/VCALGATKpbs
       fi
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
       # first split_bam_by_chromosome
@@ -833,7 +734,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       do
          split_bam_by_chromosome_job=`qsub $RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher`
          `qhold -h u $split_bam_by_chromosome_job` #I am not going to allow these to run right away,
-         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/pbs.SPLITBYCHROMOSOME # will read these in to release them later
+         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs # will read these in to release them later
          # add dependency on split_bam_by_chromosome job to realrecal job
          sed -i "2i #PBS -W depend=afterok:$split_bam_by_chromosome_job" $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
       done
@@ -843,8 +744,11 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher`
          # I am not going to put these on hold, as they will be helkd back by the dependency on respective split jobs
          # Add dependency on realrecal job to vcallgatk job
-         sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
-         echo $realrecal_job >> $RealignOutputLogs/pbs.REALRECAL
+         if [ $skipvcall == "NO" ]
+         then
+             sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
+	 fi
+         echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
       done
       if [ $skipvcall == "NO" ]
       then
@@ -853,26 +757,13 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          for chr in $indices
          do
             vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
-            echo $vcallgatk_job >> $VcallOutputLogs/pbs.VCALGATK
+            echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
          done 
       fi
 
       # now release the split_bam_by_chromosome jobs
-      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/pbs.SPLITBYCHROMOSOME | sed "s/\..*//" | tr "\n" " " )
+      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
       #qrls -h u $split_bam_by_chromosome_ids
-   ;;
-   "SERVER")
-      while read SampleName
-      do
-         nohup $RealignOutputDir/${SampleName}/logs/jobfile.split_bam_by_chromosome.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.split.$SampleName.$chr.in
-         nohup $RealignOutputDir/${SampleName}/logs/jobfile.realrecal.${SampleName}.${chr} > $RealignOutputDir/${SampleName}/logs/log.realrecal.$SampleName.$chr.in 
-
-         if [ $skipvcall == "NO" ]
-         then
-            nohup $VcallOutputDir/${SampleName}/logs/jobfile.vcallgatk.${SampleName}.${chr} > $VcallOutputDir/${SampleName}/logs/log.vcallgatk.${SampleName}.${chr}.in
-         fi
-      done  <  $outputdir/SAMPLENAMES.list
-      # end loop over samples
    ;;
    esac
 
@@ -881,9 +772,9 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
    if [ $skipvcall == "NO" ]
    then
-      summarydependids=$( cat $VcallOutputLogs/pbs.VCALGATK | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $VcallOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/pbs.REALRECAL | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""
@@ -906,7 +797,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
        `chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
-       echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
+       echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
    fi
 
    `sleep 30s`
@@ -930,7 +821,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
    `chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
-   echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
+   echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
    if [ `expr ${#lastjobid}` -lt 1 ]
    then
@@ -950,19 +841,19 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
        echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
        `chmod a+r $qsub_summary`
        badjobid=`qsub $qsub_summary`
-       echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
+       echo $badjobid >> $TopOutputLogs/SUMMARYpbs
    fi
 
 
    # release all jobs now
-   splitids=$( cat $RealignOutputLogs/pbs.SPLITBYCHROMOSOME | sed "s/\..*//" | tr "\n" " " )
+   splitids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
    `qrls -h u $splitids`
-   realrecalids=$( cat $RealignOutputLogs/pbs.REALRECAL | sed "s/\..*//" | tr "\n" " " )
+   realrecalids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" " " )
    `qrls -h u $realrecalids`
 
    if [ $skipvcall == "NO" ]
    then
-      vcalids=$( cat $VcallOutputLogs/pbs.VCALGATK | sed "s/\..*//" | tr "\n" " " )
+      vcalids=$( cat $VcallOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" " " )
       `qrls -h u $vcalids`
    fi
 
