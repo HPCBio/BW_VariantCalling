@@ -181,9 +181,9 @@ else
  
 	if [ $analysis == "MULTIPLEXED" ]
 	then
-            set +x; echo -e "\n\n ############# ANALYSIS IS MULTIPLEXED ! ############\n\n" >&2; 
-            echo -e "produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
-            echo -e "from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
+            set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED ! ############\n\n" >&2; 
+            echo -e " ###### produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
+            echo -e "\n ###### from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
 	    perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
             
             set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
@@ -212,8 +212,8 @@ else
 
             if [ -s $sampleinfo ]
 	    then
-		echo +x; echo -e "\n ###### CASE1: aka The Baylor case.\nUse an info sheet specified in $sampleinfo and parse it as we did in the multiplexed case" >&2;
-                echo -e "\n ###### we will have three files instead of just one file.\n" >&2;
+		echo +x; echo -e "\n ###### CASE2: aka The new Baylor case. ANALYSIS IS NOT MULTIPLEXED and an info sheet is specified" >&2;
+		echo -e "\n ###### Parse info sheet in $sampleinfo  and produce three files as we did in the multiplexed case" >&2;
                 echo -e "\n ###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2 set -x;
 
 		perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
@@ -239,7 +239,8 @@ else
 		fi
 
             else
-		echo +x; echo -e "\n ###### CASE2: SAMPLEINFORMATION=$sampleinfo file not found. Assume that there is no info sheet." >&2;
+		echo +x; echo -e "\n ###### CASE3: ANALYSIS IS NOT MULTIPLEXED AND SAMPLEINFORMATION=$sampleinfo file not found." >&2;
+		echo -e "\n ###### Assume that there is no info sheet." >&2;
 		echo -e "\n ###### Produce just one file with list of files in directory specified in run file in line INPUTDIR=$sampledir ########" >&2; set -x;
 
 		truncate -s 0 $outputdir/SAMPLENAMES.tmp.list
