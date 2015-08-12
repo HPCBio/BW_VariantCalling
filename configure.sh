@@ -190,20 +190,29 @@ else
 	    if [ ! -s $outputdir/SAMPLENAMES.list ]
 	    then
 		MSG="$outputdir/SAMPLENAMES.list is empty"
-                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
+            else
+                set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                echo -e "# @in samplenames.list @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
 	    fi
 	    if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 	    then
 		MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
+            else
+                set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                echo -e "# @in samplenames_multiplexed.list @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
 	    fi
 	    if [ ! -s $outputdir/SAMPLEGROUPS.list ]
 	    then
 		MSG="$outputdir/SAMPLEGROUPS.list is empty"
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
+            else
+                set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                echo -e "# @in samplegroups.list @as SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
 	    fi
 	else 
             set +x; 
@@ -224,18 +233,29 @@ else
 		    MSG="$outputdir/SAMPLENAMES.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
+                else
+                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                    echo -e "# @in samplenames.list @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
 		fi
 		if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 		then
 		    MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
+                else
+                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                    echo -e "# @in samplenames_multiplexed.list @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
 		fi
 		if [ ! -s $outputdir/SAMPLEGROUPS.list ]
 		then
 		    MSG="$outputdir/SAMPLEGROUPS.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
+                else
+                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                    echo -e "# @in samplegroups.list @as SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+                    numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
+                    echo -e "# @in numsamplegroups @as NumberOfSamples=$numsamplegroups" >> $outputdir/WorkflowAutodocumentationScript.sh
 		fi
 
             else
@@ -267,16 +287,20 @@ else
 	        sort $outputdir/SAMPLENAMES.tmp.list | uniq > $outputdir/SAMPLENAMES.list
 	        sed -i '/^\s*$/d' $outputdir/SAMPLENAMES.list # remove blank lines
 	        rm  $outputdir/SAMPLENAMES.tmp.list
+
+                set +x; echo -e "\n### check that this actually worked, " >&2
+                echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
+                if [ ! -s $outputdir/SAMPLENAMES.list ]
+	        then
+	           MSG="$outputdir/SAMPLENAMES.list is empty"
+                   echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	           exit 1;
+                else
+                   set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+                   echo -e "# @in samplenames.list @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+	        fi
 	    fi
             # end of two cases that are not multiplexed
-	fi
-        set +x; echo -e "\n### check that this actually worked, " >&2
-        echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
-	if [ ! -s $outputdir/SAMPLENAMES.list ]
-	then
-	    MSG="$outputdir/SAMPLENAMES.list is empty"
-            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
 	fi
 
 	numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
@@ -285,6 +309,9 @@ else
 	    MSG="No samples found in INPUTDIR=$sampledir."
             echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit 1;
+        else
+            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+            echo -e "# @in N @as DataFilesToAlign=$numsamples\n" >> $outputdir/WorkflowAutodocumentationScript.sh
 	fi
 
 
