@@ -171,8 +171,7 @@ echo -e "\n\n" >&2; set -x;
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
 
 
-        set +x; echo -e "\n\n\n############ checking FastQC settings," >&2; 
-        echo -e "############ initializing Workflow autodocumentation and creating the ourput folder for FastQC \n\n" >&2; set -x
+        set +x; echo -e "\n\n\n############ checking FastQC settings\n" >&2; set -x 
         if [ $fastqcflag != "1" -a $fastqcflag != "0" -a $fastqcflag != "YES" -a $fastqcflag != "NO" ]
         then
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
@@ -189,7 +188,9 @@ echo -e "\n\n" >&2; set -x;
             fi
         fi
         if [ $fastqcflag == "YES" ]
-            # create necessary directories
+        then
+            set +x; echo -e "\n############# Now that we know fastq will be quality-checked, " >&2
+            echo -e "############# need to create necessary directories and initialize Workflow autodocumentation\n" >&2; set -x
             FastqcOutputFolder=$outputdir/fastqc
             if [ ! -d $FastqcOutputFolder ]
             then
@@ -197,20 +198,20 @@ echo -e "\n\n" >&2; set -x;
                `chmod -R 770 $FastqcOutputFolder`
             fi
 
-            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+            set +x; echo -e "### update autodocumentation script ###"; set -x;
             echo -e "# @begin FastQC" >> $outputdir/WorkflowAutodocumentationScript.sh
             # select how samples will be found
             if [ -s $outputdir/SAMPLENAMES_multiplexed.list ] && [ -s $outputdir/SAMPLEGROUPS.list ]
             then
                numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
                numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-               echo -e "# @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
+               echo -e "   # @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
             else
                numinputs=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
-               echo -e "# @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES.list=${numinputs}_inputs_for_${numinputs}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
+               echo -e "   # @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES.list=${numinputs}_inputs_for_${numinputs}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
             fi
             FastqcOutputFolder_basename=`(basename $FastqcOutputFolder)`
-            echo -e "# @out fastq_output @as fastqc_output_folder @URI ${FastqcOutputFolder_basename}/" >> $outputdir/WorkflowAutodocumentationScript.sh
+            echo -e "   # @out fastq_output @as fastqc_output_folder @URI ${FastqcOutputFolder_basename}/" >> $outputdir/WorkflowAutodocumentationScript.sh
             echo -e "# @end FastQC\n" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
 
@@ -238,9 +239,6 @@ echo -e "\n\n" >&2; set -x;
             MSG="ALIGNER=$aligner  is not available at this site"
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
             exit 1;
-        else
-            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-            echo -e "#  @begin Alignment" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
         if [ $aligner == "NOVOALIGN" ]
         then
@@ -355,6 +353,9 @@ echo -e "\n\n" >&2; set -x;
            mkdir -p $AlignOutputDir
         fi
         `chmod -R 770 $AlignOutputDir/`
+        # initialize output file name and path template for YesWorkflow
+        AlignedFastqPathTemplate="align/"
+
 
         TopOutputLogs=$outputdir/logs
         if [ -d $TopOutputLogs ]
@@ -608,6 +609,7 @@ echo -e "\n\n" >&2; set -x;
             else
                 outputsamfileprefix=$AlignOutputDir/$SampleName/$SampleName
             fi
+
             # when running multiple samples via Anisimov, there will be lots of qsubs, logs and jobfiles
             # best keep them in the sample subfolder
             if [ ! -d $AlignOutputDir/$SampleName/logs ]
@@ -659,6 +661,7 @@ echo -e "\n\n" >&2; set -x;
 
                set +x; echo -e "\n # splitting read file1=$LeftReadsFastq \n" >&2; set -x;
                `split -l $NumLinesPerChunk -a 2 -d $LeftReadsFastq $LeftReadsChunkNamePrefix`
+
                exitcode=$?
                if [ $exitcode -ne 0 ]
                then
@@ -915,7 +918,14 @@ echo -e "\n\n" >&2; set -x;
 		echo `date`
             done # end loop over chunks of the current fastq
 
+######################################################################
+############# end loop over chunks of the current fastq ##############
+######################################################################
+######################################################################
 
+######################################################################
+############# WE ARE STILL INSIDE THE LOOP OVER INPUT FASTQ!!! #######
+######################################################################
 
 
 set +x; echo -e "\n\n\n" >&2
@@ -933,6 +943,7 @@ echo -e "\n\n\n" >&2; set -x
             then
    	       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\.[a-z]*//" | tr "\n" ":" )
 	       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\..*//" | tr "\n" ":" )
+
 
 	       listfiles=$( echo $allfiles  | tr " " ":" | sed "s/::/:/g" )
                if [ $sortool == "NOVOSORT" ]
@@ -979,8 +990,12 @@ echo -e "\n\n\n" >&2; set -x
             fi
           fi
           (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
-	done <  $TheInputFile
-        # end loop over input fastq
+	done <  $TheInputFile # end loop over input fastq
+
+######################################################################
+#############         end loop over iinput fastq        ##############
+######################################################################
+
 
 
 
@@ -999,8 +1014,11 @@ echo -e "\n\n" >&2; set -x
         then
  
            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-           echo -e "#  @begin $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
-           echo -e "#  @end $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "# @begin $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   # @in datafilestoalign @as fastqc_inputs" >> $outputdir/WorkflowAutodocumentationScript.sh
+           AlignedFastqPathTemplate="align/SampleName/SampleName.node00.wdups.sorted.bam"
+           echo -e "   # @out input_to_realrecal @as fastq_aligned_sorted_markdup @URI ${AlignedFastqPathTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "# @end $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
            case $run_method in
@@ -1106,6 +1124,25 @@ echo -e "\n\n" >&2; set -x
 
         if [ $chunkfastq == "YES" -a $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
         then
+
+           set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+           echo -e "# @begin chunk_fastq" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   # @in datafilestoalign @as fastqc_inputs" >> $outputdir/WorkflowAutodocumentationScript.sh
+           InputFastqPathTemplate="align/SampleName/{left/right}reads_chunk{number}"
+           echo -e "   # @out chunks @as chunked_fastq @URI ${InputFastqPathTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "# @end $chunk_fastq" >> $outputdir/WorkflowAutodocumentationScript.sh
+
+           echo -e "# @begin ${aligner}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   # @in chunks @as chunked_fastq " >> $outputdir/WorkflowAutodocumentationScript.sh
+           AlignedFastqPathTemplate="align/SampleName/{left/right}reads.node{number}.bam"
+           echo -e "   # @out alignment_output @as aligned_fastq @URI ${AlignedFastqPathTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "# @end ${aligner}" >> $outputdir/WorkflowAutodocumentationScript.sh
+
+           echo -e "# @begin merge_${sortool}_${markduplicatestool}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   # @in alignment_output @as aligned_fastq" >> $outputdir/WorkflowAutodocumentationScript.sh
+           MergedFastqPathTemplate="align/SampleName/SampleName.wdups.sorted.bam"
+           echo -e "   # @out input_to_realrecal @as fastq_aligned_sorted_markdup @URI ${MergedFastqPathTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "# @end merge_${sortool}_${markduplicatestool}" >> $outputdir/WorkflowAutodocumentationScript.sh
 
            case $run_method in
            "APRUN")
@@ -1455,6 +1492,7 @@ echo -e "\n\n" >&2; set -x;
             `qrls -h u $alignids`
             `qrls -h u $mergeids`
             #`qrls -h u $extraids`
+
 	    echo `date`
 	fi
 
