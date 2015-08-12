@@ -233,9 +233,9 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    fi
 
 
-  echo "####################################################################################################"
    echo "####################################################################################################"
-   echo "###########################      params ok. Now          creating log folders        ###############"
+   echo "####################################################################################################"
+   echo "###########################      parameters ok. Now      creating log folders        ###############"
    echo "####################################################################################################"
    echo "####################################################################################################"
   
@@ -478,6 +478,26 @@ echo -e "\n\n\n ###################################       main loops start here 
 echo -e "\n\n\n ###################################   now schedule these jobs   ###################################### \n\n\n"
                 ###################################                             #############################################
                 #############################################################################################################
+
+   set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+   echo -e "# @begin SplitBAM_ByChromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "   # @in input_to_realrecal @as fastq_aligned_sorted_markdup" >> $outputdir/WorkflowAutodocumentationScript.sh
+   BamByChrTemplate="{SampleName}/realign/{SampleName}.{chromosome}.sorted.bam"
+   NumberOfChromosomes=(( chromosomecounter-- )); # needed because chromosome counter is incremented at the very end of each iteration of the loop above
+   echo -e "   # @out sample_chr @as aligned_bam_per_chromosome @URI ${BamByChrTemplate}=${NumberOfChromosomes}_chromosomes_per_sample" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "# @end SplitBAM_ByChromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+
+   echo -e "# @begin RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "   # @in sample_chr @as aligned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   RealignedBAMTemplate="{SampleName}/realign/{chromosome}.realrecal.${SampleName}.output.bam"
+   echo -e "   # @out realrecal  @as  realigned_bam_per_chromosome @URI ${RealignedBAMTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "# @end RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+
+   echo -e "# @begin VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "   # @in  realrecal  @as  realigned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   VariantTemplate="{SampleName}/variant/{chromosome}.realrecal.${SampleName}.output.bam.raw.all.vcf"
+   echo -e "   # @out realigned_bam_per_chromosome  @as  realigned_bam_per_chromosome @URI ${RealignedBAMTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "# @end RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
    case $run_method in

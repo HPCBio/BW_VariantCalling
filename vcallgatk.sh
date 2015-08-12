@@ -184,13 +184,13 @@ else
 	   echo "snvcaller is GATK"
            if [[ $allsites == "YES" && $input_type == "exome" ]]
            then
-               pedfile=$infile.$chr.raw.all.pbt.vcf
-	       outfile=$infile.$chr.raw.all.vcf
+               pedfile=$infile.raw.all.pbt.vcf
+	       outfile=$infile.raw.all.vcf
 	       umode="EMIT_ALL_SITES"
 	       utype="BOTH"
            else
-               pedfile=$infile.$chr.raw.pbt.vcf
-	       outfile=$infile.$chr.raw.g.vcf.gz
+               pedfile=$infile.raw.pbt.vcf
+	       outfile=$infile.raw.g.vcf.gz
 	       umode="EMIT_VARIANTS_ONLY"
 	       utype="BOTH"
            fi
@@ -199,17 +199,17 @@ else
 	   echo "snvcaller is SNVMIX"
            if [ $allsites == "YES" -a $input_type == "exome" ]
            then
-	       snvfile=$infile.$chr.raw.snv.all.vcf
-	       outfile=$infile.$chr.raw.indel.all.vcf
-	       combfile=$infile.$chr.raw.multi.vcf
+	       snvfile=$infile.raw.snv.all.vcf
+	       outfile=$infile.raw.indel.all.vcf
+	       combfile=$infile.raw.multi.vcf
 	       combparms="-V $outputdir/$snvfile -V $outputdir/$outfile"
 	       umode="EMIT_ALL_SITES"
 	       utype="INDEL"
                smode="all"
            else
-	       snvfile=$infile.$chr.raw.snv.vcf
-	       outfile=$infile.$chr.raw.indel.vcf
-	       combfile=$infile.$chr.raw.multi.vcf
+	       snvfile=$infile.raw.snv.vcf
+	       outfile=$infile.raw.indel.vcf
+	       combfile=$infile.raw.multi.vcf
 	       combparms="$-V outputdir/$snvfile -V $outputdir/$outfile"
 	       umode="EMIT_VARIANTS_ONLY"
 	       utype="INDEL"
@@ -218,9 +218,9 @@ else
        elif [ $snvcaller == "BEAUTY_EXOME" ]
        then
 	   echo "snvcaller is BEAUTY_EXOME"
-	   snvfile=$infile.$chr.raw.snvmix.vcf
-	   outfile=$infile.$chr.raw.gatk.vcf
-	   combfile=$infile.$chr.raw.multi.vcf
+	   snvfile=$infile.raw.snvmix.vcf
+	   outfile=$infile.raw.gatk.vcf
+	   combfile=$infile.raw.multi.vcf
 	   combparms="-V:GATK $outputdir/$outfile -V:SNVMix $outputdir/$snvfile -priority GATK,SNVMix" 
 	   umode="EMIT_VARIANTS_ONLY"
 	   utype="BOTH"
@@ -335,7 +335,7 @@ else
 	    echo `date`
 
             pilefile=$outfile.pileup
-            tmpfile=$infile.$chr.tmp.snv
+            tmpfile=$infile.tmp.snv
             $memprof $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
 
             exitcode=$?
