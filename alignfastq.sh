@@ -186,9 +186,20 @@ echo -e "\n\n" >&2; set -x;
             then
                 $fastqcflag="NO"
             fi
+        fi
+        if [ $fastqcflag == "YES" ]
             set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-            echo -e "# @begin Alignment" >> $outputdir/WorkflowAutodocumentationScript.sh
-            echo -e "# @in N @as DataFilesToAlign=$numsamples" >> $outputdir/WorkflowAutodocumentationScript.sh
+            echo -e "# @begin FastQC" >> $outputdir/WorkflowAutodocumentationScript.sh
+            # select how samples will be found
+            if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+            then
+                 TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
+                 echo -e "   # @in datafilestoalign @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+            else
+                 echo -e "   # @in datafilestoalign @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+            fi
+            echo -e "   # @out fastqc_output_folder @as fastqc/" >> $outputdir/WorkflowAutodocumentationScript.sh
+            echo -e "# @end FastQC\n" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
 
         set +x; echo -e "\n\n\n############ checking Cleanup settings\n" >&2; set -x
@@ -215,6 +226,9 @@ echo -e "\n\n" >&2; set -x;
             MSG="ALIGNER=$aligner  is not available at this site"
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
             exit 1;
+        else
+            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+            echo -e "#  @begin Alignment" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
         if [ $aligner == "NOVOALIGN" ]
         then
@@ -891,8 +905,13 @@ echo -e "\n\n" >&2; set -x;
                    allfiles=$allfiles" $outputsamfileprefix.node$i.bam" # this will be used later for merging
                 fi
 		echo `date`
-            done
+            done # << $TheInputFile, which was either SAMPLENAMES.list or SAMPLENAMES_multiplexed.list
             # end loop over chunks of the current input fastq
+            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+            datafilestoalign=`basename $TheInputFile`
+            numfilestoalign=`wc -l $TheInputFile`
+            echo -e "   #  @in datafilestoalign @as $datafilestoalign" >> $outputdir/WorkflowAutodocumentationScript.sh
+            echo -e "   #  @in N @as DataFilesToAlign=$numfilestoalign" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
 
@@ -973,8 +992,15 @@ echo "##########################################################################
 echo -e "\n\n" >&2; set -x
 
 
+
         if [ $chunkfastq == "NO" -a $aligner == "BWA_MEM" ]
         then
+ 
+           set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+           echo -e "   #  @in params as No_Chunking" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   #  @begin $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "   #  @end $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+
 
            case $run_method in
            "LAUNCHER")
