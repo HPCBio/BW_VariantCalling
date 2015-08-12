@@ -77,10 +77,10 @@ else
 
 
         set +x; echo -e "\n ### initialize autodocumentation script ### \n"; set -x;
-        truncate -s 0 $outputdit/WorkflowAutodocumentationScript.sh
-        echo "#!/bin/bash" > $outputdit/WorkflowAutodocumentationScript.sh
+        truncate -s 0 $outputdir/WorkflowAutodocumentationScript.sh
+        echo -e "#!/bin/bash \n" > $outputdir/WorkflowAutodocumentationScript.sh
         WorkflowName=`basename $outputdir`  
-        echo "# @begin $WorkflowName" > $outputdit/WorkflowAutodocumentationScript.sh
+        echo "# @begin $WorkflowName" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
         outputlogs=$outputdir/logs

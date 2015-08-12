@@ -47,6 +47,13 @@ else
 #           report=$( echo $report | tr ";" "\t" )
 #           detjobids=${detjobids}${nl}$report
 #        done
+
+
+
+        # YesWorkflow documentation step
+        # java -jar yesworkflow-0.2-SNAPSHOT-jar-with-dependencies.jar graph ~/Current/proj/BlueWatersHumanVariationPipelineTesting/BW_VariantCalling/FakeMyWorkflowScript.sh | dot -Tpdf -o ~/Current/proj/BlueWatersHumanVariationPipelineTesting/BW_VariantCalling/FakeMyWorkflowScript.pdf
+
+
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" > $delivery/Summary.Report
 
