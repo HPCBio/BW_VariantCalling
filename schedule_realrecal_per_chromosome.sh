@@ -495,9 +495,13 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
    echo -e "# @begin VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
    echo -e "   # @in  realrecal  @as  realigned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   VariantTemplate="{SampleName}/variant/{chromosome}.realrecal.${SampleName}.output.bam.raw.all.vcf"
-   echo -e "   # @out realigned_bam_per_chromosome  @as  realigned_bam_per_chromosome @URI ${RealignedBAMTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "# @end RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   VariantTemplate=${RealignedBAMTemplate}.raw.all.vcf
+   echo -e "   # @out vcf @as output_variants @URI ${VariantTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+   echo -e "# @end VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+
+   echo -e "# @out vcf @as output_variants @URI sample_name/variant/chr_name.vcf" >> $outputdir/WorkflowAutodocumentationScript.sh
+   WorkflowName=`basename $outputdir`
+   echo -e "# @end $WorkflowName" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
    case $run_method in
