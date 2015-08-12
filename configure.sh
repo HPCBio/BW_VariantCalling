@@ -192,31 +192,23 @@ else
 		MSG="$outputdir/SAMPLENAMES.list is empty"
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
-            else
-                set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                echo -e "# @in samplenames.list @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-	    fi
+            fi
 	    if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 	    then
 		MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
-            else
-                set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                echo -e "# @in samplenames_multiplexed.list @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-	    fi
-	    if [ ! -s $outputdir/SAMPLEGROUPS.list ]
+	    elif [ ! -s $outputdir/SAMPLEGROUPS.list ]
 	    then
 		MSG="$outputdir/SAMPLEGROUPS.list is empty"
                 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
             else
                 set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                echo -e "# @in samplegroups.list @as SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-                echo -e "# @in datafilestoalign @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+                echo -e "# @in samples @URI SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+                numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
                 numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-                echo -e "# @in numsamples @as NumberOfSamples=$numsamplegroups" >> $outputdir/WorkflowAutodocumentationScript.sh
-
+                echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
 	    fi
 	else 
             set +x; 
@@ -237,30 +229,22 @@ else
 		    MSG="$outputdir/SAMPLENAMES.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
-                else
-                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                    echo -e "# @in samplenames.list @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-		fi
+                fi
 		if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 		then
 		    MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
-                else
-                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                    echo -e "# @in samplenames_multiplexed.list @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-		fi
-		if [ ! -s $outputdir/SAMPLEGROUPS.list ]
+		elif [ ! -s $outputdir/SAMPLEGROUPS.list ]
 		then
 		    MSG="$outputdir/SAMPLEGROUPS.list is empty"
                     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		    exit 1;
                 else
                     set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                    echo -e "# @in samplegroups.list @as SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-                    echo -e "# @in datafilestoalign @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+                    numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
                     numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-                    echo -e "# @in numsamples @as NumberOfSamples=$numsamplegroups" >> $outputdir/WorkflowAutodocumentationScript.sh
+                    echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
 		fi
 
             else
@@ -302,23 +286,11 @@ else
 	           exit 1;
                 else
                    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                   echo -e "# @in datafilestoalign @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
-                   num_individual_samples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
-                   echo -e "# @in numsamples @as NumberOfSamples=$num_individual_samples" >> $outputdir/WorkflowAutodocumentationScript.sh             
+                   numinputs=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
+                   echo -e "# @in fastq_inputs @URI SAMPLENAMES.list=${numinputs}_inputs_for_${numinputs}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
 	        fi
 	    fi
             # end of two cases that are not multiplexed
-	fi
-
-	numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
-	if [ $numsamples -lt 1 ]
-	then
-	    MSG="No samples found in INPUTDIR=$sampledir."
-            echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-        else
-            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-            echo -e "# @in N @as DataFilesToAlign=$numsamples\n" >> $outputdir/WorkflowAutodocumentationScript.sh
 	fi
 
 
