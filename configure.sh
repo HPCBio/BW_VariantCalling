@@ -217,13 +217,13 @@ else
 	else 
             set +x; 
             echo -e "\n ######               ANALYSIS = $analysis, IS NOT = MULTIPLEXED                                ########" >&2;
-            echo -e "\n ###### we still have two cases to consider: with infoSheet or without infoSheet.               ########" >&2;
+            echo -e " ###### we still have two cases to consider: with infoSheet or without infoSheet.               ########" >&2; set -x;
 
-            if [ -s $sampleinfo ]
+            if [-e $sampleinfo ] && [ -s $sampleinfo ]
 	    then
-		echo +x; echo -e "\n ###### CASE2: aka The new Baylor case. ANALYSIS IS NOT MULTIPLEXED and an info sheet is specified" >&2;
-		echo -e "\n ###### Parse info sheet in $sampleinfo  and produce three files as we did in the multiplexed case" >&2;
-                echo -e "\n ###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2 set -x;
+		echo +x; echo -e "\n ###### CASE2: ANALYSIS IS NOT MULTIPLEXED and an info sheet is specified" >&2;
+		echo -e "###### Parse info sheet in $sampleinfo  and produce three files as we did in the multiplexed case" >&2;
+                echo -e "###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2; set -x;
 
 		perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
             

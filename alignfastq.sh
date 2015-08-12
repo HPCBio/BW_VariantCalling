@@ -186,6 +186,9 @@ echo -e "\n\n" >&2; set -x;
             then
                 $fastqcflag="NO"
             fi
+            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+            echo -e "# @begin Alignment" >> $outputdir/WorkflowAutodocumentationScript.sh
+            echo -e "# @in N @as DataFilesToAlign=$numsamples" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
 
         set +x; echo -e "\n\n\n############ checking Cleanup settings\n" >&2; set -x
