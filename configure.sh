@@ -205,7 +205,6 @@ else
 		exit 1;
             else
                 set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-                echo -e "# @in samples @URI SAMPLEGROUPS.list" >> $outputdir/WorkflowAutodocumentationScript.sh
                 numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
                 numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
                 echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh

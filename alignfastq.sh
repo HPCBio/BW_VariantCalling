@@ -171,7 +171,8 @@ echo -e "\n\n" >&2; set -x;
 	dupparms=$( echo "dup=${dup}_flag=${dupflag}" )
 
 
-        set +x; echo -e "\n\n\n############ checking FastQC settings\n" >&2; set -x
+        set +x; echo -e "\n\n\n############ checking FastQC settings," >&2; 
+        echo -e "############ initializing Workflow autodocumentation and creating the ourput folder for FastQC \n\n" >&2; set -x
         if [ $fastqcflag != "1" -a $fastqcflag != "0" -a $fastqcflag != "YES" -a $fastqcflag != "NO" ]
         then
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
@@ -188,17 +189,28 @@ echo -e "\n\n" >&2; set -x;
             fi
         fi
         if [ $fastqcflag == "YES" ]
+            # create necessary directories
+            FastqcOutputFolder=$outputdir/fastqc
+            if [ ! -d $FastqcOutputFolder ]
+            then
+               mkdir $FastqcOutputFolder
+               `chmod -R 770 $FastqcOutputFolder`
+            fi
+
             set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
             echo -e "# @begin FastQC" >> $outputdir/WorkflowAutodocumentationScript.sh
             # select how samples will be found
-            if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+            if [ -s $outputdir/SAMPLENAMES_multiplexed.list ] && [ -s $outputdir/SAMPLEGROUPS.list ]
             then
-                 TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
-                 echo -e "   # @in datafilestoalign @as SAMPLENAMES_multiplexed.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+               numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
+               numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
+               echo -e "# @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
             else
-                 echo -e "   # @in datafilestoalign @as SAMPLENAMES.list" >> $outputdir/WorkflowAutodocumentationScript.sh
+               numinputs=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
+               echo -e "# @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES.list=${numinputs}_inputs_for_${numinputs}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
             fi
-            echo -e "   # @out fastqc_output_folder @as fastqc/" >> $outputdir/WorkflowAutodocumentationScript.sh
+            FastqcOutputFolder_basename=`(basename $FastqcOutputFolder)`
+            echo -e "# @out fastq_output @as fastqc_output_folder @URI ${FastqcOutputFolder_basename}/" >> $outputdir/WorkflowAutodocumentationScript.sh
             echo -e "# @end FastQC\n" >> $outputdir/WorkflowAutodocumentationScript.sh
         fi
 
@@ -512,11 +524,7 @@ echo -e "\n\n" >&2; set -x;
 		fi
 
                 # create necessary directories
-		if [ ! -d $outputdir/fastqc ]
-                then
-                    mkdir $outputdir/fastqc
-                    `chmod -R 770 $outputdir/fastqc`
-		fi
+                # output folder is already created above during the initial checks for fastqc; only logs need to be created now 
                 if [ ! -d $TopOutputLogs/fastqc ]
                 then
                     mkdir $TopOutputLogs/fastqc
@@ -537,7 +545,7 @@ echo -e "\n\n" >&2; set -x;
 		echo "#PBS -q $pbsqueue" >> $qsub_fastqcR1
 		echo "#PBS -m ae" >> $qsub_fastqcR1
 		echo "#PBS -M $email" >> $qsub_fastqcR1
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
+		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $FastqcOutputFolder $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
 
                 echo -e "\n\n" >> $qsub_fastqcR1
                 echo "exitcode=\$?" >> $qsub_fastqcR1
@@ -566,7 +574,7 @@ echo -e "\n\n" >&2; set -x;
 		    echo "#PBS -q $pbsqueue" >> $qsub_fastqcR2
 		    echo "#PBS -m ae" >> $qsub_fastqcR2
 		    echo "#PBS -M $email" >> $qsub_fastqcR2
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $outputdir/fastqc $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
+		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $FastqcOutputFolder $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
 
                     echo -e "\n\n" >> $qsub_fastqcR2
                     echo "exitcode=\$?" >> $qsub_fastqcR2
