@@ -913,13 +913,7 @@ echo -e "\n\n" >&2; set -x;
                    allfiles=$allfiles" $outputsamfileprefix.node$i.bam" # this will be used later for merging
                 fi
 		echo `date`
-            done # << $TheInputFile, which was either SAMPLENAMES.list or SAMPLENAMES_multiplexed.list
-            # end loop over chunks of the current input fastq
-            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-            datafilestoalign=`basename $TheInputFile`
-            numfilestoalign=`wc -l $TheInputFile`
-            echo -e "   #  @in datafilestoalign @as $datafilestoalign" >> $outputdir/WorkflowAutodocumentationScript.sh
-            echo -e "   #  @in N @as DataFilesToAlign=$numfilestoalign" >> $outputdir/WorkflowAutodocumentationScript.sh
+            done # end loop over chunks of the current fastq
 
 
 
@@ -1005,9 +999,8 @@ echo -e "\n\n" >&2; set -x
         then
  
            set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-           echo -e "   #  @in params as No_Chunking" >> $outputdir/WorkflowAutodocumentationScript.sh
-           echo -e "   #  @begin $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
-           echo -e "   #  @end $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "#  @begin $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
+           echo -e "#  @end $aligner" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
            case $run_method in
