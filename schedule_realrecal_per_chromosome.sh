@@ -266,14 +266,14 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
       truncate -s 0 $RealignOutputLogs/realrecal.AnisimovJoblist
    fi
 
-   echo "####################################################################################################"
-   echo "####################################################################################################"
-   echo -e "###########################   generating regions, intervals, known/knownSites        ###############"
-   echo "####################################################################################################"
-   echo "####################################################################################################"
-   echo -e "region is the array with snps per chr which will be used by vcallgatk-unifiedGenotyper/haplotypeCaller"
-   echo -e "realparms is the array with indels per chr which will be used for  gatk-IndelRealigner"
-   echo -e "recalparms is the array with indels per chr which will be used for  gatk-Recalibration"
+   echo -e "\n####################################################################################################"
+   echo -e "\n####################################################################################################"
+   echo -e "\n###########################   generating regions, intervals, known/knownSites        ###############"
+   echo -e "\n####################################################################################################"
+   echo -e "\n####################################################################################################"
+   echo -e "\n ###### region is the array with snps per chr which will be used by vcallgatk-unifiedGenotyper/haplotypeCaller"
+   echo -e "\n ###### realparms is the array with indels per chr which will be used for  gatk-IndelRealigner"
+   echo -e "\n ###### recalparms is the array with indels per chr which will be used for  gatk-Recalibration"
 
    echo `date`
    i=1
@@ -292,12 +292,14 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    done
    echo `date`
 
-
+   echo -e "\n####################################################################################################"
+   echo -e "\n####################### done  generating regions, intervals, known/knownSites        ###############"
+   echo -e "\n####################################################################################################"
 
 
                 ####################################################################################################
                 #####################################                       ########################################
-echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ######################################## \n\n\n"
+echo -e "\n\n\n #####################################  CREATE OUTPUT  DIRECTORIES  ################################# \n\n\n"
                 #####################################                       ########################################
                 ####################################################################################################
 
@@ -364,7 +366,7 @@ echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ####
 
                 #############################################################################################################
                 ###################################                                ##########################################
-echo -e "\n\n\n ###################################       main loops start here    ###################################### 
+echo -e "\n\n\n ###################################       main loops starts here   ###################################### 
                 ########################   outer loops by sample; inner loops by chromosome/region   #################### \n\n\n"
                 ########################                                                      ###############################
                 #############################################################################################################
@@ -451,7 +453,7 @@ echo -e "\n\n\n ###################################       main loops start here 
 	      for chr in $indices
 	      do
 		  echo -e "\n #########################################################################################################\n"
-		  echo -e "\n ######                   generating real-recal calls for chr=${chr}                                ######\n"
+		  echo -e "\n ######    generating split_bam_by_chromosome, real-recal, vcallgatk  calls for chr=${chr}          ######\n"
 		  echo -e "\n #########################################################################################################\n"      
 		  echo `date`
               
@@ -465,6 +467,7 @@ echo -e "\n\n\n ###################################       main loops start here 
            
                       if [ $skipvcall == "NO" ]
                       then
+			  echo -e "\n#######################   assemble the vcallgatk call sub-block for INDEPENDENT SAMPLES    ################################\n"
 			  echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
                       fi
 		  else
@@ -482,11 +485,14 @@ echo -e "\n\n\n ###################################       main loops start here 
    # which is exactly the number of nodes required for anisimov launcher 
 
 
+      echo -e "\n####################################################################################################"
+      echo -e "\n##########                      main loop ends here                                      ###########"
+      echo -e "\n####################################################################################################"
 
 
                 #############################################################################################################
                 ###################################                             #############################################
-echo -e "\n\n\n ###################################   now schedule these jobs   ###################################### \n\n\n"
+      echo -e "\n\n\n ###################################   now schedule these jobs   ###################################### \n\n\n"
                 ###################################                             #############################################
                 #############################################################################################################
 
@@ -636,7 +642,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          fi
          
 
-	 echo -e "\n\n ###### loop2 by sample to create ONE job per sample-chr  ###### \n\n"         
+	 echo -e "\n\n ###### loop2 by sample to populate the list by writing ONE line for each job call to a sample-chr pair ###### \n\n"         
          while read SampleLine
          do
               if [ `expr ${#SampleLine}` -gt 1 ]
@@ -674,8 +680,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          done <  $TheInputFile
          # end loop over samples
 
-	 echo -e "\n\n ###### outside loop2, list should be populated now  ###### \n\n"         
-         echo -e "\ns ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n"
+	 echo -e "\n\n ######                         outside loop2, list should be populated now                                ###### \n\n"         
+         echo -e "\n\n ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n"
 
          qsub_split_bam_by_chromosome_anisimov=$RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher
          qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
@@ -765,10 +771,10 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
       ###############
       ############### 
-      echo -e "\n ###### Outside loop1. ######"
-      echo -e "\n ###### Now. Going through chromosomes again to schedule them in the right order"
-      echo -e "\n ###### all split before all realrecal, and all realrecal before vcallgatk"
-      echo -e "\n ###### in order to efficiently work with a 25 job limit on queued state\n"
+      echo -e "\n ######                        Outside loop1.                                      ######"
+      echo -e "\n ###### Now. Going through chromosomes again to schedule them in the right order   ######"
+      echo -e "\n ###### all split before all realrecal, and all realrecal before vcallgatk         ######"
+      echo -e "\n ###### in order to efficiently work with a 25 job limit on queued state           ######"
 
       # reset the list of SPLITBYCHROMOSOME pbs ids
       truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
