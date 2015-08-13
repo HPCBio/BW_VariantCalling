@@ -178,17 +178,17 @@ echo -e "\n\n" >&2; set -x;
            MSG="Invalid value for FASTQCFLAG=$fastqcflag"
            echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
            exit 1;
-        else
-            if [ $fastqcflag == "1" ]
-            then
-                $fastqcflag="YES"
-            fi
-            if [ $fastqcflag == "0" ]
-            then
-                $fastqcflag="NO"
-            fi
+        fi
+        if [ $fastqcflag == "1" ]
+        then
+            $fastqcflag="YES"
+        fi
+        if [ $fastqcflag == "0" ]
+        then
+            $fastqcflag="NO"
         fi
         if [ $fastqcflag == "YES" ]
+	then
             # create necessary directories
             FastqcOutputFolder=$outputdir/fastqc
             if [ ! -d $FastqcOutputFolder ]
@@ -475,6 +475,17 @@ echo -e "\n\n" >&2; set -x;
 		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 	    fi
 
+            set +x; echo -e "\n\n checking that it actually worked: we must have RG line and file names of the reads... \n" >&2; set -x;
+
+            if [ `expr ${#sID}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ] 
+	    then
+		MSG="ID=$sID PL=$sPL CN=$sCN invalid values. The RG line cannot be formed"
+                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+		exit 1;
+	    fi
+
+
+	    RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
 	    if [ ! -s $LeftReadsFastq ]
 	    then
@@ -495,14 +506,6 @@ echo -e "\n\n" >&2; set -x;
 		fi
 	    fi
 
-            if [ `expr ${#sID}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ] 
-	    then
-		MSG="ID=$sID PL=$sPL CN=$sCN invalid values. The RG line cannot be formed"
-                echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-		exit 1;
-	    fi
-
-	    RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
 
             set +x; echo -e "\n\n ###################################   END PREP WORK  ###################################### " >&2
@@ -751,18 +754,7 @@ echo -e "\n\n" >&2; set -x;
                 if [ $aligner == "NOVOALIGN"  ]
 		then
                     set +x; echo -e "\n###############   novoalign is used as aligner. input file in fastq format ################\n" >&2; set -x
-                    #qsub_novosplit=$AlignOutputLogs/qsub_novosplit.novoaln.$SampleName.node$i
-                    #echo "#PBS -V" > $qsub_novosplit
-                    #echo "#PBS -A $pbsprj" >> $qsub_novosplit
-                    #echo "#PBS -N ${pipeid}_novoaln_${SampleName}_$i" >> $qsub_novosplit
-		    #echo "#PBS -l walltime=$pbscpu" >> $qsub_novosplit
-		    #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_novosplit
-		    #echo $ccmgres_string >> $qsub_novosplit
-		    #echo "#PBS -o $AlignOutputLogs/log.novoaln.$SampleName.node$i.ou" >> $qsub_novosplit
-		    #echo "#PBS -e $AlignOutputLogs/log.novoaln.$SampleName.node$i.in" >> $qsub_novosplit
-                    #echo "#PBS -q $pbsqueue" >> $qsub_novosplit
-                    #echo "#PBS -m ae" >> $qsub_novosplit
-                    #echo "#PBS -M $email" >> $qsub_novosplit
+
                     if [ $paired -eq 1 ]
                     then
 			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir/$SampleName $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $scriptdir $runfile $paired $AlignOutputDir/$SampleName/$Rone $AlignOutputDir/$SampleName/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/${SampleName}/logs/novosplit.${SampleName}.node$OutputFileSuffix
@@ -918,13 +910,13 @@ echo -e "\n\n" >&2; set -x;
 
 
 
-set +x; echo -e "\n\n\n" >&2
-echo"##########################################################################################################################################" >&2
-echo"###########################                                                                            ###################################" >&2
-echo"###########################   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES          ###################################"
-echo"###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ###################################" >&2
-echo"###########################                                                                            ###################################" >&2
-echo"##########################################################################################################################################" >&2
+set +x; echo -e "\n\n\n" >&2;
+echo -e "##########################################################################################################################################" >&2
+echo -e "###########################                                                                            ###################################" >&2
+echo -e "###########################   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES          ###################################" >&2
+echo -e "###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ###################################" >&2
+echo -e "###########################                                                                            ###################################" >&2
+echo -e "##########################################################################################################################################" >&2
 echo -e "\n\n\n" >&2; set -x
 
             cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
@@ -938,18 +930,7 @@ echo -e "\n\n\n" >&2; set -x
                if [ $sortool == "NOVOSORT" ]
                then
                    set +x; echo -e "\n # merging aligned chunks with novosort \n" >&2; set -x
-		   #qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.novosort.$SampleName
-		   #echo "#PBS -V" > $qsub_sortmerge
-		   #echo "#PBS -A $pbsprj" >> $qsub_sortmerge
-		   #echo "#PBS -N ${pipeid}_sortmerge_novosort_$SampleName" >> $qsub_sortmerge
-		   #echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
-		   #echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortmerge
-		   #echo "#PBS -o $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou" >> $qsub_sortmerge
-		   #echo "#PBS -e $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in" >> $qsub_sortmerge
-		   #echo "#PBS -q $pbsqueue" >> $qsub_sortmerge
-		   #echo "#PBS -m ae" >> $qsub_sortmerge
-		   #echo "#PBS -M $email" >> $qsub_sortmerge
-		   #echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
+
 		   echo "$scriptdir/mergenovo.sh $AlignOutputDir/$SampleName $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge_novosort.$SampleName.in $AlignOutputLogs/log.sortmerge_novosort.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.novosort.$SampleName" >> $AlignOutputDir/${SampleName}/logs/mergenovo.${SampleName}
 		   #`chmod a+r $qsub_sortmerge`
 		   #mergejob=`qsub $qsub_sortmerge`

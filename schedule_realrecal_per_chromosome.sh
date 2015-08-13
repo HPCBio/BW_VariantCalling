@@ -365,19 +365,15 @@ echo -e "\n\n\n #####################################  CREATE  DIRECTORIES  ####
                 #############################################################################################################
                 ###################################                                ##########################################
 echo -e "\n\n\n ###################################       main loops start here    ###################################### 
-                ########################   outer loops by chromosome; inner loops by sample   ######################## \n\n\n"
+                ########################   outer loops by sample; inner loops by chromosome/region   #################### \n\n\n"
                 ########################                                                      ###############################
                 #############################################################################################################
 
 
 
-   chromosomecounter=1
-   for chr in $indices
-   do
-      echo -e "\n #########################################################################################################\n"
-      echo -e "\n ######                   generating real-recal calls for chr=${chr}                                ######\n"
-      echo -e "\n #########################################################################################################\n"      
-      echo `date`
+      echo -e "\n####################################################################################################"
+      echo -e "\n##########                      loop by sample starts here                              ###########"
+      echo -e "\n####################################################################################################"
 
       samplecounter=1 
       while read SampleLine
@@ -385,12 +381,15 @@ echo -e "\n\n\n ###################################       main loops start here 
           if [ `expr ${#SampleLine}` -gt 1 ]
           then
               ## processing non-empty line
+	      echo `date`
+	      echo -e " ######     processing this line: $SampleLine #####\n"
+
               if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
               then
-                   echo -e "this line has five fields, we just need the first field to create folders"
+                   echo -e "\n ###### this line has five fields, we just need the first field to create folders"
 	           sample=$( echo "$SampleLine" | cut -f 1 )
 	      else
-                   echo -e "this line has one field, we will use filename as samplename"
+                   echo -e "\n ###### this line has one field, we will use filename as samplename"
 	           sample=$( echo "$SampleLine" )
 	      fi
 
@@ -443,29 +442,41 @@ echo -e "\n\n\n ###################################       main loops start here 
               
               RealignOutputDir=$outputdir/${sample}/realign
               VcallOutputDir=$outputdir/${sample}/variant
-              
-              echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
-              echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir $aligned_bam ${sample}.$chr.bam ${sample}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/logs/log.split.$sample.$chr.in $RealignOutputDir/logs/log.split.$sample.$chr.ou $email $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} $RealignOutputLogs" > $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}
 
-              if [ $multisample == "NO" ]
-              then         
-                 echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
-                 echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr -I:$RealignOutputDir/${sample}.$chr.sorted.bam ${region[$chromosomecounter]} $realparms $recalparms $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
+              echo -e "\n####################################################################################################"
+              echo -e "\n##########                   loop by chromosome starts here                              ###########"
+	      echo -e "\n####################################################################################################"
+
+	      chromosomecounter=1
+	      for chr in $indices
+	      do
+		  echo -e "\n #########################################################################################################\n"
+		  echo -e "\n ######                   generating real-recal calls for chr=${chr}                                ######\n"
+		  echo -e "\n #########################################################################################################\n"      
+		  echo `date`
+              
+		  echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
+		  echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir $aligned_bam ${sample}.$chr.bam ${sample}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/logs/log.split.$sample.$chr.in $RealignOutputDir/logs/log.split.$sample.$chr.ou $email $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} $RealignOutputLogs" > $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}
+
+		  if [ $multisample == "NO" ]
+		  then         
+                      echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
+                      echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr -I:$RealignOutputDir/${sample}.$chr.sorted.bam ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
            
-                 if [ $skipvcall == "NO" ]
-                 then
-                   echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
-                 fi
-              else
-                 echo -e "## we are not considering this case in this script. Try again with ANALYSIS=MULTIPLEXED"
-              fi
+                      if [ $skipvcall == "NO" ]
+                      then
+			  echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+                      fi
+		  else
+                      echo -e "## we are not considering this case in this script. Try again with ANALYSIS=MULTIPLEXED"
+		  fi
+		  ((  chromosomecounter++ )) 
+	      done # done going through chromosomes 
               (( samplecounter++ ))
           fi # done processing non-empty lines
       done <  $TheInputFile
       # end loop over samples
-      echo `date`
-      ((  chromosomecounter++ )) 
-   done # done going through chromosomes 
+
    # at the end of this set of nested loops, the variables chromosomecounter and samplecounter
    # reflect, respectively, number_of_chromosomes+1 and number_of_samples+1,
    # which is exactly the number of nodes required for anisimov launcher 
@@ -482,12 +493,14 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
    case $run_method in
    "APRUN")
-      echo -e "\n\nscheduling qsubs\n\n"
+      echo -e "\n\n ###### run_method=$run_method. generating and scheduling qsubs... ###### \n\n"
+
       truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
       truncate -s 0 $VcallOutputLogs/VCALGATKpbs
 
-      while read SampleName
+      echo -e "\n\n ###### loop1 by sample  ###### \n\n"
+      while read SampleLine
       do
 
           if [ `expr ${#SampleLine}` -gt 1 ]
@@ -503,7 +516,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 	      fi
               RealignOutputDir=$outputdir/$sample/realign
               VcallOutputDir=$outputdir/${sample}/variant 
-              
+
+	      echo -e "\n\n ###### loop2 by chromosome  ###### \n\n"              
               for chr in $indices
               do
 
@@ -582,6 +596,11 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
       # will add later
    ;;
    "LAUNCHER")
+
+      echo -e "\n\n ###### run_method=$run_method. populate list of jobs first  and launching them later via launcher... ###### \n\n"
+
+      echo -e "\n\n ###### loop1 by chromosome to create  ONE list of jobs per chromosome  ###### \n\n"
+
       for chr in $indices
       do
          # clear out the joblists
@@ -593,8 +612,8 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          fi
          
 
-         
-         while read SampleName
+	 echo -e "\n\n ###### loop2 by sample to create ONE job per sample-chr  ###### \n\n"         
+         while read SampleLine
          do
               if [ `expr ${#SampleLine}` -gt 1 ]
               then
@@ -631,7 +650,9 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
          done <  $TheInputFile
          # end loop over samples
 
-         echo -e "\nscheduling Anisimov Launcher joblists\n"
+	 echo -e "\n\n ###### outside loop2, list should be populated now  ###### \n\n"         
+         echo -e "\ns ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n"
+
          qsub_split_bam_by_chromosome_anisimov=$RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher
          qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
          if [ $skipvcall == "NO" ]
@@ -720,7 +741,11 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
 
       ###############
       ############### 
-      echo -e "\n going through chromosomes again to schedule all split before all realrecal, and all realrecal before vcallgatk, in order to efficiently work with a 25 job limit on queued state\n"
+      echo -e "\n ###### Outside loop1. ######"
+      echo -e "\n ###### Now. Going through chromosomes again to schedule them in the right order"
+      echo -e "\n ###### all split before all realrecal, and all realrecal before vcallgatk"
+      echo -e "\n ###### in order to efficiently work with a 25 job limit on queued state\n"
+
       # reset the list of SPLITBYCHROMOSOME pbs ids
       truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
@@ -768,7 +793,7 @@ echo -e "\n\n\n ###################################   now schedule these jobs   
    esac
 
 
-   echo "wrap up and produce summary table"
+   echo -e "\n\n\n ####################   wrap up and produce summary table #########################\n\n\n"
 
    if [ $skipvcall == "NO" ]
    then

@@ -177,7 +177,9 @@ else
 
         #############################
 	set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline" >&2;
-        echo -e "IF input is NOT multiplexed, then ONE file will be created, otherwise THREE files will be created\n\n" >&2; set -x;
+        echo -e "CASE1: analysis is multiplexed. Info sheet is parsed and three files are generated" >&2
+	echo -e "CASE2: analysis is NOT multiplexed. Info sheet exists. We parse it and generate three files" >&2
+	echo -2 "CASE3: analysis is NOT multiplexed AND info sheet does not exists. ONE file will be created\n\n" >&2; set -x;
  
 	if [ $analysis == "MULTIPLEXED" ]
 	then
@@ -214,7 +216,7 @@ else
             echo -e "\n ######               ANALYSIS = $analysis, IS NOT = MULTIPLEXED                                ########" >&2;
             echo -e " ###### we still have two cases to consider: with infoSheet or without infoSheet.               ########" >&2; set -x;
 
-            if [-e $sampleinfo ] && [ -s $sampleinfo ]
+            if [ -s $sampleinfo ]
 	    then
 		echo +x; echo -e "\n ###### CASE2: ANALYSIS IS NOT MULTIPLEXED and an info sheet is specified" >&2;
 		echo -e "###### Parse info sheet in $sampleinfo  and produce three files as we did in the multiplexed case" >&2;
