@@ -345,7 +345,7 @@ fi
    do
        cd $refdir/vcf_per_chr
        snps=`find $PWD -type f -name "${chr}.*.vcf.gz"`
-       region[$i]=$( echo $snps | tr "\n" " " | sed "s/ //g" )
+       region[$i]=$( echo $snps | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
 
        cd $refdir/$indeldir
        indels=`find $PWD -type f -name "${chr}.*.vcf"`
@@ -482,7 +482,7 @@ do
 	    echo "generating real-recal calls for lane=$lane chr=${chr} ..."
 	    echo "####################################################################################################"
 
-            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
+            echo "$scriptdir/realrecalLane.sh $lane $RealignOutputDir ${chr}.realrecal.${lane}.output.bam $chr $inputfile $RGparms ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $RealignLog/log.realrecalLane.$lane.$chr.in $RealignLog/log.realrecalLane.$lane.$chr.ou $email $RealignLog/realrecalLane.${lane}.${chr}" > $RealignLog/realrecalLane.${lane}.${chr}
            
 
          # end loop over chromosomes

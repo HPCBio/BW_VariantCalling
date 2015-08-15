@@ -4,7 +4,7 @@
 ########################################################
 redmine=hpcbio-redmine@igb.illinois.edu
 set -x
-if [ $# != 13 ];
+if [ $# != 14 ];
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
@@ -19,13 +19,14 @@ fi
         chr=$4
         inputfile=$5
         RGparms=$6
-        realparms=$7
-        recalparms=$8
-        runfile=$9
-	elog=${10}
-	olog=${11}
-	email=${12}
-        qsubfile=${13}
+        region=$7
+        realparms=$8
+        recalparms=$9
+        runfile=${10}
+	elog=${11}
+	olog=${12}
+	email=${13}
+        qsubfile=${14}
 	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
         RealignOutputLogs=`dirname $elog`
@@ -62,6 +63,7 @@ fi
         real2parms=$( echo $realparms | tr ":" " " | sed "s/known /-known /g" )
         realparms=$( echo $realparms | tr ":" " " | sed "s/known /--known /g" )
         recalparms=$( echo $recalparms | tr ":" " " | sed "s/knownSites /--knownSites /g")
+        region=$( echo $region | tr ":" " " | sed "s/knownSites /--knownSites /g")
 
         if [ ! -d $picardir ]
         then
@@ -231,6 +233,7 @@ fi
             $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
                 $recalparms \
+		$region \
                 -I realign.$chr.$lane.realigned.bam \
                 -T BaseRecalibrator \
                 --out recal.$chr.$lane.recal_report.grp \
@@ -291,6 +294,7 @@ fi
    	    $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		$recalparms \
+		$region \
 		-I realign.$chr.$lane.realigned.bam \
 		-T CountCovariates \
 		-cov ReadGroupCovariate \
