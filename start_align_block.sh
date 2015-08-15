@@ -133,16 +133,16 @@ echo -e "\n\n###################################################################
         set +x; echo -e "\n\n#####################    resetting output directories, logs, files     #############################\n\n" >&2; set -x; 
 
 
-        AlignmentOutputFolder=$outputdir/align
+        #AlignmentOutputFolder=$outputdir/align
         TopLogsFolder=$outputdir/logs
         
-        if [ -d $AlignmentOutputFolder ]
-        then
-           echo "$AlignmentOutputFolder is there; resetting it"
-           `rm -r $AlignmentOutputFolder/*`
-        else
-           mkdir -p $AlignmentOutputFolder
-        fi
+        #if [ -d $AlignmentOutputFolder ]
+        #then
+        #   echo "$AlignmentOutputFolder is there; resetting it"
+        #   `rm -r $AlignmentOutputFolder/*`
+        #else
+        #   mkdir -p $AlignmentOutputFolder
+        #fi
 
         pipeid=$( cat $TopLogsFolder/pbs.CONFIGURE )
         pbsids=""

@@ -282,7 +282,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    do
        cd $refdir/vcf_per_chr
        snps=`find $PWD -type f -name "${chr}.*.vcf.gz"`
-       region[$i]=$( echo $snps | tr "\n" " " | sed "s/ //g" )
+       region[$i]=$( echo $snps | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
 
        cd $refdir/$indeldir
        indels=`find $PWD -type f -name "${chr}.*.vcf"`
@@ -329,33 +329,27 @@ echo -e "\n\n\n #####################################  CREATE OUTPUT  DIRECTORIE
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
 
-	  alignedfile=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam"`
-	  alignedfilehdr=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam.header"`
-	  alignedfilebai=`find $outputdir/align/$sample/ -name "*.wdups.sorted.bam.bai"`
+	  alignedfile=`find $outputdir/$sample/align -name "*.wdups.sorted.bam"`
+	  alignedfilehdr=`find $outputdir/$sample/align -name "*.wdups.sorted.bam.header"`
+	  alignedfilebai=`find $outputdir/$sample/align -name "*.wdups.sorted.bam.bai"`
 
 	  if [ -s $alignedfile -a -s $alignedfilehdr -a -s $alignedfilebai ]
 	  then
-              echo -e "alignment files for this sample $sample were found"
+              echo -e "alignment files for this sample $sample were found at $outputdir/${sample}/align"
           else
-              MSG="No aligned bam file(s) found at $outputdir/align/${sample}"
+              MSG="No aligned bam file(s) found at $outputdir/${sample}/align"
               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
               exit 1;              
 	  fi
 
           echo -e "################################################################################"
           echo -e "########## now we can create the folders for the rest of the analysis  #########"
-	  if [ ! -d $outputdir/${sample} ]
+	  if [ -d $outputdir/${sample} ]
 	  then
               echo -e "creating output folders for sample=$sample"
 
               mkdir -p $outputdir/${sample}/realign/logs
               mkdir -p $outputdir/${sample}/variant/logs
-              mkdir -p $outputdir/${sample}/logs
-              ln -s    $outputdir/align/$sample $outputdir/${sample}/align
-	  else
-              MSG="results for sample=$sample already exists. Error, sample name has to be unique"
-	      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline' "$email""
-              exit 1;
           fi
       fi  # end processing non-empty lines
    done  <  $TheInputFile
@@ -453,26 +447,19 @@ echo -e "\n\n\n ###################################       main loops starts here
 	      for chr in $indices
 	      do
 		  echo -e "\n #########################################################################################################\n"
-		  echo -e "\n ######    generating split_bam_by_chromosome, real-recal, vcallgatk  calls for chr=${chr}          ######\n"
+		  echo -e "\n ######    generating real-recal, vcallgatk  calls for chr=${chr}                                   ######\n"
 		  echo -e "\n #########################################################################################################\n"      
 		  echo `date`
-              
-		  echo -e "\n######################################  assemble the split_bam_by_chromosome sub-block #####################################\n"
-		  echo "$scriptdir/split_bam_by_chromosome.sh $runfile $picardir $samdir $javamodule $RealignOutputDir $aligned_bam ${sample}.$chr.bam ${sample}.$chr.sorted.bam $RGparms $flag $chr $RealignOutputDir/logs/log.split.$sample.$chr.in $RealignOutputDir/logs/log.split.$sample.$chr.ou $email $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} $RealignOutputLogs" > $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}
 
-		  if [ $multisample == "NO" ]
-		  then         
-                      echo -e "\n#######################   assemble the real-recall/var call sub-block for INDEPENDENT SAMPLES    ################################\n"
-                      echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr -I:$RealignOutputDir/${sample}.$chr.sorted.bam ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
+                  echo -e "\n#######################   assemble the real-recall/var call sub-block                   ################################\n"
+                  echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr $aligned_bam $RGparms ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
            
-                      if [ $skipvcall == "NO" ]
-                      then
-			  echo -e "\n#######################   assemble the vcallgatk call sub-block for INDEPENDENT SAMPLES    ################################\n"
-			  echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
-                      fi
-		  else
-                      echo -e "## we are not considering this case in this script. Try again with ANALYSIS=MULTIPLEXED"
-		  fi
+                  if [ $skipvcall == "NO" ]
+                  then
+		      echo -e "\n#######################   assemble the vcallgatk call sub-block                     ################################\n"
+		      echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+                  fi
+
 		  ((  chromosomecounter++ )) 
 	      done # done going through chromosomes 
               (( samplecounter++ ))
@@ -496,29 +483,22 @@ echo -e "\n\n\n ###################################       main loops starts here
                 ###################################                             #############################################
                 #############################################################################################################
 
-   set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-   echo -e "# @begin SplitBAM_ByChromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "   # @in input_to_realrecal @as fastq_aligned_sorted_markdup" >> $outputdir/WorkflowAutodocumentationScript.sh
-   BamByChrTemplate="{SampleName}/realign/{SampleName}.{chromosome}.sorted.bam"
-   NumberOfChromosomes=(( chromosomecounter-- )); # needed because chromosome counter is incremented at the very end of each iteration of the loop above
-   echo -e "   # @out sample_chr @as aligned_bam_per_chromosome @URI ${BamByChrTemplate}=${NumberOfChromosomes}_chromosomes_per_sample" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "# @end SplitBAM_ByChromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+   #echo -e "# @begin RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "   # @in sample_chr @as aligned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #RealignedBAMTemplate="{SampleName}/realign/{chromosome}.realrecal.${SampleName}.output.bam"
+   #echo -e "   # @out realrecal  @as  realigned_bam_per_chromosome @URI ${RealignedBAMTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "# @end RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
 
-   echo -e "# @begin RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "   # @in sample_chr @as aligned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   RealignedBAMTemplate="{SampleName}/realign/{chromosome}.realrecal.${SampleName}.output.bam"
-   echo -e "   # @out realrecal  @as  realigned_bam_per_chromosome @URI ${RealignedBAMTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "# @end RealignRecalibrate_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "# @begin VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "   # @in  realrecal  @as  realigned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #VariantTemplate=${RealignedBAMTemplate}.raw.all.vcf
+   #echo -e "   # @out vcf @as output_variants @URI ${VariantTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "# @end VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
 
-   echo -e "# @begin VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "   # @in  realrecal  @as  realigned_bam_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-   VariantTemplate=${RealignedBAMTemplate}.raw.all.vcf
-   echo -e "   # @out vcf @as output_variants @URI ${VariantTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
-   echo -e "# @end VariantCalling_per_chromosome" >> $outputdir/WorkflowAutodocumentationScript.sh
-
-   echo -e "# @out vcf @as output_variants @URI sample_name/variant/chr_name.vcf" >> $outputdir/WorkflowAutodocumentationScript.sh
-   WorkflowName=`basename $outputdir`
-   echo -e "# @end $WorkflowName" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #echo -e "# @out vcf @as output_variants @URI sample_name/variant/chr_name.vcf" >> $outputdir/WorkflowAutodocumentationScript.sh
+   #WorkflowName=`basename $outputdir`
+   #echo -e "# @end $WorkflowName" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
    case $run_method in
@@ -551,27 +531,7 @@ echo -e "\n\n\n ###################################       main loops starts here
               for chr in $indices
               do
 
-                 qsub_split=$RealignOutputDir/logs/qsub.split_bam_by_chromosome.${sample}.${chr}
                  qsub_realrecal=$RealignOutputDir/logs/qsub.realrecal.${sample}.${chr}
-
-
-                 ###############################
-                 echo -e "\n################# constructing qsub for split\n"
-                 # appending the generic header to the qsub
-                 cat $outputdir/qsubGenericHeader > $qsub_split
-                 echo "#PBS -N ${pipeid}_split_bam.${sample}.${chr}" >> $qsub_split
-                 echo "#PBS -l walltime=$pbscpu" >> $qsub_split
-                 echo "#PBS -o $RealignOutputDir/logs/log.split_bam_by_chromosome.${sample}.${chr}.ou" >> $qsub_split
-                 echo "#PBS -e $RealignOutputDir/logs/log.split_bam_by_chromosome.${sample}.${chr}.in" >> $qsub_split
-                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_split
-
-                 echo "aprun -n 1 -N 1 -d $thr /bin/bash $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr}" >> $qsub_split
-
-                 split_job=`qsub $qsub_split`
-                 `qhold -h u $split_job`
-                 echo $split_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
-
-
 
                  ###############################
                  echo -e "\n################# constructing qsub for realrecal\n"
@@ -634,7 +594,7 @@ echo -e "\n\n\n ###################################       main loops starts here
       for chr in $indices
       do
          # clear out the joblists
-         truncate -s 0 $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
+
          truncate -s 0 $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
          if [ $skipvcall == "NO" ]
          then
@@ -662,9 +622,6 @@ echo -e "\n\n\n ###################################       main loops starts here
          
                 # creating a qsub out of the job file
                 # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
-                split_bam_by_chromosome_log=${RealignOutputDir}/logs/log.split.${sample}.$chr.in
-                awk -v awkvar_split_bam_by_chromosomelog=$split_bam_by_chromosome_log '{print "nohup "$0" > "awkvar_split_bam_by_chromosomelog}' $RealignOutputDir/logs/split_bam_by_chromosome.${sample}.${chr} > $RealignOutputDir/logs/jobfile.split_bam_by_chromosome.${sample}.${chr}
-                echo "$RealignOutputDir/logs/ jobfile.split_bam_by_chromosome.${sample}.${chr}" >> $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist
 
                 realrecal_log=$RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
                 awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/logs/realrecal.${sample}.${chr} > $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
@@ -683,8 +640,11 @@ echo -e "\n\n\n ###################################       main loops starts here
 	 echo -e "\n\n ######                         outside loop2, list should be populated now                                ###### \n\n"         
          echo -e "\n\n ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n"
 
-         qsub_split_bam_by_chromosome_anisimov=$RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher
          qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
+         # appending the generic header to the qsub
+
+         cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
+
          if [ $skipvcall == "NO" ]
          then
             qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
@@ -692,39 +652,6 @@ echo -e "\n\n\n ###################################       main loops starts here
 
          fi
 
-         # appending the generic header to the qsub
-         cat $outputdir/qsubGenericHeader > $qsub_split_bam_by_chromosome_anisimov
-         cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
-
-
-
-         ###############
-         ############### constructing the qsub for split_bam_by_chromosome
-         echo "#PBS -N ${pipeid}_split_bam_by_chromosome_${chr}" >> $qsub_split_bam_by_chromosome_anisimov
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_split_bam_by_chromosome_anisimov
-         echo "#PBS -o $RealignOutputLogs/log.split_bam_by_chromosome.${chr}.ou" >> $qsub_split_bam_by_chromosome_anisimov
-         echo -e "#PBS -e $RealignOutputLogs/log.split_bam_by_chromosome.${chr}.in\n" >> $qsub_split_bam_by_chromosome_anisimov
-
-         # split_bam_by_chromosome only contains single-threaded commands
-         # -n should be equal to the number of Anisimov jobs + 1
-         # -d 2 is there to space the jobs every other integer core: bunches of fp operations are being performed
-         NumberOfProcesses=$(( samplecounter )) # already more than actual number of samples by 1
-         NumberOfProcPerNode=16
-         if [ $NumberOfProcesses -lt 17 ]
-         then
-            NumberOfNodes=1
-            NumberOfProcPerNode=$(( samplecounter ))
-         else
-            NumberOfNodes=$(( NumberOfProcesses/NumberOfProcPerNode ))
-            if [ `expr $NumberOfProcesses % $NumberOfProcPerNode` -gt 0 ]
-            then
-               (( NumberOfNodes++ )) # there is a remainder in that division, and we give those remaining jobs an extra node
-            fi
-         fi
-         echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_split_bam_by_chromosome_anisimov
-         echo "aprun -n $NumberOfProcesses -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/split_bam_by_chromosome.${chr}.AnisimovLauncher.log" >> $qsub_split_bam_by_chromosome_anisimov
-         # send an email about failures if any; must check for failures first         
-         # echo "cat $RealignOutputLogs/FAILEDmessages | mail -s '[Task #3820]' "$redmine,$email"" >> $qsub_split_bam_by_chromosome_anisimov
 
 
 
@@ -776,23 +703,15 @@ echo -e "\n\n\n ###################################       main loops starts here
       echo -e "\n ###### all split before all realrecal, and all realrecal before vcallgatk         ######"
       echo -e "\n ###### in order to efficiently work with a 25 job limit on queued state           ######"
 
-      # reset the list of SPLITBYCHROMOSOME pbs ids
-      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+      # reset the lists
+      
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
       if [ $skipvcall == "NO" ]
       then
          truncate -s 0 $VcallOutputLogs/VCALGATKpbs
       fi
       cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
-      # first split_bam_by_chromosome
-      for chr in $indices
-      do
-         split_bam_by_chromosome_job=`qsub $RealignOutputLogs/qsub.split_bam_by_chromosome.${chr}.AnisimovLauncher`
-         `qhold -h u $split_bam_by_chromosome_job` #I am not going to allow these to run right away,
-         echo $split_bam_by_chromosome_job >> $RealignOutputLogs/SPLITBYCHROMOSOMEpbs # will read these in to release them later
-         # add dependency on split_bam_by_chromosome job to realrecal job
-         sed -i "2i #PBS -W depend=afterok:$split_bam_by_chromosome_job" $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
-      done
+
       # now realrecal
       for chr in $indices
       do
@@ -816,9 +735,7 @@ echo -e "\n\n\n ###################################       main loops starts here
          done 
       fi
 
-      # now release the split_bam_by_chromosome jobs
-      split_bam_by_chromosome_ids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
-      #qrls -h u $split_bam_by_chromosome_ids
+
    ;;
    esac
 
@@ -901,8 +818,7 @@ echo -e "\n\n\n ###################################       main loops starts here
 
 
    # release all jobs now
-   splitids=$( cat $RealignOutputLogs/SPLITBYCHROMOSOMEpbs | sed "s/\..*//" | tr "\n" " " )
-   `qrls -h u $splitids`
+
    realrecalids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" " " )
    `qrls -h u $realrecalids`
 

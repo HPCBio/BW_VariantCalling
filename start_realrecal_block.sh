@@ -154,14 +154,14 @@ echo "#####################################                       ##############
 echo "####################################################################################################"
 
 
-   RealignOutputDir=$outputdir/realign
-   if [ -d $RealignOutputDir ]
-   then
-      echo "$RealignOutputDir already exists; resetting it"
-      `rm -r $RealignOutputDir/*`
-   else
-      mkdir -p $RealignOutputDir
-   fi
+   #RealignOutputDir=$outputdir/realign
+   #if [ -d $RealignOutputDir ]
+   #then
+   #   echo "$RealignOutputDir already exists; resetting it"
+   #   `rm -r $RealignOutputDir/*`
+   #else
+   #   mkdir -p $RealignOutputDir
+   #fi
 
 
    TopOutputLogs=$outputdir/logs
