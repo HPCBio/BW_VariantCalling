@@ -3,7 +3,7 @@
 #  script to convert bam files back to fastq as pre requisite to alignment
 #
 ######################################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 8 ];
 then

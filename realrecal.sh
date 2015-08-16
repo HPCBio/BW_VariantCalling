@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 14 ];
 then
@@ -67,7 +67,8 @@ else
         real2parms=$( echo $realparms | tr ":" " " | sed "s/known /-known /g" )
         realparms=$( echo $realparms | tr ":" " " | sed "s/known /--known /g" )
         recalparms=$( echo $recalparms | tr ":" " " | sed "s/knownSites /--knownSites /g")
-
+        skipRealign="NO"
+        
         if [ ! -d $picardir ]
         then
 	    MSG="$picardir picard directory not found"
@@ -191,25 +192,30 @@ else
             -nt $thr \
 	    -o realign.$chr.$infile.list $realparms
 
-	exitcode=$?
-	echo `date`
-	if [ $exitcode -ne 0 ]
-	then
-	    MSG="realignertargetcreator command failed exitcode=$exitcode  realignment-recalibration stopped for $infile"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
-	    exit $exitcode;
-	fi
+	#exitcode=$?
+	#echo `date`
+	#if [ $exitcode -ne 0 ]
+	#then
+	#    MSG="realignertargetcreator command failed exitcode=$exitcode  realignment-recalibration stopped for $infile"
+        #    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
+	#    exit $exitcode;
+	#fi
 
 	
-	if [ ! -s realign.$chr.$infile.list ]
+	if [ -z realign.$chr.$infile.list ]
 	then
-	    MSG="realign.$chr.$infile.list realignertargetcreator file not created. realignment-recalibration stopped for $infile"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
-            exit 1;
+	    ## the target list is empty, we need to skip IndelAligner command
+	    skipRealign="YES"
+	    #MSG="realign.$chr.$infile.list realignertargetcreator file not created. realignment-recalibration stopped for $infile"
+            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
+            #exit 1;
 	fi
 	echo `date`
 
-	$javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
+        if [ $skipRealign != "YES" ]
+        then
+             ## the target list is NOT empty. Proceed with IndelRealigner
+	     $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I sorted_wrg.$chr.$infile \
 	    -T IndelRealigner \
@@ -217,15 +223,18 @@ else
 	    -o realign.$chr.$infile.realigned.bam \
 	    -targetIntervals realign.$chr.$infile.list $realignparams $real2parms
 
-	exitcode=$?
-	echo `date`
-	if [ $exitcode -ne 0 ]
-	then
-	    MSG="indelrealigner command failed exitcode=$exitcode  realignment-recalibration stopped"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
-	    exit $exitcode;
-	fi
-
+ 	    exitcode=$?
+	    echo `date`
+	    if [ $exitcode -ne 0 ]
+	    then
+	        MSG="indelrealigner command failed exitcode=$exitcode  realignment-recalibration stopped"
+                echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
+	        exit $exitcode;
+	    fi
+        else
+            ## the target  list is empty. We simply create a soft link to the original input file and proceed to recalibration
+            ln -s sorted_wrg.$chr.$infile realign.$chr.$infile.realigned.bam
+        fi
 
 	if [ ! -s realign.$chr.$infile.realigned.bam ]
 	then
@@ -294,11 +303,6 @@ else
                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
                 exit 1;
             fi
-
-            $samdir/samtools index recal.$chr.$infile.real.recal.bam
-            ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam $outputfile
-            ls -s $realrecaldir/recal.$chr.$infile.real.recal.bam.bai $outputfile.bai
-
         else
             echo "#################################################################################"
 	    echo "                           recalibrator =! BQSR"
@@ -357,11 +361,24 @@ else
 		exit 1;
 	    fi
 
-
-            $samdir/samtools index recal.$chr.$infile.real.recal.bam
-            ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam $outputfile
-            ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam.bai $outputfile.bai
         fi # end choosing between BQSR and CountCovariates/TableRecalibration
+
+        echo "#################################################################################"
+	echo "     done with recalibration. indexing recalibrated.bam to make variant callers happy "
+        echo "#################################################################################"
+
+        
+        ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam $outputfile
+
+        $samdir/samtools index $outputfile
+	exitcode=$?
+	echo `date`		
+	if [ $exitcode -ne 0 ]
+	then
+	    MSG="samtools index command failed with outputfile=$outputfile exitcode=$exitcode for $infile"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
+	    exit $exitcode;
+	fi
 
 	$samdir/samtools flagstat $outputfile > $outputfile.flagstat
 	exitcode=$?

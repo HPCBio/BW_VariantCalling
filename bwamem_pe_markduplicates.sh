@@ -1,5 +1,5 @@
 #!/bin/bash
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 14 ]
 then
         MSG="parameter mismatch"
@@ -236,6 +236,12 @@ then
         fi
 
         $samdir/samtools view -H ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.header
+
+        #######################################################################################################
+        #######################################################################################################
+        ## here we insert the code for performing QC with percent mapped reads ... as in mergeLanesPerSample.sh
+        #######################################################################################################
+        #######################################################################################################
         
         $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
              INPUT=${bamprefix}.sorted.bam \
