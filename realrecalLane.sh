@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate by lane in multiplexed samples 
 ########################################################
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 14 ];
 then

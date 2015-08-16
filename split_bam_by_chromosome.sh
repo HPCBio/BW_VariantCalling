@@ -1,5 +1,5 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# -gt 16 ]
 then
 	MSG="parameter mismatch."
