@@ -274,6 +274,7 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    echo -e "\n ###### region is the array with snps per chr which will be used by vcallgatk-unifiedGenotyper/haplotypeCaller"
    echo -e "\n ###### realparms is the array with indels per chr which will be used for  gatk-IndelRealigner"
    echo -e "\n ###### recalparms is the array with indels per chr which will be used for  gatk-Recalibration"
+   echo -e "\n####################################################################################################\n\n"
 
    echo `date`
    i=1
@@ -438,7 +439,9 @@ echo -e "\n\n\n ###################################       main loops starts here
               
               RealignOutputDir=$outputdir/${sample}/realign
               VcallOutputDir=$outputdir/${sample}/variant
-
+              RealignLog=$outputdir/${sample}/realign/logs
+              truncate -s 0 $RealignOutputLogs/verifySample.${sample}.AnisimovJoblist
+              
               echo -e "\n####################################################################################################"
               echo -e "\n##########                   loop by chromosome starts here                              ###########"
 	      echo -e "\n####################################################################################################"
@@ -450,18 +453,20 @@ echo -e "\n\n\n ###################################       main loops starts here
 		  echo -e "\n ######    generating real-recal, vcallgatk  calls for chr=${chr}                                   ######\n"
 		  echo -e "\n #########################################################################################################\n"      
 		  echo `date`
-
+                  realrecaloutputfile=${chr}.realrecal.${sample}.calmd.bam
                   echo -e "\n#######################   assemble the real-recall/var call sub-block                   ################################\n"
-                  echo "$scriptdir/realrecal.sh $RealignOutputDir $chr.realrecal.$sample.output.bam $chr $aligned_bam $RGparms ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
+                  echo "$scriptdir/realrecal.sh $RealignOutputDir $realrecaloutputfile $chr $aligned_bam $RGparms ${region[$chromosomecounter]} ${realparms[$chromosomecounter]} ${recalparms[$chromosomecounter]} $runfile $flag $RealignOutputDir/logs/log.realrecal.$sample.$chr.in $RealignOutputDir/logs/log.realrecal.$sample.$chr.ou $email $RealignOutputDir/logs/realrecal.${sample}.${chr}" > $RealignOutputDir/logs/realrecal.${sample}.${chr}
            
                   if [ $skipvcall == "NO" ]
                   then
 		      echo -e "\n#######################   assemble the vcallgatk call sub-block                     ################################\n"
-		      echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir ${chr}.realrecal.${sample}.output.bam $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
+		      echo "$scriptdir/vcallgatk.sh $VcallOutputDir  $RealignOutputDir $realrecaloutputfile $chr ${region[$chromosomecounter]} $runfile $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.ou $email $VcallOutputDir/logs/vcallgatk.${sample}.${chr}" >> $VcallOutputDir/logs/vcallgatk.${sample}.${chr}
                   fi
 
 		  ((  chromosomecounter++ )) 
 	      done # done going through chromosomes 
+	      
+	      
               (( samplecounter++ ))
           fi # done processing non-empty lines
       done <  $TheInputFile
@@ -505,7 +510,7 @@ echo -e "\n\n\n ###################################       main loops starts here
    "APRUN")
       echo -e "\n\n ###### run_method=$run_method. generating and scheduling qsubs... ###### \n\n"
 
-      truncate -s 0 $RealignOutputLogs/SPLITBYCHROMOSOMEpbs
+      truncate -s 0 $RealignOutputLogs/VERIFYXSAMPLEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
       truncate -s 0 $VcallOutputLogs/VCALGATKpbs
 
@@ -589,152 +594,165 @@ echo -e "\n\n\n ###################################       main loops starts here
 
       echo -e "\n\n ###### run_method=$run_method. populate list of jobs first  and launching them later via launcher... ###### \n\n"
 
-      echo -e "\n\n ###### loop1 by chromosome to create  ONE list of jobs per chromosome  ###### \n\n"
+      echo -e "\n\n ###### loop1 by sample to create  ONE list of jobs sample with all chromosomes inside it  ###### \n\n"
 
-      for chr in $indices
+      while read SampleLine
       do
-         # clear out the joblists
-
-         truncate -s 0 $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
-         if [ $skipvcall == "NO" ]
-         then
-            truncate -s 0 $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
-         fi
-         
-
-	 echo -e "\n\n ###### loop2 by sample to populate the list by writing ONE line for each job call to a sample-chr pair ###### \n\n"         
-         while read SampleLine
-         do
-              if [ `expr ${#SampleLine}` -gt 1 ]
-              then
-                 ## processing non-empty line
-                 if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
-                 then
+           if [ `expr ${#SampleLine}` -gt 1 ]
+           then
+               ## processing non-empty line
+               if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+               then
                      echo -e "this line has five fields, we just need the first field to create folders"
 	             sample=$( echo "$SampleLine" | cut -f 1 )
-	         else
+	       else
                      echo -e "this line has one field, we will use filename as samplename"
 	             sample=$( echo "$SampleLine" )
-	         fi
-                 RealignOutputDir=$outputdir/$sample/realign
-                 VcallOutputDir=$outputdir/${sample}/variant                   
+	       fi
+	         
+	       ## defining paths and reset joblists
+	         
+               RealignOutputDir=$outputdir/$sample/realign
+               VcallOutputDir=$outputdir/${sample}/variant  
+               truncate -s 0 $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist
+               if [ $skipvcall == "NO" ]
+               then
+                     truncate -s 0 $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
+               fi
+                          
+	       echo -e "\n\n ###### loop2 by chromosome to populate the joblist by writing ONE line for each job call to a sample-chr pair ###### \n\n"         
+                 
+               for chr in $indices
+               do
          
-         
-                # creating a qsub out of the job file
-                # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
+                     # creating a qsub out of the job file
+                     # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
 
-                realrecal_log=$RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
-                awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/logs/realrecal.${sample}.${chr} > $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
-                echo "$RealignOutputDir/logs/ jobfile.realrecal.${sample}.${chr}" >> $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist
+                     realrecal_log=$RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
+                     awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/logs/realrecal.${sample}.${chr} > $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
+                     echo "$RealignOutputDir/logs/ jobfile.realrecal.${sample}.${chr}" >> $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist
 
-                if [ $skipvcall == "NO" ]
-                then
-                     vcall_log=$VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in
-                     awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/logs/vcallgatk.${sample}.${chr} > $VcallOutputDir/logs/jobfile.vcallgatk.${sample}.${chr}
-                     echo "$VcallOutputDir/logs/ jobfile.vcallgatk.${sample}.${chr}" >> $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist
-                fi
-              fi # non-empty line in file
-         done <  $TheInputFile
-         # end loop over samples
-
-	 echo -e "\n\n ######                         outside loop2, list should be populated now                                ###### \n\n"         
-         echo -e "\n\n ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n"
-
-         qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher
-         # appending the generic header to the qsub
-
-         cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
-
-         if [ $skipvcall == "NO" ]
-         then
-            qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
-            cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
-
-         fi
+                     if [ $skipvcall == "NO" ]
+                     then
+                         vcall_log=$VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in
+                         awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/logs/vcallgatk.${sample}.${chr} > $VcallOutputDir/logs/jobfile.vcallgatk.${sample}.${chr}
+                         echo "$VcallOutputDir/logs/ jobfile.vcallgatk.${sample}.${chr}" >> $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
+                     fi
+               done # end loop2 by chromosome
 
 
+	       echo -e "\n\n ######                         outside loop2, joblist should be populated now                              ###### \n"         
+               echo -e "\n\n ###### putting together the other pieces of the qsub file and then scheduling Anisimov Launcher joblists   ###### \n\n\n"
+               # appending the generic header to the qsub
+               
+               qsub_realrecal_anisimov=$RealignOutputLogs/qsub.realrecal.${sample}.AnisimovLauncher
+               cat $outputdir/qsubGenericHeader > $qsub_realrecal_anisimov
 
+               if [ $skipvcall == "NO" ]
+               then
+                     qsub_vcallgatk_anisimov=$VcallOutputLogs/qsub.vcalgatk.${sample}.AnisimovLauncher
+                     cat $outputdir/qsubGenericHeader > $qsub_vcallgatk_anisimov
+               fi
 
-         ###############
-         ############### constructing the qsub for realrecal
-         echo "#PBS -N ${pipeid}_realrecal_${chr}" >> $qsub_realrecal_anisimov
-         echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal_anisimov
-         echo "#PBS -o $RealignOutputLogs/log.realrecal.${chr}.ou" >> $qsub_realrecal_anisimov
-         echo -e "#PBS -e $RealignOutputLogs/log.realrecal.${chr}.in\n" >> $qsub_realrecal_anisimov
-         # the dependency on split_bam_by_chromosome job will be added when it is scheduled in the loop below
+               ###############
+               ############### constructing the qsub for realrecal
+               echo "#PBS -N ${pipeid}_realrecal_${sample}" >> $qsub_realrecal_anisimov
+               echo "#PBS -l walltime=$pbscpu" >> $qsub_realrecal_anisimov
+               echo "#PBS -o $RealignOutputLogs/log.realrecal.${sample}.ou" >> $qsub_realrecal_anisimov
+               echo -e "#PBS -e $RealignOutputLogs/log.realrecal.${sample}.in\n" >> $qsub_realrecal_anisimov
+               # the dependency on split_bam_by_chromosome job will be added when it is scheduled in the loop below
 
-         # realrecal and vcall actually use multithreaded processes,
-         # so we will give each sample its own node
-         # +1 for the launcher
-         # samplecounter is already more than actual number of samples by 1
-         echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
-         # the actual command
-         echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${chr}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${chr}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
+               # realrecal and vcall actually use multithreaded processes,
+               # so we will give each chromosome its own node  +1 for the launcher
+               # chromosmecounter is the variable that has this value already setup
+               echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_realrecal_anisimov
+               # the actual command
+               echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist /bin/bash > $RealignOutputLogs/realrecal.${sample}.AnisimovLauncher.log" >> $qsub_realrecal_anisimov
 
+               if [ $skipvcall == "NO" ]
+               then
+                     ###############
+                     ############### constructing the qsub for vcallgatk
+                     echo "#PBS -N ${pipeid}_vcallgatk_${sample}" >> $qsub_vcallgatk_anisimov
+                     echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov
+                     echo "#PBS -o $VcallOutputLogs/log.vcallgatk.${sample}.ou" >> $qsub_vcallgatk_anisimov
+                     echo -e "#PBS -e $VcallOutputLogs/log.vcallgatk.${sample}.in\n" >> $qsub_vcallgatk_anisimov
+                     # the dependency on realrecal job will be added when it is scheduled in the loop below
+                     echo -e "#PBS -l nodes=$chromosomecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
+                     # the actual command
+                    echo "aprun -n $chromosomecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${sample}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
+               fi
 
-
-         if [ $skipvcall == "NO" ]
-         then
-            ###############
-            ############### constructing the qsub for vcallgatk
-            echo "#PBS -N ${pipeid}_vcallgatk_${chr}" >> $qsub_vcallgatk_anisimov
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_vcallgatk_anisimov
-            echo "#PBS -o $RealignOutputLogs/log.vcallgatk.${chr}.ou" >> $qsub_vcallgatk_anisimov
-            echo -e "#PBS -e $RealignOutputLogs/log.vcallgatk.${chr}.in\n" >> $qsub_vcallgatk_anisimov
-            # the dependency on realrecal job will be added when it is scheduled in the loop below
-
-            # realrecal and vcall actually use multithreaded processes, 
-            # so we will give each sample its own node
-            # +1 for the launcher
-            # samplecounter is already more than actual number of samples by 1
-            echo -e "#PBS -l nodes=$samplecounter:ppn=$thr\n" >> $qsub_vcallgatk_anisimov
-            # the actual command
-            echo "aprun -n $samplecounter -N 1 -d 32 ~anisimov/scheduler/scheduler.x $VcallOutputLogs/vcallgatk.${chr}.AnisimovJoblist /bin/bash > $VcallOutputLogs/vcallgatk.${chr}.AnisimovLauncher.log" >> $qsub_vcallgatk_anisimov
-        fi
-
-      done # done going through chromosomes
-
+           fi # end non-empty line
+      done <  $TheInputFile
+      # end loop over samples
 
 
       ###############
       ############### 
-      echo -e "\n ######                        Outside loop1.                                      ######"
-      echo -e "\n ###### Now. Going through chromosomes again to schedule them in the right order   ######"
-      echo -e "\n ###### all split before all realrecal, and all realrecal before vcallgatk         ######"
-      echo -e "\n ###### in order to efficiently work with a 25 job limit on queued state           ######"
+      echo -e "\n ######                        Outside loop1.                                                  ######"
+      echo -e "\n ###### Now. Going through samples again to schedule them in the right order                   ######"
+      echo -e "\n ###### all realrecal jobs followed by verifysample and finally  vcallgatk                     ######"
+
 
       # reset the lists
-      
+      truncate -s 0 $RealignOutputLogs/VERIFYXSAMPLEpbs
       truncate -s 0 $RealignOutputLogs/REALRECALpbs
       if [ $skipvcall == "NO" ]
       then
          truncate -s 0 $VcallOutputLogs/VCALGATKpbs
       fi
-      cd $RealignOutputLogs # so that whatever temp fioles and pbs notifications would go there
+      cd $RealignOutputLogs # so that whatever temp folders and pbs notifications would go there
 
-      # now realrecal
-      for chr in $indices
+
+      while read SampleLine
       do
-         realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${chr}.AnisimovLauncher`
-         # I am not going to put these on hold, as they will be helkd back by the dependency on respective split jobs
-         # Add dependency on realrecal job to vcallgatk job
-         if [ $skipvcall == "NO" ]
-         then
-             sed -i "2i #PBS -W depend=afterok:$realrecal_job" $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher
-	 fi
-         echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
-      done
-      if [ $skipvcall == "NO" ]
-      then
-         # finally submit the vcallgatk
-         cd $VcallOutputLogs # so that whatever temp fioles and pbs notifications would go there
-         for chr in $indices
-         do
-            vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${chr}.AnisimovLauncher`
-            echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
-         done 
-      fi
+          if [ `expr ${#SampleLine}` -gt 1 ]
+          then
+               ## processing non-empty line
+               if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
+               then
+                     echo -e "this line has five fields, we just need the first field to create folders"
+	             sample=$( echo "$SampleLine" | cut -f 1 )
+	       else
+                     echo -e "this line has one field, we will use filename as samplename"
+	             sample=$( echo "$SampleLine" )
+	       fi
 
+               ### launching realrecal jobs
+               realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${sample}.AnisimovLauncher`
+               `qhold -h u $realrecal_job`
+               echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
+
+      
+               echo "####################################################################################################"
+               echo "###############     constructing the qsub for verifysample   and launching it   ####################"
+               echo "####################################################################################################"
+  
+
+               qsub_verifySample_anisimov=$RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher
+               cat $outputdir/qsubGenericHeader > $qsub_verifySample_anisimov
+	       echo "#PBS -N ${pipeid}_verifySample_${sample}" >> $qsub_verifySample_anisimov
+	       echo "#PBS -l walltime=$pbscpu" >> $qsub_verifySample_anisimov
+	       echo "#PBS -o $RealignLog/log.verifySample.${sample}.ou" >> $qsub_verifySample_anisimov
+	       echo "#PBS -e $RealignLog/log.verifySample.${sample}.in" >> $qsub_verifySample_anisimov
+	       echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_verifySample_anisimov
+               echo "#PBS -W depend=afterok:$realrecal_job" >> $qsub_verifySample_anisimov
+               echo "aprun -n 1 -N 1 -d $thr $scriptdir/verifySample.sh $runfile $sample $RealignOutputDir  ${sample}.verified $outputdir $RealignLog/log.verifySample.$sample.in $RealignLog/log.verifySample.$sample.ou $email $qsub_verifySample_anisimov" >> $qsub_verifySample_anisimov
+               verifysample_job=`qsub $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher` 
+               echo $verifysample_job>> $RealignOutputLogs/VERIFYXSAMPLEpbs
+
+
+               # now launchng vcallgatk
+      
+               if [ $skipvcall == "NO" ]
+               then
+                     sed -i "2i #PBS -W depend=afterok:$verifysample_job" $VcallOutputLogs/qsub.vcalgatk.${sample}.AnisimovLauncher
+                     vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${sample}.AnisimovLauncher`
+                     echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
+               fi
+          fi # done processing non-empty line    
+      done <  $TheInputFile
 
    ;;
    esac
@@ -746,7 +764,7 @@ echo -e "\n\n\n ###################################       main loops starts here
    then
       summarydependids=$( cat $VcallOutputLogs/VCALGATKpbs | sed "s/\..*//" | tr "\n" ":" )
    else
-      summarydependids=$( cat $RealignOutputLogs/REALRECALpbs | sed "s/\..*//" | tr "\n" ":" )
+      summarydependids=$( cat $RealignOutputLogs/VERIFYXSAMPLEpbs | sed "s/\..*//" | tr "\n" ":" )
    fi
 
    lastjobid=""

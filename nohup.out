@@ -362,3 +362,511 @@ dom ago 16 18:43:09 CDT 2015
 + LOGS='jobid=2141330.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
 + echo -e 'Variant calling workflow with id:[2141330] started by username:rendong at: dom ago 16 18:43:09 CDT 2015\n\nDetails:\n\njobid=2141330.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideMarkdup_0816/logs/log.CONFIGURE.ou'
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun ago 17 13:17:25 CDT 2015
+lun ago 17 13:17:25 CDT 2015
++ scriptfile=./start.sh
++ runfile=../../config/runfile.txt
++ '[' '!' -s ../../config/runfile.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ cut -d = -f2
+++ grep -w REPORTTICKET
+++ cat ../../config/runfile.txt
++ reportticket=3820
+++ cat ../../config/runfile.txt
+++ grep -w OUTPUTDIR
+++ cut -d = -f2
++ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
+++ cat ../../config/runfile.txt
+++ grep -w EMAIL
+++ cut -d = -f2
++ email=grendon@illinois.edu
+++ cat ../../config/runfile.txt
+++ grep -w PBSPROJECTID
+++ cut -d = -f2
++ pbsprj=jti
+++ grep -w EPILOGUE
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
+++ grep -w INPUTTYPE
++ input_type=GENOME
+++ grep -w SCRIPTDIR
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ grep -w PBSCPUOTHERWGEN
++ pbscpu=5:00:00
+++ cat ../../config/runfile.txt
+++ grep -w PBSQUEUEWGEN
+++ cut -d = -f2
++ pbsqueue=low
++ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817 ']'
++ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
+++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/
+++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp ../../config/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
++ echo -e '#!/bin/bash \n'
+++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817'
++ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
++ echo '#PBS -V'
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=2143673.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ sed 's/\.[a-z]*[0-9]*//g'
+++ echo 2143673.nid11293
++ pipeid=2143673
++ echo 2143673
++ echo 2143673
+++ date
++ echo lun ago 17 13:17:26 CDT 2015
+lun ago 17 13:17:26 CDT 2015
++++ date
+++ echo lun ago 17 13:17:26 CDT 2015
++ MSG='Variant calling workflow with id:[2143673] started by username:rendong at: lun ago 17 13:17:26 CDT 2015'
++ LOGS='jobid=2143673.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2143673] started by username:rendong at: lun ago 17 13:17:26 CDT 2015\n\nDetails:\n\njobid=2143673.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' ,grendon@illinois.edu
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun ago 17 14:15:37 CDT 2015
+lun ago 17 14:15:37 CDT 2015
++ scriptfile=./start.sh
++ runfile=../../config/runfile.txt
++ '[' '!' -s ../../config/runfile.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ grep -w REPORTTICKET
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ reportticket=3820
+++ cat ../../config/runfile.txt
+++ grep -w OUTPUTDIR
+++ cut -d = -f2
++ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
+++ grep -w EMAIL
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ email=grendon@illinois.edu
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ grep -w PBSPROJECTID
++ pbsprj=jti
+++ cat ../../config/runfile.txt
+++ grep -w EPILOGUE
+++ cut -d = -f2
++ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+++ grep -w INPUTTYPE
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ input_type=GENOME
+++ cat ../../config/runfile.txt
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ grep -w PBSCPUOTHERWGEN
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ pbscpu=5:00:00
+++ cat ../../config/runfile.txt
+++ grep -w PBSQUEUEWGEN
+++ cut -d = -f2
++ pbsqueue=low
++ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817 ']'
++ echo 'resetting directory'
+resetting directory
+++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
+++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/
+++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp ../../config/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
++ echo -e '#!/bin/bash \n'
+++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817'
++ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
++ echo '#PBS -V'
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=2143800.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ echo 2143800.nid11293
+++ sed 's/\.[a-z]*[0-9]*//g'
++ pipeid=2143800
++ echo 2143800
++ echo 2143800
+++ date
++ echo lun ago 17 14:15:38 CDT 2015
+lun ago 17 14:15:38 CDT 2015
++++ date
+++ echo lun ago 17 14:15:38 CDT 2015
++ MSG='Variant calling workflow with id:[2143800] started by username:rendong at: lun ago 17 14:15:38 CDT 2015'
++ LOGS='jobid=2143800.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' ,grendon@illinois.edu
++ echo -e 'Variant calling workflow with id:[2143800] started by username:rendong at: lun ago 17 14:15:38 CDT 2015\n\nDetails:\n\njobid=2143800.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun ago 17 16:57:10 CDT 2015
+lun ago 17 16:57:10 CDT 2015
++ scriptfile=./start.sh
++ runfile=../../config/runfile.txt
++ '[' '!' -s ../../config/runfile.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ cat ../../config/runfile.txt
+++ grep -w REPORTTICKET
+++ cut -d = -f2
++ reportticket=3820
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ grep -w OUTPUTDIR
++ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
+++ cat ../../config/runfile.txt
+++ grep -w EMAIL
+++ cut -d = -f2
++ email=grendon@illinois.edu
+++ grep -w PBSPROJECTID
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ pbsprj=jti
+++ cat ../../config/runfile.txt
+++ grep -w EPILOGUE
+++ cut -d = -f2
++ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
+++ grep -w INPUTTYPE
++ input_type=GENOME
+++ cat ../../config/runfile.txt
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ cat ../../config/runfile.txt
+++ grep -w PBSCPUOTHERWGEN
+++ cut -d = -f2
++ pbscpu=5:00:00
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ grep -w PBSQUEUEWGEN
++ pbsqueue=low
++ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817 ']'
++ echo 'resetting directory'
+resetting directory
+++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
+++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/
+++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp ../../config/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
++ echo -e '#!/bin/bash \n'
+++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817'
++ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
++ echo '#PBS -V'
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=2145755.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ sed 's/\.[a-z]*[0-9]*//g'
+++ echo 2145755.nid11293
++ pipeid=2145755
++ echo 2145755
++ echo 2145755
+++ date
++ echo lun ago 17 17:00:02 CDT 2015
+lun ago 17 17:00:02 CDT 2015
++++ date
+++ echo lun ago 17 17:00:02 CDT 2015
++ MSG='Variant calling workflow with id:[2145755] started by username:rendong at: lun ago 17 17:00:02 CDT 2015'
++ LOGS='jobid=2145755.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' ,grendon@illinois.edu
++ echo -e 'Variant calling workflow with id:[2145755] started by username:rendong at: lun ago 17 17:00:02 CDT 2015\n\nDetails:\n\njobid=2145755.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun ago 17 17:39:11 CDT 2015
+lun ago 17 17:39:11 CDT 2015
++ scriptfile=./start.sh
++ runfile=../../config/runfile.txt
++ '[' '!' -s ../../config/runfile.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ cut -d = -f2
+++ cat ../../config/runfile.txt
+++ grep -w REPORTTICKET
++ reportticket=3820
+++ cat ../../config/runfile.txt
+++ grep -w OUTPUTDIR
+++ cut -d = -f2
++ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
+++ grep -w EMAIL
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ email=grendon@illinois.edu
+++ cat ../../config/runfile.txt
+++ grep -w PBSPROJECTID
+++ cut -d = -f2
++ pbsprj=jti
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ grep -w EPILOGUE
++ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+++ grep -w INPUTTYPE
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ input_type=GENOME
+++ cat ../../config/runfile.txt
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ grep -w PBSCPUOTHERWGEN
+++ cat ../../config/runfile.txt
+++ cut -d = -f2
++ pbscpu=5:00:00
+++ cat ../../config/runfile.txt
+++ grep -w PBSQUEUEWGEN
+++ cut -d = -f2
++ pbsqueue=low
++ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817 ']'
++ echo 'resetting directory'
+resetting directory
+++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/CONFIGUREpbs»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/pbs.ALIGN»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/pbs.CONFIGURE»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.START_ALIGN_BLOCK»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/qsubGenericHeader»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLEGROUPS.list»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES.list»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/SAMPLENAMES_multiplexed.list»: Dirección incorrecta
+rm: no se puede borrar «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh»: Dirección incorrecta
++ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
+++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/
+chmod: cambiando los permisos de «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/»: Dirección incorrecta
+chmod: cambiando los permisos de «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs»: Dirección incorrecta
+++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp ../../config/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
+cp: no se puede crear el fichero regular «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt»: Dirección incorrecta
++ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh
+truncate: no se puede abrir «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh» para escritura: Dirección incorrecta
++ echo -e '#!/bin/bash \n'
+./start.sh: line 81: /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/WorkflowAutodocumentationScript.sh: Dirección incorrecta
+++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817'
++ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
++ echo '#PBS -V'
+./start.sh: line 89: /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE: Dirección incorrecta
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+chmod: cambiando los permisos de «/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE»: Dirección incorrecta
+++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=2147572.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ echo 2147572.nid11293
+++ sed 's/\.[a-z]*[0-9]*//g'
++ pipeid=2147572
++ echo 2147572
+./start.sh: line 112: /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/CONFIGUREpbs: Dirección incorrecta
++ echo 2147572
+./start.sh: line 113: /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/pbs.CONFIGURE: Dirección incorrecta
+++ date
++ echo lun ago 17 17:39:12 CDT 2015
+lun ago 17 17:39:12 CDT 2015
++++ date
+++ echo lun ago 17 17:39:12 CDT 2015
++ MSG='Variant calling workflow with id:[2147572] started by username:rendong at: lun ago 17 17:39:12 CDT 2015'
++ LOGS='jobid=2147572.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2147572] started by username:rendong at: lun ago 17 17:39:12 CDT 2015\n\nDetails:\n\njobid=2147572.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2sample1lane_testingQC_InsideRealrecal_0817/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' ,grendon@illinois.edu

@@ -364,12 +364,36 @@ else
         fi # end choosing between BQSR and CountCovariates/TableRecalibration
 
         echo "#################################################################################"
-	echo "     done with recalibration. indexing recalibrated.bam to make variant callers happy "
+	echo "     done with recalibration "
+        echo "#################################################################################"
+	echo "     QC step. if a Baylor sample then run samtools calmd "
         echo "#################################################################################"
 
-        
-        ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam $outputfile
+        if [ -s $outputrootdir/SAMPLENAMES_multiplexed.list ]
+        then
+            $samdir/samtools calmd -Erb $realrecaldir/recal.$chr.$infile.real.recal.bam > $outputfile
+	    exitcode=$?
+	    echo `date`
+	    if [ $exitcode -ne 0 ]
+	    then
+	        MSG="samtools calmd command failed with $outputfile exitcode=$exitcode. realignment for $infile stopped"
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	        exit $exitcode;
+	    fi
+	    if [ ! -s $outputfile ]
+	    then
+	        MSG="$outputfile output file not created. realignment for $infile stopped"
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                exit 1;
+            fi
+        else
+            ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam  $outputfile
+        fi
 
+        ###### indexing the recalibrated.bam file to make variant callers happy
+        
         $samdir/samtools index $outputfile
 	exitcode=$?
 	echo `date`		
