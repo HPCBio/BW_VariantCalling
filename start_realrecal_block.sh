@@ -22,7 +22,7 @@ fi
    if [ !  -s $runfile ]
    then
       MSG="$runfile configuration file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
       exit 1;
    fi
 
@@ -72,15 +72,14 @@ fi
       pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
    else
       MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-      #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
    if [ $resortflag != "1" -a $resortflag != "0" -a $resortflag != "YES" -a $resortflag != "NO" ]
    then
       MSG="Invalid value for RESORTBAM=$resortflag"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    else
       if [ $resortflag == "1" ]
@@ -96,19 +95,19 @@ fi
    if [ ! -d $scriptdir ]
    then
       MSG="$scriptdir script directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ ! -d $refdir ]
    then
       MSG="$refdir directory of reference genome  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ ! -d $picardir ]
    then
       MSG="$picardir picard directory  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
@@ -117,8 +116,7 @@ fi
    if [ ! -d $sampledir ]
    then
       MSG="INPUTDIR=$sampledir input directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
@@ -126,8 +124,7 @@ fi
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in INPUTDIR=$sampledir."
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ $numsamples -gt 1 -a $multisample == "YES" ]
@@ -224,14 +221,14 @@ echo "##########################################################################
             if [ `expr ${#PrefixName}` -lt 1 ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
             fi
          
             if [ ! -s $bamfile ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start"
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
             fi
          fi
@@ -312,7 +309,7 @@ echo "##########################################################################
          # end loop over input samples
       else
          MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
-         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
          exit 1;
       fi
    fi
