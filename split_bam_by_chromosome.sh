@@ -6,6 +6,8 @@ then
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
+    echo -e "\n\n############# BEGIN PROCEDURE TO SPLIT ALIGNED BAM BY CHROMOSOME ###############\n\n" >&2
+
     set -x
     echo `date`
     scriptfile=$0
@@ -30,11 +32,6 @@ else
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 
-#    if [ 1 ]
-#    then
-#       echo "you bad exit code" >> $RealignOutputLogs/FAILEDmessages
-#       exit 1;
-#    fi
 
     if [ ! -d $outputdir ]
     then
@@ -113,11 +110,14 @@ else
     parameters=$( echo $rgparms | tr ":" " " )
     sortflag=$( echo $flag | tr '[a-z]' '[A-Z]' )
 
-    ## before sorting, we need to make sure the bam file has readgroup info
+
+
+
+    set +x; echo -e "\n ## before sorting, we need to make sure the bam file has readgroup info\n" >&2; set -x
 
     if [ $sortflag == "NCSA" ]
     then
-       echo "alignment was done inhouse. we need to add_readgroup info"
+       set +x; echo -e "\n ## alignment was done inhouse. we need to add_readgroup info" >&2; set -x
        $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	   INPUT=$infile \
 	   OUTPUT=$tmpfile \
@@ -137,7 +137,7 @@ else
        fi
        echo `date`
     else
-	echo "alignment was done at Mayo. checking if readgroup info is present"
+	set +x; echo -e "\n ## alignment was done at an external facility. checking if readgroup info is present" >&2; set -x
 	$memprof $samdir/samtools view -H $infile > $infile.header
         exitcode=$?
         if [ $exitcode -ne 0 ]
@@ -152,10 +152,10 @@ else
 	lenmatch=`expr ${#match}`
 	if [ $lenmatch -gt 0 ]
 	then
-            echo "readgroup info found in input file."
+            set +x; echo -e "\n ## readgroup info found in input file." >&2; set -x
             cp $infile $tmpfile
 	else
-            echo "readgroup info NOT found in input file. Adding it now..."
+            set +x; echo -e "\n ## readgroup info NOT found in input file. Adding it now..." >&2; set -x
 	    $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 		   INPUT=$infile \
 		   OUTPUT=$tmpfile \
