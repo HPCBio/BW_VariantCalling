@@ -9,6 +9,7 @@ then
    echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
    exit 1;
 fi
+   echo -e "\n\n############# START REALRECAL BLOCK: decide if the aligned bams were made locally or externally; create the downstream schedule_realrecal_per_chromosome accordingly  ###############\n\n" >&2
 
    set -x
    echo `date`
@@ -22,18 +23,19 @@ fi
    if [ !  -s $runfile ]
    then
       MSG="$runfile configuration file not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
       exit 1;
    fi
 
 
 
-   # wrapping commends in echo, so that the output logs would be easier to read: they will have more structure
-   echo "####################################################################################################"
-   echo "#####################################                       ########################################"
-   echo "##################################### PARSING RUN INFO FILE ########################################"
-   echo "##################################### SANITY CHECK          ########################################"
-   echo "####################################################################################################"
+   set +x; echo -e "\n\n" >&2;
+   # wrapping commends in echoes, so that the output logs would be easier to read: they will have more structure
+   echo "####################################################################################################" >&2
+   echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+   echo "##################################### AND SANITY CHECK      ########################################" >&2
+   echo "####################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
 
 
    sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
@@ -72,15 +74,14 @@ fi
       pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
    else
       MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-      #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
    if [ $resortflag != "1" -a $resortflag != "0" -a $resortflag != "YES" -a $resortflag != "NO" ]
    then
       MSG="Invalid value for RESORTBAM=$resortflag"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    else
       if [ $resortflag == "1" ]
@@ -96,19 +97,19 @@ fi
    if [ ! -d $scriptdir ]
    then
       MSG="$scriptdir script directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ ! -d $refdir ]
    then
       MSG="$refdir directory of reference genome  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ ! -d $picardir ]
    then
       MSG="$picardir picard directory  not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
@@ -117,8 +118,7 @@ fi
    if [ ! -d $sampledir ]
    then
       MSG="INPUTDIR=$sampledir input directory not found"
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
 
@@ -126,8 +126,7 @@ fi
    if [ $numsamples -lt 1 ]
    then
       MSG="No samples found in INPUTDIR=$sampledir."
-      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
    if [ $numsamples -gt 1 -a $multisample == "YES" ]
@@ -147,11 +146,17 @@ fi
       realrecalflag="1"
    fi
       
-echo "####################################################################################################"
-echo "#####################################                       ########################################"
-echo "#####################################  CREATE  DIRECTORIES  ########################################"
-echo "#####################################                       ########################################"
-echo "####################################################################################################"
+
+
+
+   set +x; echo -e "\n\n" >&2;
+   echo "####################################################################################################" >&2
+   echo "#####################################                       ########################################" >&2
+   echo "#####################################  CREATE  DIRECTORIES  ########################################" >&2
+   echo "#####################################                       ########################################" >&2
+   echo "####################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
+
 
 
    #RealignOutputDir=$outputdir/realign
@@ -192,12 +197,17 @@ echo "##########################################################################
    fi
    `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
 
-echo "#############################################################################################################"
-echo "#####################################                                ########################################"
-echo "#####################################  THE FOLLWOING BLOCK IS FOR    ########################################"
-echo "#####################################  BAM files aligned elsewhere   ########################################"
-echo "#####################################                                ########################################"
-echo "#############################################################################################################"
+
+
+
+   set +x; echo -e "\n\n" >&2;
+   echo "#############################################################################################################" >&2
+   echo "#####################################                                ########################################" >&2
+   echo "#####################################  THE FOLLWOING BLOCK IS FOR    ########################################" >&2
+   echo "#####################################  BAM files aligned elsewhere   ########################################" >&2
+   echo "#####################################                                ########################################" >&2
+   echo "#############################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
 
    listfiles="";
    sep=":";
@@ -207,31 +217,31 @@ echo "##########################################################################
 
    if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
    then
-      echo "alignment was done inhouse. no need to resort"
+      set +x; echo -e "\n # alignment was done inhouse. no need to resort\n" >&2; set -x
    else
-      echo "we need to check entries in samplefileinfo before launching other realignment analyses"
+      set +x; echo -e "\n # we need to check entries in samplefileinfo before launching other realignment analyses\n" >&2; set -x
       while read sampledetail
       do
-         echo "processing next line in file ..."
+         set +x; echo -e "\n # processing next line in file ...\n" >&2; set -x
          if [ `expr ${#sampledetail}` -lt 7 ]
          then
-            echo "skip empty line"
+            set +x; echo -e "\n # skip empty line\n" >&2; set -x
          else
-            echo "preprocessing for realignment $sampledetail"
+            set +x; echo -e "\n # preprocessing for realignment $sampledetail\n" >&2; set -x
             bamfile=$( echo $sampledetail )
             #bamfile=$( echo $sampledetail | cut -d '=' -f2 )
             #sampletag=$( echo $sampledetail | cut -d '=' -f1 | cut -d ':' -f2 )
             if [ `expr ${#PrefixName}` -lt 1 ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
             fi
          
             if [ ! -s $bamfile ]
             then
                MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start"
-               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                exit 1;
             fi
          fi
@@ -242,16 +252,16 @@ echo "##########################################################################
 
    if [ $resortflag == "YES" -a $analysis == "REALIGN_ONLY" ]
    then
-      echo "alignment was done separately; starting the workflow with realignment. Need to resort bam files. Checking input files"
+      set +x; echo -e "\n # alignment was done separately; starting the workflow with realignment. Need to resort bam files. Checking input files\n" >&2; set -x
       # loop over samples, by reading the SampleName file we constructed above: $TopOutputLogs/SAMPLENAMES.list
       while read SampleName
       do
-         echo "processing next sample"
+         set +x; echo -e "\n # processing next sample\n" >&2; set -x
          if [ `expr ${#SampleName}` -lt 7 ]
          then
-            echo "skipping empty line"
+            set +x; echo -e "\n # skipping empty line\n" >&2; set -x
          else
-            echo "realigning: $SampleName"
+            set +x; echo -e "\n # realigning: $SampleName\n" >&2; set -x
 
             prefix=`basename $SampleName .wrg.sorted.bam`
             outputalign=$outputdir/align/$prefix
@@ -300,10 +310,10 @@ echo "##########################################################################
 
    if [ $resortflag == "NO" -a $analysis == "REALIGN_ONLY" ]
    then
-      echo "starting the workflow with realignment, alignment step was done separartely. BAM files will not be resorted"
+      set +x; echo -e "\n # starting the workflow with realignment, alignment step was done separartely. BAM files will not be resorted\n" >&2; set -x
       if [ $revertsam == "0" -o $revertsam == "NO" ]
       then
-         echo "input is aligned bam that is suitable for realignment and recalibration... no need for preprocessing"
+         set +x; echo -e "\n # nput is aligned bam that is suitable for realignment and recalibration... no need for preprocessing\n" >&2; set -x
          while read sampledetail
          do
             bam=$( echo $sampledetail )
@@ -312,17 +322,18 @@ echo "##########################################################################
          # end loop over input samples
       else
          MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
-         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
          exit 1;
       fi
    fi
 
-echo "#############################################################################################################"
-echo "#####################################                                ########################################"
-echo "#####################################  END OF BLOCK FOR              ########################################"
-echo "#####################################  BAM files aligned elsewhere   ########################################"
-echo "#####################################                                ########################################"
-echo "#############################################################################################################"
+
+   set +x; echo -e "\n\n" >&2;
+   echo "#############################################################################################################" >&2
+   echo "#####################################  END OF BLOCK FOR              ########################################" >&2
+   echo "#####################################  BAM files aligned elsewhere   ########################################" >&2
+   echo "#############################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
 
    # grab job ids for align and for preprocessing done in this module
    alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
@@ -335,13 +346,12 @@ echo "##########################################################################
 
 
 
-   ######################################################################################
-   ######################################################################################
-   #############   NOW THAT THE INPUT HAVE BEEN CHECKED AND RESORTED,  ###################
-   #############   WE CAN PROCEED TO SCHEDULE REAL/RECAL ETC           ###################
-   ######################################################################################
-   ######################################################################################
-
+   set +x; echo -e "\n\n" >&2;
+   echo "######################################################################################" >&2
+   echo "#############   NOW THAT THE INPUT HAVE BEEN CHECKED AND RESORTED,  ##################" >&2
+   echo "#############   WE CAN PROCEED TO SCHEDULE REAL/RECAL ETC           ##################" >&2
+   echo "######################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
 
 
    # the schedule_realrecal_per_chromosome should run on a MOM node, so submitting with qsub without aprun
@@ -353,7 +363,7 @@ echo "##########################################################################
        echo "$scriptdir/schedule_realrecal_multiplexed.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
    fi
 
-   ### schedule the schedule_realrecal_per_chromosome job(s)
+   set +x; echo -e "\n # schedule the schedule_realrecal_per_chromosome job(s)\n" >&2; set -x
    case $run_method in
    "APRUN"|"QSUB"|"LAUNCHER")
       # schedule a single qsub for all samples
@@ -393,7 +403,7 @@ echo "##########################################################################
 
 
 
-   echo "###################### done scheduling realign/recalibrate.#################################"
+   set +x; echo -e "\n ###################### done scheduling realign/recalibrate.#################################\n" >&2; set -x
    echo `date`
    `chmod -R 770 $outputdir/`
    `chmod -R 770 $TopOutputLogs/`

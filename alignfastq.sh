@@ -657,8 +657,7 @@ echo -e "\n\n" >&2; set -x;
                if [ $exitcode -ne 0 ]
                then
                       MSG="splitting of read file $LeftReadsFastq failed. exitcode=$exitcode"
-                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                      #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                       exit $exitcode;
                fi
                if [ $paired -eq 1 ]
@@ -669,8 +668,7 @@ echo -e "\n\n" >&2; set -x;
 	   	   if [ $exitcode -ne 0 ]
                    then
                        MSG="splitting of read file $RightReadsFastq failed.  exitcode=$exitcode"
-                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                        exit $exitcode;
 	   	   fi
                fi
@@ -723,8 +721,7 @@ echo -e "\n\n" >&2; set -x;
                 if [ ! -s $Rone ]
                 then
                    MSG="chunk $i of read file $LeftReadsFastq file not found"
-                   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                    exit 1;
                 fi
 		if [ $paired -eq 1 ]
@@ -738,8 +735,7 @@ echo -e "\n\n" >&2; set -x;
                     if [ ! -s $Rtwo ]
                     then
 			MSG="chunk $i of read file $RightReadsFastq file not found"
-                        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+                        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 			exit 1;
                     fi
                 fi
