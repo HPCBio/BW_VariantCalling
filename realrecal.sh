@@ -254,7 +254,7 @@ else
             $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
                 $recalparms \
-                $region \
+                --knownSites $refdir/$dbSNP \
                 -I realign.$chr.$infile.realigned.bam \
                 -T BaseRecalibrator \
                 --out recal.$chr.$infile.recal_report.grp \
@@ -310,7 +310,7 @@ else
    	    $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
 		$recalparms \
-		$region \
+                --knownSites $refdir/$dbSNP \		
 		-I realign.$chr.$infile.realigned.bam \
 		-T CountCovariates \
 		-cov ReadGroupCovariate \
