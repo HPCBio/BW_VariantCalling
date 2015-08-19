@@ -3,7 +3,7 @@
 # input files are sorted bam files with readgroup info added to each file
 # files were the result of splitting input file prior to running alignment
 ###############################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 11 ] 
 then

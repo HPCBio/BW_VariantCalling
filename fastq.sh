@@ -2,7 +2,7 @@
 ######################################
 #  script to calculate quality information of fastq file
 ######################################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=lmainzer@igb.illinois.edu
 ##redmine=grendon@illinois.edu
 if [ $# != 8 ]

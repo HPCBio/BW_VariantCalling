@@ -1,5 +1,5 @@
 #!/bin/bash
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# -ne 9 ]
 then
 	MSG="parameter mismatch."
@@ -76,7 +76,7 @@ fi
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
     mergedfile=${sample}.realignedSample.calmd.bam
     outputfile=$delivery/Cleaned_BAMS/${sample}.Improved.realignedSample.bam
-    qc_result=$rootdir/QC_Results.${sample}.txt
+    qc_result=$rootdir/QC_Results.txt
     qc_result2=$RealignOutput/QC_Results.${sample}.txt
     qc_result3=$delivery/QC_results/QC_Results.${sample}.txt
     if [ ! -s $goodSamples ]
@@ -87,9 +87,9 @@ fi
     then
         truncate -s 0 $badSamples
     fi
-    if [ ! -s $rootdir/QC_Results.${sample}.txt ]
+    if [ ! -s $rootdir/QC_Results.txt ]
     then
-        truncate -s 0 $rootdir/QC_Results.${sample}.txt
+        truncate -s 0 $rootdir/QC_Results.txt
     fi
     #if [ $freemix_cutoff -eq $freemix_cutoff 2>/dev/null ]
     #then
@@ -110,7 +110,7 @@ fi
 
     cd $RealignOutput
 
-    chrbamfiles=`find ./ -name "*${sample}.*.calmd.bam"`
+    chrbamfiles=`find ./ -name "*${sample}*.calmd.bam"`
     #bamsList=$( echo $chrbamfiles | sed "s/\.\// INPUT=/g" | tr "\n" " " )
     bamsList=$( echo $chrbamfiles | sed "s/\.\// /g" | tr "\n" " " )
     if [ `expr ${#bamsList}` -lt 2 ]
@@ -227,7 +227,9 @@ fi
         filterflag="PASSED"	
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $goodSamples
-        sed -i "1i $detail"  $qc_result
+        echo -e "$detail" >> $qc_result
+        echo -e "$detail" >> $qc_result2
+        echo -e "$detail" >> $qc_result3
     else
 	echo -e "############################################################################"
         echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
@@ -235,11 +237,11 @@ fi
         filterflag="FAILED"
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $badSamples
-        sed -i "1i $detail"  $qc_result
+        echo -e "$detail" >> $qc_result
+        echo -e "$detail" >> $qc_result2
+        echo -e "$detail" >> $qc_result3
     fi
     echo `date`
-    cat $qc_result > $qc_result2
-    cat $qc_result > $qc_result3
 
     if [ $filterflag == "FAILED" ]
     then

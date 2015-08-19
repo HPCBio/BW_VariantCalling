@@ -1,5 +1,5 @@
 #!/bin/bash
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 14 ]
 then
         MSG="parameter mismatch"
@@ -327,25 +327,27 @@ then
  	     echo "#####################################################################################################"
  	     echo "#####################################################################################################"
 
+             this_sample=`basename $bamprefix`
+             which_sample=${this_sample}.sorted.bam
 
              if [ $perc_dup -lt $dup_cutoff ]
              then
-               echo -e "${bamprefix}.sorted.bam passed first filter percent_duplicates with value $perc_dup, maximum cutoff is $dup_cutoff"
+               echo -e "$which_sample passed first filter percent_duplicates with value $perc_dup, maximum cutoff is $dup_cutoff"
                if [ $perc_mapped -gt $map_cutoff ]
                then
-                  echo -e "${bamprefix}.sorted.bam passed second filter percent_mapped with value $perc_mapped, minimum cutoff is $map_cutoff"
-                  detail="${bamprefix}.sorted.bam\tPASSED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
+                  echo -e "$which_sample passed second filter percent_mapped with value $perc_mapped, minimum cutoff is $map_cutoff"
+                  detail="$which_sample\tPASSED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	          echo -e "$detail" >> $QCfile
 	          QCresult="PASSED"
                else
-                  echo -e "${bamprefix}.sorted.bam DID NOT pass second filter percent_mapped value $perc_mapped, minimum cutoff is $map_cutoff"
-                  detail="${bamprefix}.sorted.bam\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
+                  echo -e "$which_sample DID NOT pass second filter percent_mapped value $perc_mapped, minimum cutoff is $map_cutoff"
+                  detail="$$which_sample\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	          echo -e "$detail"  >> $QCfile
 	          QCresult="FAILED"	          
                fi
              else
-               echo -e "${bamprefix}.sorted.bam DID NOT pass first filter percent_duplicates value $perc_dup, minimum cutoff is $dup_cutoff"
-               detail="${bamprefix}.sorted.bam\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
+               echo -e "$which_sample DID NOT pass first filter percent_duplicates value $perc_dup, minimum cutoff is $dup_cutoff"
+               detail="$which_sample\tFAILED\tpercent_duplication=$perc_dup\tduplication_cutoff=$dup_cutoff\tpercent_mapped=$perc_mapped\tmapping_cutoff=$map_cutoff"
 	       echo -e "$detail"  >> $QCfile
 	       QCresult="FAILED"
              fi

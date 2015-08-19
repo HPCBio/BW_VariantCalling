@@ -9,7 +9,16 @@
 use strict;
 
 
-if ($#ARGV < 4) { print "param mismatch\nTo run type this command:\nperl $0 dirname infile outfile1 outfile2 outfile3\n\n"; exit 1; }
+if ($#ARGV < 4) { 
+    print "parameter mismatch\nTo run type this command:\nperl $0 dirname infile outfile1 outfile2 outfile3\n\n"; 
+    print "where:\ndirname is the directory where the infile is located\n";
+    print "infile is a Baylor-style info sheet of the input files\n";
+    print "outfile1 is usually set to SAMPLENAMES.list\n";
+    print "outfile2 is usually set to SAMPLENAMES_multiplexed.list\n";
+    print "outfile3 is usually set to SAMPLEGROUPS.list\n";
+    exit 1; 
+}
+
 my $dirname=shift;
 my $infile=shift;
 my $outfile1=shift;
@@ -27,7 +36,16 @@ open(GROUPS,">$outfile3") || die("cannot open $outfile3\n");
 my $prevsampleid="";
 my %samplexlane=();
 
+# infile is a tab delimited text file with these columns
+# col1: sample_id
+# col2: flowcell
+# col3: lane number
+# col4: library type
+# col5: library name
+# last column: filename of read file
+#
 # we will construct a hash : {sample id} {name_of_flowcell_and_lane} {library, read1 or read2}
+
 my %sampledet=();
 my $counter=0;
 while (my $line = <IN>) {
@@ -38,6 +56,7 @@ while (my $line = <IN>) {
 	    $counter++;
 	} 
         else {
+            # removing nasty hidden codes left by excel
             chomp $line;
 	    $line =~ s/\r//g;
 	    $line =~ s/\n//g;

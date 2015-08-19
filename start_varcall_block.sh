@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #  script to realign and recalibrate the aligned file(s)
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
     MSG="parameter mismatch."

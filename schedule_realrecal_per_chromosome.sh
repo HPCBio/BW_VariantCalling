@@ -2,7 +2,7 @@
 # written in collaboration with Mayo Bioinformatics core group
 #
 #  script to realign and recalibrate the aligned file(s)
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 #redmine=grendon@illinois.edu
 if [ $# != 7 ]
 then
@@ -61,8 +61,9 @@ echo -e "\n\n\n ##################################### PARSING RUN INFO FILE ####
    tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
    vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
    dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-   kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
-   targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
+   #kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
+   #targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
+   indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
    realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
    multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
    samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 )
@@ -719,6 +720,10 @@ echo -e "\n\n\n ###################################       main loops starts here
 	             sample=$( echo "$SampleLine" )
 	       fi
 
+               RealignOutputDir=$outputdir/$sample/realign
+               VcallOutputDir=$outputdir/${sample}/variant  
+               RealignLog=$RealignOutputDir/logs
+               
                ### launching realrecal jobs
                realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${sample}.AnisimovLauncher`
                `qhold -h u $realrecal_job`

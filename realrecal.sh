@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 14 ];
 then
@@ -371,7 +371,7 @@ else
 
         if [ -s $outputrootdir/SAMPLENAMES_multiplexed.list ]
         then
-            $samdir/samtools calmd -Erb $realrecaldir/recal.$chr.$infile.real.recal.bam > $outputfile
+            $samdir/samtools calmd -Erb $realrecaldir/recal.$chr.$infile.real.recal.bam $refdir/$ref > $outputfile
 	    exitcode=$?
 	    echo `date`
 	    if [ $exitcode -ne 0 ]

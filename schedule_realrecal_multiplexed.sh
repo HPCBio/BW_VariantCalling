@@ -4,7 +4,7 @@
 #
 # script to produce improved bams - one per sample 
 # from  multiplexed aligned bams 
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."
@@ -56,7 +56,7 @@ fi
    vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
    dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
    #kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
-   targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
+   #targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
    indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
    realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
    multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
@@ -375,14 +375,17 @@ fi
    do
       if [ `expr ${#SampleLine}` -gt 1 ]
       then
-          ## parsing non-empty line
+          ## parsing non-empty line, we expect to find five fields
 	  sample=$( echo "$SampleLine" | cut -f 1 )
 	  lane=$( echo "$SampleLine" | cut -f 2 )
+	  
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
+
 	  alignedfile=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam"`
 	  alignedfilehdr=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam.header"`
 	  alignedfilebai=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam.bai"`
+
 	  if [ -s $alignedfile -a -s $alignedfilehdr -a -s $alignedfilebai ]
 	  then
               echo -e "alignment files for this lane $lane were found"
