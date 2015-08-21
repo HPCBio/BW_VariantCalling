@@ -2,7 +2,7 @@
 #
 # start_align_block.sh
 # First module in the GGPS analysis pipeline
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"

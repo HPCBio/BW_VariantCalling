@@ -2,7 +2,7 @@
 #
 # alignfastq.sh
 # align module to be used for input files in fastq format
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"

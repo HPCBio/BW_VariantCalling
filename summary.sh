@@ -1,5 +1,5 @@
 #!/bin/bash
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 4 ]
 then
         MSG="Parameter mismatch."
@@ -55,6 +55,7 @@ else
 
 
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" > $delivery/Summary.Report
+        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" >> $outputdir/logs/Summary.Report
+        cp  $outputdir/logs/Summary.Report $delivery/Summary.Report
 
 fi

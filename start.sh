@@ -3,7 +3,7 @@
 ########################### 
 #		$1		=	       run info file
 ###########################
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."
@@ -113,9 +113,12 @@ else
         echo $pipeid >> $outputlogs/pbs.CONFIGURE
         echo `date`
 
+        ##### the first part of the Report also needs to be stored in Summary.Report
+        truncate -s 0 $outputdir/logs/Summary.Report
+
         MSG="Variant calling workflow with id:[${pipeid}] started by username:$USER at: "$( echo `date` )
         LOGS="jobid=${jobid}\nqsubfile=$outputlogs/qsub.CONFIGURE\nrunfile=$outputdir/runfile.txt\nerrorlog=$outputlogs/log.CONFIGURE.in\noutputlog=$outputlogs/log.CONFIGURE.ou"
         echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-
+        echo -e "$MSG\n\nDetails:\n\n$LOGS" >> $outputdir/logs/Summary.Report
 
 fi
