@@ -77,8 +77,7 @@ fi
     mergedfile=${sample}.realignedSample.calmd.bam
     outputfile=$delivery/Cleaned_BAMS/${sample}.Improved.realignedSample.bam
     qc_result=$rootdir/QC_Results.txt
-    qc_result2=$RealignOutput/QC_Results.${sample}.txt
-    qc_result3=$delivery/QC_results/QC_Results.${sample}.txt
+
     if [ ! -s $goodSamples ]
     then
         truncate -s 0 $goodSamples
@@ -228,8 +227,6 @@ fi
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $goodSamples
         echo -e "$detail" >> $qc_result
-        echo -e "$detail" >> $qc_result2
-        echo -e "$detail" >> $qc_result3
     else
 	echo -e "############################################################################"
         echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
@@ -238,8 +235,6 @@ fi
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $badSamples
         echo -e "$detail" >> $qc_result
-        echo -e "$detail" >> $qc_result2
-        echo -e "$detail" >> $qc_result3
     fi
     echo `date`
 
