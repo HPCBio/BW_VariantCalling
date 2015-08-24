@@ -179,7 +179,17 @@ then
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/
             exit 1;
         fi        
-        
+
+        ### sometimes we may have a BAM file with NO alignmnets, just the header
+        $samdir/samtools view -c ${bamprefix}.tmp.bam > ${bamprefix}.numAlignments
+        if [ ${bamprefix}.numAlignments -eq 0 ]
+        then
+            MSG="bwa mem command did not produce alignments. alignment failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            exit 1;
+        fi
+
         $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o ${bamprefix}.sorted.bam ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
