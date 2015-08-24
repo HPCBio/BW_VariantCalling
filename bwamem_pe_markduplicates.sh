@@ -181,8 +181,8 @@ then
         fi        
 
         ### sometimes we may have a BAM file with NO alignmnets, just the header
-        $samdir/samtools view -c ${bamprefix}.tmp.bam > ${bamprefix}.numAlignments
-        if [ ${bamprefix}.numAlignments -eq 0 ]
+        numAlignments=$( $samdir/samtools view -c ${bamprefix}.tmp.bam ) 
+        if [ $numAlignments -eq 0 ]
         then
             MSG="bwa mem command did not produce alignments. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
