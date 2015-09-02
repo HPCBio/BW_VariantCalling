@@ -247,7 +247,7 @@ fi
 	MSG="$sample DID NOT PASS the VerifyBamID filter. Stopping analysis now"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	exit 1;
+	#exit 1;
     else
 	echo -e "##########################################################################"
 	echo -e "#############  $sample PASSED the verifyBamId filter     #################"
