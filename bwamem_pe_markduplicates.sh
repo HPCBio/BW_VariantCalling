@@ -181,7 +181,9 @@ then
         fi        
 
         ### sometimes we may have a BAM file with NO alignmnets, just the header
-        numAlignments=$( $samdir/samtools view -c ${bamprefix}.tmp.bam ) 
+#        numAlignments=$( $samdir/samtools view -c ${bamprefix}.tmp.bam ) 
+        numAlignments=$( $sambambadir/sambamba view -c -t $thr ${bamprefix}.tmp.bam ) 
+        echo `date`
         if [ $numAlignments -eq 0 ]
         then
             MSG="bwa mem command did not produce alignments. alignment failed"
@@ -220,6 +222,7 @@ then
         #######################################################################################################
         #######################################################################################################
 
+        echo `date`
 
         if [ -s $rootdir/SAMPLENAMES_multiplexed.list ]
         then
@@ -230,18 +233,21 @@ then
              echo "########   QC rules: duplication cutoff <= $dup_cutoff AND mapped_reads cutoff >= $map_cutoff   #######"
              echo "########                                                                                        #######"
              echo "#######################################################################################################"
-
              ### create the output file for the results of QC and reset variables            
              QCfile=$rootdir/QC_Results.txt
              QCresult=""
-	     sample=`basename $outputdir`
+             cd $outputdir
+             cd ../
+	     sample=`basename $PWD`
+             cd $outputdir
 
              ### generate the files with the pertinent stats
              prestats=${bamprefix}.sorted.bam.flagstat
              poststats=${bamprefix}.sorted.bam.properlyMapped.bam.flagstat
              
              $samdir/samtools flagstat ${bamprefix}.sorted.bam > $prestats
-             $samdir/samtools view -bu -F 12 ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
+#             $samdir/samtools view -bu -F 12 ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
+             $sambambadir/sambamba view -f bam -t $thr -F "proper_pair" ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
              $samdir/samtools flagstat  ${bamprefix}.sorted.bam.properlyMapped.bam > $poststats
 
 
@@ -335,6 +341,7 @@ then
  	     echo "#####################################################################################################"
  	     echo "#####################################################################################################"
              echo "                     now applying the filters and populating the output reports  "
+             echo "                     WE ARE NOT HALTING EXECUTION IF SAMPLE FAILS THIS QC TEST   "
  	     echo "#####################################################################################################"
  	     echo "#####################################################################################################"
 
@@ -361,30 +368,31 @@ then
 	       QCresult="FAILED"
              fi
 
+ 	     #echo "#####################################################################################################"
+             #echo "                     now using value of QCresult to decide whether to stop execution or not          "
+ 	     #echo "#####################################################################################################"
+ 	     #echo "#####################################################################################################"
 
- 	     echo "#####################################################################################################"
-             echo "                     now using value of QCresult to decide whether to stop execution or not          "
- 	     echo "#####################################################################################################"
- 	     echo "#####################################################################################################"
-
-             if [ $QCresult != "PASSED" ]
-             then
-                 MSG="${bamprefix}.sorted.bam  failed QC test. Analysis will stop now"
-	         echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-                 cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-                 exit $exitcode;
-             fi
+             #if [ $QCresult != "PASSED" ]
+             #then
+             #    MSG="${bamprefix}.sorted.bam  failed QC test. Analysis will stop now"
+	     #    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+             #    echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+             #    cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+             #    exit $exitcode;
+             #fi
 
         fi  # end of QC of Baylor sample
         
+        echo `date`
+
  
         #######################################################################################################
         #######################################################################################################
         
-        #######################################################################################################
-        ########    This is a Baylor sample. Done with QC, now we perform markduplicates                #######
-        #######################################################################################################
+echo -e "#######################################################################################################"
+echo -e "########    Done with QC of aligned BAM, now we perform markduplicates                          #######"
+echo -e "#######################################################################################################"
  
  
         $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \

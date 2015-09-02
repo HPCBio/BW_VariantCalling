@@ -4,7 +4,9 @@
 #  This module is called from within the realign module
 ######################################
 
-##redmine=hpcbio-redmine@igb.illinois.edu
+DEBUG=0
+
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 10 ];
 then
 	MSG="parameter mismatch."
@@ -64,7 +66,7 @@ else
         skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
         memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
         dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-
+        genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
 
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
@@ -184,13 +186,13 @@ else
 	   echo "snvcaller is GATK"
            if [[ $allsites == "YES" && $input_type == "exome" ]]
            then
-               pedfile=$infile.raw.all.pbt.vcf
-	       outfile=$infile.raw.all.vcf
+               pedfile=$infile.$chr.raw.all.pbt.vcf
+	       outfile=$infile.$chr.raw.all.vcf # This line can be removed? The outputfile naming is specified a bit further down below based on the site on which calling is done.
 	       umode="EMIT_ALL_SITES"
 	       utype="BOTH"
            else
-               pedfile=$infile.raw.pbt.vcf
-	       outfile=$infile.raw.g.vcf.gz
+               pedfile=$infile.$chr.raw.pbt.vcf
+	       outfile=$infile.$chr.raw.g.vcf.gz
 	       umode="EMIT_VARIANTS_ONLY"
 	       utype="BOTH"
            fi
@@ -199,17 +201,17 @@ else
 	   echo "snvcaller is SNVMIX"
            if [ $allsites == "YES" -a $input_type == "exome" ]
            then
-	       snvfile=$infile.raw.snv.all.vcf
-	       outfile=$infile.raw.indel.all.vcf
-	       combfile=$infile.raw.multi.vcf
+	       snvfile=$infile.$chr.raw.snv.all.vcf
+	       outfile=$infile.$chr.raw.indel.all.vcf
+	       combfile=$infile.$chr.raw.multi.vcf
 	       combparms="-V $outputdir/$snvfile -V $outputdir/$outfile"
 	       umode="EMIT_ALL_SITES"
 	       utype="INDEL"
                smode="all"
            else
-	       snvfile=$infile.raw.snv.vcf
-	       outfile=$infile.raw.indel.vcf
-	       combfile=$infile.raw.multi.vcf
+	       snvfile=$infile.$chr.raw.snv.vcf
+	       outfile=$infile.$chr.raw.indel.vcf
+	       combfile=$infile.$chr.raw.multi.vcf
 	       combparms="$-V outputdir/$snvfile -V $outputdir/$outfile"
 	       umode="EMIT_VARIANTS_ONLY"
 	       utype="INDEL"
@@ -218,9 +220,9 @@ else
        elif [ $snvcaller == "BEAUTY_EXOME" ]
        then
 	   echo "snvcaller is BEAUTY_EXOME"
-	   snvfile=$infile.raw.snvmix.vcf
-	   outfile=$infile.raw.gatk.vcf
-	   combfile=$infile.raw.multi.vcf
+	   snvfile=$infile.$chr.raw.snvmix.vcf
+	   outfile=$infile.$chr.raw.gatk.vcf
+	   combfile=$infile.$chr.raw.multi.vcf
 	   combparms="-V:GATK $outputdir/$outfile -V:SNVMix $outputdir/$snvfile -priority GATK,SNVMix" 
 	   umode="EMIT_VARIANTS_ONLY"
 	   utype="BOTH"
@@ -235,60 +237,333 @@ else
 
        echo "##############################################################################"
        echo "##############################################################################"
-       echo "##########      calculating variant calling w unifiedgenotyper     ###########"
+       echo "##########      calculating variant calling w HaplotypeCaller      ###########"
        echo "##############################################################################"
        echo "##############################################################################"        
        echo `date`
 	
+       echo $genderinfo # Can take this line out later 
+       strip_right="${outputdir%/*}"
+       sample_id="${strip_right##*/}"
+       gender=`cat $genderinfo | grep -v "#" | grep $sample_id | awk -F$'\t' '{print $2}'` # Can take this line out later 
+       echo "Sample: $sample_id, gender: $gender" # Can take this line out later                                                                 
+       echo $chr # Can take this line out later
 
-        #$memprof java -Xmx6g -Xms512m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-#        $javadir/java -Xmx16g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-#	    -R $refdir/$ref \
-#	    -I $inputfile \
-#	    -T UnifiedGenotyper \
-#            -nt 8 -nct 4 \
-#            -glm $utype \
-#            --output_mode $umode \
-#            -A Coverage \
-#	    -A AlleleBalance \
-#	    -dcov 250 \
-#	    -rf BadCigar \
-#            --dbsnp $region \
-#	    -o $outfile  $uparms
+       # Start of calling conditions 
 
-        $javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-            -T HaplotypeCaller \
-            -R $refdir/$ref \
-            -I ${inputdir}/${inputfile} \
-            --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-            -gt_mode DISCOVERY \
-            -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-            -stand_call_conf 30 \
-            -stand_emit_conf 30 \
-            --sample_ploidy  2 \
-            -nt 1 -nct 1 \
-            --dbsnp $refdir/$dbsnp  \
-            -o $outfile
+       ## Calling X 
+       if [ $chr == "X" ];
+       then
+         echo "call X" # Can take this line out later
+	 # The X PAR coordinates can be found here: ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.regions.txt
+         x_par1="X:60001-2699520"
+         x_par2="X:154931044-155260560"
+
+         ### Calling male X
+         if [ $gender == "Male" ];
+         then
+           echo "Calling male X" # Can take this line out later
+           #### Calling male X_PAR1
+           ploidy=2
+           site="-L "$x_par1
+           site_name="X_PAR1"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+              eval $cmd
+           fi
+
+           #### Calling male X_PAR2
+           site="-L "$x_par2
+           site_name="X_PAR2"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+
+           #### Calling male X_nonPAR
+           ploidy=1
+           site="-L X -XL "$x_par1" -XL "$x_par2
+           site_name="X_nonPAR"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+        
+         fi
+         ### End calling male X  
+
+         ### Calling female X
+         if [ $gender == "Female" ];
+         then
+           echo "Calling female X" # Can take this line out later
+           ploidy=2
+           outfile=$infile.$chr.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           -o $outfile"
+
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+
+         fi
+         ### End calling female X
+
+       ## End calling X
+
+       ## Calling Y
+       elif [ $chr == "Y" ];
+       then
+         echo "call Y"; # Can take this line out later
+         # The X PAR coordinates can be found here: ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.regions.txt
+         y_par1="Y:10001-2649520"
+         y_par2="Y:59034050-59363566"
+
+         ### Calling male Y
+         if [ $gender == "Male" ];
+         then
+           echo "Calling male Y"  # Can take this line out later
+           #### Calling male Y_PAR1
+           ploidy=2
+           site="-L "$y_par1
+           site_name="Y_PAR1"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+  
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+
+           #### Calling male Y_PAR2
+           site="-L "$y_par2
+           site_name="Y_PAR2"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+  
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+
+           #### Calling male Y_nonPAR
+           ploidy=1
+           site="-L Y -XL "$y_par1" -XL "$y_par2
+           site_name="Y_nonPAR"
+           outfile=$infile.$site_name.raw.g.vcf.gz
+
+           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           -T HaplotypeCaller \
+           -R $refdir/$ref \
+           -I ${inputdir}/${inputfile} \
+           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+           -gt_mode DISCOVERY \
+           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+           -stand_call_conf 30 \
+           -stand_emit_conf 30 \
+           --sample_ploidy $ploidy \
+           -nt 1 -nct 1 \
+           --dbsnp $region \
+           $site \
+           -o $outfile"
+
+           echo $cmd # Can take this line out later
+
+           if [ $DEBUG -eq 0 ]
+           then
+             eval $cmd
+           fi
+
+         fi
+         ### End calling male Y
+
+       ## End calling Y
+
+       ## Calling MT
+       elif [ $chr == "MT" ];
+       then
+         echo "call MT" # Can take this line out later
+         ploidy=1
+         site_name=$chr
+         outfile=$infile.$site_name.raw.g.vcf.gz
+
+         cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+         -T HaplotypeCaller \
+         -R $refdir/$ref \
+         -I ${inputdir}/${inputfile} \
+         --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+         -gt_mode DISCOVERY \
+         -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+         -stand_call_conf 30 \
+         -stand_emit_conf 30 \
+         --sample_ploidy $ploidy \
+         -nt 1 -nct 1 \
+         --dbsnp $region \
+         -o $outfile"
+
+         echo $cmd # Can take this line out later
+
+         if [ $DEBUG -eq 0 ]
+         then
+          eval $cmd
+         fi
+       ## End calling MT
+
+       ## Calling the autosomes
+       else
+         echo "Call 1->22" # Can take this line out later
+         ploidy=2
+         site_name=$chr
+
+         cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+         -T HaplotypeCaller \
+         -R $refdir/$ref \
+         -I ${inputdir}/${inputfile} \
+         --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+         -gt_mode DISCOVERY \
+         -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+         -stand_call_conf 30 \
+         -stand_emit_conf 30 \
+         --sample_ploidy $ploidy \
+         -nt 1 -nct 1 \
+         --dbsnp $region \
+         -o $outfile"
+
+         echo $cmd # Can take this line out later
+
+         if [ $DEBUG -eq 0 ]
+         then
+           eval $cmd
+         fi
+
+       fi
+       ## End calling the autosomes
+       
+       # End of calling conditions 
 
         exitcode=$?
 	echo `date`
         if [ $exitcode -ne 0 ]
         then
-	    MSG="unifiedgenotyper command failed  exitcode=$exitcode. vcall failed."
+	    MSG="HaplotypeCaller command failed  exitcode=$exitcode. vcall failed."
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit $exitcode;
         fi
 
-        if [ ! -s $outfile ]
+        if [[ ! ( $chr == "Y"   &&  $gender == "Female" ) ]]
         then
-	    MSG="$outfile unifiedgenotyper file not created. vcall failed."
+          if [ ! -s $outfile ] 
+          then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
-        fi
-
-
+          fi
+         fi
 
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
@@ -335,7 +610,7 @@ else
 	    echo `date`
 
             pilefile=$outfile.pileup
-            tmpfile=$infile.tmp.snv
+            tmpfile=$infile.$chr.tmp.snv
             $memprof $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
 
             exitcode=$?

@@ -46,28 +46,26 @@ else
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
         samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+        sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d '=' -f2 )
         gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
         recalibrator=$( cat $runfile | grep -w RECALIBRATOR | cut -d '=' -f2 )
         novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
         dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-        #kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
-        #targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
+        indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
         realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
 	outputrootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
         thr=`expr $threads "-" 1`
-        #thr=`expr $threads "/" 2`
-
-        # cleaning up the lists
         chrinfiles=$( echo $chrinfiles | tr ":" " " )
-#        chrinputfiles=$( echo $chrinputfiles | tr ":" " " ) # not used anymore?
         RGparms=$( echo $RGparms | tr "::" ":" | sed "s/:/\tRG/g" | sed "s/ID\=/RGID\=/" )
-
         region=$( echo $region | tr ":" " " | sed "s/knownSites /--knownSites /g")
         real2parms=$( echo $realparms | tr ":" " " | sed "s/known /-known /g" )
         realparms=$( echo $realparms | tr ":" " " | sed "s/known /--known /g" )
         recalparms=$( echo $recalparms | tr ":" " " | sed "s/knownSites /--knownSites /g")
         skipRealign="NO"
+        MillsIndels=$refdir/$indeldir/Mills_and_1000G_gold_standard.indels.b37.vcf
+        OneKIndels=$refdir/$indeldir/1000G_phase1.indels.b37.vcf
+
         
         if [ ! -d $picardir ]
         then
@@ -78,6 +76,13 @@ else
         if [ ! -d $samdir ]
         then
 	    MSG="$samdir samtools directory not found"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+        fi
+        if [ ! -d $sambambadir ]
+        then
+	    MSG="$sambambadir sambamba directory not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -115,6 +120,27 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+        if [ ! -s $refdir/$dbSNP ]
+        then
+	    MSG="$dbSNP DBSNP file not found"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+        fi
+        if [ ! -s $MillsIndels ]
+        then
+	    MSG="$MillsIndels indels file  not found"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+        fi
+        if [ ! -s $OneKIndels ]
+        then
+	    MSG="$OneKIndelsIndels indels file  not found"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+        fi
 
         if [ ! -s $inputfile ]
         then
@@ -140,7 +166,8 @@ else
         echo "#################################################################################"
 
         cd $realrecaldir
-	$samdir/samtools view -bu -h $inputfile $chr > presorted_norg.${chr}.$infile  
+	$samdir/samtools view -bu -h $inputfile $chr > presorted_wrg.${chr}.$infile  
+	#$sambambadir/sambamba view -f bam -h -t $thr $inputfile $chr > presorted_wrg.${chr}.$infile  
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -149,16 +176,15 @@ else
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
 	    exit $exitcode;
 	fi
-	if [ ! -s presorted_norg.${chr}.$infile ]
+	if [ ! -s presorted_wrg.${chr}.$infile ]
 	then
 	    MSG="split by chromosome samtools command failed it produced an empty file exitcode=$exitcode  realignment-recalibration stopped for $infile"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
 	    exit $exitcode;
 	fi
 
-	ln -s presorted_norg.${chr}.$infile  presorted_wrg.${chr}.$infile
 
-        $novodir/novosort --threads $thr --tmpdir $realrecaldir -m 16g presorted_wrg.${chr}.$infile > sorted_wrg.${chr}.$infile 
+        $novodir/novosort --index --threads $thr --tmpdir $realrecaldir -m 16g -o sorted_wrg.${chr}.$infile  presorted_wrg.${chr}.$infile 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -173,7 +199,7 @@ else
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
 	    exit $exitcode;
 	fi
-	$samdir/samtools index sorted_wrg.${chr}.$infile  
+	#$samdir/samtools index sorted_wrg.${chr}.$infile  
 	$samdir/samtools view -H  sorted_wrg.${chr}.$infile > sorted_wrg.${chr}.${infile}.header  
 	echo `date`
 
@@ -192,16 +218,9 @@ else
             -nt $thr \
 	    -o realign.$chr.$infile.list $realparms
 
-	#exitcode=$?
-	#echo `date`
-	#if [ $exitcode -ne 0 ]
-	#then
-	#    MSG="realignertargetcreator command failed exitcode=$exitcode  realignment-recalibration stopped for $infile"
-        #    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
-	#    exit $exitcode;
-	#fi
+	echo `date`
 
-	
+        echo -e "########### checking to see if the target list is empty                   #############"	
 	if [ -z realign.$chr.$infile.list ]
 	then
 	    ## the target list is empty, we need to skip IndelAligner command
@@ -210,11 +229,10 @@ else
             #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
             #exit 1;
 	fi
-	echo `date`
 
         if [ $skipRealign != "YES" ]
         then
-             ## the target list is NOT empty. Proceed with IndelRealigner
+             echo -e "########### the target list is NOT empty. Proceed with IndelRealigner #############"
 	     $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
 	    -I sorted_wrg.$chr.$infile \
@@ -232,8 +250,8 @@ else
 	        exit $exitcode;
 	    fi
         else
-            ## the target  list is empty. We simply create a soft link to the original input file and proceed to recalibration
-            ln -s sorted_wrg.$chr.$infile realign.$chr.$infile.realigned.bam
+             echo -e "########### the target list is empty. Skip IndelRealigner #############"
+             cp sorted_wrg.$chr.$infile realign.$chr.$infile.realigned.bam
         fi
 
 	if [ ! -s realign.$chr.$infile.realigned.bam ]
@@ -242,6 +260,7 @@ else
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
             exit 1;
         fi
+
         echo "#################################################################################"
 	echo "##############################   STEP3: recalibration       #####################"
         echo "#################################################################################"
@@ -253,8 +272,9 @@ else
             echo "#################################################################################"
             $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
-                $recalparms \
                 --knownSites $refdir/$dbSNP \
+                --knownSites $MillsIndels \
+                --knownSites $OneKIndels \
                 -I realign.$chr.$infile.realigned.bam \
                 -T BaseRecalibrator \
                 --out recal.$chr.$infile.recal_report.grp \
@@ -309,8 +329,9 @@ else
             echo "#################################################################################"
    	    $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
-		$recalparms \
-                --knownSites $refdir/$dbSNP \		
+                --knownSites $refdir/$dbSNP \
+                --knownSites $MillsIndels \
+                --knownSites $OneKIndels \		
 		-I realign.$chr.$infile.realigned.bam \
 		-T CountCovariates \
 		-cov ReadGroupCovariate \
@@ -364,9 +385,9 @@ else
         fi # end choosing between BQSR and CountCovariates/TableRecalibration
 
         echo "#################################################################################"
-	echo "     done with recalibration "
+	echo "#########                          done with recalibration             ##########"
         echo "#################################################################################"
-	echo "     QC step. if a Baylor sample then run samtools calmd "
+	echo "#########     Optional QC step. if a Baylor sample then run samtools calmd ######"
         echo "#################################################################################"
 
         if [ -s $outputrootdir/SAMPLENAMES_multiplexed.list ]
@@ -389,17 +410,17 @@ else
                 exit 1;
             fi
         else
-            ln -s $realrecaldir/recal.$chr.$infile.real.recal.bam  $outputfile
+            cp $realrecaldir/recal.$chr.$infile.real.recal.bam  $outputfile
         fi
 
         ###### indexing the recalibrated.bam file to make variant callers happy
         
-        $samdir/samtools index $outputfile
+        $sambambadir/sambamba index -t $thr $outputfile
 	exitcode=$?
 	echo `date`		
 	if [ $exitcode -ne 0 ]
 	then
-	    MSG="samtools index command failed with outputfile=$outputfile exitcode=$exitcode for $infile"
+	    MSG="sambamba index command failed with outputfile=$outputfile exitcode=$exitcode for $infile"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $RealignOutputLogs/FAILED_realrecal.${infile}.Anisimov.msg
 	    exit $exitcode;
 	fi
