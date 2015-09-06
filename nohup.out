@@ -4,626 +4,254 @@
 
 
 ++ date
-+ echo lun ago 24 14:44:52 CDT 2015
-lun ago 24 14:44:52 CDT 2015
++ echo vie sep 4 10:34:23 CDT 2015
+vie sep 4 10:34:23 CDT 2015
 + scriptfile=./start.sh
-+ runfile=../../config/runfile_3samples1lane_Baylor.txt
-+ '[' '!' -s ../../config/runfile_3samples1lane_Baylor.txt ']'
++ runfile=../../config/runfile_2samples1lane_Baylor_Ramsey.txt
++ '[' '!' -s ../../config/runfile_2samples1lane_Baylor_Ramsey.txt ']'
 + set +x
 
 
 ############# CHECKING PARAMETERS ###############
 
 
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w REPORTTICKET
 ++ cut -d = -f2
 + reportticket=3820
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w EMAIL
 ++ cut -d = -f2
 + email=grendon@illinois.edu
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSPROJECTID
 ++ cut -d = -f2
 + pbsprj=jti
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w EPILOGUE
-++ cut -d = -f2
-+ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w SCRIPTDIR
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ grep -w PBSCPUOTHERWGEN
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-+ pbscpu=10:00:00
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824 ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX2 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX4 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX5 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/
-++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_3samples1lane_Baylor.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2183477.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2183477.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2183477
-+ echo 2183477
-+ echo 2183477
-++ date
-+ echo lun ago 24 14:44:53 CDT 2015
-lun ago 24 14:44:53 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/Summary.Report
-+++ date
-++ echo lun ago 24 14:44:53 CDT 2015
-+ MSG='Variant calling workflow with id:[2183477] started by username:rendong at: lun ago 24 14:44:53 CDT 2015'
-+ LOGS='jobid=2183477.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2183477] started by username:rendong at: lun ago 24 14:44:53 CDT 2015\n\nDetails:\n\njobid=2183477.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2183477] started by username:rendong at: lun ago 24 14:44:53 CDT 2015\n\nDetails:\n\njobid=2183477.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo lun ago 24 15:13:05 CDT 2015
-lun ago 24 15:13:05 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_3samples1lane_Baylor.txt
-+ '[' '!' -s ../../config/runfile_3samples1lane_Baylor.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w REPORTTICKET
-++ cut -d = -f2
-+ reportticket=3820
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w OUTPUTDIR
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-++ grep -w EMAIL
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSPROJECTID
-++ cut -d = -f2
-+ pbsprj=jti
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-++ grep -w EPILOGUE
-+ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-++ grep -w INPUTTYPE
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ grep -w SCRIPTDIR
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=10:00:00
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824 ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX2 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX4 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX5 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/
-++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_3samples1lane_Baylor.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2183752.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2183752.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2183752
-+ echo 2183752
-+ echo 2183752
-++ date
-+ echo lun ago 24 15:13:07 CDT 2015
-lun ago 24 15:13:07 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/Summary.Report
-+++ date
-++ echo lun ago 24 15:13:07 CDT 2015
-+ MSG='Variant calling workflow with id:[2183752] started by username:rendong at: lun ago 24 15:13:07 CDT 2015'
-+ LOGS='jobid=2183752.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2183752] started by username:rendong at: lun ago 24 15:13:07 CDT 2015\n\nDetails:\n\njobid=2183752.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2183752] started by username:rendong at: lun ago 24 15:13:07 CDT 2015\n\nDetails:\n\njobid=2183752.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo lun ago 24 16:41:14 CDT 2015
-lun ago 24 16:41:14 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_3samples1lane_Baylor.txt
-+ '[' '!' -s ../../config/runfile_3samples1lane_Baylor.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-++ grep -w REPORTTICKET
-+ reportticket=3820
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ cut -d = -f2
-++ grep -w OUTPUTDIR
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w EMAIL
-++ cut -d = -f2
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSPROJECTID
-++ cut -d = -f2
-+ pbsprj=jti
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w EPILOGUE
-++ cut -d = -f2
-+ epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w SCRIPTDIR
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=10:00:00
-++ cat ../../config/runfile_3samples1lane_Baylor.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824 ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX2 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX4 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/H27GJCCXX5 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/
-++ chmod 740 /projects/sciteam/jq9/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_3samples1lane_Baylor.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jq9/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2184022.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ sed 's/\.[a-z]*[0-9]*//g'
-++ echo 2184022.nid11293
-+ pipeid=2184022
-+ echo 2184022
-+ echo 2184022
-++ date
-+ echo lun ago 24 16:41:18 CDT 2015
-lun ago 24 16:41:18 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/Summary.Report
-+++ date
-++ echo lun ago 24 16:41:18 CDT 2015
-+ MSG='Variant calling workflow with id:[2184022] started by username:rendong at: lun ago 24 16:41:18 CDT 2015'
-+ LOGS='jobid=2184022.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2184022] started by username:rendong at: lun ago 24 16:41:18 CDT 2015\n\nDetails:\n\njobid=2184022.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2184022] started by username:rendong at: lun ago 24 16:41:18 CDT 2015\n\nDetails:\n\njobid=2184022.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_Baylor_3samples1lane_0824/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo mar sep 1 11:08:29 CDT 2015
-mar sep 1 11:08:29 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w REPORTTICKET
-++ cut -d = -f2
-+ reportticket=3820
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w OUTPUTDIR
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w EMAIL
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSPROJECTID
-++ cut -d = -f2
-+ pbsprj=jti
-++ grep -w EPILOGUE
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ cut -d = -f2
 + epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w INPUTTYPE
 ++ cut -d = -f2
 ++ tr '[a-z]' '[A-Z]'
 + input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w SCRIPTDIR
 ++ cut -d = -f2
 + scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
 + '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
 + '[' -z grendon@illinois.edu ']'
 + '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSCPUOTHERWGEN
 ++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
++ pbscpu=24:00:00
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSQUEUEWGEN
 ++ cut -d = -f2
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831 ']'
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904 ']'
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
+++ cp ../../config/runfile_2samples1lane_Baylor_Ramsey.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
++ WorkflowName=AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
++ echo '# @begin AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2210171.nid11293
++ jobid=2216207.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
-++ echo 2210171.nid11293
+++ echo 2216207.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210171
-+ echo 2210171
-+ echo 2210171
++ pipeid=2216207
++ echo 2216207
++ echo 2216207
 ++ date
-+ echo mar sep 1 11:08:30 CDT 2015
-mar sep 1 11:08:30 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/Summary.Report
++ echo vie sep 4 10:34:24 CDT 2015
+vie sep 4 10:34:24 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/Summary.Report
 +++ date
-++ echo mar sep 1 11:08:30 CDT 2015
-+ MSG='Variant calling workflow with id:[2210171] started by username:rendong at: mar sep 1 11:08:30 CDT 2015'
-+ LOGS='jobid=2210171.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210171] started by username:rendong at: mar sep 1 11:08:30 CDT 2015\n\nDetails:\n\njobid=2210171.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
+++ echo vie sep 4 10:34:24 CDT 2015
++ MSG='Variant calling workflow with id:[2216207] started by username:rendong at: vie sep 4 10:34:24 CDT 2015'
++ LOGS='jobid=2216207.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210171] started by username:rendong at: mar sep 1 11:08:30 CDT 2015\n\nDetails:\n\njobid=2210171.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2216207] started by username:rendong at: vie sep 4 10:34:24 CDT 2015\n\nDetails:\n\njobid=2216207.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2216207] started by username:rendong at: vie sep 4 10:34:24 CDT 2015\n\nDetails:\n\njobid=2216207.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
 
 
 ############# BEGIN VARIANT CALLING WORKFLOW ###############
 
 
 ++ date
-+ echo mar sep 1 11:42:08 CDT 2015
-mar sep 1 11:42:08 CDT 2015
++ echo vie sep 4 12:21:28 CDT 2015
+vie sep 4 12:21:28 CDT 2015
 + scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
++ runfile=../../config/runfile_2samples1lane_Baylor_Ramsey.txt
++ '[' '!' -s ../../config/runfile_2samples1lane_Baylor_Ramsey.txt ']'
 + set +x
 
 
 ############# CHECKING PARAMETERS ###############
 
 
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w REPORTTICKET
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ cut -d = -f2
+++ grep -w REPORTTICKET
 + reportticket=3820
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w EMAIL
 ++ cut -d = -f2
 + email=grendon@illinois.edu
+++ cut -d = -f2
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSPROJECTID
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 + pbsprj=jti
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
+++ cut -d = -f2
 ++ grep -w EPILOGUE
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 + epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w INPUTTYPE
 ++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ cut -d = -f2
++ input_type=GENOME
+++ cut -d = -f2
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w SCRIPTDIR
 + scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
 + '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
 + '[' -z grendon@illinois.edu ']'
 + '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSCPUOTHERWGEN
 ++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
++ pbscpu=24:00:00
+++ cat ../../config/runfile_2samples1lane_Baylor_Ramsey.txt
 ++ grep -w PBSQUEUEWGEN
 ++ cut -d = -f2
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831 ']'
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904 ']'
 + echo 'resetting directory'
 resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/
+++ rm -r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/IAC0D /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/IBQ0T /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/qsubGenericHeader /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/SAMPLEGROUPS.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/SAMPLENAMES.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/SAMPLENAMES_multiplexed.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
+++ cp ../../config/runfile_2samples1lane_Baylor_Ramsey.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
++ WorkflowName=AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904
++ echo '# @begin AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2210187.nid11293
++ jobid=2217114.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
+++ echo 2217114.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-++ echo 2210187.nid11293
-+ pipeid=2210187
-+ echo 2210187
-+ echo 2210187
++ pipeid=2217114
++ echo 2217114
++ echo 2217114
 ++ date
-+ echo mar sep 1 11:42:09 CDT 2015
-mar sep 1 11:42:09 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/Summary.Report
++ echo vie sep 4 12:21:31 CDT 2015
+vie sep 4 12:21:31 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/Summary.Report
 +++ date
-++ echo mar sep 1 11:42:10 CDT 2015
-+ MSG='Variant calling workflow with id:[2210187] started by username:rendong at: mar sep 1 11:42:10 CDT 2015'
-+ LOGS='jobid=2210187.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
+++ echo vie sep 4 12:21:31 CDT 2015
++ MSG='Variant calling workflow with id:[2217114] started by username:rendong at: vie sep 4 12:21:31 CDT 2015'
++ LOGS='jobid=2217114.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2217114] started by username:rendong at: vie sep 4 12:21:31 CDT 2015\n\nDetails:\n\njobid=2217114.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210187] started by username:rendong at: mar sep 1 11:42:10 CDT 2015\n\nDetails:\n\njobid=2210187.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210187] started by username:rendong at: mar sep 1 11:42:10 CDT 2015\n\nDetails:\n\njobid=2210187.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2217114] started by username:rendong at: vie sep 4 12:21:31 CDT 2015\n\nDetails:\n\njobid=2217114.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_indels_and_dbSNP_2samples1lane_Ramsey_0904/logs/log.CONFIGURE.ou'
 
 
 ############# BEGIN VARIANT CALLING WORKFLOW ###############
 
 
 ++ date
-+ echo mar sep 1 12:19:05 CDT 2015
-mar sep 1 12:19:05 CDT 2015
++ echo dom sep 6 13:30:51 CDT 2015
+dom sep 6 13:30:51 CDT 2015
 + scriptfile=./start.sh
 + runfile=../../config/runfile_2samples1lane_GIAB.txt
 + '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
@@ -640,253 +268,7 @@ mar sep 1 12:19:05 CDT 2015
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w EMAIL
-++ cut -d = -f2
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w PBSPROJECTID
-+ pbsprj=jti
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w EPILOGUE
-+ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w INPUTTYPE
-++ tr '[a-z]' '[A-Z]'
-++ cut -d = -f2
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w SCRIPTDIR
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831 ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/
-++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2210423.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2210423.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210423
-+ echo 2210423
-+ echo 2210423
-++ date
-+ echo mar sep 1 12:20:33 CDT 2015
-mar sep 1 12:20:33 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/Summary.Report
-+++ date
-++ echo mar sep 1 12:20:33 CDT 2015
-+ MSG='Variant calling workflow with id:[2210423] started by username:rendong at: mar sep 1 12:20:33 CDT 2015'
-+ LOGS='jobid=2210423.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210423] started by username:rendong at: mar sep 1 12:20:33 CDT 2015\n\nDetails:\n\njobid=2210423.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210423] started by username:rendong at: mar sep 1 12:20:33 CDT 2015\n\nDetails:\n\njobid=2210423.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0831/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo mar sep 1 12:57:19 CDT 2015
-mar sep 1 12:57:19 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w REPORTTICKET
-++ cut -d = -f2
-+ reportticket=3820
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w OUTPUTDIR
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w EMAIL
-+ email=grendon@illinois.edu
-++ grep -w PBSPROJECTID
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ pbsprj=jti
-++ grep -w EPILOGUE
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w SCRIPTDIR
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=12:00:00
-++ grep -w PBSQUEUEWGEN
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901 ']'
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/
-++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2210619.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2210619.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210619
-+ echo 2210619
-+ echo 2210619
-++ date
-+ echo mar sep 1 12:57:20 CDT 2015
-mar sep 1 12:57:20 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/Summary.Report
-+++ date
-++ echo mar sep 1 12:57:20 CDT 2015
-+ MSG='Variant calling workflow with id:[2210619] started by username:rendong at: mar sep 1 12:57:20 CDT 2015'
-+ LOGS='jobid=2210619.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210619] started by username:rendong at: mar sep 1 12:57:20 CDT 2015\n\nDetails:\n\njobid=2210619.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210619] started by username:rendong at: mar sep 1 12:57:20 CDT 2015\n\nDetails:\n\njobid=2210619.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo mar sep 1 14:07:50 CDT 2015
-mar sep 1 14:07:50 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w REPORTTICKET
-++ cut -d = -f2
-+ reportticket=3820
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w OUTPUTDIR
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w EMAIL
 ++ cut -d = -f2
@@ -916,82 +298,82 @@ mar sep 1 14:07:50 CDT 2015
 ++ cut -d = -f2
 + pbscpu=12:00:00
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSQUEUEWGEN
 ++ cut -d = -f2
+++ grep -w PBSQUEUEWGEN
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode ']'
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
+++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2210689.nid11293
++ jobid=2219472.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
-++ echo 2210689.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210689
-+ echo 2210689
-+ echo 2210689
+++ echo 2219472.nid11293
++ pipeid=2219472
++ echo 2219472
++ echo 2219472
 ++ date
-+ echo mar sep 1 14:07:51 CDT 2015
-mar sep 1 14:07:51 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
++ echo dom sep 6 13:30:52 CDT 2015
+dom sep 6 13:30:52 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/Summary.Report
 +++ date
-++ echo mar sep 1 14:07:51 CDT 2015
-+ MSG='Variant calling workflow with id:[2210689] started by username:rendong at: mar sep 1 14:07:51 CDT 2015'
-+ LOGS='jobid=2210689.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210689] started by username:rendong at: mar sep 1 14:07:51 CDT 2015\n\nDetails:\n\njobid=2210689.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
+++ echo dom sep 6 13:30:52 CDT 2015
++ MSG='Variant calling workflow with id:[2219472] started by username:rendong at: dom sep 6 13:30:52 CDT 2015'
++ LOGS='jobid=2219472.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210689] started by username:rendong at: mar sep 1 14:07:51 CDT 2015\n\nDetails:\n\njobid=2210689.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219472] started by username:rendong at: dom sep 6 13:30:52 CDT 2015\n\nDetails:\n\njobid=2219472.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219472] started by username:rendong at: dom sep 6 13:30:52 CDT 2015\n\nDetails:\n\njobid=2219472.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 
 
 ############# BEGIN VARIANT CALLING WORKFLOW ###############
 
 
 ++ date
-+ echo mar sep 1 14:18:26 CDT 2015
-mar sep 1 14:18:26 CDT 2015
++ echo dom sep 6 14:02:16 CDT 2015
+dom sep 6 14:02:16 CDT 2015
 + scriptfile=./start.sh
 + runfile=../../config/runfile_2samples1lane_GIAB.txt
 + '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
@@ -1008,13 +390,13 @@ mar sep 1 14:18:26 CDT 2015
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w EMAIL
 ++ cut -d = -f2
 + email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w PBSPROJECTID
+++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ cut -d = -f2
 + pbsprj=jti
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
@@ -1041,81 +423,81 @@ mar sep 1 14:18:26 CDT 2015
 ++ grep -w PBSQUEUEWGEN
 ++ cut -d = -f2
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode ']'
 + echo 'resetting directory'
 resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
+++ rm -r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/qsubGenericHeader /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLEGROUPS.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES_multiplexed.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR504510 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR507686 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
+++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2210724.nid11293
++ jobid=2219534.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
-++ echo 2210724.nid11293
+++ echo 2219534.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210724
-+ echo 2210724
-+ echo 2210724
++ pipeid=2219534
++ echo 2219534
++ echo 2219534
 ++ date
-+ echo mar sep 1 14:18:28 CDT 2015
-mar sep 1 14:18:28 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
++ echo dom sep 6 14:02:18 CDT 2015
+dom sep 6 14:02:18 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/Summary.Report
 +++ date
-++ echo mar sep 1 14:18:28 CDT 2015
-+ MSG='Variant calling workflow with id:[2210724] started by username:rendong at: mar sep 1 14:18:28 CDT 2015'
-+ LOGS='jobid=2210724.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
+++ echo dom sep 6 14:02:18 CDT 2015
++ MSG='Variant calling workflow with id:[2219534] started by username:rendong at: dom sep 6 14:02:18 CDT 2015'
++ LOGS='jobid=2219534.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219534] started by username:rendong at: dom sep 6 14:02:18 CDT 2015\n\nDetails:\n\njobid=2219534.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210724] started by username:rendong at: mar sep 1 14:18:28 CDT 2015\n\nDetails:\n\njobid=2210724.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210724] started by username:rendong at: mar sep 1 14:18:28 CDT 2015\n\nDetails:\n\njobid=2210724.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219534] started by username:rendong at: dom sep 6 14:02:18 CDT 2015\n\nDetails:\n\njobid=2219534.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 
 
 ############# BEGIN VARIANT CALLING WORKFLOW ###############
 
 
 ++ date
-+ echo mar sep 1 15:59:26 CDT 2015
-mar sep 1 15:59:26 CDT 2015
++ echo dom sep 6 14:39:17 CDT 2015
+dom sep 6 14:39:17 CDT 2015
 + scriptfile=./start.sh
 + runfile=../../config/runfile_2samples1lane_GIAB.txt
 + '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
@@ -1132,7 +514,7 @@ mar sep 1 15:59:26 CDT 2015
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w EMAIL
 ++ cut -d = -f2
@@ -1142,255 +524,7 @@ mar sep 1 15:59:26 CDT 2015
 ++ cut -d = -f2
 + pbsprj=jti
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 ++ grep -w EPILOGUE
-+ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w SCRIPTDIR
-++ cut -d = -f2
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
-++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2210848.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2210848.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210848
-+ echo 2210848
-+ echo 2210848
-++ date
-+ echo mar sep 1 15:59:31 CDT 2015
-mar sep 1 15:59:31 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
-+++ date
-++ echo mar sep 1 15:59:31 CDT 2015
-+ MSG='Variant calling workflow with id:[2210848] started by username:rendong at: mar sep 1 15:59:31 CDT 2015'
-+ LOGS='jobid=2210848.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210848] started by username:rendong at: mar sep 1 15:59:31 CDT 2015\n\nDetails:\n\njobid=2210848.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210848] started by username:rendong at: mar sep 1 15:59:31 CDT 2015\n\nDetails:\n\njobid=2210848.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo mar sep 1 16:50:08 CDT 2015
-mar sep 1 16:50:08 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w REPORTTICKET
-+ reportticket=3820
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w OUTPUTDIR
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w EMAIL
-++ cut -d = -f2
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSPROJECTID
-++ cut -d = -f2
-+ pbsprj=jti
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w EPILOGUE
-++ cut -d = -f2
-+ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w SCRIPTDIR
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ grep -w PBSCPUOTHERWGEN
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
-++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2210882.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2210882.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2210882
-+ echo 2210882
-+ echo 2210882
-++ date
-+ echo mar sep 1 16:50:10 CDT 2015
-mar sep 1 16:50:10 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
-+++ date
-++ echo mar sep 1 16:50:10 CDT 2015
-+ MSG='Variant calling workflow with id:[2210882] started by username:rendong at: mar sep 1 16:50:10 CDT 2015'
-+ LOGS='jobid=2210882.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2210882] started by username:rendong at: mar sep 1 16:50:10 CDT 2015\n\nDetails:\n\njobid=2210882.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2210882] started by username:rendong at: mar sep 1 16:50:10 CDT 2015\n\nDetails:\n\njobid=2210882.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo mar sep 1 18:20:22 CDT 2015
-mar sep 1 18:20:22 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ grep -w REPORTTICKET
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ reportticket=3820
-++ grep -w OUTPUTDIR
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w EMAIL
-++ cut -d = -f2
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSPROJECTID
-++ cut -d = -f2
-+ pbsprj=jti
-++ grep -w EPILOGUE
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ cut -d = -f2
 + epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
@@ -1413,205 +547,81 @@ mar sep 1 18:20:22 CDT 2015
 ++ grep -w PBSQUEUEWGEN
 ++ cut -d = -f2
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode ']'
 + echo 'resetting directory'
 resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
+++ rm -r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/QC_Results.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/qsubGenericHeader /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLEGROUPS.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES_multiplexed.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR504510 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR507686 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
+++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2211052.nid11293
++ jobid=2219728.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
+++ echo 2219728.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-++ echo 2211052.nid11293
-+ pipeid=2211052
-+ echo 2211052
-+ echo 2211052
++ pipeid=2219728
++ echo 2219728
++ echo 2219728
 ++ date
-+ echo mar sep 1 18:20:24 CDT 2015
-mar sep 1 18:20:24 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
++ echo dom sep 6 14:39:19 CDT 2015
+dom sep 6 14:39:19 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/Summary.Report
 +++ date
-++ echo mar sep 1 18:20:24 CDT 2015
-+ MSG='Variant calling workflow with id:[2211052] started by username:rendong at: mar sep 1 18:20:24 CDT 2015'
-+ LOGS='jobid=2211052.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2211052] started by username:rendong at: mar sep 1 18:20:24 CDT 2015\n\nDetails:\n\njobid=2211052.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
+++ echo dom sep 6 14:39:19 CDT 2015
++ MSG='Variant calling workflow with id:[2219728] started by username:rendong at: dom sep 6 14:39:19 CDT 2015'
++ LOGS='jobid=2219728.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219728] started by username:rendong at: dom sep 6 14:39:19 CDT 2015\n\nDetails:\n\njobid=2219728.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2211052] started by username:rendong at: mar sep 1 18:20:24 CDT 2015\n\nDetails:\n\njobid=2211052.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219728] started by username:rendong at: dom sep 6 14:39:19 CDT 2015\n\nDetails:\n\njobid=2219728.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 
 
 ############# BEGIN VARIANT CALLING WORKFLOW ###############
 
 
 ++ date
-+ echo mar sep 1 18:59:01 CDT 2015
-mar sep 1 18:59:01 CDT 2015
-+ scriptfile=./start.sh
-+ runfile=../../config/runfile_2samples1lane_GIAB.txt
-+ '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
-+ set +x
-
-
-############# CHECKING PARAMETERS ###############
-
-
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w REPORTTICKET
-+ reportticket=3820
-++ cut -d = -f2
-++ grep -w OUTPUTDIR
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-++ grep -w EMAIL
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-+ email=grendon@illinois.edu
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w PBSPROJECTID
-+ pbsprj=jti
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w EPILOGUE
-++ cut -d = -f2
-+ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w INPUTTYPE
-++ cut -d = -f2
-++ tr '[a-z]' '[A-Z]'
-+ input_type=GENOME
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
-++ grep -w SCRIPTDIR
-+ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
-+ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
-+ '[' -z grendon@illinois.edu ']'
-+ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSCPUOTHERWGEN
-++ cut -d = -f2
-+ pbscpu=12:00:00
-++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ grep -w PBSQUEUEWGEN
-++ cut -d = -f2
-+ pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
-+ echo 'resetting directory'
-resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
-++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
-chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ set +x
-
- ### initialize autodocumentation script ### 
-
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-+ set +x
-
- ### launching the pipeline configuration script ### 
-
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-+ echo '#PBS -V'
-+ echo '#PBS -A jti'
-+ echo '#PBS -N CONFIGURE'
-+ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
-+ echo '#PBS -l walltime=00:03:00'
-+ echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
-+ echo '#PBS -q debug'
-+ echo '#PBS -m ae'
-+ echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
-+ echo -e '\n\n'
-+ echo 'exitcode=$?'
-+ echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
-+ echo -e '\n\n   exit 1'
-+ echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-Job submitted to account: jti
-+ jobid=2211073.nid11293
-+ set +x
-
- ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
-
-++ echo 2211073.nid11293
-++ sed 's/\.[a-z]*[0-9]*//g'
-+ pipeid=2211073
-+ echo 2211073
-+ echo 2211073
-++ date
-+ echo mar sep 1 18:59:03 CDT 2015
-mar sep 1 18:59:03 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
-+++ date
-++ echo mar sep 1 18:59:03 CDT 2015
-+ MSG='Variant calling workflow with id:[2211073] started by username:rendong at: mar sep 1 18:59:03 CDT 2015'
-+ LOGS='jobid=2211073.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2211073] started by username:rendong at: mar sep 1 18:59:03 CDT 2015\n\nDetails:\n\njobid=2211073.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2211073] started by username:rendong at: mar sep 1 18:59:03 CDT 2015\n\nDetails:\n\njobid=2211073.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-
-
-############# BEGIN VARIANT CALLING WORKFLOW ###############
-
-
-++ date
-+ echo $'mi\303\251' sep 2 08:19:44 CDT 2015
-mié sep 2 08:19:44 CDT 2015
++ echo dom sep 6 15:05:07 CDT 2015
+dom sep 6 15:05:07 CDT 2015
 + scriptfile=./start.sh
 + runfile=../../config/runfile_2samples1lane_GIAB.txt
 + '[' '!' -s ../../config/runfile_2samples1lane_GIAB.txt ']'
@@ -1628,23 +638,23 @@ mié sep 2 08:19:44 CDT 2015
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w OUTPUTDIR
 ++ cut -d = -f2
-+ outputdir=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 ++ grep -w EMAIL
+++ cut -d = -f2
 + email=grendon@illinois.edu
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 ++ grep -w PBSPROJECTID
+++ cut -d = -f2
 + pbsprj=jti
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ cut -d = -f2
 ++ grep -w EPILOGUE
+++ cut -d = -f2
 + epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 ++ grep -w INPUTTYPE
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
-++ tr '[a-z]' '[A-Z]'
 ++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
 + input_type=GENOME
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ grep -w SCRIPTDIR
@@ -1661,70 +671,70 @@ mié sep 2 08:19:44 CDT 2015
 ++ cat ../../config/runfile_2samples1lane_GIAB.txt
 ++ cut -d = -f2
 + pbsqueue=low
-+ '[' '!' -d /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba ']'
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode ']'
 + echo 'resetting directory'
 resetting directory
-++ rm -r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/QC_Results.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/qsubGenericHeader /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLEGROUPS.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SAMPLENAMES_multiplexed.list /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR504510 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/SRR507686 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
-+ mkdir -p /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
-++ chmod -R 770 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/
+++ rm -r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/QC_Results.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/qsubGenericHeader /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLEGROUPS.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SAMPLENAMES_multiplexed.list /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR504510 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/SRR507686 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
+++ chmod -R 770 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/
 ++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
 chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
-++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
-+ runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt
+++ cp ../../config/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt
 + set +x
 
  ### initialize autodocumentation script ### 
 
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/WorkflowAutodocumentationScript.sh
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/WorkflowAutodocumentationScript.sh
 + echo -e '#!/bin/bash \n'
-++ basename /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba
-+ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba'
-+ outputlogs=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ WorkflowName=AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode
++ echo '# @begin AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs
 + set +x
 
  ### launching the pipeline configuration script ### 
 
-+ qsub1=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 + echo '#PBS -V'
 + echo '#PBS -A jti'
 + echo '#PBS -N CONFIGURE'
 + echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
 + echo '#PBS -l walltime=00:03:00'
 + echo '#PBS -l nodes=1:ppn=1'
-+ echo '#PBS -o /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo '#PBS -e /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in'
 + echo '#PBS -q debug'
 + echo '#PBS -m ae'
 + echo '#PBS -M grendon@illinois.edu'
-+ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt batch /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE '
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE '
 + echo -e '\n\n'
 + echo 'exitcode=$?'
 + echo -e 'if [ $exitcode -ne 0 ]\nthen '
-+ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\n" | mail -s "[Task #3820]" ",grendon@illinois.edu"'
 + echo -e '\n\n   exit 1'
 + echo fi
-++ chmod a+r /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
-++ qsub /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE
+++ chmod a+r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE
 Job submitted to account: jti
-+ jobid=2211303.nid11293
++ jobid=2219748.nid11293
 + set +x
 
  ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
 
+++ echo 2219748.nid11293
 ++ sed 's/\.[a-z]*[0-9]*//g'
-++ echo 2211303.nid11293
-+ pipeid=2211303
-+ echo 2211303
-+ echo 2211303
++ pipeid=2219748
++ echo 2219748
++ echo 2219748
 ++ date
-+ echo $'mi\303\251' sep 2 08:19:46 CDT 2015
-mié sep 2 08:19:46 CDT 2015
-+ truncate -s 0 /scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/Summary.Report
++ echo dom sep 6 15:05:10 CDT 2015
+dom sep 6 15:05:10 CDT 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/Summary.Report
 +++ date
-++ echo $'mi\303\251' sep 2 08:19:46 CDT 2015
-+ MSG='Variant calling workflow with id:[2211303] started by username:rendong at: mié sep 2 08:19:46 CDT 2015'
-+ LOGS='jobid=2211303.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
-+ echo -e 'Variant calling workflow with id:[2211303] started by username:rendong at: mié sep 2 08:19:46 CDT 2015\n\nDetails:\n\njobid=2211303.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
+++ echo dom sep 6 15:05:10 CDT 2015
++ MSG='Variant calling workflow with id:[2219748] started by username:rendong at: dom sep 6 15:05:10 CDT 2015'
++ LOGS='jobid=2219748.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
 + mail -s '[Task #3820]' ,grendon@illinois.edu
-+ echo -e 'Variant calling workflow with id:[2211303] started by username:rendong at: mié sep 2 08:19:46 CDT 2015\n\nDetails:\n\njobid=2211303.nid11293\nqsubfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/runfile.txt\nerrorlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/rendong/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0901_sambamba/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219748] started by username:rendong at: dom sep 6 15:05:10 CDT 2015\n\nDetails:\n\njobid=2219748.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[2219748] started by username:rendong at: dom sep 6 15:05:10 CDT 2015\n\nDetails:\n\njobid=2219748.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_nonMultiplexed_GIAB_2samples1lane_0906_AfterSplitAlignCode/logs/log.CONFIGURE.ou'

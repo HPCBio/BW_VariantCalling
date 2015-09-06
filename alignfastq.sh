@@ -372,16 +372,35 @@ echo "######           select the file to read sample info from. This file was c
 echo -e "\n\n" >&2; set -x;
 
 
-
+        SpecialCase=""
         # clear the joblist
         truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
+        truncate -s 0 $AlignOutputLogs/MarkdupsAnisimov.joblist
         
         # select the file to read
         if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
         then 
              TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
+             SpecialCase="Baylor"
+             set +x; echo -e "\n\n">&2
+             echo "############################################################################################################" >&2
+             echo "#####################################                               ########################################" >&2
+             echo "##################################### Aligment case is Baylor       ########################################" >&2
+             echo "##################################### Alignment then markduplicates ########################################" >&2
+             echo "############################################################################################################" >&2
+             echo -e "\n\n" >&2; set -x;
+             
         else
              TheInputFile=$outputdir/SAMPLENAMES.list
+             SpecialCase="Normal"             
+             set +x; echo -e "\n\n">&2
+             echo "############################################################################################################" >&2
+             echo "#####################################                               ########################################" >&2
+             echo "##################################### Aligment case is Normal       ########################################" >&2
+             echo "##################################### Alignment AND markduplicates  together################################" >&2
+             echo "############################################################################################################" >&2
+             echo -e "\n\n" >&2; set -x;
+ 
         fi
 
 
@@ -840,19 +859,35 @@ echo -e "\n\n" >&2; set -x;
                     then
                         set +x; echo -e "\n############### bwa mem aligner. paired-end reads ###################\n" >&2; set -x
                         jobfile=$AlignOutputDir/logs/bwamem.$SampleName.node$OutputFileSuffix.jobfile
-
+                        jobfileMarkdup=$AlignOutputDir/logs/Markdup.$SampleName.node$OutputFileSuffix.jobfile
+  
+  
                         if [ $chunkfastq == "YES" ]
                         then
 			   ### MUST FIX QSUB VARIABLE NAME PROPERLY
                            echo "nohup $profiler_string $scriptdir/bwamem_pe.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $scriptdir $samdir $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix > $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" >> $qsub3
-                        elif [ $chunkfastq == "NO" ]
+                        fi
+                        if [ $chunkfastq == "NO" ]
                         then
-                           echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
-                           jobfilename=$( basename $jobfile )
-                           echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                             echo -e  " we need to see which case applies"
+                             if [ $SpecialCase != "Baylor" ]
+                             then
+                                  echo -e "CASE is NOT BAYLOR, alignment and markduplicates in one job"
+                                  echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                                  jobfilename=$( basename $jobfile )
+                                  echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                             else
+                                  echo -e "CASE is BAYLOR, alignment in one job and markduplicates in another job"
+                                  echo "nohup $scriptdir/bwamem_pe_markduplicates_part1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                                  jobfilename=$( basename $jobfile )
+                                  echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                                  echo "nohup $scriptdir/bwamem_pe_markduplicates_part2.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.ou $email $jobfileMarkdup $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in" > $jobfileMarkdup
+                                  jobfilenameMarkdup=$( basename $jobfileMarkdup )
+                                  echo "$AlignOutputDir/logs $jobfilenameMarkdup" >> $AlignOutputLogs/MarkdupsAnisimov.joblist
+                             fi                             
                         fi
                         `chmod ug=rwx $jobfile`
-
+                        `chmod ug=rwx $jobfileMarkdup`
                      else
                         set +x; echo -e "\n################ bwa mem aligner. single-end reads ################\n" >&2; set -x
                         qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix
@@ -907,7 +942,7 @@ echo -e "\n\n" >&2; set -x;
 set +x; echo -e "\n\n\n" >&2;
 echo -e "##########################################################################################################################################" >&2
 echo -e "###########################                                                                            ###################################" >&2
-echo -e "###########################   FORM POST-ALIGNMENT QSUBS: MERGINE, SORTING, MARKING DUPLICATES          ###################################" >&2
+echo -e "###########################   FORM POST-ALIGNMENT QSUBS: MERGING, SORTING, MARKING DUPLICATES          ###################################" >&2
 echo -e "###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ###################################" >&2
 echo -e "###########################                                                                            ###################################" >&2
 echo -e "##########################################################################################################################################" >&2
@@ -1016,7 +1051,43 @@ echo -e "\n\n" >&2; set -x
 
               AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
               echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
-              echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+              #echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+
+                             
+              if [ $SpecialCase == "Baylor" ]
+              then
+                 set +x; echo -e "\n # run_method is LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x
+                 qsubMarkdupLauncher=$AlignOutputLogs/qsub.Markdup.Anisimov
+                 echo "#!/bin/bash" > $qsubMarkdupLauncher
+                 echo "#PBS -V" >> $qsubMarkdupLauncher
+                 echo "#PBS -A $pbsprj" >> $qsubMarkdupLauncher
+                 echo "#PBS -N ${pipeid}_Markdup_Anisimov" >> $qsubMarkdupLauncher
+                 echo "#PBS -l walltime=$pbscpu" >> $qsubMarkdupLauncher
+                 echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubMarkdupLauncher
+                 echo "#PBS -o $AlignOutputLogs/log.Markdup.Anisimov.ou" >> $qsubMarkdupLauncher
+                 echo "#PBS -e $AlignOutputLogs/log.Markdup.Anisimov.in" >> $qsubMarkdupLauncher
+                 echo "#PBS -q $pbsqueue" >> $qsubMarkdupLauncher
+                 echo "#PBS -m ae" >> $qsubMarkdupLauncher
+                 echo "#PBS -M $email" >> $$qsubMarkdupLauncher
+                 echo "#PBS -W depend=afterok:$AlignAnisimovJoblistId" >> $qsubMarkdupLauncher 
+                 
+                 
+                 echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+                 echo "exitcode=\$?" >> $qsubMarkdupLauncher
+                 echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMarkdupLauncher
+                 echo "   echo -e \"\n\n MarkdupsAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.Markdup.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMarkdupLauncher
+                 echo "   exit 1" >> $qsubMarkdupLauncher
+                 echo "fi" >> $qsubMarkdupLauncher
+
+                 MarkDupAnisimovJoblistId=`qsub $qsubMarkdupLauncher`
+                 #`qhold -h u $MarkDupAnisimovJoblistId`
+                 #echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+                 echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+
+
+                     
+              fi
+
            ;;           
            "APRUN")
               while read SampleName
@@ -1387,8 +1458,12 @@ echo "###############################     ALL QSUB SCRIPTS BELOW WILL RUN AFTER 
 echo "#####################################################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-        
-	pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )
+        if [ $SpecialCase == "Baylor" ]
+        then
+	     pbsids=$( cat $TopOutputLogs/pbs.MARKED | sed "s/\..*//" | tr "\n" ":" )
+	else
+	     pbsids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | tr "\n" ":" )	
+	fi
 	#extraids=$( cat $TopOutputLogs/pbs.EXTRACTREADS | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
         alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
