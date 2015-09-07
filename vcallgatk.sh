@@ -46,7 +46,7 @@ else
         fi
 
 
-        region=$( echo $region | tr ":" " " )
+        region=$( echo $region | sed 's/:knownSites:/ /' | tr ":" " " )
         refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
         picardir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -286,7 +286,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
 
@@ -313,7 +313,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
 
@@ -341,7 +341,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
 
@@ -373,7 +373,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            -o $outfile"
 
            echo $cmd # Can take this line out later
@@ -417,7 +417,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
   
@@ -444,7 +444,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
   
@@ -472,7 +472,7 @@ else
            -stand_emit_conf 30 \
            --sample_ploidy $ploidy \
            -nt 1 -nct 1 \
-           --dbsnp $region \
+           --dbsnp $refdir/$dbsnp  \
            $site \
            -o $outfile"
 
@@ -507,7 +507,7 @@ else
          -stand_emit_conf 30 \
          --sample_ploidy $ploidy \
          -nt 1 -nct 1 \
-         --dbsnp $region \
+         --dbsnp $refdir/$dbsnp  \
          -o $outfile"
 
          echo $cmd # Can take this line out later
@@ -535,7 +535,7 @@ else
          -stand_emit_conf 30 \
          --sample_ploidy $ploidy \
          -nt 1 -nct 1 \
-         --dbsnp $region \
+         --dbsnp $refdir/$dbsnp  \
          -o $outfile"
 
          echo $cmd # Can take this line out later
