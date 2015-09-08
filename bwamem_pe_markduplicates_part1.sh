@@ -203,12 +203,15 @@ fi
              ### generate the files with the pertinent stats
              prestats=${bamprefix}.sorted.bam.flagstat
              poststats=${bamprefix}.sorted.bam.properlyMapped.bam.flagstat
-             
+	     echo `date`             
              $samdir/samtools flagstat ${bamprefix}.sorted.bam > $prestats
-#             $samdir/samtools view -bu -F 12 ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
-             $sambambadir/sambamba view -f bam -t $thr -F "proper_pair" ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
+	     echo `date`
+             $samdir/samtools view -bu -F 12 ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
+	     echo `date`
+#             $sambambadir/sambamba view -f bam -t $thr -F "proper_pair" ${bamprefix}.sorted.bam > ${bamprefix}.sorted.bam.properlyMapped.bam 
+#	     echo `date`
              $samdir/samtools flagstat  ${bamprefix}.sorted.bam.properlyMapped.bam > $poststats
-
+	     echo `date`
 
              ####### making sure that stats were produced 
              if [ ! -s $prestats ]
