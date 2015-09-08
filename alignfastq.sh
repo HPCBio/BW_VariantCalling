@@ -307,7 +307,7 @@ echo -e "\n\n" >&2; set -x;
 
 set +x; echo -e "\n\n">&2
 echo "############################################################################################################" >&2
-echo "#####################################  CREATE  DIRECTORY STRUCTURE               ###########################" >&2
+echo "###############################  CREATE  DIRECTORY STRUCTURE  AT TOP LEVEL ONLY  ###########################" >&2
 echo "############################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
@@ -364,11 +364,8 @@ echo -e "\n\n" >&2; set -x;
 
 set +x; echo -e "\n\n">&2
 echo "############################################################################################################" >&2
-echo "#####################################                               ########################################" >&2
 echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
-echo "#####################################                               ########################################" >&2
 echo "############################################################################################################" >&2
-echo "######           select the file to read sample info from. This file was created in configuration.sh  ######" >&2
 echo -e "\n\n" >&2; set -x;
 
 
@@ -384,9 +381,8 @@ echo -e "\n\n" >&2; set -x;
              SpecialCase="Baylor"
              set +x; echo -e "\n\n">&2
              echo "############################################################################################################" >&2
-             echo "#####################################                               ########################################" >&2
-             echo "##################################### Aligment case is Baylor       ########################################" >&2
-             echo "##################################### Alignment then markduplicates ########################################" >&2
+             echo "##################################### FLAG: Aligment case is Baylor                        #################" >&2
+             echo "##################################### Alignment then markduplicates is separate jobs       #################" >&2
              echo "############################################################################################################" >&2
              echo -e "\n\n" >&2; set -x;
              
@@ -395,9 +391,8 @@ echo -e "\n\n" >&2; set -x;
              SpecialCase="Normal"             
              set +x; echo -e "\n\n">&2
              echo "############################################################################################################" >&2
-             echo "#####################################                               ########################################" >&2
-             echo "##################################### Aligment case is Normal       ########################################" >&2
-             echo "##################################### Alignment AND markduplicates  together################################" >&2
+             echo "##################################### FLAG: Aligment case is Normal            ##############################" >&2
+             echo "##################################### Alignment AND markduplicates  together   #############################" >&2
              echo "############################################################################################################" >&2
              echo -e "\n\n" >&2; set -x;
  
@@ -488,7 +483,7 @@ echo -e "\n\n" >&2; set -x;
 	    fi
 
 
-            set +x; echo -e "\n\n ################    CREATING OUTPUT FOLDERS / OUTPUT FILENAMES   ################\n" >&2; set -x;
+            set +x; echo -e "\n\n ################  MORE PREP WORK:  CREATING OUTPUT FOLDERS / OUTPUT FILENAMES   ################\n" >&2; set -x;
 
             AlignOutputDir=$outputdir/$SampleName/align
             if [ -d $AlignOutputDir ]
@@ -510,9 +505,7 @@ echo -e "\n\n" >&2; set -x;
 
 
 
-            set +x; echo -e "\n\n ###################################   END PREP WORK  ###################################### " >&2
-	    echo -e "\n\n #######                       PRE-ALIGNMENT BLOCK BEGINS                            ####### " >&2
-            echo -e "\n\n #######          CHECKING IF WE NEED TO LAUNCH PRE-ALIGNMENT TASK(S)                ####### " >&2; set -x;
+            set +x; echo -e "\n\n ##################### CHECKING IF WE NEED TO LAUNCH FASTQC CMD                           #######\n\n" >&2; set -x;
 
             if [ $fastqcflag == "YES" ]
             then
@@ -633,8 +626,8 @@ echo -e "\n\n" >&2; set -x;
 
 
             set +x; echo -e "\n\n" >&2;
-            echo -e "#################################### DONE WITH PRE-ALIGNMENT TASK(S)  ########################################\n\n" >&2
-	    echo -e "#################################### SELECT TO CHUNK/Not2CHUNK READS for $SampleName  ########################################\n\n" >&2; set -x;
+            echo -e "#################################### DONE WITH FASTQC BLOCK                           ##################\n\n" >&2
+	    echo -e "#################################### SELECT TO CHUNK/Not2CHUNK READS for $SampleName  ##################\n\n" >&2; set -x;
 
             # create new names for chunks of fastq
             # doing this outside the chunkfastq conditional, because
@@ -717,12 +710,13 @@ echo -e "\n\n" >&2; set -x;
 	    echo -e "#################################### SELECTING CASE --BASED ON ALIGNER       ########################################" >&2
             echo -e "\n\n" >&2; set -x
 
-           
-############################################################################################################
-#####################################                               ########################################
-##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ########################################
-#####################################                               ########################################
-############################################################################################################
+set +x; echo -e "\n\n" >&2;       
+echo -e "############################################################################################################"
+echo -e "#####################################                               ########################################"
+echo -e "##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ########################################"
+echo -e "#####################################                               ########################################"
+echo -e "############################################################################################################"
+echo -e "\n\n" >&2; set -x;  
 
             allfiles=""
             for i in $(seq 0 $NumChunks)
@@ -869,19 +863,21 @@ echo -e "\n\n" >&2; set -x;
                         fi
                         if [ $chunkfastq == "NO" ]
                         then
-                             echo -e  " we need to see which case applies"
+                             echo -e  "#######                                   chunkfastq == NO                      ###############"
+                             echo -e  "#######  we need to see which alignment case applies depending on value of FLAG ###############"
+                             
                              if [ $SpecialCase != "Baylor" ]
                              then
-                                  echo -e "CASE is NOT BAYLOR, alignment and markduplicates in one job"
+                                  echo -e "################# CASE is NOT BAYLOR, alignment and markduplicates in one job ############"
                                   echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                              else
-                                  echo -e "CASE is BAYLOR, alignment in one job and markduplicates in another job"
-                                  echo "nohup $scriptdir/bwamem_pe_markduplicates_part1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                                  echo -e "################# CASE is BAYLOR, alignment in one job and markduplicates in another job ##"
+                                  echo "nohup $scriptdir/bwamem_pe_qctest.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
-                                  echo "nohup $scriptdir/bwamem_pe_markduplicates_part2.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.ou $email $jobfileMarkdup $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in" > $jobfileMarkdup
+                                  echo "nohup $scriptdir/markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.ou $email $jobfileMarkdup $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.Markdup.$SampleName.node$OutputFileSuffix.in" > $jobfileMarkdup
                                   jobfilenameMarkdup=$( basename $jobfileMarkdup )
                                   echo "$AlignOutputDir/logs $jobfilenameMarkdup" >> $AlignOutputLogs/MarkdupsAnisimov.joblist
                              fi                             
@@ -929,15 +925,13 @@ echo -e "\n\n" >&2; set -x;
 		echo `date`
             done # end loop over chunks of the current fastq
 
-######################################################################
-############# end loop over chunks of the current fastq ##############
-######################################################################
-######################################################################
-
-######################################################################
-############# WE ARE STILL INSIDE THE LOOP OVER INPUT FASTQ!!! #######
-######################################################################
-
+set +x; echo -e "\n\n\n" >&2;
+echo -e "#############################################################################################################"
+echo -e "#############                   end loop2 over chunks of the current fastq                     ##############"
+echo -e "#############################################################################################################"
+echo -e "#############               WE ARE STILL INSIDE THE LOOP OVER INPUT FASTQ!!!                   ##############"
+echo -e "#############################################################################################################"
+echo -e "\n\n\n" >&2; set -x
 
 set +x; echo -e "\n\n\n" >&2;
 echo -e "##########################################################################################################################################" >&2
@@ -992,12 +986,12 @@ echo -e "\n\n\n" >&2; set -x
           (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
 	done <  $TheInputFile # end loop over input fastq
 
-######################################################################
-#############         end loop over iinput fastq        ##############
-######################################################################
-
-
-
+set +x; echo -e "\n\n\n" >&2;
+echo "######################################################################################################################" >&2
+echo "####################################         end loop1 over input fastq              #################################" >&2
+echo "####################################   ALL QSUB JOBS SHOULD HAVE BEEN FORMED BY NOW  #################################" >&2
+echo "######################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x
 
 
 set +x; echo -e "\n\n\n" >&2
@@ -1526,31 +1520,30 @@ echo -e "\n\n" >&2; set -x;
 	    lastjobid=`qsub $qsub_summary`
 	    echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
-	    if [ `expr ${#lastjobid}` -lt 1 ]
-	    then
+            # if at least one job failed, the summary script will be executed anyway with the following bock
 
-		qsub_summary=$TopOutputLogs/qsub.summary.aln.afterany
-		echo "#PBS -V" > $qsub_summary
-		echo "#PBS -A $pbsprj" >> $qsub_summary
-		echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summary
-		echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
-		echo "#PBS -l nodes=1:ppn=1" >> $qsub_summary
-		echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub_summary
-		echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub_summary
-		echo "#PBS -q $pbsqueue" >> $qsub_summary
-		echo "#PBS -m ae" >> $qsub_summary
-		echo "#PBS -M $email" >> $qsub_summary
-		echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summary
-		echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
-		`chmod a+r $qsub_summary`
-		badjobid=`qsub $qsub_summary`
-		echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
-	    fi
+            qsub_summaryany=$TopOutputLogs/qsub.summary.aln.afterany
+	    echo "#PBS -V" > $qsub_summaryany
+	    echo "#PBS -A $pbsprj" >> $qsub_summaryany
+	    echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summaryany
+	    echo "#PBS -l walltime=01:00:00" >> $qsub_summaryany # 1 hour should be more than enough
+	    echo "#PBS -l nodes=1:ppn=1" >> $qsub_summaryany
+	    echo "#PBS -o $TopOutputLogs/log.summary.aln.afterany.ou" >> $qsub_summaryany
+	    echo "#PBS -e $TopOutputLogs/log.summary.aln.afterany.in" >> $qsub_summaryany
+	    echo "#PBS -q $pbsqueue" >> $qsub_summaryany
+	    echo "#PBS -m ae" >> $qsub_summaryany
+	    echo "#PBS -M $email" >> $qsub_summaryany
+	    echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summaryany
+	    echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summaryany
+	    `chmod a+r $qsub_summaryany`
+	    badjobid=`qsub $qsub_summaryany`
+	    echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
+
 	fi
 
 	if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" -o $analysis == "MULTIPLEXED" ]
 	then
-            set +x; echo -e "\n ###### analysis continues with realignment   ###### \n" >&2; set -x;
+            set +x; echo -e "\n ###### ANALYSIS == $analysis. Pipeline execution continues with realignment   ###### \n" >&2; set -x;
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
 	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
