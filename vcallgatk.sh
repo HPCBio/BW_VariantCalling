@@ -1,6 +1,6 @@
 #!/bin/bash 
 #	
-#  script to perform variant calling with unifiedgenotyper ONLY
+#  script to perform variant calling with HaplotypeCaller ONLY
 #  This module is called from within the realign module
 ######################################
 
@@ -45,7 +45,8 @@ else
 	    exit 1;
         fi
 
-
+        rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+        deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         region=$( echo $region | sed 's/:knownSites:/ /' | tr ":" " " )
         refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
         ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
@@ -68,6 +69,18 @@ else
         dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
         genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
 
+        if [ `expr ${#deliveryfolder}` -lt 2 ]
+        then
+            deliverydir=$outputdir/delivery/Vcfs
+        else
+	    deliverydir=$outputdir/$deliveryfolder/Vcfs
+	fi
+
+        if [ ! -d $deliverydir ]
+        then
+            `mkdir -p $deliverydir`
+        fi
+	
         if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
         then
            MSG="Invalid value for SKIPVCALL=$skipvcall"
@@ -176,7 +189,8 @@ else
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-
+	echo `date`
+	
        echo "##############################################################################"
        echo "##############################################################################"
        echo "##########      setting up filters and parameters for snvcaller    ###########"
@@ -241,11 +255,12 @@ else
        fi
 
 
-       echo "##############################################################################"
-       echo "##############################################################################"
-       echo "##########      calculating variant calling w HaplotypeCaller      ###########"
-       echo "##############################################################################"
-       echo "##############################################################################"        
+       echo "############################################################################################"
+       echo "############################################################################################"
+       echo "##########      calculating variant calling w HaplotypeCaller                    ###########"
+       echo "##########We did not check, but we assume that variant caller is HaplotypeCaller ###########"
+       echo "############################################################################################"        
+
        echo `date`
 	
        echo $genderinfo # Can take this line out later 
@@ -255,7 +270,7 @@ else
        echo "Sample: $sample_id, gender: $gender" # Can take this line out later                                                                 
        echo $chr # Can take this line out later
 
-       # Start of calling conditions 
+       # Start of calling conditions. 
 
        ## Calling X 
        if [ $chr == "X" ];
@@ -296,7 +311,16 @@ else
            then
               eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi           
+	   cp $outfile $deliverydir
+	   echo `date`	   
            #### Calling male X_PAR2
            site="-L "$x_par2
            site_name="X_PAR2"
@@ -323,7 +347,17 @@ else
            then
              eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+           cp $outfile $deliverydir
+	   echo `date`
+	   
            #### Calling male X_nonPAR
            ploidy=1
            site="-L X -XL "$x_par1" -XL "$x_par2
@@ -351,10 +385,20 @@ else
            then
              eval $cmd
            fi
-        
+	   echo `date`  
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+	   cp $outfile $deliverydir
+	   echo `date`	   
          fi
          ### End calling male X  
-
+	 echo `date`
+	 
          ### Calling female X
          if [ $gender == "Female" ];
          then
@@ -382,12 +426,22 @@ else
            then
              eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+	   cp $outfile $deliverydir
+	   echo `date`	   
          fi
          ### End calling female X
 
        ## End calling X
-
+       echo `date`
+       
        ## Calling Y
        elif [ $chr == "Y" ];
        then
@@ -427,7 +481,17 @@ else
            then
              eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+	   cp $outfile $deliverydir
+	   echo `date`
+	   
            #### Calling male Y_PAR2
            site="-L "$y_par2
            site_name="Y_PAR2"
@@ -454,7 +518,17 @@ else
            then
              eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+	   cp $outfile $deliverydir
+	   echo `date`
+	   
            #### Calling male Y_nonPAR
            ploidy=1
            site="-L Y -XL "$y_par1" -XL "$y_par2
@@ -482,7 +556,16 @@ else
            then
              eval $cmd
            fi
-
+	   echo `date`
+           if [ ! -s $outfile ] 
+           then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+           fi  
+	   cp $outfile $deliverydir
+	   echo `date`	   
          fi
          ### End calling male Y
 
@@ -516,6 +599,16 @@ else
          then
           eval $cmd
          fi
+	 echo `date` 
+         if [ ! -s $outfile ] 
+         then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    exit 1;
+         fi  
+	 cp $outfile $deliverydir
+	 echo `date`	 
        ## End calling MT
 
        ## Calling the autosomes
@@ -544,32 +637,24 @@ else
          then
            eval $cmd
          fi
-
-       fi
-       ## End calling the autosomes
-       
-       # End of calling conditions 
-
-        exitcode=$?
-	echo `date`
-        if [ $exitcode -ne 0 ]
-        then
-	    MSG="HaplotypeCaller command failed  exitcode=$exitcode. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit $exitcode;
-        fi
-
-        if [[ ! ( $chr == "Y"   &&  $gender == "Female" ) ]]
-        then
-          if [ ! -s $outfile ] 
-          then
+	 echo `date`
+         if [ ! -s $outfile ] 
+         then
 	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
-          fi
-         fi
+         fi  
+	 cp $outfile $deliverydir
+	 echo `date`	 
+       fi
+       ## End calling the autosomes
+
+       echo "############################################################################################"
+       echo "############################################################################################"
+       echo "####################     End of calling conditions         #################################"
+       echo "############################################################################################"
+ 
 
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
@@ -721,7 +806,5 @@ else
 	    echo "##############################################################################"
 	fi
 	
-
-#         nohup python /projects/sciteam/jq9/builds/StephensReadsSimulator_March27_2014/read_simulator/extra_utilities/vcf_compare.py $refdir/$ref /projects/sciteam/jq9/LSM_SyntheticDataGeneration/Zach/Chr1_50X_StephensAnisimov_ERR250965/H3A_NextGen_assessment_set2/H3A_NextGen_assessment.Chr1_50X.set2_golden.vcf $outfile blah /projects/sciteam/jq9/LSM_SyntheticDataGeneration/IlluminaTargetRegions/ZachUses_Illumina_truseq_exome_targeted_regions.hg19.chr.bed 100 > vcfcompare.nohup
 
 fi
