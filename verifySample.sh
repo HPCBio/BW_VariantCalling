@@ -55,7 +55,7 @@ fi
     if [ ! -d $delivery ]
     then
         mkdir -p $delivery/Cleaned_BAMS
-        mkdir -p $delivery/QC_results
+        #mkdir -p $delivery/QC_results
     fi
 
     if [ ! -d $RealignOutput ]
