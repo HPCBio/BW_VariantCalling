@@ -125,6 +125,8 @@ fi
         
         cd $outputdir
         echo `date`
+        AlignCase="CHPC" #testing alignment Gerrit's way
+
         $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
@@ -157,21 +159,53 @@ fi
             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
             exit 1;
         fi
-
-        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o ${bamprefix}.sorted.bam ${bamprefix}.tmp.bam
-        exitcode=$?
-        echo `date`
-        if [ $exitcode -ne 0 ]
+        if [ $AlignCase != "CHPC" ]
         then
-            MSG="novosort  failed on ${bamprefix}.tmp.bam  exitcode=$exitcode. alignment failed"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
-            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
-            exit $exitcode;
-        fi        
+            echo -e "sorting aligned.bam file blue-waters' way, using novosort"
+
+            $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o ${bamprefix}.sorted.bam ${bamprefix}.tmp.bam
+            exitcode=$?
+            echo `date`
+            if [ $exitcode -ne 0 ]
+            then
+                MSG="novosort  failed on ${bamprefix}.tmp.bam  exitcode=$exitcode. alignment failed"
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+                echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+                cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+                exit $exitcode;
+            fi
+        
+        else 
+            echo -e "sorting aligned.bam file  Gerrit's way, using samtools sort"
+            $samdir/samtools sort -T sort -@ $threads -m 1G -l 1 -o ${bamprefix}.sorted.bam  ${bamprefix}.tmp.bam
+            exitcode=$?
+            echo `date`
+            if [ $exitcode -ne 0 ]
+            then
+                MSG="samtools sort  failed on   ${bamprefix}.tmp.bam exitcode=$exitcode. alignment failed"
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+                echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+                cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+                exit $exitcode;
+            fi  
+            
+            $samdir/samtools index ${bamprefix}.sorted.bam
+            exitcode=$?
+            echo `date`
+            if [ $exitcode -ne 0 ]
+            then
+                MSG="samtools index  failed on   ${bamprefix}.sorted.bam exitcode=$exitcode. alignment failed"
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+                echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+                cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+                exit $exitcode;
+            fi  
+             
+        fi
+        
         if [ ! -s ${bamprefix}.sorted.bam ]
         then
-            MSG="${bamprefix}.srted.bam aligned file not created. alignment failed"
+            MSG="${bamprefix}.sorted.bam aligned file not created. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
