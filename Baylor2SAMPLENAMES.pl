@@ -81,11 +81,11 @@ while (my $line = <IN>) {
            
 
             # determine if this is a left read or a right read
-            if ( $read =~ /(.*)_S\d_(.*)_1.sequence\.txt\.gz/ ) {
+            if ( $read =~ /(.*)_S\d_(.*)_R1_(.*)\.gz/ ) {
                $sampledet{$det[0]}{$flowcell}{R1}=$read;
             }
             else {
-               if ( $read =~ /(.*)_S\d_(.*)_2.sequence\.txt\.gz/ ) {
+               if ( $read =~ /(.*)_S\d_(.*)_R2_(.*)\.gz/ ) {
                   $sampledet{$det[0]}{$flowcell}{R2}=$read;
                }  
                else {
