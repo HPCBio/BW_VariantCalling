@@ -71,9 +71,9 @@ else
 
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
-            deliverydir=$outputdir/delivery/Vcfs
+            deliverydir=$rootdir/delivery/Vcfs
         else
-	    deliverydir=$outputdir/$deliveryfolder/Vcfs
+	    deliverydir=$rootdir/$deliveryfolder/Vcfs
 	fi
 
         if [ ! -d $deliverydir ]

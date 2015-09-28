@@ -127,7 +127,7 @@ fi
         echo `date`
         AlignCase="CHPC" #testing alignment Gerrit's way
 
-        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
+        $aligndir/bwa mem  $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
