@@ -42,9 +42,9 @@ my %samplexlane=();
 # col3: lane number
 # col4: library type
 # col5: library name
-# last column: filename of read file
-#
-# we will construct a hash : {sample id} {name_of_flowcell_and_lane} {library, read1 or read2}
+# col9: filename of read1
+# col10: filename of read2
+# we will construct a hash : {sample id} {name_of_flowcell_and_lane} {library} { read1 or read2}
 
 my %sampledet=();
 my $counter=0;
@@ -53,6 +53,7 @@ while (my $line = <IN>) {
     if ($line !~ /^\s*$/ ) {
         #skipt header
 	if ($counter == 0) {
+            # skip header line
 	    $counter++;
 	} 
         else {
@@ -63,37 +64,38 @@ while (my $line = <IN>) {
 	    $counter++;
             # extracting sample details, one column in the input file per array element
 	    my @det = split(/\t/,$line);
-            
-            # parsing filename of read, assumed to be the last element of the array
-            my $read=$det[$#det];
+
+            # sanity check; quit or skip incomplete record?  we'll quit for now 
+            my $arraySize = @det;
+            exit 1 if $arraySize != 10; 
+
+
+            # parsing the row begins
+            my $read1   = $det[8];
+            my $read2   = $det[9];
+            my $flowcell= $det[1];
+            my $library = $det[4];
+            my $sampleid= $det[0];
+
             # remove whitespace 
-            $read =~ s/\s*//g;
-
-
-            # build flowcell information
-            my $flowcell="";
-            $flowcell=$det[1];
+            $read1 =~ s/\s*//g;
+            $read2 =~ s/\s*//g;
             $flowcell =~ s/\s*//g;
+	    $library =~ s/\s*//g;
+	    $sampleid =~ s/\s*//g;
+
+            # populating hashes
+
             $samplexlane{$flowcell}=1;
 
-            #build library information
-            $sampledet{$det[0]}{$flowcell}{LB}=$det[4];
+            $sampledet{$sampleid}{$flowcell}{LB}=$library;
            
+            $sampledet{$sampleid}{$flowcell}{R1}=$read1;
 
-            # determine if this is a left read or a right read
-            if ( $read =~ /(.*)_S\d_(.*)_R1_(.*)\.gz/ ) {
-               $sampledet{$det[0]}{$flowcell}{R1}=$read;
-            }
-            else {
-               if ( $read =~ /(.*)_S\d_(.*)_R2_(.*)\.gz/ ) {
-                  $sampledet{$det[0]}{$flowcell}{R2}=$read;
-               }  
-               else {
-	          print "failed to parse line $counter\tread=$read\n";
-		  exit 1;
-               }
-	    }
+	    $sampledet{$sampleid}{$flowcell}{R2}=$read2;
+
 	}
+        # next line please
     }
 }
 print "\nDone parsing input\t$counter lines read.\nProducing $outfile1: A list of input files.\nNOTE: Only one line for paired reads\n";
@@ -103,7 +105,7 @@ close(RAW);
 print "done writing $outfile1\t$counter lines written.\n\n\nProducing $outfile2: A tab file with these columns\n";
 
 
-$counter=0;
+
 my $groupcounter=0;
 print "SAMPLEID\tLANE_FLOWCELL_NAME\tLIBRARY\tREAD1\tREAD2\n";
 # sort hash by sample id
@@ -122,7 +124,7 @@ foreach my $SID (sort keys %sampledet) {
 close(MERGED);
 close(GROUPS);
 $date=localtime();
-print "done writing $outfile2\t$counter lines written.\n\n\n";
+print "done writing $outfile2\t$groupcounter lines written.\n\n\n";
 print "Producing $outfile3: A tab file with these columns\n";
 print "SAMPLEID\tlist of lanes separated by <SPACE>\n";
 print "done writing $outfile3\t$groupcounter lines written.\n$date\n\n";
