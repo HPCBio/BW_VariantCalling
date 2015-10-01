@@ -17,6 +17,8 @@ else
         numdays=30
         outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+        genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
+        sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
@@ -30,7 +32,9 @@ else
         mkdir -p ${delivery}/docs
         cp $outputdir/*.txt ${delivery}/docs
         cp $outputdir/*.list ${delivery}/docs
-        
+        cp $sampleinfo  ${delivery}/docs
+        cp $genderinfo  ${delivery}/docs
+
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )
