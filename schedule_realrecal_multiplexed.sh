@@ -4,7 +4,7 @@
 #
 # script to produce improved bams - one per sample 
 # from  multiplexed aligned bams 
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 7 ]
 then
    MSG="parameter mismatch."
@@ -382,15 +382,15 @@ fi
           echo -e "######################################################################"
 	  echo -e "########## first, let's checking that alignment info exists  #########"
 
-	  alignedfile=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam"`
-	  alignedfilehdr=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam.header"`
-	  alignedfilebai=`find $outputdir/align/$lane/ -name "*.wdups.sorted.bam.bai"`
+	  alignedfile=`find $outputdir/$lane/align -name "*.wdups.sorted.bam"`
+	  alignedfilehdr=`find $outputdir/$lane/align -name "*.wdups.sorted.bam.header"`
+	  alignedfilebai=`find $outputdir/$lane/align -name "*.wdups.sorted.bam.bai"`
 
 	  if [ -s $alignedfile -a -s $alignedfilehdr -a -s $alignedfilebai ]
 	  then
               echo -e "alignment files for this lane $lane were found"
           else
-              MSG="No aligned bam file(s) found at $outputdir/align/${lane}"
+              MSG="No aligned bam file(s) found at $outputdir/${lane}/align"
               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] Mayo variant identification pipeline
               exit 1;              
 	  fi
@@ -405,7 +405,7 @@ fi
               mkdir -p $outputdir/${sample}/variant/logs
               mkdir -p $outputdir/${sample}/logs
               mkdir -p $outputdir/${sample}/$lane
-              ln -s    $outputdir/align/$lane $outputdir/${sample}/$lane/align
+              ln -s    $outputdir/$lane/align $outputdir/${sample}/$lane/align
               mkdir -p $outputdir/${sample}/${lane}/realign/logs
               mkdir -p $outputdir/${sample}/${lane}/logs
 	  elif [ ! -d $outputdir/${sample}/${lane} ]
@@ -413,7 +413,7 @@ fi
               echo -e "NOT the first time we see this sample $sample"
               echo -e "populating $sample with folders for lane $lane"
               mkdir -p $outputdir/${sample}/$lane
-              ln -s $outputdir/align/$lane $outputdir/${sample}/$lane/align
+              ln -s $outputdir/$lane/align $outputdir/${sample}/$lane/align
               mkdir -p $outputdir/${sample}/${lane}/realign/logs
               mkdir -p $outputdir/${sample}/${lane}/logs
 	  else

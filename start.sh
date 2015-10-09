@@ -3,7 +3,7 @@
 ########################### 
 #		$1		=	       run info file
 ###########################
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."

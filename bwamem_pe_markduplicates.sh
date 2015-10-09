@@ -1,5 +1,5 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 14 ]
 then
         MSG="parameter mismatch"
@@ -111,7 +111,7 @@ then
         if [ $samprocessing == "SAMTOOLS" ]
         then
            echo `date`
-           $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster |  $samdir/samtools view -bSu -> ${bamprefix}.wdups
+           $aligndir/bwa mem $alignparms -R "${rgheader}" $ref $Rone $Rtwo | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> ${bamprefix}.wdups
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
@@ -159,7 +159,7 @@ then
 
         cd $outputdir
         echo `date`
-        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
+        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -@ $threads -> ${bamprefix}.tmp.bam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]

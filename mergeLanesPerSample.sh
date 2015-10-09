@@ -1,5 +1,5 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# -ne 10 ]
 then
 	MSG="parameter mismatch."
@@ -218,7 +218,7 @@ else
 
            if [ ! -s $mergedLaneMappedPaired ]
            then
-              $samdir/samtools view -bu -F 12 $mergedLane > $mergedLaneMappedPaired 
+              $samdir/samtools view -bu -@ $thr -F 12 $mergedLane > $mergedLaneMappedPaired 
               exitcode=$?
               `echo date`
               if [ $exitcode -ne 0 ]

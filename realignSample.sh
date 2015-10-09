@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 11 ];
 then
@@ -109,7 +109,7 @@ else
         cd $realigndir
 
         tmpfile=`basename $infile`
-        $samdir/samtools view -bu $infile $chr > ${chr}.$tmpfile
+        $samdir/samtools view -bu -@ $thr $infile $chr > ${chr}.$tmpfile
 	exitcode=$?
 	echo `date`
 
@@ -129,7 +129,7 @@ else
             exit 1;
 	fi
         $samdir/samtools index ${chr}.$tmpfile
-        $samdir/samtools view -H $tmpfile $chr > ${chr}.$tmpfile.header
+        $samdir/samtools view -H -@ $thr $tmpfile $chr > ${chr}.$tmpfile.header
 
 	echo `date`
 

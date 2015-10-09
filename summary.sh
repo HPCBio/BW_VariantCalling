@@ -1,5 +1,5 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 4 ]
 then
         MSG="Parameter mismatch."
@@ -34,7 +34,7 @@ else
         cp $outputdir/*.list ${delivery}/docs
         cp $sampleinfo  ${delivery}/docs
         cp $genderinfo  ${delivery}/docs
-
+        
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )

@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate the aligned file(s) 
 ########################################################
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 14 ];
 then
@@ -166,7 +166,7 @@ else
         echo "#################################################################################"
 
         cd $realrecaldir
-	$samdir/samtools view -bu -h $inputfile $chr > presorted_wrg.${chr}.$infile  
+	$samdir/samtools view -bu -@ $thr -h $inputfile $chr > presorted_wrg.${chr}.$infile  
 	#$sambambadir/sambamba view -f bam -h -t $thr $inputfile $chr > presorted_wrg.${chr}.$infile  
 	exitcode=$?
 	echo `date`

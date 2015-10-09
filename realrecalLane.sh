@@ -2,7 +2,7 @@
 #	
 #  script to realign and recalibrate by lane in multiplexed samples 
 ########################################################
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 set -x
 if [ $# != 14 ];
 then
@@ -126,7 +126,7 @@ fi
         echo "#################################################################################"
 
         cd $realrecaldir
-	$samdir/samtools view -bu -h $inputfile $chr > presorted_norg.${chr}.$infile  
+	$samdir/samtools view -bu -@ $thr -h $inputfile $chr > presorted_norg.${chr}.$infile  
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
