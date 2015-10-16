@@ -400,7 +400,7 @@ fi
 	  then
               echo -e "first time we see this sample $sample"
               echo -e "creating output folders for it"
-              mkdir -p $outputdir/${sample}
+
               mkdir -p $outputdir/${sample}/realign/logs
               mkdir -p $outputdir/${sample}/variant/logs
               mkdir -p $outputdir/${sample}/logs
@@ -597,7 +597,7 @@ echo "##########################################################################
 
               RealignOutputDir=$outputdir/$sample/$lane/realign
               truncate -s 0 $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
-     
+
               echo "####################################################################################################"
               echo -e "collecting all jobs for sample=$sample lane=$lane"
               echo -e "first stop: realign-recalibrate for lane=$lane on all chromosomes"
@@ -609,6 +609,8 @@ echo "##########################################################################
                    # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
 
 		  realrecal_log=$outputdir/$sample/realign/logs/log.realrecalLane.$lane.$chr.in
+                  truncate -s 0 $outputdir/$sample/realign/logs/log.realrecalLane.$lane.$chr.in
+
 		  awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $outputdir/$sample/realign/logs/realrecalLane.${lane}.${chr} > $outputdir/$sample/realign/logs/jobfile.realrecalLane.${lane}.${chr}
 		  echo "$outputdir/$sample/realign/logs/ jobfile.realrecalLane.${lane}.${chr}" >> $RealignOutputLogs/realrecalLane.${lane}.AnisimovJoblist
 

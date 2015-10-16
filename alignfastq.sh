@@ -332,7 +332,7 @@ echo -e "\n\n" >&2; set -x;
         AlignOutputLogs=$TopOutputLogs/align
         if [ ! -d $AlignOutputLogs ]
         then
-            mkdir $AlignOutputLogs
+            mkdir -p $AlignOutputLogs
         fi
         `chmod -R 770 $AlignOutputLogs/`
         # where messages about failures will go
@@ -491,6 +491,7 @@ echo -e "\n\n" >&2; set -x;
                 # perhaps we should stop when a sample is seen more than once. But for now, we simply reset the folder
 		set +x; echo -e "\n\n $AlignOutputDir is there; resetting it" >&2; set -x;
 		`rm -r $AlignOutputDir/*`
+		`rm -r $AlignOutputDir/logs/*`
             else
 		mkdir -p $AlignOutputDir/logs
             fi
@@ -855,7 +856,9 @@ echo -e "\n\n" >&2; set -x;
                         jobfile=$AlignOutputDir/logs/bwamem.$SampleName.node$OutputFileSuffix.jobfile
                         jobfileMarkdup=$AlignOutputDir/logs/Markdup.$SampleName.node$OutputFileSuffix.jobfile
   
-  
+                        truncate -s 0 $jobfile
+                        truncate -s 0 $jobfileMarkdup
+
                         if [ $chunkfastq == "YES" ]
                         then
 			   ### MUST FIX QSUB VARIABLE NAME PROPERLY

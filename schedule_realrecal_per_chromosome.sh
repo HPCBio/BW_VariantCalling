@@ -353,6 +353,11 @@ echo -e "\n\n\n #####################################  CREATE OUTPUT  DIRECTORIE
               mkdir -p $outputdir/${sample}/realign/logs
               mkdir -p $outputdir/${sample}/variant/logs
           fi
+
+          # resetting logs
+	  rm $outputdir/${sample}/realign/logs/*
+          rm $outputdir/${sample}/variant/logs/*
+
       fi  # end processing non-empty lines
    done  <  $TheInputFile
    # end loop over samples
@@ -442,6 +447,12 @@ echo -e "\n\n\n ###################################       main loops starts here
               VcallOutputDir=$outputdir/${sample}/variant
               RealignLog=$outputdir/${sample}/realign/logs
               truncate -s 0 $RealignOutputLogs/verifySample.${sample}.AnisimovJoblist
+              truncate -s 0 $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist
+
+              if [ $skipvcall == "NO" ]
+              then
+                  truncate -s 0 $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
+              fi
               
               echo -e "\n####################################################################################################"
               echo -e "\n##########                   loop by chromosome starts here                              ###########"
@@ -615,11 +626,6 @@ echo -e "\n\n\n ###################################       main loops starts here
 	         
                RealignOutputDir=$outputdir/$sample/realign
                VcallOutputDir=$outputdir/${sample}/variant  
-               truncate -s 0 $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist
-               if [ $skipvcall == "NO" ]
-               then
-                     truncate -s 0 $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
-               fi
                           
 	       echo -e "\n\n ###### loop2 by chromosome to populate the joblist by writing ONE line for each job call to a sample-chr pair ###### \n\n"         
                  
@@ -630,12 +636,20 @@ echo -e "\n\n\n ###################################       main loops starts here
                      # need to prepend "nohup" and append log file name, so that logs are properly created when Anisimov launches these jobs 
 
                      realrecal_log=$RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
+
+		     truncate -s 0 $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
+                     truncate -s 0 $RealignOutputDir/logs/log.realrecal.${sample}.$chr.in
+
                      awk -v awkvar_realrecallog=$realrecal_log '{print "nohup "$0" > "awkvar_realrecallog}' $RealignOutputDir/logs/realrecal.${sample}.${chr} > $RealignOutputDir/logs/jobfile.realrecal.${sample}.${chr}
                      echo "$RealignOutputDir/logs/ jobfile.realrecal.${sample}.${chr}" >> $RealignOutputLogs/realrecal.${sample}.AnisimovJoblist
 
                      if [ $skipvcall == "NO" ]
                      then
                          vcall_log=$VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in
+
+                         truncate -s 0 $VcallOutputDir/logs/log.vcallgatk.${sample}.${chr}.in
+                         truncate -s 0 $VcallOutputDir/logs/jobfile.vcallgatk.${sample}.${chr}
+
                          awk -v awkvar_vcalllog=$vcall_log '{print "nohup "$0" > "awkvar_vcalllog}' $VcallOutputDir/logs/vcallgatk.${sample}.${chr} > $VcallOutputDir/logs/jobfile.vcallgatk.${sample}.${chr}
                          echo "$VcallOutputDir/logs/ jobfile.vcallgatk.${sample}.${chr}" >> $VcallOutputLogs/vcallgatk.${sample}.AnisimovJoblist
                      fi
