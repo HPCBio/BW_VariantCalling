@@ -290,7 +290,7 @@ else
            site_name="X_PAR1"
            outfile=$infile.$site_name.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx4g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
            -T HaplotypeCaller \
            -R $refdir/$ref \
            -I ${inputdir}/${inputfile} \

@@ -20,14 +20,14 @@ else
         fastqcdir=$1
         outputdir=$2
         fastqcparms=$3
-        fastqfile=$4
+        inputfiles=$4
         elog=$5
         olog=$6
         email=$7
         qsubfile=$8
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"        
        
-        set +x; echo -e "\n\n############# preliminary parameter check  ###############\n\n" >&2
+        #set +x; echo -e "\n\n############# preliminary parameter check  ###############\n\n" >&2
  
         # get folder path to logs
         LogsPath=`dirname $elog`
@@ -44,15 +44,15 @@ else
               echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> ${LogsPath}/FAILED_fastq
               exit 1;
         fi
-        if [ ! -s $fastqfile ]
-        then
-              MSG="input reads file for fastqc command was not found.  Execution of the pipeline continues."
-              echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> ${LogsPath}/FAILED_fastq
-              exit 1;
-        fi
+        #if [ ! -s $inputfiles ]
+        #then
+        #      MSG="input reads files for fastqc command was not found.  Execution of the pipeline continues."
+        #      echo -e "program=$scriptfile failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> ${LogsPath}/FAILED_fastq
+        #      exit 1;
+        #fi
 
 
-
+        fastqfile=$( echo $inputfiles | tr ":" " " )
         parameters=$( echo $fastqcparms | tr "_" " " )
         cd $outputdir
         $fastqcdir/fastqc -o $outputdir $parameters $fastqfile

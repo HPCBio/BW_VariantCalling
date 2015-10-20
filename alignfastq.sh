@@ -2,7 +2,7 @@
 #
 # alignfastq.sh
 # align module to be used for input files in fastq format
-redmine=hpcbio-redmine@igb.illinois.edu
+##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
@@ -32,7 +32,7 @@ fi
 
 
 set +x; echo -e "\n\n" >&2; 
-# wrapping commends in echoes, so that the output logs would be easier to read: they will have more structure
+# wrapping comments in echoes, so that the output logs would be easier to read: they will have more structure
 echo "####################################################################################################" >&2
 echo "##################################### PARSING RUN INFO FILE ########################################" >&2
 echo "##################################### AND SANITY CHECK      ########################################" >&2
@@ -312,42 +312,64 @@ echo "##########################################################################
 echo -e "\n\n" >&2; set -x;
 
 
-        #AlignOutputDir=$outputdir/align
-
-        # initialize output file name and path template for YesWorkflow
-        AlignedFastqPathTemplate="align/"
-
 
         TopOutputLogs=$outputdir/logs
+        AlignOutputLogs=$TopOutputLogs/align
+        FastqcOutputLogs=$TopOutputLogs/fastqc
+        
         if [ -d $TopOutputLogs ]
         then
            # not sure if we want to reset this: useful for debugging ....
            #set +x; echo -e "$TopOutputLogs is there; resetting it" >&2; set -x;
-           #`rm -r $TopOutputLogs/*`
+           #`rm  $TopOutputLogs/*`
            pbsids=""
+           `rm $TopOutputLogs/pbs.ALIGNED`
+           `rm $TopOutputLogs/pbs.CONVERTBAM`
+           `rm $TopOutputLogs/pbs.FATSQC`
+           `rm $TopOutputLogs/pbs.MARKED`
+           `rm $TopOutputLogs/pbs.REALRECAL`
+
         else
            mkdir -p $TopOutputLogs
         fi
 
-        AlignOutputLogs=$TopOutputLogs/align
         if [ ! -d $AlignOutputLogs ]
         then
             mkdir -p $AlignOutputLogs
+        else
+            `rm  $AlignOutputLogs/*`
+            # clear the joblists.
+            truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
+            truncate -s 0 $AlignOutputLogs/MarkdupsAnisimov.joblist            
         fi
-        `chmod -R 770 $AlignOutputLogs/`
+       
+        if [ $fastqcflag == "YES" ]
+        then
+            echo -e "####### fastqc will be run, prepare folder here ############"
+            if [ ! -d $FastqcOutputLogs ]
+            then
+		mkdir -p $FastqcOutputLogs
+            else
+		`rm  $FastqcOutputLogs/*`
+                 #clear the joblist.           
+                 truncate -s 0 $FastqcOutputLogs/FastqcAnisimov.joblist
+            fi            
+        fi
+
         # where messages about failures will go
-        truncate -s 0 $AlignOutputLogs/FAILEDmessages
+
         if [ ! -d $AlignOutputLogs/FAILEDjobs ]
         then
             mkdir $AlignOutputLogs/FAILEDjobs
         else
-            rm -r $AlignOutputLogs/FAILEDjobs/*
+            `rm $AlignOutputLogs/FAILEDjobs/*`
+            # clear the joblist. 
+            truncate -s 0 $AlignOutputLogs/FAILEDmessages
         fi
+        
         `chmod -R 770 $AlignOutputLogs/FAILEDjobs`
-
-
-
-
+        `chmod -R 770 $AlignOutputLogs/`
+        
         pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
         #chunks=`expr $nodes "-" 1`
@@ -362,23 +384,24 @@ echo -e "\n\n" >&2; set -x;
         fi
 
 
+
+
+
 set +x; echo -e "\n\n">&2
 echo "############################################################################################################" >&2
 echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
 echo "############################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-
+        # this variable is a hack to decide whether to run align and markdups together or in separate jobs
+        # perhaps a better way is with an additional parameter in the runfile
         SpecialCase=""
-        # clear the joblist
-        truncate -s 0 $AlignOutputLogs/AlignAnisimov.joblist
-        truncate -s 0 $AlignOutputLogs/MarkdupsAnisimov.joblist
         
         # select the file to read
         if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
         then 
              TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
-             SpecialCase="Baylor"
+             SpecialCase="Split2Jobs"
              set +x; echo -e "\n\n">&2
              echo "############################################################################################################" >&2
              echo "##################################### FLAG: Aligment case is Baylor                        #################" >&2
@@ -486,19 +509,34 @@ echo -e "\n\n" >&2; set -x;
             set +x; echo -e "\n\n ################  MORE PREP WORK:  CREATING OUTPUT FOLDERS / OUTPUT FILENAMES   ################\n" >&2; set -x;
 
             AlignOutputDir=$outputdir/$SampleName/align
+            FastqcOutputDir=$outputdir/$SampleName/fastqc
+            
             if [ -d $AlignOutputDir ]
             then
                 # perhaps we should stop when a sample is seen more than once. But for now, we simply reset the folder
 		set +x; echo -e "\n\n $AlignOutputDir is there; resetting it" >&2; set -x;
-		`rm -r $AlignOutputDir/*`
-		`rm -r $AlignOutputDir/logs/*`
+		`rm  $AlignOutputDir/*`
+		`rm  $AlignOutputDir/logs/*`
             else
 		mkdir -p $AlignOutputDir/logs
             fi
-            `chmod -R 770 $AlignOutputDir/`
-            `chmod -R 770 $AlignOutputDir/logs`
+		
+	    if [ $fastqcflag == "YES" ]
+	    then
+		set +x; echo -e "\n\n fastqcflag=$fastqcflag. need to prepare the output folder for these results" >&2; set -x;
+	        if [ -d $FastqcOutputDir ]
+	        then
+		    `rm   $FastqcOutputDir/*` 
+		    `rm   $FastqcOutputDir/logs/*` 
+                else
+	            mkdir -p $FastqcOutputDir/logs
+                fi 
+            fi
+            
+            `chmod -R 770 $outputdir/$SampleName/`
 
-            # filenames of temporary files go here 
+            # filenames of temporary and output files go here. 
+            
             outputsamfileprefix=$AlignOutputDir/$SampleName
             sortedplain=$outputsamfileprefix.wrg.sorted.bam
             outsortnodup=$outputsamfileprefix.nodups.sorted.bam
@@ -514,17 +552,6 @@ echo -e "\n\n" >&2; set -x;
 		echo "#################################### FASTQFLAG == YES RUNNING FASTQC ON UNALIGNED READS of $SampleName #####################" >&2
                 echo -e "\n\n" >&2; set -x;
 
-                # check that fastqc output folder for this sample is there
-		FastqcOutputFolder=$outputdir/$SampleName/fastqc
-		if [ -d $FastqcOutputFolder ]
-		then
-		    set +x; echo -e "\n\n $FastqcOutputFolder  is there; resetting it" >&2; set -x;
-		    `rm -r $FastqcOutputFolder/*`
-		else
-		    mkdir -p $FastqcOutputFolder
-		fi
-		`chmod -R 770 $FastqcOutputFolder`
-
 
                 # check that fastqc tool is there
 		if [ ! -d $fastqcdir ]
@@ -534,91 +561,21 @@ echo -e "\n\n" >&2; set -x;
 		    exit 1;
 		fi
 
-                # create necessary log directories
-                if [ ! -d $TopOutputLogs/fastqc ]
-                then
-                    mkdir $TopOutputLogs/fastqc
-                    `chmod -R 770 $TopOutputLogs/fastqc`
+                # gather the input files to run fastqc on                
+		if [ $paired -ne 1 ]
+		then                
+                    fastqc_input=$LeftReadsFastq                
+                else
+                    fastqc_input="$LeftReadsFastq:$RightReadsFastq"
                 fi
 
+                # form the fastqc command in jobfile and then add it to the anisimov launcher                
+                jobfileFastqc=$FastqcOutputDir/logs/Fastqc.$SampleName.jobfile
+                truncate -s 0 $jobfileFastqc
+                echo "nohup $scriptdir/fastq.sh $fastqcdir $FastqcOutputDir $fastqcparms $fastqc_input $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in $FastqcOutputDir/logs/log.Fastqc_${SampleName}.ou $email $FastqcOutputDir/logs/qsub.Fastqc_$SampleName > $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in" > $jobfileFastqc
+                jobfilename=$( basename $jobfileFastqc )
+                echo "$FastqcOutputDir/logs $jobfilename" >> $FastqcOutputLogs/FastqcAnisimov.joblist
 
-
-                set +x; echo -e "\n############# Now that we know fastq will be quality-checked, " >&2
-                echo -e "############# we need to initialize Workflow autodocumentation\n" >&2; set -x
-
-                set +x; echo -e "### update autodocumentation script ###"; set -x;
-                echo -e "# @begin FastQC" >> $outputdir/WorkflowAutodocumentationScript.sh
-                # select how samples will be found
-                #if [[ -s $outputdir/SAMPLENAMES_multiplexed.list ] && [ -s $outputdir/SAMPLEGROUPS.list ]]
-                #then
-                #    numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
-                #    numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-                #    echo -e "   # @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
-                #else
-                #    numinputs=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
-                #    echo -e "   # @in datafilestoalign @as fastq_inputs @URI SAMPLENAMES.list=${numinputs}_inputs_for_${numinputs}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
-                #fi
-                FastqcOutputFolder_basename=`(basename $FastqcOutputFolder)`
-                echo -e "   # @in fastq_inputs @as fastq_inputs  @URI ${SampleName}" >> $outputdir/WorkflowAutodocumentationScript.sh
-                echo -e "   # @out fastq_output @as fastqc_output_folder @URI ${FastqcOutputFolder_basename}/" >> $outputdir/WorkflowAutodocumentationScript.sh
-                echo -e "# @end FastQC\n" >> $outputdir/WorkflowAutodocumentationScript.sh
-
-                # create and launch the qsub jobs with fastqc runs
-                
-                left_fastqc_input=$LeftReadsFastq                
-
-                qsub_fastqcR1=$TopOutputLogs/fastqc/qsub.fastqcR1.$SampleName
-		echo "#PBS -V" > $qsub_fastqcR1
-		echo "#PBS -A $pbsprj" >> $qsub_fastqcR1
-		echo "#PBS -N ${pipeid}_fastqc_R1_${SampleName}" >> $qsub_fastqcR1
-		echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR1
-		echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR1
-		echo "#PBS -o $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.ou" >> $qsub_fastqcR1
-		echo "#PBS -e $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in" >> $qsub_fastqcR1
-		echo "#PBS -q $pbsqueue" >> $qsub_fastqcR1
-		echo "#PBS -m ae" >> $qsub_fastqcR1
-		echo "#PBS -M $email" >> $qsub_fastqcR1
-		echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $FastqcOutputFolder $fastqcparms $left_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in $TopOutputLogs/log.fastqc_R1_${SampleName}.ou $email $TopOutputLogs/fastqc/qsub.fastqc_R1_$SampleName" >> $qsub_fastqcR1
-
-                echo -e "\n\n" >> $qsub_fastqcR1
-                echo "exitcode=\$?" >> $qsub_fastqcR1
-                echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_fastqcR1
-                echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R1_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_fastqcR1
-                echo -e "   exit 1" >> $qsub_fastqcR1
-                echo "fi" >> $qsub_fastqcR1
-
-
-		`chmod a+r $qsub_fastqcR1`
-                `qsub $qsub_fastqcR1 >> $TopOutputLogs/pbs.FASTQC`
-
-		if [ $paired -eq 1 ]
-		then
-                    right_fastqc_input=$RightReadsFastq
-
-
-                    qsub_fastqcR2=$TopOutputLogs/fastqc/qsub.fastqc_R2_$SampleName
-		    echo "#PBS -V" > $qsub_fastqcR2
-		    echo "#PBS -A $pbsprj" >> $qsub_fastqcR2
-		    echo "#PBS -N ${pipeid}_fastqc_R2_${SampleName}" >> $qsub_fastqcR2
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub_fastqcR2
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_fastqcR2
-		    echo "#PBS -o $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.ou" >> $qsub_fastqcR2
-		    echo "#PBS -e $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in" >> $qsub_fastqcR2
-		    echo "#PBS -q $pbsqueue" >> $qsub_fastqcR2
-		    echo "#PBS -m ae" >> $qsub_fastqcR2
-		    echo "#PBS -M $email" >> $qsub_fastqcR2
-		    echo "aprun -n 1 -d $thr $scriptdir/fastq.sh $fastqcdir $FastqcOutputFolder $fastqcparms $right_fastqc_input $TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in $TopOutputLogs/fastqc/log.fastqc_R2_$SampleName.ou $email $TopOutputLogs/qsub.fastqc_R2_$SampleName" >> $qsub_fastqcR2
-
-                    echo -e "\n\n" >> $qsub_fastqcR2
-                    echo "exitcode=\$?" >> $qsub_fastqcR2
-                    echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub_fastqcR2
-                    echo "   echo -e \"\n\n fastq.sh failed with exit code = \$exitcode \n logfile=$TopOutputLogs/fastqc/log.fastqc_R2_${SampleName}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub_fastqcR2
-                    echo -e "  exit 1" >> $qsub_fastqcR2
-                    echo "fi" >> $qsub_fastqcR2
-
-		    `chmod a+r $qsub_fastqcR2`
-                    `qsub $qsub_fastqcR2 >> $TopOutputLogs/pbs.FASTQC`
-		fi
             else
 		set +x; echo -e "\n\n ############ FASTQCFLAG == NO. Quality information for fastq files will NOT be calculated." >&2; set -x;
             fi
@@ -715,7 +672,7 @@ set +x; echo -e "\n\n" >&2;
 echo -e "############################################################################################################"
 echo -e "#####################################                               ########################################"
 echo -e "##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ########################################"
-echo -e "#####################################                               ########################################"
+echo -e "################## IT WILL ITERATE AT LEAST ONCE EVEN IF NO CHUNKING WAS PERFORMED  #########################"
 echo -e "############################################################################################################"
 echo -e "\n\n" >&2; set -x;  
 
@@ -856,9 +813,7 @@ echo -e "\n\n" >&2; set -x;
                         jobfile=$AlignOutputDir/logs/bwamem.$SampleName.node$OutputFileSuffix.jobfile
                         jobfileMarkdup=$AlignOutputDir/logs/Markdup.$SampleName.node$OutputFileSuffix.jobfile
   
-                        truncate -s 0 $jobfile
-                        truncate -s 0 $jobfileMarkdup
-
+  
                         if [ $chunkfastq == "YES" ]
                         then
 			   ### MUST FIX QSUB VARIABLE NAME PROPERLY
@@ -869,7 +824,7 @@ echo -e "\n\n" >&2; set -x;
                              echo -e  "#######                                   chunkfastq == NO                      ###############"
                              echo -e  "#######  we need to see which alignment case applies depending on value of FLAG ###############"
                              
-                             if [ $SpecialCase != "Baylor" ]
+                             if [ $SpecialCase != "Split2Jobs" ]
                              then
                                   echo -e "################# CASE is NOT BAYLOR, alignment and markduplicates in one job ############"
                                   echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
@@ -1023,8 +978,9 @@ echo -e "\n\n" >&2; set -x
               # increment so number of nodes = number fo input fastq + 1, even when there is only one input fastq
               # otherwise nowhere for launcher to run, due to the -N 1 option in aprun
               numalignnodes=$(( inputfastqcounter + 1))
-   
-              set +x; echo -e "\n # run_method is LAUNCHER. scheduling the Anisimov Launcher\n" >&2; set -x
+              
+ 
+              set +x; echo -e "\n # run_method is LAUNCHER. scheduling the Align Launcher\n" >&2; set -x
               
               qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
               echo "#!/bin/bash" > $qsubAlignLauncher
@@ -1051,7 +1007,7 @@ echo -e "\n\n" >&2; set -x
               #echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
 
                              
-              if [ $SpecialCase == "Baylor" ]
+              if [ $SpecialCase == "Split2Jobs" ]
               then
                  set +x; echo -e "\n # run_method is LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x
                  qsubMarkdupLauncher=$AlignOutputLogs/qsub.Markdup.Anisimov
@@ -1079,11 +1035,39 @@ echo -e "\n\n" >&2; set -x
                  MarkDupAnisimovJoblistId=`qsub $qsubMarkdupLauncher`
                  #`qhold -h u $MarkDupAnisimovJoblistId`
                  #echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-
-
-                     
+                 echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk                     
               fi
+              
+              if [ $fastqcflag == "YES" ]
+              then
+ 
+                  set +x; echo -e "\n # run_method is LAUNCHER. scheduling the Fastqc Launcher\n" >&2; set -x
+                  
+                  #No dependencies will be made with this job. Hopefully, it will run last right before the summary script
+                  
+                  qsubFastqcLauncher=$FastqcOutputLogs/qsub.Fastqc.Anisimov
+                  echo "#!/bin/bash" > $qsubFastqcLauncher
+                  echo "#PBS -V" >> $qsubFastqcLauncher
+                  echo "#PBS -A $pbsprj" >> $qsubFastqcLauncher
+                  echo "#PBS -N ${pipeid}_Fastqc_Anisimov" >> $qsubFastqcLauncher
+                  echo "#PBS -l walltime=$pbscpu" >> $qsubFastqcLauncher
+                  echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubFastqcLauncher
+                  echo "#PBS -o $FastqcOutputLogs/log.Fastqc.Anisimov.ou" >> $qsubFastqcLauncher
+                  echo "#PBS -e $FastqcOutputLogs/log.Fastqc.Anisimov.in" >> $qsubFastqcLauncher
+                  echo "#PBS -q $pbsqueue" >> $qsubFastqcLauncher
+                  echo "#PBS -m ae" >> $qsubFastqcLauncher
+                  echo "#PBS -M $email" >> $qsubFastqcLauncher
+                  echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+ 
+                  echo "exitcode=\$?" >> $qsubFastqcLauncher
+                  echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubFastqcLauncher
+                  echo "   echo -e \"\n\n FastqcAnisimov failed with exit code = \$exitcode \n logfile=$FastqcOutputLogs/log.Fastqc.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubFastqcLauncher
+                  echo "   exit 1" >> $qsubFastqcLauncher
+                  echo "fi" >> $qsubFastqcLauncher
+ 
+                  FastqcAnisimovJoblistId=`qsub $qsubFastqcLauncher`
+                  echo $FastqcAnisimovJoblistId >> $TopOutputLogs/pbs.FASTQC # so that this job could be released in the next section. Should it be held to begin with?
+              fi             
 
            ;;           
            "APRUN")
@@ -1455,7 +1439,7 @@ echo "###############################     ALL QSUB SCRIPTS BELOW WILL RUN AFTER 
 echo "#####################################################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-        if [ $SpecialCase == "Baylor" ]
+        if [ $SpecialCase == "Split2Jobs" ]
         then
 	     pbsids=$( cat $TopOutputLogs/pbs.MARKED | sed "s/\..*//" | tr "\n" ":" )
 	else
@@ -1464,7 +1448,8 @@ echo -e "\n\n" >&2; set -x;
 	#extraids=$( cat $TopOutputLogs/pbs.EXTRACTREADS | sed "s/\..*//" | tr "\n" " " )
         mergeids=$( echo $pbsids | tr ":" " " )
         alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | tr "\n" " " )
-
+        fastqcids=$( cat $TopOutputLogs/pbs.FASTQC | sed "s/\..*//" | tr "\n" " " )
+        
         ## generating summary redmine email if analysis ends here
 	set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x;
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
@@ -1473,7 +1458,7 @@ echo -e "\n\n" >&2; set -x;
             # release all held jobs
             `qrls -h u $alignids`
             `qrls -h u $mergeids`
-            #`qrls -h u $extraids`
+            `qrls -h u $fastqcids`
      
 	    lastjobid=""
             cleanjobid=""
@@ -1566,7 +1551,7 @@ echo -e "\n\n" >&2; set -x;
             # need to release jobs here or realignment will not start
             `qrls -h u $alignids`
             `qrls -h u $mergeids`
-            #`qrls -h u $extraids`
+            `qrls -h u $fastqcids`
 
 	    echo `date`
 	fi

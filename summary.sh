@@ -20,6 +20,7 @@ else
         genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
         sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 
+        echo -e "the delivery folder should be populated already with BAMs and VCFs"
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
             delivery=$outputdir/delivery
@@ -34,7 +35,9 @@ else
         cp $outputdir/*.list ${delivery}/docs
         cp $sampleinfo  ${delivery}/docs
         cp $genderinfo  ${delivery}/docs
-        
+
+        chmod -R 660 ${delivery}/docs
+
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )
