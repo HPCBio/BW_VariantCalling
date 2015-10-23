@@ -11,6 +11,7 @@ then
         #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$grendon@illinois.edu""
         exit 1;
 else 
+        umask 0037
 	set -x
 	echo `date`
         scriptfile=$0
@@ -356,8 +357,8 @@ else
               then
  		mkdir $outputlogs
 	      fi
-	      `chmod -R 770 $outputalign/`
-	      `chmod -R 770 $outputlogs/`
+	      #`chmod -R 770 $outputalign/`
+	      #`chmod -R 770 $outputlogs/`
 
               cd $outputalign
               sortedplain=$outputsam.wrg.sorted.bam
@@ -390,7 +391,7 @@ else
                 echo "#PBS -M $email" >> $qsub
 		echo "aprun -n 1 -d $thr $scriptdir/novobam.sh $alignerdir $alignparms $thr $refdir/$refindexed $outputalign $outputsam.sam $outputsam.bam $samdir $paired $BAM $outputlogs/log.novoalnbam.$dirname.in $outputlogs/log.novoalnbam.$dirname.ou $email $outputlogs/qsub.novoalnbam.$dirname" >> $qsub
                 
-                `chmod a+r $qsub`
+                #`chmod a+r $qsub`
                 jobnovo=`qsub $qsub`
                 `qhold -h u $jobnovo`
 		echo $jobnovo >> $outputlogs/ALIGNED_$dirname
@@ -411,7 +412,7 @@ else
                 echo "#PBS -M $email" >> $qsub1
 		echo "aprun -n 1 -d $thr $scriptdir/bwabamS1.sh $alignerdir $alignparms $readparm $refdir/$refindexed $outputalign $outputsam.R1.sai $BAM $outputlogs/log.bwabamr1.$dirname.in $outputlogs/log.bwabamr1.$dirname.ou $email $outputlogs/qsub.bwabamr1.$dirname" >> $qsub1
                 
-                `chmod a+r $qsub1`
+                #`chmod a+r $qsub1`
                 jobr1=`qsub $qsub1`
                 `qhold -h u $jobr1`
                 echo $jobr1 >> $outputlogs/ALIGNED_$dirname
@@ -433,7 +434,7 @@ else
 		    echo "#PBS -M $email" >> $qsub2
 		    echo "aprun -n 1 -d $thr $scriptdir/bwabamS1.sh $alignerdir $alignparms $readparm $refdir/$refindexed $outputalign $outputsam.R2.sai $BAM $outputlogs/log.bwabamr2.$dirname.in $outputlogs/log.bwabamr2.$dirname.ou $email $outputlogs/qsub.bwabamr2.$dirname" >> $qsub2
                    
-		    `chmod a+r $qsub2`
+		    #`chmod a+r $qsub2`
                     jobr2=`qsub $qsub2`
                     `qhold -h u $jobr2`
 		    echo $jobr2 >> $outputlogs/ALIGNED_$dirname
@@ -453,7 +454,7 @@ else
 		    echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub3
 		    echo "aprun -n 1 -d $thr $scriptdir/bwabamS2.sh $alignerdir $refdir/$refindexed $outputalign $outputsam.R1.sai $outputsam.R2.sai $BAM $BAM  $outputsam.sam $outputsam.bam $samdir $outputlogs/log.bwabamsampe.${dirname}.in $outputlogs/log.bwabamsampe.${dirname}.ou $email $outputlogs/qsub.bwabamsampe.$dirname" >> $qsub3
                     
-		    `chmod a+r $qsub3`
+		    #`chmod a+r $qsub3`
                     jobsampe=`qsub $qsub3`
 		    `qhold -h u $jobsampe`
 		    echo $jobsampe >> $outputlogs/ALIGNED_$dirname
@@ -474,7 +475,7 @@ else
 		    echo "#PBS -W depend=afterok:$jobr1" >> $qsub3
 		    echo "aprun -n 1 -d $thr $scriptdir/bwabamS3.sh $alignerdir $refdir/$refindexed $outputalign $outputsam.R1.sai $BAM  $outputsam.sam $outputsam.bam $samdir $outputlogs/log.bwabamsamse.${dirname}.in $outputlogs/log.bwabamsamse.${dirname}.ou $email $outputlogs/qsub.bwabamsamse.$dirname" >> $qsub3
                     
-		    `chmod a+r $qsub3`
+		    #`chmod a+r $qsub3`
                     jobsamse=`qsub $qsub3`
 		    `qhold -h u $jobsamse`
                     echo $jobsamse >> $outputlogs/ALIGNED_$dirname
@@ -505,7 +506,7 @@ else
 		echo "#PBS -M $email" >> $qsub1
 		echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
 		echo "aprun -n 1 -d $thr $scriptdir/mergenovo.sh $outputalign $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $output_logs/log.novosort.inbam.${dirname}.in $output_logs/log.novosort.inbam.${dirname}.ou $email $output_logs/qsub.merge.novosort.inbam.$dirname" >> $qsub1
-		`chmod a+r $qsub1`
+		#`chmod a+r $qsub1`
 		mergejob=`qsub $qsub1`
                 `qhold -h u $mergejob`
 		echo $mergejob  >> $outputlogs/MERGED_$dirname
@@ -524,7 +525,7 @@ else
 		echo "#PBS -M $email" >> $qsub1
 		echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub1
 		echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $outputalign $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $outputlogs/log.sortmerge.picard.inbam.${dirname}.in $outputlogs/log.sortmerge.picards.inbam.${dirname}.ou $email $outputlogs/qsub.sortmerge.picard.inbam.$dirname" >> $qsub1
-		`chmod a+r $qsub1`
+		#`chmod a+r $qsub1`
 		mergejob=`qsub $qsub1`
 		`qhold -h u $mergejob`
 		echo $mergejob  >> $outputlogs/MERGED_$dirname
@@ -550,7 +551,7 @@ else
 	    echo "#PBS -M $email" >> $qsub5
 	    echo "#PBS -W depend=afterok:$mergejob" >> $qsub5
 	    echo "aprun -n 1 -d $thr $scriptdir/extract_reads_bam.sh $outputalign $outsortwdup $runfile $outputlogs/log.extractreadsbam.$dirname.in $outputlogs/log.extractreadsbam.$dirname.ou $email  $outputlogs/qsub.extractreadsbam.$dirname $igv $extradir" >> $qsub5
-	    `chmod a+r $qsub5`
+	    #`chmod a+r $qsub5`
 	    extrajob=`qsub $qsub5`
             `qhold -h u $extrajob`
             echo $extrajob >> $output_logs/pbs.EXTRACTREADS
@@ -594,7 +595,7 @@ else
 	     echo "#PBS -M $email" >> $qsub6
 	     echo "#PBS -W depend=afterok:$pbsids" >> $qsub6
 	     echo "aprun -n 1 -d 1 $scriptdir/cleanup.sh $outputdir $analysis $output_logs/log.cleanup.align.in $output_logs/log.cleanup.align.ou $email $output_logs/qsub.cleanup.align"  >> $qsub6
-	     `chmod a+r $qsub6`
+	     #`chmod a+r $qsub6`
 	     cleanjobid=`qsub $qsub6`
 	     echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
          fi
@@ -620,7 +621,7 @@ else
 	     echo "#PBS -W depend=afterok:$pbsids" >> $qsub4
          fi
 	 echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitok"  >> $qsub4
-	 `chmod a+r $qsub4`
+	 #`chmod a+r $qsub4`
 	 lastjobid=`qsub $qsub4`
 	 echo $lastjobid >> $output_logs/pbs.SUMMARY
 
@@ -641,7 +642,7 @@ else
 	     echo "#PBS -M $email" >> $qsub5
 	     echo "#PBS -W depend=afterany:$pbsids" >> $qsub5
 	     echo "aprun -n 1 -d 1 $scriptdir/summary.sh $runfile $email exitnotok"  >> $qsub5
-	     `chmod a+r $qsub5`
+	     #`chmod a+r $qsub5`
 	     badjobid=`qsub $qsub5`
 	     echo $badjobid >> $output_logs/pbs.SUMMARY
 	 fi
@@ -668,7 +669,7 @@ else
 	    echo "#PBS -M $email" >> $qsub2
             echo "#PBS -W depend=afterany:$pbsids" >> $qsub2
 	    echo "aprun -n 1 -d 1 $scriptdir/start_realrecal_block.sh $runfile $output_logs/start_realrecal_block.in $output_logs/start_realrecal_block.ou $email $output_logs/qsub.start_realrecal_block" >> $qsub2
-	    `chmod a+r $qsub2` 
+	    #`chmod a+r $qsub2` 
 	    `qsub $qsub2 >> $output_logs/pbs.REALRECAL`
 
             # releasing held jobs; else the above job dependency will never be met
@@ -678,8 +679,8 @@ else
 	    echo `date`
       fi
 
-     `chmod -R 770 $outputdir`
-     `chmod -R 770 $output_logs`
+     #`chmod -R 770 $outputdir`
+     #`chmod -R 770 $output_logs`
      echo `date`
 
 fi

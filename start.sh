@@ -11,7 +11,7 @@ then
         exit 1;
 else
         echo -e "\n\n############# BEGIN VARIANT CALLING WORKFLOW ###############\n\n"
-
+        umask 0037
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -61,16 +61,17 @@ else
             fi
         fi
 
+        `umask u=rwx,g=rwx,o=`
+
         if [ ! -d $outputdir ]
         then
-            mkdir -p $outputdir
             mkdir -p $outputdir/logs
         else 
             echo "resetting directory"
 	    `rm -r $outputdir/*`
             mkdir -p $outputdir/logs
         fi
-        `chmod -R 770 $outputdir/`
+        #`chmod -R 770 $outputdir/`
         `chmod 740 $epilogue`
 	`cp $runfile $outputdir/runfile.txt`
         runfile=$outputdir/runfile.txt
@@ -105,7 +106,7 @@ else
         echo -e "\n\n   exit 1" >> $qsub1
         echo "fi" >> $qsub1
 
-        `chmod a+r $qsub1`               
+        #`chmod a+r $qsub1`               
         jobid=`qsub $qsub1`
 	set +x; echo -e "\n ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### \n"; set -x;
         pipeid=$( echo $jobid | sed "s/\.[a-z]*[0-9]*//g" )

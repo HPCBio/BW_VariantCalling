@@ -57,6 +57,7 @@ else
         cd $outputdir
         $fastqcdir/fastqc -o $outputdir $parameters $fastqfile
         exitcode=$?
+	echo `date`
         if [ $exitcode -ne 0 ]
         then
               MSG="fastqc command failed.  exitcode=$exitcode. Execution of the pipeline continues."

@@ -11,7 +11,7 @@ then
    echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
    exit 1;
 fi
-
+   umask 0037
    set -x
    echo `date`
    scriptfile=$0
@@ -866,7 +866,7 @@ echo "##########################################################################
        echo "#PBS -M $email" >> $qsub_cleanup
        echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_cleanup
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
-       `chmod a+r $qsub_cleanup`
+       #`chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
        echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
    fi
@@ -890,7 +890,7 @@ echo "##########################################################################
        echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
    fi
    echo "$scriptdir/summary.sh $runfile $email exitafterany $reportticket"  >> $qsub_summary
-   `chmod a+r $qsub_summary`
+   #`chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
@@ -914,7 +914,7 @@ echo "##########################################################################
        echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summaryany
    fi
    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summaryany
-   `chmod a+r $qsub_summaryany`
+   #`chmod a+r $qsub_summaryany`
    badjobid=`qsub $qsub_summaryany`
    echo $badjobid >> $TopOutputLogs/SUMMARYpbs
 

@@ -35,9 +35,14 @@ else
         cp $outputdir/*.list ${delivery}/docs
         cp $sampleinfo  ${delivery}/docs
         cp $genderinfo  ${delivery}/docs
+	echo `date`	
+
+        echo -e "making the PBS log files group readable and the delivery folder group read/writable"
 
         chmod -R 660 ${delivery}/docs
+        find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x
 
+	echo `date`	
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )

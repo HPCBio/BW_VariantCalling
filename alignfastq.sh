@@ -11,7 +11,7 @@ then
 fi
 
         echo -e "\n\n############# BEGIN ALIGNFASTQ PROCEDURE: schedule fastqc, parse sample information and create alignment jobs  ###############\n\n" >&2
-
+        umask 0037
 	set -x
 	echo `date`
         scriptfile=$0
@@ -367,8 +367,8 @@ echo -e "\n\n" >&2; set -x;
             truncate -s 0 $AlignOutputLogs/FAILEDmessages
         fi
         
-        `chmod -R 770 $AlignOutputLogs/FAILEDjobs`
-        `chmod -R 770 $AlignOutputLogs/`
+        #`chmod -R 770 $AlignOutputLogs/FAILEDjobs`
+        #`chmod -R 770 $AlignOutputLogs/`
         
         pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
@@ -533,7 +533,7 @@ echo -e "\n\n" >&2; set -x;
                 fi 
             fi
             
-            `chmod -R 770 $outputdir/$SampleName/`
+            #`chmod -R 770 $outputdir/$SampleName/`
 
             # filenames of temporary and output files go here. 
             
@@ -740,7 +740,7 @@ echo -e "\n\n" >&2; set -x;
                     echo "#PBS -M $email" >> $qsub_bwar1
 		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix" >> $qsub_bwar1
 
-                    `chmod a+r $qsub_bwar1`
+                    #`chmod a+r $qsub_bwar1`
                     jobr1=`qsub $qsub_bwar1`
                     `qhold -h u $jobr1`
                     echo $jobr1 >> $AlignOutputLogs/ALIGNED_$SampleName
@@ -760,7 +760,7 @@ echo -e "\n\n" >&2; set -x;
 			echo "#PBS -m ae" >> $qsub_bwar2
 			echo "#PBS -M $email" >> $qsub_bwar2
 			echo "$run_string $profiler_string $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix" >> $qsub_bwar2
-			`chmod a+r $qsub_bwar2`
+			#`chmod a+r $qsub_bwar2`
                         jobr2=`qsub $qsub_bwar2`
 			`qhold -h u $jobr2`
 			echo $jobr2 >> $AlignOutputLogs/ALIGNED_$SampleName
@@ -779,7 +779,7 @@ echo -e "\n\n" >&2; set -x;
 			echo "#PBS -M $email" >> $qsub_bwasampe
 			echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub_bwasampe
 			echo "$run_string $profiler_string $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$OutputFileSuffix" >> $qsub_bwasampe
-			`chmod a+r $qsub_bwasampe`
+			#`chmod a+r $qsub_bwasampe`
                         jobwa=`qsub $qsub_bwasampe`
 			`qhold -h u $jobwa`
 			echo $jobwa >> $AlignOutputLogs/ALIGNED_$SampleName
@@ -799,7 +799,7 @@ echo -e "\n\n" >&2; set -x;
 			echo "#PBS -M $email" >> $qsub_bwasamse
 			echo "#PBS -W depend=afterok:$jobr1" >> $qsub_bwasamse
 			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix" >> $qsub_bwasamse
-			`chmod a+r $qsub_bwasamse`
+			#`chmod a+r $qsub_bwasamse`
                         jobwa=`qsub $qsub_bwasamse`
 			`qhold -h u $jobwa`
                         echo $qsub_bwasamse >> $AlignOutputLogs/ALIGNED_$SampleName
@@ -840,8 +840,8 @@ echo -e "\n\n" >&2; set -x;
                                   echo "$AlignOutputDir/logs $jobfilenameMarkdup" >> $AlignOutputLogs/MarkdupsAnisimov.joblist
                              fi                             
                         fi
-                        `chmod ug=rwx $jobfile`
-                        `chmod ug=rwx $jobfileMarkdup`
+                        #`chmod ug=rwx $jobfile`
+                        #`chmod ug=rwx $jobfileMarkdup`
                      else
                         set +x; echo -e "\n################ bwa mem aligner. single-end reads ################\n" >&2; set -x
                         qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix
@@ -865,7 +865,7 @@ echo -e "\n\n" >&2; set -x;
                         fi
    
 
-                       `chmod a+r $qsub_bwamem`
+                       #`chmod a+r $qsub_bwamem`
                        jobbwamemse=`qsub $qsub_bwamem`
                        `qhold -h u $jobbwamemse`
                        echo $jobbwamemse >> $AlignOutputLogs/ALIGNED_$SampleName
@@ -933,7 +933,7 @@ echo -e "\n\n\n" >&2; set -x
 		   echo "#PBS -M $email" >> $qsub_sortmerge
 		   echo "#PBS -W depend=afterok:$ALIGNED" >> $qsub_sortmerge
 		   echo "aprun -n 1 -d $thr $scriptdir/mergepicard.sh $AlignOutputDir $listfiles $outsortwdup $outsortnodup $sortedplain $dupparms $RGparms $runfile $AlignOutputLogs/log.sortmerge.picard.$SampleName.in $AlignOutputLogs/log.sortmerge.picard.$SampleName.ou $email $AlignOutputLogs/qsub.sortmerge.picard.$SampleName" >> $qsub_sortmerge
-		   `chmod a+r $qsub_sortmerge`
+		   #`chmod a+r $qsub_sortmerge`
 		   mergejob=`qsub $qsub_sortmerge`
 		   `qhold -h u $mergejob`
 		   echo $mergejob  > $AlignOutputLogs/MERGED_$SampleName
@@ -1479,7 +1479,7 @@ echo -e "\n\n" >&2; set -x;
 		echo "#PBS -M $email" >> $qsub_cleanup
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_cleanup
 		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
-		`chmod a+r $qsub_cleanup`
+		#`chmod a+r $qsub_cleanup`
 		cleanjobid=`qsub $qsub_cleanup`
 		echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
             fi
@@ -1504,7 +1504,7 @@ echo -e "\n\n" >&2; set -x;
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_summary
             fi
 	    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
-	    `chmod a+r $qsub_summary`
+	    #`chmod a+r $qsub_summary`
 	    lastjobid=`qsub $qsub_summary`
 	    echo $lastjobid >> $TopOutputLogs/pbs.SUMMARY
 
@@ -1523,7 +1523,7 @@ echo -e "\n\n" >&2; set -x;
 	    echo "#PBS -M $email" >> $qsub_summaryany
 	    echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summaryany
 	    echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summaryany
-	    `chmod a+r $qsub_summaryany`
+	    #`chmod a+r $qsub_summaryany`
 	    badjobid=`qsub $qsub_summaryany`
 	    echo $badjobid >> $TopOutputLogs/pbs.SUMMARY
 
@@ -1545,7 +1545,7 @@ echo -e "\n\n" >&2; set -x;
 	    echo "#PBS -W depend=afterok:$pbsids" >> $qsub_realign
 	    echo "#PBS -M $email" >> $qsub_realign
 	    echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub_realign
-	    `chmod a+r $qsub_realign` 
+	    #`chmod a+r $qsub_realign` 
 	    `qsub $qsub_realign >> $TopOutputLogs/pbs.REALRECAL`
 
             # need to release jobs here or realignment will not start
@@ -1556,7 +1556,7 @@ echo -e "\n\n" >&2; set -x;
 	    echo `date`
 	fi
 
-	`chmod -R 770 $AlignOutputDir`
-	`chmod -R 770 $TopOutputLogs`
+	#`chmod -R 770 $AlignOutputDir`
+	#`chmod -R 770 $TopOutputLogs`
 	echo `date`
 

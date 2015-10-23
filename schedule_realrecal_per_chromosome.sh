@@ -10,10 +10,9 @@ then
    echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
    exit 1;
 else
+   umask 0037
    set -x
    echo `date`
-######################## realigndir and listfiles removed
-######################## RealignOutputLogs replaced with outputdir: top level output folder
    scriptfile=$0
    outputdir=$1
    runfile=$2
@@ -804,7 +803,7 @@ echo -e "\n\n\n ###################################       main loops starts here
        echo "#PBS -M $email" >> $qsub_cleanup
        echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_cleanup
        echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.in $TopOutputLogs/log.cleanup.ou $email $TopOutputLogs/qsub.cleanup" >> $qsub_cleanup
-       `chmod a+r $qsub_cleanup`
+       #`chmod a+r $qsub_cleanup`
        cleanjobid=`qsub $qsub_cleanup`
        echo $cleanjobid >> $outputdir/logs/CLEANUPpbs
    fi
@@ -828,7 +827,7 @@ echo -e "\n\n\n ###################################       main loops starts here
        echo "#PBS -W depend=afterok:$summarydependids" >> $qsub_summary
    fi
    echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
-   `chmod a+r $qsub_summary`
+   #`chmod a+r $qsub_summary`
    lastjobid=`qsub $qsub_summary`
    echo $lastjobid >> $TopOutputLogs/SUMMARYpbs
 
@@ -848,7 +847,7 @@ echo -e "\n\n\n ###################################       main loops starts here
        echo "#PBS -M $email" >> $qsub_summary
        echo "#PBS -W depend=afterany:$summarydependids" >> $qsub_summary
        echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summary
-       `chmod a+r $qsub_summary`
+       #`chmod a+r $qsub_summary`
        badjobid=`qsub $qsub_summary`
        echo $badjobid >> $TopOutputLogs/SUMMARYpbs
    fi

@@ -5,9 +5,9 @@ then
         MSG="Parameter mismatch."
         echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
-else
-        
+else        
         echo -e "\n\n############# CONFIGURE VARIANT CALLING WORKFLOW ###############\n\n" >&2
+        umask 0037
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -166,8 +166,8 @@ else
 	    set +x; echo -e "\n resetting logs\n" >&2; set -x; 
 	    `rm -r $outputdir/logs/*`
         fi
-	`chmod -R 770 $outputdir`
-        `chmod 740 $epilogue`
+	#`chmod -R 770 $outputdir`
+        #`chmod 740 $epilogue`
         TopOutputLogs=$outputdir/logs
         pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
@@ -344,7 +344,7 @@ else
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
 		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.START_ALIGN_BLOCK" >> $qsub1
-		`chmod a+r $qsub1`               
+		#`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		case="alignonly"
@@ -365,7 +365,7 @@ else
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
 		echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/log.START_REALRECAL_BLOCK.in $TopOutputLogs/log.START_REALRECAL_BLOCK.ou $email $TopOutputLogs/qsub.START_REALRECAL_BLOCK" >> $qsub2
-		`chmod a+r $qsub2` 
+		#`chmod a+r $qsub2` 
 		`qsub $qsub2 >> $TopOutputLogs/pbs.REALRECAL`
 		echo `date`
 		case="realignonly" 
@@ -386,7 +386,7 @@ else
 		echo "#PBS -m ae" >> $qsub1
 		echo "#PBS -M $email" >> $qsub1
 		echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.main.aln" >> $qsub1
-		`chmod a+r $qsub1`               
+		#`chmod a+r $qsub1`               
 		`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 		echo `date`
 		echo "Note: realign module will be scheduled after align module ends"
@@ -408,7 +408,7 @@ else
 		echo "#PBS -m ae" >> $qsub3
 		echo "#PBS -M $email" >> $qsub3
 		echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.START_VARCALL_BLOCK.in $TopOutputLogs/log.START_VARCALL_BLOCK.ou $email $TopOutputLogs/qsub.START_VARCALL_BLOCK" >> $qsub3
-		`chmod a+r $qsub3`
+		#`chmod a+r $qsub3`
 		vcalljobid=`qsub $qsub3`
 		echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL
 		case="vcall_only"  

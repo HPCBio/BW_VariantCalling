@@ -11,7 +11,7 @@ then
 else 
 
         echo -e "\n\n############# START ALIGN BLOCK ###############\n\n" >&2
-
+        umask 0037
 	set -x
 	echo `date`
         scriptfile=$0
@@ -245,7 +245,7 @@ echo -e "\n\n###################################################################
                         echo "fi" >> $qsub1
                         echo -e "\n\n exit 1" >> $qsub1
 
-			`chmod a+r $qsub1` 
+			#`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
 			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
@@ -282,7 +282,7 @@ echo -e "\n\n###################################################################
                         echo "fi" >> $qsub1
                         echo -e "\n\n exit 1" >> $qsub1
 
-			`chmod a+r $qsub1` 
+			#`chmod a+r $qsub1` 
 			convertjob=`qsub $qsub1`
 			`qhold -h u $convertjob` 
 			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
@@ -332,7 +332,7 @@ echo -e "\n\n###################################################################
                 echo "fi" >> $qsub2
                 echo -e "\n\n exit 1" >> $qsub2
 
-		`chmod a+r $qsub2`       
+		#`chmod a+r $qsub2`       
 		updatejob=`qsub $qsub2` 
 		echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
             else
@@ -364,7 +364,7 @@ echo -e "\n\n###################################################################
                    echo -e "\n\n exit 1" >> $qsub3
 
 
-		   `chmod a+r $qsub3`       
+		   #`chmod a+r $qsub3`       
 		   updatejob=`qsub $qsub3` 
 		   echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
             fi
@@ -400,7 +400,7 @@ echo -e "\n\n###################################################################
 	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub1
 	    echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/alnFQ.afterbam2fastq.in $TopLogsFolder/alnFQ.afterbam2fastq.ou $email $TopLogsFolder/qsub.main.alnFQ.afterbam2fastq" >> $qsub1
 
-	    `chmod a+r $qsub1`               
+	    #`chmod a+r $qsub1`               
 	    `qsub $qsub1 >> $TopLogsFolder/pbs.ALIGN`
             case="bam2fastq"
 	    echo `date`
@@ -430,7 +430,7 @@ echo -e "\n\n###################################################################
             echo "#PBS -M $email" >> $qsub2
 	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub2
             echo "$scriptdir/alignbam.sh $runfile $TopLogsFolder/log.alignbams.in $TopLogsFolder/log.alignbams.ou $email $TopLogsFolder/qsub.alignbams" >> $qsub2
-            `chmod a+r $qsub2`               
+            #`chmod a+r $qsub2`               
             `qsub $qsub2 >> $TopLogsFolder/pbs.ALIGN`
             case="alignbams"
             echo `date`
@@ -452,7 +452,7 @@ echo -e "\n\n###################################################################
             echo "#PBS -m ae" >> $qsub3
             echo "#PBS -M $email" >> $qsub3
             echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/log.alignfastq.in $TopLogsFolder/log.alignfastq.ou $email $TopLogsFolder/qsub.alignfastq" >> $qsub3
-            `chmod a+r $qsub3` 
+            #`chmod a+r $qsub3` 
             `qsub $qsub3 >> $TopLogsFolder/pbs.ALIGN`
             case="alignfastq"
             echo `date`
@@ -465,3 +465,7 @@ echo -e "\n\n###################################################################
            exit 1;
         fi         
 fi
+
+echo -e "now we need to make the PBS log files group readable"
+
+find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x

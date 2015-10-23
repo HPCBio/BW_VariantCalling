@@ -16,7 +16,7 @@ else
 	set -x
 	echo `date`
         ulimit -s unlimited
-
+        umask 0037
 	scriptfile=$0
         outputdir=$1
         inputdir=$2

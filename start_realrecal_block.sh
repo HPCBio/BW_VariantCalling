@@ -10,7 +10,7 @@ then
    exit 1;
 fi
    echo -e "\n\n############# START REALRECAL BLOCK: decide if the aligned bams were made locally or externally; create the downstream schedule_realrecal_per_chromosome accordingly  ###############\n\n" >&2
-
+   umask 0037
    set -x
    echo `date`
    scriptfile=$0
@@ -186,7 +186,7 @@ fi
    then
       mkdir $RealignOutputLogs
    fi
-   `chmod -R 770 $RealignOutputLogs/`
+   #`chmod -R 770 $RealignOutputLogs/`
    # where messages about failures will go
    truncate -s 0 $RealignOutputLogs/FAILEDmessages
    if [ ! -d $RealignOutputLogs/FAILEDjobs ]
@@ -195,7 +195,7 @@ fi
    else
       rm -r $RealignOutputLogs/FAILEDjobs/*
    fi
-   `chmod -R 770 $RealignOutputLogs/FAILEDjobs`
+   #`chmod -R 770 $RealignOutputLogs/FAILEDjobs`
 
 
 
@@ -294,7 +294,7 @@ fi
             echo "#PBS -m ae" >> $qsub_sortbammayo
             echo "#PBS -M $email" >> $qsub_sortbammayo
             echo "aprun -n 1 -d $thr $scriptdir/sortbammayo.sh $outputalign $tmpbamfile $sortedplain $sorted $sortednodups $runfile $outputlogs/log.sortbammayo.${prefix}.in $outputlogs/log.sortbammayo.${prefix}.ou $email $outputlogs/qsub.sortbammayo.${prefix}" >> $qsub_sortbammayo
-            `chmod a+r $qsub_sortbammayo`
+            #`chmod a+r $qsub_sortbammayo`
             sortid=`qsub $qsub_sortbammayo`
             #`qhold -h u $sortid`
             echo $sortid >> $TopOutputLogs/pbs.REALSORTEDMAYO
@@ -391,7 +391,7 @@ fi
 
       sed -i "1i #PBS -N ${pipeid}_schedule_realrecal_per_chromosome" $qsub_schedule_realrecal_per_chromosome
 
-      `chmod a+r $qsub_schedule_realrecal_per_chromosome`               
+      #`chmod a+r $qsub_schedule_realrecal_per_chromosome`               
       realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
       # `qhold -h u $realrecaljob` 
       echo $realrecaljob >> $TopOutputLogs/pbs.RECALL
@@ -403,8 +403,12 @@ fi
 
 
 
-   set +x; echo -e "\n ###################### done scheduling realign/recalibrate.#################################\n" >&2; set -x
+   set +x; echo -e "\n ###################### now making PBS log files read accessible to the group #################################\n" >&2; set -x
    echo `date`
-   `chmod -R 770 $outputdir/`
-   `chmod -R 770 $TopOutputLogs/`
+   #`chmod -R 770 $outputdir/`
+   #`chmod -R 770 $TopOutputLogs/`
 
+
+   find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x
+
+   echo `date`
