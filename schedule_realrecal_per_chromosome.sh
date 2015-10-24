@@ -566,7 +566,7 @@ echo -e "\n\n\n ###################################       main loops starts here
                  `qhold -h u $realrecal_job`
                  #`qrls -h u $split_job` 
                  echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
-
+                 echo $realrecal_job >> $TopOutputLogs/pbs.REALRECAL
 
 
                  if [ $skipvcall == "NO" ]
@@ -591,7 +591,7 @@ echo -e "\n\n\n ###################################       main loops starts here
                      vcall_job=`qsub $qsub_vcall`
                      #`qrls -h u $realrecal_job`
                      echo $vcall_job >> $VcallOutputLogs/VCALGATKpbs
-
+                     echo $vcall_job >> $TopOutputLogs/pbs.VARCALL
                  fi
               done # going through chromosomes for this sample
          fi  # non-empty line of file
@@ -741,7 +741,7 @@ echo -e "\n\n\n ###################################       main loops starts here
                realrecal_job=`qsub $RealignOutputLogs/qsub.realrecal.${sample}.AnisimovLauncher`
                `qhold -h u $realrecal_job`
                echo $realrecal_job >> $RealignOutputLogs/REALRECALpbs
-
+               echo $realrecal_job >> $TopOutputLogs/pbs.REALRECAL
       
                echo "####################################################################################################"
                echo "###############     constructing the qsub for verifysample   and launching it   ####################"
@@ -759,7 +759,7 @@ echo -e "\n\n\n ###################################       main loops starts here
                echo "aprun -n 1 -N 1 -d $thr $scriptdir/verifySample.sh $runfile $sample $RealignOutputDir  ${sample}.verified $outputdir $RealignLog/log.verifySample.$sample.in $RealignLog/log.verifySample.$sample.ou $email $qsub_verifySample_anisimov" >> $qsub_verifySample_anisimov
                verifysample_job=`qsub $RealignOutputLogs/qsub.verifySample.${sample}.AnisimovLauncher` 
                echo $verifysample_job>> $RealignOutputLogs/VERIFYXSAMPLEpbs
-
+               echo $verifysample_job >> $TopOutputLogs/pbs.VERIFY
 
                # now launchng vcallgatk
       
@@ -768,6 +768,7 @@ echo -e "\n\n\n ###################################       main loops starts here
                      sed -i "2i #PBS -W depend=afterok:$verifysample_job" $VcallOutputLogs/qsub.vcalgatk.${sample}.AnisimovLauncher
                      vcallgatk_job=`qsub $VcallOutputLogs/qsub.vcalgatk.${sample}.AnisimovLauncher`
                      echo $vcallgatk_job >> $VcallOutputLogs/VCALGATKpbs
+		     echo $vcallgatk_job >> $TopOutputLogs/pbs.VARCALL
                fi
           fi # done processing non-empty line    
       done <  $TheInputFile
