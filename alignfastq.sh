@@ -325,7 +325,7 @@ echo -e "\n\n" >&2; set -x;
            pbsids=""
            `rm $TopOutputLogs/pbs.ALIGNED`
            `rm $TopOutputLogs/pbs.CONVERTBAM`
-           `rm $TopOutputLogs/pbs.FATSQC`
+           `rm $TopOutputLogs/pbs.FASTQC`
            `rm $TopOutputLogs/pbs.MARKED`
            `rm $TopOutputLogs/pbs.REALRECAL`
 
@@ -572,7 +572,7 @@ echo -e "\n\n" >&2; set -x;
                 # form the fastqc command in jobfile and then add it to the anisimov launcher                
                 jobfileFastqc=$FastqcOutputDir/logs/Fastqc.$SampleName.jobfile
                 truncate -s 0 $jobfileFastqc
-                echo "nohup $scriptdir/fastq.sh $fastqcdir $FastqcOutputDir $fastqcparms $fastqc_input $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in $FastqcOutputDir/logs/log.Fastqc_${SampleName}.ou $email $FastqcOutputDir/logs/qsub.Fastqc_$SampleName > $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in" > $jobfileFastqc
+                echo "nohup $scriptdir/fastq.sh $runfile $fastqcdir $FastqcOutputDir $fastqcparms $fastqc_input $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in $FastqcOutputDir/logs/log.Fastqc_${SampleName}.ou $email $FastqcOutputDir/logs/qsub.Fastqc_$SampleName > $FastqcOutputDir/logs/log.Fastqc_${SampleName}.in" > $jobfileFastqc
                 jobfilename=$( basename $jobfileFastqc )
                 echo "$FastqcOutputDir/logs $jobfilename" >> $FastqcOutputLogs/FastqcAnisimov.joblist
 
