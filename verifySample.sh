@@ -52,7 +52,7 @@ fi
     else
         delivery=$rootdir/$deliveryfolder
     fi
-    if [ ! -d $delivery ]
+    if [ ! -d $delivery/Cleaned_BAMS ]
     then
         mkdir -p $delivery/Cleaned_BAMS
         #mkdir -p $delivery/QC_results
