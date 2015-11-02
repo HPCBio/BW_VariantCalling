@@ -7,7 +7,7 @@ then
         exit 1;
 else        
         echo -e "\n\n############# CONFIGURE VARIANT CALLING WORKFLOW ###############\n\n" >&2
-        umask 0037
+        umask 0027
 	set -x
 	echo `date`	
         scriptfile=$0

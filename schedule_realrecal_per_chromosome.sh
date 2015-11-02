@@ -10,7 +10,7 @@ then
    echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
    exit 1;
 else
-   umask 0037
+   umask 0027
    set -x
    echo `date`
    scriptfile=$0

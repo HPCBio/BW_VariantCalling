@@ -11,7 +11,7 @@ then
         #echo -e "jobid:${PBS_JOBID}\nprogram=$0 stopped at line=$LINENO.\nReason=$MSG" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$grendon@illinois.edu""
         exit 1;
 else 
-        umask 0037
+        umask 0027
 	set -x
 	echo `date`
         scriptfile=$0

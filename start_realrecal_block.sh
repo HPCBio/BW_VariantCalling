@@ -10,7 +10,7 @@ then
    exit 1;
 fi
    echo -e "\n\n############# START REALRECAL BLOCK: decide if the aligned bams were made locally or externally; create the downstream schedule_realrecal_per_chromosome accordingly  ###############\n\n" >&2
-   umask 0037
+   umask 0027
    set -x
    echo `date`
    scriptfile=$0
