@@ -20,6 +20,9 @@ else
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
         sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
+        scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
+        pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
+        pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
 	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
 	
         echo -e "the delivery folder should be populated already with BAMs and VCFs"
@@ -30,29 +33,29 @@ else
 	    delivery=$outputdir/$deliveryfolder
 	fi
 
+        echo -e "making the delivery folders group read/writable"
+        mkdir -p ${delivery}/docs
+        chmod -R 770 ${delivery}/docs
+        chmod -R 770 ${delivery}/Vcfs
+        chmod -R 770 ${delivery}/Cleaned_BAMS         
+
+	echo `date`	
+
         echo -e "populating the delivery/docs folder with documents runfiles etc"
         
-        mkdir -p ${delivery}/docs
         cp $outputdir/*.txt ${delivery}/docs
         cp $outputdir/*.list ${delivery}/docs
         cp $sampleinfo  ${delivery}/docs
         cp $genderinfo  ${delivery}/docs
 	echo `date`	
 
-        echo -e "making the delivery folders group read/writable"
 
-        chmod -R 660 ${delivery}/docs
-        chmod -R 660 ${delivery}/Vcfs
-        chmod -R 660 ${delivery}/Cleaned_BAMS         
-
-	echo `date`	
-
-        echo -e "now launching the archive job..."
-
+        echo -e "now launching the archive qsub job..."
+        TopOutputLogs=$outputdir/logs
         qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
         echo "#PBS -V" > $qsub_archive
         echo "#PBS -A $pbsprj" >> $qsub_archive
-        echo "#PBS -N ${pipeid}_summaryok" >> $qsub_archive
+        echo "#PBS -N ${pipeid}_archiveOutput" >> $qsub_archive
         echo "#PBS -l walltime=01:00:00" >> $qsub_archive # 1 hour should be more than enough
         echo "#PBS -l nodes=1:ppn=1" >> $qsub_archive
         echo "#PBS -o $TopOutputLogs/log.archive.Project_${pipeid}.ou" >> $qsub_archive
@@ -78,7 +81,7 @@ else
         fi
         
         LOGS="Results and execution logs can be found at \n$outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
-        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        #echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" >> $outputdir/logs/Summary.Report
         cp  $outputdir/logs/Summary.Report ${delivery}/docs/Summary.Report      
 fi

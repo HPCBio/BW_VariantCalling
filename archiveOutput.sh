@@ -16,9 +16,12 @@ fi
         outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         TopOutputLogs=$outputdir/logs
+        pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
+        pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN| cut -d '=' -f2 )
+
         pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )        
         archivefolder=$outputdir/archive
-        dartdir=/projects/sciteam/jti/builds/dart_0_8_5
+        dartcmd=/projects/sciteam/jti/builds/dart_0_8_5
         skipmd5="YES"
         
         echo "##############################################################################"
@@ -48,6 +51,7 @@ fi
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
 	elif [ ! "$(ls -A $outputdir)" ]
+        then
 	    MSG="$outputdir Is empty"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
@@ -65,16 +69,19 @@ fi
 	
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
-             deliveryfolder=$outputdir/delivery
+             delivery=$outputdir/delivery
+        else
+             delivery=$outputdir/$deliveryfolder
         fi
-        if [ ! -d $deliveryfolder ]
+        if [ ! -d $delivery ]
         then
-  	    MSG="$deliveryfolder folder not found"
+  	    MSG="$delivery folder not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
-	elif [ ! "$(ls -A $deliveryfolder)" ]
-	    MSG="$deliveryfolder folder is empty. Execution of pipeline did not produce results. Nothing to archive. Exiting now"
+	elif [ ! "$(ls -A $delivery)" ]
+        then
+	    MSG="$delivery folder is empty. Execution of pipeline did not produce results. Nothing to archive. Exiting now"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -82,9 +89,9 @@ fi
         fi
        
         # names of output folders for each sample should be specified in SAMPLENAMES.list. Checking that the file exists
-        if [ ! -s $outputdir/SAMPLENAME.list ]
+        if [ ! -s $outputdir/SAMPLENAMES.list ]
         then
-	    MSG="$$outputdir/SAMPLENAME.list file not found"
+	    MSG="$outputdir/SAMPLENAME.list file not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -95,14 +102,15 @@ fi
         then
             echo -e "$archivefolder directory does not exist, creating it"
             mkdir -p $archivefolder
+            chmod -R 660 $archivefolder
         else
             echo -e "$archivefolder directory does  exist, resetting it" 
             rm -r $archivefolder
         fi
    
-        if [ ! -d $dartdir ]
+        if [ ! -s $dartcmd ]
         then
-     	    MSG="$dartdir dart executable folder not found"
+     	    MSG="$dartcmd dart executable  not found"
    	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
    	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
    	    exit 1;
@@ -128,9 +136,9 @@ fi
             MSG="$email value is missing." 
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""           
             exit 1
-        elif [ user == "rendong" ]
+        elif [ $user == "rendong" -o $user == "grendon" ]
         then
-             user=gloriarendon     #because  userid in BW is different from  userid in GO
+             user="gloriarendon"     #because  userid in BW is different from  userid in GO
         fi
         
         echo "checking ssh cli.globusonline.org on $source" 
@@ -191,8 +199,8 @@ fi
 
             echo -e "these are the lists of files that MAY need md5sum"
         
-            bamfiles1=`find $deliveryfolder -name *.bam -type f`   
-            vcfFiles=`find  $deliveryfolder -name *.vcf.gz -type f`
+            bamfiles1=`find $delivery -name *.bam -type f`   
+            vcfFiles=`find  $delivery -name *.vcf.gz -type f`
         
             echo -e "populating the anisimov launcher for the md5sum of BAMS"
             for bam in $bamfiles1
@@ -304,11 +312,11 @@ fi
                echo "#PBS -N ${pipeid}_DART_$SampleFolder" >> $qsub_dart
                echo "#PBS -o $TopOutputLogs/log.DART_$SampleFolder.ou" >> $qsub_dart
                echo "#PBS -e $TopOutputLogs/log.DART_$SampleFolder.er" >> $qsub_dart              
-               echo "#PBS –l nodes=${DART_nodes}:ppn=32" >> $qsub_dart   
+               echo "#PBS -l nodes=${DART_nodes}:ppn=32" >> $qsub_dart   
                echo "#PBS -l walltime=$DART_cputime" >> $qsub_dart
                echo "#PBS -W depend=afterok:$md5sum_jobs " >>  $qsub_dart
                echo "set -x" >>  $qsub_dart
-               echo " aprun -n 80 -d 4 $dartdir/dart_0_8_5 -C -e 20 -B 1000 -F $archivefolder/${SampleFolder}.drt -r $outputdir/$SampleFolder " >> qsub_dart
+               echo " aprun -n 80 -d 4 $dartcmd -C -e 20 -B 1000 -F $archivefolder/${SampleFolder}.drt -r $outputdir/$SampleFolder " >> qsub_dart
                dart_job=`qsub $qsub_dart`
                `qhold -h -u $dart_job`
                echo $dart_job >> $TopOutputLogs/DART.pbs
@@ -322,10 +330,10 @@ fi
                echo "#PBS -N ${pipeid}_globusTransfer_$SampleFolder" >> $qsub 
                echo "#PBS -o $TopOutputLogs/log.mglobusTransfer_$SampleFolder.ou" >> $qsub 
                echo "#PBS -e $TopOutputLogs/log.mglobusTransfer_$SampleFolder.er" >> $qsub               
-               echo "#PBS –l nodes=${globus_nodes}:ppn=32" >> $qsub    
+               echo "#PBS -l nodes=${globus_nodes}:ppn=32" >> $qsub    
                echo "#PBS -l walltime=$globusTransfer_cputime" >> $qsub 
                echo "#PBS -W depend=afterok:$dart_job " >>  $qsub
-               echo "ssh $user@cli.globusonline.org \"transfer --label $SampleFolder --verify-checksum -- $source/${SampleFolder}.drt $destination/$SampleFolder/${SampleFolder}.drt \"  " >> qsub
+               echo "ssh $user@cli.globusonline.org \"transfer --label $SampleFolder --verify-checksum --encryp -- $source/${SampleFolder}.drt $destination/$SampleFolder/${SampleFolder}.drt \"  " >> qsub
                globus_job=`qsub $qsub`
                `qhold -h -u $globus_job`
                echo $globus_job >> $TopOutputLogs/globusTransfer.pbs
@@ -334,7 +342,7 @@ fi
         done < $outputdir/SAMPLENAME.list
 
         echo "##########################################################################################"
-        echo "##########    Now we release all the jobs for execution and exit                  ########"
+        echo "##########    Now we release all the jobs for execution                           ########"
         echo "##########################################################################################"
 
 
@@ -353,14 +361,14 @@ fi
         echo "##########    Now lets create the README file and send a copy to archive          ########"
         echo "##########################################################################################"
 
-        readme=$deliveryfolder/doc/README.txt
+        readme=$delivery/doc/README.txt
         chmod 660 $readme
         archivedFiles=$( cat $outputdir/SAMPLENAME.list | sed 's/\n/.drt\n/g' )
         truncate -s 0 $readme
         
         echo -e "On $date $user archived the sample folders from $outputdir to $destination\n\n" >> $readme
-        echo -e "The command used to archive was $dartdir/dart_0_8_5 -C -e 20 -B 1000 -F archivefolder/{SampleFolder}.drt -r outputdir/SampleFolder \n\n"   >> $readme
-        echo -e "The command to extract one or more files is $dartdir/dart_0_8_5 -X -F $destination/{SampleFolder}.drt  -r yourCurrentPath \n\n" >> $readme
+        echo -e "The command used to archive was $dartcmd -C -e 20 -B 1000 -F archivefolder/{SampleFolder}.drt -r outputdir/SampleFolder \n\n"   >> $readme
+        echo -e "The command to extract one or more files is $dartcmd -X -F $destination/{SampleFolder}.drt  -r yourCurrentPath \n\n" >> $readme
         echo -e "Notice that the extract command MUST be issued from the folder where the file will be EXTARCTED TO\n\n"  >> $readme
         echo -e "List of files in $destination \n" >> $readme
         echo $archivedFiles  >> $readme
@@ -368,6 +376,10 @@ fi
 
         cp $readme $archivefolder/README.txt
 
-        ssh $user@cli.globusonline.org \"transfer --label README --verify-checksum -- $source/README.txt $destination/README.txt \"  " >> qsub
+        ssh $user@cli.globusonline.org "transfer --label README --verify-checksum -- $source/README.txt $destination/README.txt " >> qsub
         
-     
+        echo `date`
+
+        echo -e "exiting now..."
+
+             
