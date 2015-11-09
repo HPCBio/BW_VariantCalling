@@ -7,6 +7,7 @@ then
         
         exit 1;
 else
+        umask 0027
 	set -x
 	echo `date`	
         scriptfile=$0
@@ -19,7 +20,8 @@ else
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
         sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
-
+	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
+	
         echo -e "the delivery folder should be populated already with BAMs and VCFs"
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
@@ -37,16 +39,36 @@ else
         cp $genderinfo  ${delivery}/docs
 	echo `date`	
 
-        echo -e "making the PBS log files group readable and the delivery folder group read/writable"
+        echo -e "making the delivery folders group read/writable"
 
         chmod -R 660 ${delivery}/docs
-        find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x
+        chmod -R 660 ${delivery}/Vcfs
+        chmod -R 660 ${delivery}/Cleaned_BAMS         
 
 	echo `date`	
+
+        echo -e "now launching the archive job..."
+
+        qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
+        echo "#PBS -V" > $qsub_archive
+        echo "#PBS -A $pbsprj" >> $qsub_archive
+        echo "#PBS -N ${pipeid}_summaryok" >> $qsub_archive
+        echo "#PBS -l walltime=01:00:00" >> $qsub_archive # 1 hour should be more than enough
+        echo "#PBS -l nodes=1:ppn=1" >> $qsub_archive
+        echo "#PBS -o $TopOutputLogs/log.archive.Project_${pipeid}.ou" >> $qsub_archive
+        echo "#PBS -e $TopOutputLogs/log.archive.Project_${pipeid}.in" >> $qsub_archive
+        echo "#PBS -q $pbsqueue" >> $qsub_archive
+        echo "#PBS -m a" >> $qsub_archive
+        echo "#PBS -M $email" >> $qsub_archive
+        echo "$scriptdir/archiveOutput.sh $runfile $email $TopOutputLogs/log.archive.Project_${pipeid}.er $TopOutputLogs/log.archive.Project_${pipeid}.ou"  >> $qsub_archive
+        qsub_archive=`qsub $qsub_archive`
+        echo $qsub_archive >> $TopOutputLogs/pbs.Archive
+	echo `date`	
+
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )
-	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
+
 
         if [ $exitstatus == "exitok" ]
         then
