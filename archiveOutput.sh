@@ -13,16 +13,17 @@ fi
         email=$2
         elog=$3
         olog=$4
+        umask 0027
+
         outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         TopOutputLogs=$outputdir/logs
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN| cut -d '=' -f2 )
-
         pipeid=$( cat $TopOutputLogs/CONFIGUREpbs )        
         archivefolder=$outputdir/archive
         dartcmd=/projects/sciteam/jti/builds/dart_0_8_5
-        skipmd5="YES"
+        skipmd5="YES"   #this could be changed later on
         
         echo "##############################################################################"
         echo "##############################################################################"
@@ -91,7 +92,7 @@ fi
         # names of output folders for each sample should be specified in SAMPLENAMES.list. Checking that the file exists
         if [ ! -s $outputdir/SAMPLENAMES.list ]
         then
-	    MSG="$outputdir/SAMPLENAME.list file not found"
+	    MSG="$outputdir/SAMPLENAMES.list file not found"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
@@ -102,12 +103,13 @@ fi
         then
             echo -e "$archivefolder directory does not exist, creating it"
             mkdir -p $archivefolder
-            chmod -R 660 $archivefolder
         else
             echo -e "$archivefolder directory does  exist, resetting it" 
             rm -r $archivefolder
+            mkdir -p $archivefolder
         fi
-   
+        chmod -R 770 $archivefolder
+
         if [ ! -s $dartcmd ]
         then
      	    MSG="$dartcmd dart executable  not found"
@@ -117,6 +119,10 @@ fi
         fi
         
 
+        echo "##########################################################################################"
+	echo "##########                 declaring END POINTS                                   ########"
+        echo "##########################################################################################"
+
          ###############################################################################################################
          #this is how end points are normally specified
          #Destination="ncsa#Nearline/projects/sciteam/jti/TestingAutoTransfer_baylor_barch_1" 
@@ -125,20 +131,29 @@ fi
          ###############################################################################################################
 
         thisbatch=`basename $outputdir`
-        thisproject=/projects/sciteam/jti/
+        #thisproject=/projects/sciteam/jti/Results
+        thisproject=/projects/sciteam/jti/TestingAutoTransfer_batch2
         source_endpoint="ncsa#BlueWaters"
         destination_endpoint="ncsa#Nearline"       
         source=${source_endpoint}${archivefolder}
-        destination=${destination_endpoint}${thisproject}$thisbatch
-        user=$( echo $email | cut -d '@' -f1 )
+        destination=${destination_endpoint}${thisproject}/$thisbatch
+        #user=$( echo $email | cut -d '@' -f1 )
+
+
+        echo "##########################################################################################"
+	echo "########## TESTING END POINTS: 1) that they exist 2) that we have access to them  ########"
+        echo "##########################################################################################"
+        #We assume that the userid is identical on both end points AND on globusonline
+
+        user=$( echo $USER )
         if [ `expr ${#user}` -lt 2 ]
         then
-            MSG="$email value is missing." 
+            MSG="$user value is missing." 
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""           
             exit 1
         elif [ $user == "rendong" -o $user == "grendon" ]
         then
-             user="gloriarendon"     #because  userid in BW is different from  userid in GO
+             user="gloriarendon"     #because  userid on BW is different from  userid on GO
         fi
         
         echo "checking ssh cli.globusonline.org on $source" 
@@ -149,6 +164,8 @@ fi
             MSG="ssh cli.globusonline.org command failed on $source." 
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""           
             exit 1
+        else
+            echo -e "$source is ok"
         fi
 
         echo "checking ssh cli.globusonline.org on $destination" 
@@ -156,7 +173,9 @@ fi
         if [ $? -ne 0 ]
         then
             echo "$destination folder does not exist, creating it now" 
-            ssh $user@cli.globusonline.org "mkdir $Destination" 
+            ssh $user@cli.globusonline.org "mkdir $destination" 
+        else
+            echo -e "$destination is ok"
         fi
         
 	echo `date`
@@ -169,7 +188,7 @@ fi
         echo "##########################################################################################"
         echo "##########################################################################################"
         
-        if [ skipmd5 == "YES" ]
+        if [ $skipmd5 == "YES" ]
         then 
              echo "##########################################################################################"
 	     echo "##########       SKIP md5sum STEP because GO does it for us                       ########"
@@ -255,11 +274,11 @@ fi
              echo "#PBS -N ${pipeid}_md5sumBAMS_Anisimov" >> $qsub_md5sumBAMS
              echo "#PBS -o $TopOutputLogs/log.md5sumBAMS_Anisimov.ou" >> $qsub_md5sumBAMS
              echo "#PBS -e $TopOutputLogs/log.md5sumBAMS_Anisimov.in" >> $qsub_md5sumBAMS
-             echo "#PBS –l nodes=${md5sumBAMS_nodes}:ppn=32:xe" >> $qsub_md5sumBAMS       
+             echo "#PBS -l nodes=${md5sumBAMS_nodes}:ppn=32:xe" >> $qsub_md5sumBAMS       
              echo "#PBS -l walltime=$md5sumBAMS_cputime" >> $qsub_md5sumBAMS
              echo "aprun -n $md5sumBAMS_files -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $TopOutputLogs/md5sumBAMS.AnisimovJoblist /bin/bash > $TopOutputLogs/log.md5sumBAMS_Anisimov.ou " >> $qsub_md5sumBAMS
              md5sumBAMS_job=`qsub $qsub_md5sumBAMS`  
-             `qhold -h -u $md5sumBAMS_job`
+             `qhold -h u $md5sumBAMS_job`
              echo $md5sumBAMS_job >> $TopOutputLogs/md5sumBAMS.AnisimovJoblist
              echo $md5sumBAMS_job >> $TopOutputLogs/md5sum.pbs
         
@@ -267,23 +286,25 @@ fi
              echo "#PBS -N ${pipeid}_md5sumVCFS_Anisimov" >> $qsub_md5sumVCFS
              echo "#PBS -o $TopOutputLogs/log.md5sumVCFS_Anisimov.ou" >> $qsub_md5sumVCFS
              echo "#PBS -e $TopOutputLogs/log.md5sumVCFS_Anisimov.in" >> $qsub_md5sumVCFS
-             echo "#PBS –l nodes=${md5sumVCFS_nodes}:ppn=32:xe" >> $qsub_md5sumVCFS       
+             echo "#PBS -l nodes=${md5sumVCFS_nodes}:ppn=32:xe" >> $qsub_md5sumVCFS       
              echo "#PBS -l walltime=$md5sumVCFS_cputime" >> $qsub_md5sumVCFS
              echo "aprun -n $md5sumVCFS_files -N $NumberOfProcPerNode -d 2 ~anisimov/scheduler/scheduler.x $TopOutputLogs/md5sumVCFS.AnisimovJoblist /bin/bash > $TopOutputLogs/log.md5sumVCFS_Anisimov.ou " >> $qsub_md5sumVCFS
              md5sumVCFS_job=`qsub $qsub_md5sumVCFS`  
-             `qhold -h -u $md5sumVCF_job`
+             `qhold -h u $md5sumVCF_job`
              echo $md5sumVCFS_job >> $TopOutputLogs/md5sumVCFS.AnisimovJoblist
              echo $md5sumVCFS_job >> $TopOutputLogs/md5sum.pbs
         fi
         
         echo "##########################################################################################"
-        echo "######   Let's create the qsubs for the for dart and transfer of sample folders   ########"
+        echo "######   Create the qsubs one for the for dart and one for transfer of sample folders  ###"
         echo "##########################################################################################"
         
         echo -e  "this variable will be empty if we skip the md5sum. However, the code will still work"
-        
-        md5sum_all=S( cat $TopOutputLogs/md5sum.pbs | sed "s/\..*//" | tr "\n" ":" ) 
-        
+
+        if [ $skipmd5 != "YES" ]
+        then
+             md5sum_all=$( cat $TopOutputLogs/md5sum.pbs | sed "s/\..*//" | tr "\n" ":" ) 
+        fi
         echo -e " resetting lists and resources"
         truncate -s 0 $TopOutputLogs/globusTransfer.pbs
         truncate -s 0 $TopOutputLogs/DART.pbs
@@ -291,6 +312,39 @@ fi
         DART_cputime="02:00:00"
         DART_nodes=10
         globus_nodes=1
+
+        echo `date`
+
+        echo "##########################################################################################"
+        echo "##########    Now lets create the README file and send a copy to archive          ########"
+        echo "##########################################################################################"
+
+        archivedFiles=$( cat $outputdir/SAMPLENAMES.list | sed "s/\n/.drt\n/g" )
+        readme=$delivery/docs/README.txt
+        chmod 770 $readme
+        truncate -s 0 $readme
+        thisDate=$( echo `date` )         
+        echo -e "On $thisDate $user archived the sample folders \nfrom: $outputdir \nto: $destination\n\n" >> $readme
+        echo -e "The command used to archive was \n$dartcmd -C -e 20 -B 1000 -F archivefolder/{SampleFolder}.drt -r outputdir/SampleFolder \n\n"   >> $readme
+        echo -e "The command to extract one or more files is \n$dartcmd -X -F $destination/{SampleFolder}.drt  -r yourCurrentPath \n\n" >> $readme
+        echo -e "Notice that the extract command MUST be issued from the folder where the file will be EXTARCTED TO\n\n"  >> $readme
+        echo -e "List of files in $destination \n\n" >> $readme
+        echo $archivedFiles  >> $readme
+        echo -e "\n\n\nNote: Each drt file is a packaged sample folder\n\n\n"   >> $readme
+
+        cp $readme $archivefolder/README.txt
+
+        ssh $user@cli.globusonline.org "transfer --label README --verify-checksum -- $source/README.txt $destination/README.txt "
+        if [ $? -ne 0 ]
+        then
+            MSG="transfer of $readme to $destination failed" 
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""           
+            exit 1
+        else
+            echo -e "transfer of $readme to $destination was ok"
+        fi
+        
+        echo `date`
 
         
         echo -e "##########################################################################################"
@@ -314,32 +368,36 @@ fi
                echo "#PBS -e $TopOutputLogs/log.DART_$SampleFolder.er" >> $qsub_dart              
                echo "#PBS -l nodes=${DART_nodes}:ppn=32" >> $qsub_dart   
                echo "#PBS -l walltime=$DART_cputime" >> $qsub_dart
-               echo "#PBS -W depend=afterok:$md5sum_jobs " >>  $qsub_dart
+               if [ $skipmd5 != "YES" ]
+               then
+                    echo "#PBS -W depend=afterok:$md5sum_jobs " >>  $qsub_dart
+               fi
                echo "set -x" >>  $qsub_dart
-               echo " aprun -n 80 -d 4 $dartcmd -C -e 20 -B 1000 -F $archivefolder/${SampleFolder}.drt -r $outputdir/$SampleFolder " >> qsub_dart
+               echo " aprun -n 80 -d 4 $dartcmd -C -e 20 -B 1000 -F $archivefolder/${SampleFolder}.drt -r $outputdir/$SampleFolder " >> $qsub_dart
                dart_job=`qsub $qsub_dart`
-               `qhold -h -u $dart_job`
+               `qhold  -h u $dart_job`
                echo $dart_job >> $TopOutputLogs/DART.pbs
 
                echo -e "##########################################################################################"
                echo -e "##### qsub preparation for GO archival of $SampleFolder                             ######"
                echo -e "##########################################################################################"
                
-               qsub=$TopOutputLogs/qsub_globusTransfer_$SampleFolder
-               cat $outputdir/qsubGenericHeader > $qsub
-               echo "#PBS -N ${pipeid}_globusTransfer_$SampleFolder" >> $qsub 
-               echo "#PBS -o $TopOutputLogs/log.mglobusTransfer_$SampleFolder.ou" >> $qsub 
-               echo "#PBS -e $TopOutputLogs/log.mglobusTransfer_$SampleFolder.er" >> $qsub               
-               echo "#PBS -l nodes=${globus_nodes}:ppn=32" >> $qsub    
-               echo "#PBS -l walltime=$globusTransfer_cputime" >> $qsub 
-               echo "#PBS -W depend=afterok:$dart_job " >>  $qsub
-               echo "ssh $user@cli.globusonline.org \"transfer --label $SampleFolder --verify-checksum --encryp -- $source/${SampleFolder}.drt $destination/$SampleFolder/${SampleFolder}.drt \"  " >> qsub
-               globus_job=`qsub $qsub`
-               `qhold -h -u $globus_job`
+               qsubGO=$TopOutputLogs/qsub_globusTransfer_$SampleFolder
+               cat $outputdir/qsubGenericHeader > $qsubGO
+               cmd="\"transfer --label $SampleFolder --verify-checksum --encryp -- $source/${SampleFolder}.drt $destination/$SampleFolder/${SampleFolder}.drt \""
+               echo "#PBS -N ${pipeid}_globusTransfer_$SampleFolder" >> $qsubGO 
+               echo "#PBS -o $TopOutputLogs/log.mglobusTransfer_$SampleFolder.ou" >> $qsubGO 
+               echo "#PBS -e $TopOutputLogs/log.mglobusTransfer_$SampleFolder.er" >> $qsubGO               
+               echo "#PBS -l nodes=${globus_nodes}:ppn=32" >> $qsubGO    
+               echo "#PBS -l walltime=$globusTransfer_cputime" >> $qsubGO 
+               echo "#PBS -W depend=afterok:$dart_job " >>  $qsubGO
+               echo "ssh $user@cli.globusonline.org $cmd" >> $qsubGO
+               globus_job=`qsub $qsubGO`
+               `qhold -h u $globus_job`
                echo $globus_job >> $TopOutputLogs/globusTransfer.pbs
            fi  
            echo -e "#####           NEXT SAMPLE PLEASE....        #####"
-        done < $outputdir/SAMPLENAME.list
+        done < $outputdir/SAMPLENAMES.list
 
         echo "##########################################################################################"
         echo "##########    Now we release all the jobs for execution                           ########"
@@ -347,39 +405,13 @@ fi
 
 
         
-        md5sum_all=S( cat $TopOutputLogs/md5sum.pbs | sed "s/\..*//" | tr "\n" " " )
-        globus_all=S( cat $TopOutputLogs/globusTransfer.pbs | sed "s/\..*//" | tr "\n" " " )
-        dart_all=S( cat $TopOutputLogs/DART.pbs | sed "s/\..*//" | tr "\n" " " )
+        md5sum_all=$( cat $TopOutputLogs/md5sum.pbs | sed "s/\..*//" | tr "\n" " " )
+        globus_all=$( cat $TopOutputLogs/globusTransfer.pbs | sed "s/\..*//" | tr "\n" " " )
+        dart_all=$( cat $TopOutputLogs/DART.pbs | sed "s/\..*//" | tr "\n" " " )
 
-        `qrls -h u md5sum_all`
-        `qrls -h u dart_all`   
-        `qrls -h u globus_all`        
+        `qrls -h u $md5sum_all`
+        `qrls -h u $dart_all`   
+        `qrls -h u $globus_all`        
 
         echo `date`
-  
-        echo "##########################################################################################"
-        echo "##########    Now lets create the README file and send a copy to archive          ########"
-        echo "##########################################################################################"
-
-        readme=$delivery/doc/README.txt
-        chmod 660 $readme
-        archivedFiles=$( cat $outputdir/SAMPLENAME.list | sed 's/\n/.drt\n/g' )
-        truncate -s 0 $readme
-        
-        echo -e "On $date $user archived the sample folders from $outputdir to $destination\n\n" >> $readme
-        echo -e "The command used to archive was $dartcmd -C -e 20 -B 1000 -F archivefolder/{SampleFolder}.drt -r outputdir/SampleFolder \n\n"   >> $readme
-        echo -e "The command to extract one or more files is $dartcmd -X -F $destination/{SampleFolder}.drt  -r yourCurrentPath \n\n" >> $readme
-        echo -e "Notice that the extract command MUST be issued from the folder where the file will be EXTARCTED TO\n\n"  >> $readme
-        echo -e "List of files in $destination \n" >> $readme
-        echo $archivedFiles  >> $readme
-        echo -e "\n\nNote: Each file is a packaged sample folder\n\n\n"   >> $readme
-
-        cp $readme $archivefolder/README.txt
-
-        ssh $user@cli.globusonline.org "transfer --label README --verify-checksum -- $source/README.txt $destination/README.txt " >> qsub
-        
-        echo `date`
-
         echo -e "exiting now..."
-
-             
