@@ -34,6 +34,7 @@ else
 	fi
 
         echo -e "making the delivery folders group read/writable"
+        newgrp ILL_jti
         mkdir -p ${delivery}/docs
         chmod -R 770 ${delivery}/docs
         chmod -R 770 ${delivery}/Vcfs
@@ -50,7 +51,7 @@ else
 	echo `date`	
 
 
-        echo -e "now launching the archive qsub job..."
+        echo -e "now launching the auto archive qsub job..."
         TopOutputLogs=$outputdir/logs
         qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
         echo "#PBS -V" > $qsub_archive
@@ -63,7 +64,7 @@ else
         echo "#PBS -q $pbsqueue" >> $qsub_archive
         echo "#PBS -m a" >> $qsub_archive
         echo "#PBS -M $email" >> $qsub_archive
-        echo "$scriptdir/archiveOutput.sh $runfile $email $TopOutputLogs/log.archive.Project_${pipeid}.er $TopOutputLogs/log.archive.Project_${pipeid}.ou"  >> $qsub_archive
+        echo "$scriptdir/autoArchive.sh $runfile $email $TopOutputLogs/log.archive.Project_${pipeid}.er $TopOutputLogs/log.archive.Project_${pipeid}.ou"  >> $qsub_archive
         qsub_archive=`qsub $qsub_archive`
         echo $qsub_archive >> $TopOutputLogs/pbs.Archive
 	echo `date`	
@@ -81,7 +82,7 @@ else
         fi
         
         LOGS="Results and execution logs can be found at \n$outputdir\n\nJOBIDS\n\n$listjobids\n\nThis jobid:${PBS_JOBID}\n\n"
-        #echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" >> $outputdir/logs/Summary.Report
         cp  $outputdir/logs/Summary.Report ${delivery}/docs/Summary.Report      
 fi
