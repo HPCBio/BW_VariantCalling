@@ -131,8 +131,8 @@ fi
          ###############################################################################################################
 
         thisbatch=`basename $outputdir`
-        #thisproject=/projects/sciteam/jti/Results
-        thisproject=/projects/sciteam/jti/TestingAutoTransfer_batch2
+        thisproject=/projects/sciteam/jti/Results
+        #thisproject=/projects/sciteam/jti/TestingAutoTransfer_batch2
         source_endpoint="ncsa#BlueWaters"
         destination_endpoint="ncsa#Nearline"       
         source=${source_endpoint}${archivefolder}
