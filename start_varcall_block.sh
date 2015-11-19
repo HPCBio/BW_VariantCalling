@@ -350,4 +350,4 @@ fi
 
 echo -e "############## now making PBS logs group readable"
 
-find $outputrootdir -name logs -type d | awk 'print "chmod -R g+r "$1}' | sh -x
+find $outputrootdir -name logs -type d | awk 'print "chmod -R g=rwx "$1}' | sh -x

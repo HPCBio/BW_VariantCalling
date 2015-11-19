@@ -409,6 +409,6 @@ fi
    #`chmod -R 770 $TopOutputLogs/`
 
 
-   find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x
+   find $outputdir -name logs -type d | awk '{print "chmod -R g=rwx "$1}' | sh -x
 
    echo `date`

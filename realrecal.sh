@@ -388,7 +388,7 @@ else
         echo "#################################################################################"
 	echo "#########                          done with recalibration             ##########"
         echo "#################################################################################"
-	echo "#########     Optional QC step. if a Baylor sample then run samtools calmd ######"
+	echo "#########     Optional QC step. if a with-QCsample then run samtools calmd ######"
         echo "#################################################################################"
 
         if [ -s $outputrootdir/SAMPLENAMES_multiplexed.list ]

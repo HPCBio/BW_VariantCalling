@@ -185,7 +185,7 @@ else
 	then
             set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED ! ############\n\n" >&2; 
             echo -e " ###### produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
-            echo -e "\n ###### from Baylor's info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
+            echo -e "\n ###### from  info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
 	    perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
             
             set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;

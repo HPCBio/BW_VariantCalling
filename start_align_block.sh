@@ -468,4 +468,4 @@ fi
 
 echo -e "now we need to make the PBS log files group readable"
 
-find $outputdir -name logs -type d | awk '{print "chmod -R g+r "$1}' | sh -x
+find $outputdir -name logs -type d | awk '{print "chmod -R g=rwx "$1}' | sh -x

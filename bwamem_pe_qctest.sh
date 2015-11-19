@@ -100,7 +100,7 @@ fi
 
 if [ ! -s $rootdir/SAMPLENAMES_multiplexed.list ]
 then
-    MSG="$rootdir/SAMPLENAMES_multiplexed.list file not found. This is not a Baylor sample"
+    MSG="$rootdir/SAMPLENAMES_multiplexed.list file not found. QC cannot be performed without it. exiting now"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
     exit 1;
 fi
@@ -112,12 +112,12 @@ all_exitcodes=0
 
 if [ $markduptool != "PICARD" ]
 then
-    MSG="$markduptool IS NOT PICARD. This is not a Baylor sample"
+    MSG="$markduptool IS NOT PICARD. exiting now"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
     exit 1;
 fi
 
-        echo -e "####################################### CASE2:   MARKDUPLICATESTOOL == PICARD  OF A BAYLOR SAMPLE              #################"
+        echo -e "####################################### CASE2:   MARKDUPLICATESTOOL == PICARD  OF A WITH-QC SAMPLE             #################"
         echo -e "####################################### part 1: align, then convert sam to bam, then sort, then QC test        #################"
         echo -e "####################################### part 2: mark duplicates, then sort                                     #################"
         echo -e "################################################################################################################################"

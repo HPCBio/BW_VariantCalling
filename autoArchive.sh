@@ -186,7 +186,7 @@ fi
 
         ListGOFiles=$( cat $outputdir/SAMPLENAMES.list | sed "s/$/\.drt\n/g" | tr " " "\n" )
         readme=$delivery/docs/README.txt
-        chmod 770 $readme
+        chmod ug=rw $readme
         truncate -s 0 $readme
         thisDate=$( echo `date` )         
         echo -e "On $thisDate $user archived the sample folders \nfrom: $outputdir \nto: $destination\n\n" >> $readme
@@ -381,10 +381,10 @@ fi
                fi
                echo "set -x" >>  $qsub_dart
                echo "newgrp ILL_jti " >>  $qsub_dart
-               echo "chmod -R g+rX $outputdir/$SampleFolder " >>  $qsub_dart
+               echo "chmod -R g+rwX $outputdir/$SampleFolder " >>  $qsub_dart
                echo "aprun -n 80 -d 4 $dartcmd -C -e 20 -B 1000 -F $archivefolder/${SampleFolder}.drt -r $outputdir/$SampleFolder " >> $qsub_dart
-               echo "chmod g+rX $archivefolder/${SampleFolder}.drt " >>  $qsub_dart
-               chmod 770 $qsub_dart
+               echo "chmod g+rw $archivefolder/${SampleFolder}.drt " >>  $qsub_dart
+               chmod ug=rw $qsub_dart
                dart_job=`qsub $qsub_dart`
                `qhold  -h u $dart_job`
                echo $dart_job >> $TopOutputLogs/DART.pbs
@@ -441,7 +441,7 @@ fi
             echo "#PBS -W depend=afterok:${DART2GO_pbs} "  >> $qsubGO
             echo "set -x " >> $qsubGO
             cat "$GO_joblist"   >> $qsubGO
-            chmod 770 $qsubGO
+            chmod ug=rw $qsubGO
             GO_job=`qsub $qsubGO`  
             `qhold -h u $GO_job`
             echo $GO_job >> $TopOutputLogs/GOTransfer.pbs

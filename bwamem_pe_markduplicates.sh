@@ -219,7 +219,6 @@ then
         #######################################################################################################
         #######################################################################################################
         ## here we insert the code for performing QC with percent mapped reads ... as in mergeLanesPerSample.sh
-        ## but only for Baylor samples
         #######################################################################################################
         #######################################################################################################
 
@@ -228,7 +227,7 @@ then
         if [ -s $rootdir/SAMPLENAMES_multiplexed.list ]
         then
              echo "#######################################################################################################"
-             echo "########    This is a Baylor sample. We need to perform QC and write results to a txt file      #######"
+             echo "########    This is a with-QC sample. We need to perform QC and write results to a txt file     #######"
              echo "#######################################################################################################"
              echo "#######################################################################################################"
              echo "########   QC rules: duplication cutoff <= $dup_cutoff AND mapped_reads cutoff >= $map_cutoff   #######"
@@ -383,7 +382,7 @@ then
              #    exit $exitcode;
              #fi
 
-        fi  # end of QC of Baylor sample
+        fi  # end of QC for thissample
         
         echo `date`
 

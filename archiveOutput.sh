@@ -321,7 +321,7 @@ fi
 
         archivedFiles=$( cat $outputdir/SAMPLENAMES.list | sed "s/\n/.drt\n/g" )
         readme=$delivery/docs/README.txt
-        chmod 770 $readme
+        chmod ug=rw $readme
         truncate -s 0 $readme
         thisDate=$( echo `date` )         
         echo -e "On $thisDate $user archived the sample folders \nfrom: $outputdir \nto: $destination\n\n" >> $readme

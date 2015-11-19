@@ -404,7 +404,7 @@ echo -e "\n\n" >&2; set -x;
              SpecialCase="Split2Jobs"
              set +x; echo -e "\n\n">&2
              echo "############################################################################################################" >&2
-             echo "##################################### FLAG: Aligment case is Baylor                        #################" >&2
+             echo "##################################### FLAG: Aligment case is SPLIT                         #################" >&2
              echo "##################################### Alignment then markduplicates is separate jobs       #################" >&2
              echo "############################################################################################################" >&2
              echo -e "\n\n" >&2; set -x;
@@ -826,12 +826,12 @@ echo -e "\n\n" >&2; set -x;
                              
                              if [ $SpecialCase != "Split2Jobs" ]
                              then
-                                  echo -e "################# CASE is NOT BAYLOR, alignment and markduplicates in one job ############"
+                                  echo -e "################# CASE is NOT SPLIT, alignment and markduplicates in one job ############"
                                   echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                              else
-                                  echo -e "################# CASE is BAYLOR, alignment in one job and markduplicates in another job ##"
+                                  echo -e "################# CASE is SPLIT, alignment in one job and markduplicates in another job ##"
                                   echo "nohup $scriptdir/bwamem_pe_qctest.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
