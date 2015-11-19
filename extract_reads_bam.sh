@@ -11,6 +11,7 @@ then
 else
 	set -x
 	echo `date`
+        umask 0027
 	output=$1
 	bam=$2
 	run_info=$3

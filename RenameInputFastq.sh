@@ -16,7 +16,7 @@
 #
 
 
-
+umask 0027
 
 InputFolder=$1
 EndingPattern=$2

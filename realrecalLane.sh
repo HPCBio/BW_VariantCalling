@@ -12,6 +12,7 @@ then
 fi
 
 	echo `date`
+        umask 0027
 	scriptfile=$0
         lane=$1
         realrecaldir=$2

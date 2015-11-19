@@ -13,6 +13,8 @@ then
 else					
 	set -x
 	echo `date`
+        umask 0027
+
         scriptfile=$0
         infile=$1
         outfile=$2

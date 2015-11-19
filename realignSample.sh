@@ -12,6 +12,7 @@ then
 else					
 
 	echo `date`
+        umask 0027
 	scriptfile=$0
         realigndir=$1
         outputfile=$2	

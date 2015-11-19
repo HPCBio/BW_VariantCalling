@@ -9,7 +9,7 @@ then
 else
     set -x
     echo `date`
-
+    umask 0027
     outputdir=$1
     inbamfile=$2
     sortedplain=$3

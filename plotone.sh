@@ -1,4 +1,5 @@
 #!/bin/bash
+umask 0027
 
 USAGE="Usage : $0 <datafile>"
 
