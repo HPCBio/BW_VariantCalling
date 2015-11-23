@@ -320,6 +320,7 @@ else
 	    exit 1;
            fi           
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`	   
            #### Calling male X_PAR2
            site="-L "$x_par2
@@ -356,6 +357,7 @@ else
 	    exit 1;
            fi  
            cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
            #### Calling male X_nonPAR
@@ -394,6 +396,7 @@ else
 	    exit 1;
            fi  
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`	   
          fi
          ### End calling male X  
@@ -435,6 +438,7 @@ else
 	    exit 1;
            fi  
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`	   
          fi
          ### End calling female X
@@ -490,6 +494,7 @@ else
 	    exit 1;
            fi  
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
            #### Calling male Y_PAR2
@@ -527,6 +532,7 @@ else
 	    exit 1;
            fi  
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
            #### Calling male Y_nonPAR
@@ -565,6 +571,7 @@ else
 	    exit 1;
            fi  
 	   cp $outfile $deliverydir
+           cp ${outfile}.tbi $deliverydir
 	   echo `date`	   
          fi
          ### End calling male Y
@@ -608,6 +615,7 @@ else
 	    exit 1;
          fi  
 	 cp $outfile $deliverydir
+         cp ${outfile}.tbi $deliverydir
 	 echo `date`	 
        ## End calling MT
 
@@ -646,6 +654,7 @@ else
 	    exit 1;
          fi  
 	 cp $outfile $deliverydir
+         cp ${outfile}.tbi $deliverydir
 	 echo `date`	 
        fi
        ## End calling the autosomes
