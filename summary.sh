@@ -85,4 +85,5 @@ else
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids\n\nPlease view $outputdir/logs/Summary.Report" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" >> $outputdir/logs/Summary.Report
         cp  $outputdir/logs/Summary.Report ${delivery}/docs/Summary.Report      
+        chmod g+r $TopOutputLogs
 fi

@@ -169,6 +169,7 @@ fi
     echo -e "##########################################################################"
     `echo date`
     cp $mergedfile $outputfile
+    cp $mergedfile.bai $outputfile.bai
 
     if [ ! -s $outputfile ]
     then
