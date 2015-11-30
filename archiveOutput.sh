@@ -154,6 +154,9 @@ fi
         elif [ $user == "rendong" -o $user == "grendon" ]
         then
              user="gloriarendon"     #because  userid on BW is different from  userid on GO
+        elif [ $user == "botha" ]
+        then
+             user="grbot"
         fi
         
         echo "checking ssh cli.globusonline.org on $source" 
