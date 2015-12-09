@@ -20,3 +20,8 @@ log.CONFIGURE.in
 ## Error capture
 
 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+
+## Auto-archiving
+
+The script autoArchive.sh is specific to Blue Waters and NCSA Globus endpoints.
+It also makes use of Dart archiving utility, which is not yet available as opensource. 
