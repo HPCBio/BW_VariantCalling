@@ -25,3 +25,12 @@ echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmin
 
 The script autoArchive.sh is specific to Blue Waters and NCSA Globus endpoints.
 It also makes use of Dart archiving utility, which is not yet available as opensource. 
+
+
+## Scalability testing
+
+The scripts
+ realrecal_NONsharedRefGenomeMode.sh
+    and
+ realrecal_sharedRefGenomeMode.sh    
+are not a part of the workflow, but rather exist to enable scalability testing on the shared reference files.
