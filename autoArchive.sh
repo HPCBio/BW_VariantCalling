@@ -131,8 +131,8 @@ fi
          ###############################################################################################################
 
         thisbatch=`basename $outputdir`
-        thisproject=/projects/sciteam/jti/Results
-        #thisproject=/projects/sciteam/jti/TestingAutoTransfer_batch2
+        #thisproject=/projects/sciteam/jti/Results
+        thisproject=/projects/sciteam/jti/
         source_endpoint="ncsa#BlueWaters"
         destination_endpoint="ncsa#Nearline"       
         source=${source_endpoint}${archivefolder}
@@ -171,17 +171,24 @@ fi
             echo -e "$source is ok"
         fi
 
-        echo "checking ssh cli.globusonline.org on DESTINATION $destination" 
+        echo "check one: ssh cli.globusonline.org on DESTINATION $destination" 
         ssh $user@cli.globusonline.org "ls $destination" 
         if [ $? -ne 0 ]
         then
             echo "$destination folder does not exist, creating it now" 
             ssh $user@cli.globusonline.org "mkdir $destination" 
+            if [ $? -ne 0 ]
+            then
+                MSG="ssh $user@cli.globusonline.org failed on mkdir $destination. exiting now" 
+	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+                exit 1 
+            fi
         else
             echo -e "$destination is ok"
         fi
         
 	echo `date`
+
 
         echo "##########################################################################################"
         echo "##########    Now lets create the README file and send a copy to archive          ########"

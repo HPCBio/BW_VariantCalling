@@ -23,6 +23,7 @@ else
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
         pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
+        autoarchive=$( cat $runfile | grep -w AUTOARCHIVE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
 	
         echo -e "the delivery folder should be populated already with BAMs and VCFs"
@@ -49,26 +50,28 @@ else
         cp $sampleinfo  ${delivery}/docs
         cp $genderinfo  ${delivery}/docs
 	echo `date`	
-
-
-        echo -e "now launching the auto archive qsub job..."
         TopOutputLogs=$outputdir/logs
-        qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
-        echo "#PBS -V" > $qsub_archive
-        echo "#PBS -A $pbsprj" >> $qsub_archive
-        echo "#PBS -N ${pipeid}_archiveOutput" >> $qsub_archive
-        echo "#PBS -l walltime=01:00:00" >> $qsub_archive # 1 hour should be more than enough
-        echo "#PBS -l nodes=1:ppn=1" >> $qsub_archive
-        echo "#PBS -o $TopOutputLogs/log.archive.Project_${pipeid}.ou" >> $qsub_archive
-        echo "#PBS -e $TopOutputLogs/log.archive.Project_${pipeid}.in" >> $qsub_archive
-        echo "#PBS -q $pbsqueue" >> $qsub_archive
-        echo "#PBS -m a" >> $qsub_archive
-        echo "#PBS -M $email" >> $qsub_archive
-        echo "$scriptdir/autoArchive.sh $runfile $email $TopOutputLogs/log.archive.Project_${pipeid}.er $TopOutputLogs/log.archive.Project_${pipeid}.ou"  >> $qsub_archive
-        qsub_archive=`qsub $qsub_archive`
-        echo $qsub_archive >> $TopOutputLogs/pbs.Archive
-	echo `date`	
-
+        
+        if [ $autoarchive == "YES" ]
+        then
+            echo -e "now launching the auto archive qsub job..."
+            qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
+            echo "#PBS -V" > $qsub_archive
+            echo "#PBS -A $pbsprj" >> $qsub_archive
+            echo "#PBS -N ${pipeid}_archiveOutput" >> $qsub_archive
+            echo "#PBS -l walltime=01:00:00" >> $qsub_archive # 1 hour should be more than enough
+            echo "#PBS -l nodes=1:ppn=1" >> $qsub_archive
+            echo "#PBS -o $TopOutputLogs/log.archive.Project_${pipeid}.ou" >> $qsub_archive
+            echo "#PBS -e $TopOutputLogs/log.archive.Project_${pipeid}.in" >> $qsub_archive
+            echo "#PBS -q $pbsqueue" >> $qsub_archive
+            echo "#PBS -m a" >> $qsub_archive
+            echo "#PBS -M $email" >> $qsub_archive
+            echo "$scriptdir/autoArchive.sh $runfile $email $TopOutputLogs/log.archive.Project_${pipeid}.er $TopOutputLogs/log.archive.Project_${pipeid}.ou"  >> $qsub_archive
+            qsub_archive=`qsub $qsub_archive`
+            echo $qsub_archive >> $TopOutputLogs/pbs.Archive
+	    echo `date`	
+        fi
+        
         echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )

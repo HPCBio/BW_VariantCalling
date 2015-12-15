@@ -115,12 +115,12 @@ fi
 
 
    # check that sampledir exists
-   if [ ! -d $sampledir ]
-   then
-      MSG="INPUTDIR=$sampledir input directory not found"
-      echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-      exit 1;
-   fi
+   #if [ ! -d $sampledir ]
+   #then
+   #   MSG="INPUTDIR=$sampledir input directory not found"
+   #   echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+   #   exit 1;
+   #fi
 
    numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
    if [ $numsamples -lt 1 ]

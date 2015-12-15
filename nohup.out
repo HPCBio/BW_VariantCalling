@@ -118,3 +118,246 @@ lun nov 30 13:11:54 CST 2015
 + echo -e 'Variant calling workflow with id:[2883422] started by username:rendong at: lun nov 30 13:11:54 CST 2015\n\nDetails:\n\njobid=2883422.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/log.CONFIGURE.ou'
 + mail -s '[Task #4800]' hpcbio-redmine@igb.illinois.edu,grendon@illinois.edu
 + echo -e 'Variant calling workflow with id:[2883422] started by username:rendong at: lun nov 30 13:11:54 CST 2015\n\nDetails:\n\njobid=2883422.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/pilot_baylor_batch_4/logs/log.CONFIGURE.ou'
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun dic 14 19:55:28 CST 2015
+lun dic 14 19:55:28 CST 2015
++ scriptfile=./start.sh
++ runfile=/projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
++ '[' '!' -s /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w REPORTTICKET
+++ cut -d = -f2
++ reportticket=3820
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ cut -d = -f2
+++ grep -w OUTPUTDIR
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ cut -d = -f2
+++ grep -w EMAIL
++ email=grendon@illinois.edu
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ cut -d = -f2
+++ grep -w PBSPROJECTID
++ pbsprj=jti
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w EPILOGUE
+++ cut -d = -f2
++ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w INPUTTYPE
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ input_type=GENOME
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w PBSCPUOTHERWGEN
+++ cut -d = -f2
++ pbscpu=3:00:00
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w PBSQUEUEWGEN
+++ cut -d = -f2
++ pbsqueue=normal
+++ umask u=rwx,g=rwx,o=
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14 ']'
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs
+++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/WorkflowAutodocumentationScript.sh
++ echo -e '#!/bin/bash \n'
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14
++ WorkflowName=AlignRealignVcall_2smallfiles_dec14
++ echo '# @begin AlignRealignVcall_2smallfiles_dec14'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE
++ echo '#PBS -V'
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\n" | mail -s "[Task #3820]" "hpcbio-redmine@igb.illinois.edu,grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=3051884.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ echo 3051884.nid11293
+++ sed 's/\.[a-z]*[0-9]*//g'
++ pipeid=3051884
++ echo 3051884
++ echo 3051884
+++ date
++ echo lun dic 14 19:55:29 CST 2015
+lun dic 14 19:55:29 CST 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/Summary.Report
++++ date
+++ echo lun dic 14 19:55:29 CST 2015
++ MSG='Variant calling workflow with id:[3051884] started by username:rendong at: lun dic 14 19:55:29 CST 2015'
++ LOGS='jobid=3051884.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[3051884] started by username:rendong at: lun dic 14 19:55:29 CST 2015\n\nDetails:\n\njobid=3051884.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' hpcbio-redmine@igb.illinois.edu,grendon@illinois.edu
++ echo -e 'Variant calling workflow with id:[3051884] started by username:rendong at: lun dic 14 19:55:29 CST 2015\n\nDetails:\n\njobid=3051884.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
+
+
+############# BEGIN VARIANT CALLING WORKFLOW ###############
+
+
+++ date
++ echo lun dic 14 19:58:22 CST 2015
+lun dic 14 19:58:22 CST 2015
++ scriptfile=./start.sh
++ runfile=/projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
++ '[' '!' -s /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt ']'
++ set +x
+
+
+############# CHECKING PARAMETERS ###############
+
+
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w REPORTTICKET
+++ cut -d = -f2
++ reportticket=3820
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w OUTPUTDIR
+++ cut -d = -f2
++ outputdir=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w EMAIL
+++ cut -d = -f2
++ email=grendon@illinois.edu
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ cut -d = -f2
+++ grep -w PBSPROJECTID
++ pbsprj=jti
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ cut -d = -f2
+++ grep -w EPILOGUE
++ epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w INPUTTYPE
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ input_type=GENOME
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/projects/sciteam/jti/GR/BW_VariantCalling
++ '[' '!' -d /projects/sciteam/jti/GR/BW_VariantCalling ']'
++ '[' -z grendon@illinois.edu ']'
++ '[' GENOME == GENOME -o GENOME == WHOLE_GENOME -o GENOME == WHOLEGENOME -o GENOME == WGS ']'
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w PBSCPUOTHERWGEN
+++ cut -d = -f2
++ pbscpu=3:00:00
+++ cat /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt
+++ grep -w PBSQUEUEWGEN
+++ cut -d = -f2
++ pbsqueue=normal
+++ umask u=rwx,g=rwx,o=
++ '[' '!' -d /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14 ']'
++ echo 'resetting directory'
+resetting directory
+++ rm -r /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/WorkflowAutodocumentationScript.sh
++ mkdir -p /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs
+++ chmod 740 /projects/sciteam/jti/BW_GenomeGPS/epilogue.user
+chmod: no se puede acceder a «/projects/sciteam/jti/BW_GenomeGPS/epilogue.user»: No existe el fichero o el directorio
+++ cp /projects/sciteam/jti/config/testing/runfile_2samples1lane_GIAB.txt /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt
++ runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt
++ set +x
+
+ ### initialize autodocumentation script ### 
+
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/WorkflowAutodocumentationScript.sh
++ echo -e '#!/bin/bash \n'
+++ basename /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14
++ WorkflowName=AlignRealignVcall_2smallfiles_dec14
++ echo '# @begin AlignRealignVcall_2smallfiles_dec14'
++ outputlogs=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs
++ set +x
+
+ ### launching the pipeline configuration script ### 
+
++ qsub1=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE
++ echo '#PBS -V'
++ echo '#PBS -A jti'
++ echo '#PBS -N CONFIGURE'
++ echo '#PBS -l epilogue=/projects/sciteam/jti/BW_GenomeGPS/epilogue.user'
++ echo '#PBS -l walltime=00:03:00'
++ echo '#PBS -l nodes=1:ppn=1'
++ echo '#PBS -o /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ echo '#PBS -e /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in'
++ echo '#PBS -q debug'
++ echo '#PBS -m ae'
++ echo '#PBS -M grendon@illinois.edu'
++ echo '/projects/sciteam/jti/GR/BW_VariantCalling/configure.sh /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt batch /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou grendon@illinois.edu /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE '
++ echo -e '\n\n'
++ echo 'exitcode=$?'
++ echo -e 'if [ $exitcode -ne 0 ]\nthen '
++ echo '   echo -e "\n\n configure.sh failed with exit code = $exitcode \n runfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\n" | mail -s "[Task #3820]" "hpcbio-redmine@igb.illinois.edu,grendon@illinois.edu"'
++ echo -e '\n\n   exit 1'
++ echo fi
+++ qsub /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE
+Job submitted to account: jti
++ jobid=3051917.nid11293
++ set +x
+
+ ### jobid for configure.sh becomes pipeid. It will be stored in a couple of files ### 
+
+++ echo 3051917.nid11293
+++ sed 's/\.[a-z]*[0-9]*//g'
++ pipeid=3051917
++ echo 3051917
++ echo 3051917
+++ date
++ echo lun dic 14 19:58:23 CST 2015
+lun dic 14 19:58:23 CST 2015
++ truncate -s 0 /scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/Summary.Report
++++ date
+++ echo lun dic 14 19:58:23 CST 2015
++ MSG='Variant calling workflow with id:[3051917] started by username:rendong at: lun dic 14 19:58:23 CST 2015'
++ LOGS='jobid=3051917.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ echo -e 'Variant calling workflow with id:[3051917] started by username:rendong at: lun dic 14 19:58:23 CST 2015\n\nDetails:\n\njobid=3051917.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'
++ mail -s '[Task #3820]' hpcbio-redmine@igb.illinois.edu,grendon@illinois.edu
++ echo -e 'Variant calling workflow with id:[3051917] started by username:rendong at: lun dic 14 19:58:23 CST 2015\n\nDetails:\n\njobid=3051917.nid11293\nqsubfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/qsub.CONFIGURE\nrunfile=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/runfile.txt\nerrorlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.in\noutputlog=/scratch/sciteam/lmainzer/H3A_DiversityGenotyping_Space/Results/AlignRealignVcall_2smallfiles_dec14/logs/log.CONFIGURE.ou'

@@ -127,12 +127,33 @@ fi
         echo `date`
         #AlignCase="CHPC" #testing alignment Gerrit's way
 
-        $aligndir/bwa mem  $alignparms -R "${rgheader}" $ref $Rone $Rtwo |  $samdir/samtools view -bSu -> ${bamprefix}.tmp.bam
+        $aligndir/bwa mem  $alignparms -R "${rgheader}" $ref $Rone $Rtwo >  ${bamprefix}.tmp.sam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
         then
             MSG="bwa mem command failed on $Rone $Rtwo   exitcode=$exitcode. alignment failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+            exit $exitcode;
+        fi        
+        if [ ! -s ${bamprefix}.tmp.sam ]
+        then
+            MSG="${bamprefix}.tmp.sam aligned sam file not created. alignment failed"
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge  "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+            echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
+            cp $qsubfile $AlignOutputLogs/FAILEDjobs/
+            exit 1;
+        fi            
+        
+        $samdir/samtools view -bSu -@ $thr ${bamprefix}.tmp.sam > ${bamprefix}.tmp.bam
+        exitcode=$?
+        echo `date`
+        if [ $exitcode -ne 0 ]
+        then
+            MSG="samtools view command failed on ${bamprefix}.tmp.sam   exitcode=$exitcode. alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
             echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $AlignOutputLogs/FAILEDmessages
             cp $qsubfile $AlignOutputLogs/FAILEDjobs/

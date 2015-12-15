@@ -58,6 +58,7 @@ fi
    #kgenome=$( cat $runfile | grep -w KGENOME | cut -d '=' -f2 )
    #targetkit=$( cat $runfile | grep -w ONTARGET | cut -d '=' -f2 )
    indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
+   snpdir=$( cat $runfile | grep -w SNPDIR | cut -d '=' -f2 )   
    realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
    multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
    chrindex=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
@@ -239,20 +240,13 @@ fi
       exit 1;
    fi
 
-#   if [ -s $refdir/$dbSNP ]
-#   then
-#      realparms="-known:$refdir/$dbSNP"
-#      recalparms="--knownSites:$refdir/$dbSNP"
-#   else
-#      MSG="dbSNP not found"
-#      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-#      exit 1;
-#   fi
-#   if [ -s $refdir/$kgenome ]
-#   then
-#      realparms=$realparms":-known:$refdir/$kgenome"
-#      recalparms=$recalparms":--knownSites:$refdir/$kgenome"
-#   fi
+   if [ ! -d $refdir/$snpdir ]
+   then
+      MSG="$snpdir SNP directory not found"
+      echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
+      exit 1;
+   fi
+
 
 
 
@@ -343,14 +337,12 @@ fi
 
    for chr in $indices
    do
-       cd $refdir/vcf_per_chr
-       snps=`find $PWD -type f -name "${chr}.*.vcf.gz"`
-       region[$i]=$( echo $snps | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
+       cd $refdir/$snpdir
+       region[$i]=$( find $PWD -type f -name "${chr}.*.vcf.gz" | sed "s/^/:knownSites:/g" | tr "\n" ":" )
 
        cd $refdir/$indeldir
-       indels=`find $PWD -type f -name "${chr}.*.vcf"`
-       realparms[$i]=$( echo $indels | sed "s/\/projects/:known:\/projects/g" | sed "s/ //g" |tr "\n" ":" )
-       recalparms[$i]=$( echo $indels | sed "s/\/projects/:knownSites:\/projects/g" | sed "s/ //g" | tr "\n" ":" )
+       realparms[$i]=$( find $PWD -type f -name "${chr}.*.vcf" | sed "s/^/:known:/g" | tr "\n" ":" )
+       recalparms[$i]=$( find $PWD -type f -name "${chr}.*.vcf" | sed "s/^/:knownSites:/g" | tr "\n" ":" )
        (( i++ ))
    done
    echo `date`
