@@ -33,4 +33,6 @@ The scripts
  realrecal_NONsharedRefGenomeMode.sh
     and
  realrecal_sharedRefGenomeMode.sh    
+    and
+ schedule_realrecal_sharedRefGenomeMode.sh
 are not a part of the workflow, but rather exist to enable scalability testing on the shared reference files.
