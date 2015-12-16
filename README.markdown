@@ -36,3 +36,9 @@ The scripts
     and
  schedule_realrecal_sharedRefGenomeMode.sh
 are not a part of the workflow, but rather exist to enable scalability testing on the shared reference files.
+
+
+## To-Dos
+
+1) discuss mailing to RedMine in automatic fashion, and in a prtable fashio
+instead of commenting out the emails when debugging
