@@ -42,3 +42,5 @@ are not a part of the workflow, but rather exist to enable scalability testing o
 
 1) discuss mailing to RedMine in automatic fashion, and in a prtable fashio
 instead of commenting out the emails when debugging
+2) remove #PBS -V from all scripts
+3) incorporate checking the results of FastQC in automatic fashion; edit the AssessFastQCresults.sh script
