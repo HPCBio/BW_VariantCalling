@@ -40,14 +40,14 @@ are not a part of the workflow, but rather exist to enable scalability testing o
 
 ## To-Dos
 
-1) discuss mailing to RedMine in automatic fashion, and in a portable fashion
+1 discuss mailing to RedMine in automatic fashion, and in a portable fashion
 instead of commenting out the emails when debugging
-2) remove #PBS -V from all scripts
-3) incorporate checking the results of FastQC in automatic fashion; edit the AssessFastQCresults.sh script
-4) incorporate checking vcf automatically?
-5) make sure the parsing of jobids is still correct after the Jan 18 of 2016 maintenance:
+2 remove #PBS -V from all scripts
+3 incorporate checking the results of FastQC in automatic fashion; edit the AssessFastQCresults.sh script
+4 incorporate checking vcf automatically?
+5 make sure the parsing of jobids is still correct after the Jan 18 of 2016 maintenance:
 
 " During the upcoming Jan 18 maintenance (starting at 06:00 AM) Blue Waters scheduler will be upgraded and migrated to a new server. The current server name (nid11293) will change to bwsched and as a result the full jobid will change from <JOBID>.nid11293 to <JOBID>.bwsched (viewed from the qstat output).  If you have any scripts that use the "nid11293" string please use the new server name after the upgrade. Everything else regarding job submission will remain the same".
-6) edit the comments statements so they look good in the logs
-7) brush through and remove any mention of specific names or institutions or projects (found Gerrit mentioned somewhere)
+6 edit the comments statements so they look good in the logs
+7 brush through and remove any mention of specific names or institutions or projects (found Gerrit mentioned somewhere)
 
