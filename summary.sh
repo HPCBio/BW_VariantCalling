@@ -26,7 +26,9 @@ else
         autoarchive=$( cat $runfile | grep -w AUTOARCHIVE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 	pipeid=$( cat $outputdir/logs/pbs.CONFIGURE )
 	
-        echo -e "the delivery folder should be populated already with BAMs and VCFs"
+
+        set +x; echo -e "\n the delivery folder should be populated already with results \n" >&2; set -x
+
         if [ `expr ${#deliveryfolder}` -lt 2 ]
         then
             delivery=$outputdir/delivery
@@ -34,7 +36,8 @@ else
 	    delivery=$outputdir/$deliveryfolder
 	fi
 
-        echo -e "making the delivery folders group read/writable"
+        set +x; echo -e "\n making the delivery folders group read/writable  \n" >&2; set -x
+
         newgrp ILL_jti
         mkdir -p ${delivery}/docs
         chmod -R 770 ${delivery}/docs
@@ -43,7 +46,8 @@ else
 
 	echo `date`	
 
-        echo -e "populating the delivery/docs folder with documents runfiles etc"
+        set +x; echo -e "\n populating the delivery/docs folder with documents runfiles etc \n" >&2; set -x
+
         
         cp $outputdir/*.txt ${delivery}/docs
         cp $outputdir/*.list ${delivery}/docs
@@ -54,9 +58,12 @@ else
         
         if [ $autoarchive == "YES" ]
         then
-            echo -e "now launching the auto archive qsub job..."
+
+            set +x; echo -e "\n constructing and launching archive job \n" >&2; set -x
+
+
             qsub_archive=$TopOutputLogs/qsub.archive.Project_${pipeid}
-            echo "#PBS -V" > $qsub_archive
+
             echo "#PBS -A $pbsprj" >> $qsub_archive
             echo "#PBS -N ${pipeid}_archiveOutput" >> $qsub_archive
             echo "#PBS -l walltime=01:00:00" >> $qsub_archive # 1 hour should be more than enough
@@ -72,7 +79,9 @@ else
 	    echo `date`	
         fi
         
-        echo -e "now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline"
+
+        set +x; echo -e "\n now putting together the second part of the Summary.Report file with the list of jobs executed inside this pipeline \n" >&2; set -x
+
         
 	listjobids=$( cat $outputdir/logs/pbs.* cat $outputdir/logs/*/pbs.* | sort | uniq | tr "\n" "\t" )
 
@@ -89,4 +98,7 @@ else
         echo -e "$MSG\n\nDetails:\n\n$LOGS\n$detjobids" >> $outputdir/logs/Summary.Report
         cp  $outputdir/logs/Summary.Report ${delivery}/docs/Summary.Report      
         chmod g+r $TopOutputLogs
+        
+        set +x; echo -e "\n  exiting now \n" >&2; set -x
+        
 fi

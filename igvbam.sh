@@ -26,6 +26,8 @@ else
        exit 1;
     fi
 
+    set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
+
     picardir=$( cat $runfile | grep -w PICARDIR | cut -d "=" -f2 )
     samdir=$( cat $runfile | grep -w SAMDIR | cut -d "=" -f2 )
     threads=$( cat $runfile | grep -w PBSTHREADS | cut -d "=" -f2 )
@@ -64,6 +66,9 @@ else
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
+
+
+    set +x; echo -e "\n\n############# create IGV file with MergeSamFiles ###############\n\n" >&2; set -x;
 
     echo `date`
     listfiles=$( echo $infiles | tr ":" " " )

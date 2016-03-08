@@ -25,11 +25,13 @@ fi
         dartcmd=/projects/sciteam/jti/builds/dart_0_8_5
         skipmd5="YES"   #this could be changed later on
         
-        echo "##############################################################################"
-        echo "##############################################################################"
-        echo "##########   sanity checks with input params and transfer end points  ########"
-        echo "##############################################################################"
-        echo "##############################################################################"
+        # wrapping comments in echoes, so that the output logs would be easier to read: they will have more structure
+        set +x; echo -e "\n\n" >&2; 
+        echo "####################################################################################################" >&2
+        echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+        echo "##################################### AND SANITY CHECK      ########################################" >&2
+        echo "####################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
         if [ ! -s $runfile ]
         then
@@ -119,9 +121,11 @@ fi
         fi
         
 
-        echo "##########################################################################################"
-	echo "##########                 declaring END POINTS                                   ########"
-        echo "##########################################################################################"
+        set +x; echo -e "\n\n" >&2; 
+        echo "####################################################################################################" >&2
+        echo "#######################    declaring END POINTS             ########################################" >&2
+        echo "####################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
          ###############################################################################################################
          #this is how end points are normally specified
@@ -132,17 +136,18 @@ fi
 
         thisbatch=`basename $outputdir`
         #thisproject=/projects/sciteam/jti/Results
-        thisproject=/projects/sciteam/jti/
+        thisproject=/projects/sciteam/jti/TestingAutoTransfer_batch2
         source_endpoint="ncsa#BlueWaters"
         destination_endpoint="ncsa#Nearline"       
         source=${source_endpoint}${archivefolder}
         destination=${destination_endpoint}${thisproject}/$thisbatch
         #user=$( echo $email | cut -d '@' -f1 )
 
-
-        echo "##########################################################################################"
-	echo "########## TESTING END POINTS: 1) that they exist 2) that we have access to them  ########"
-        echo "##########################################################################################"
+        set +x; echo -e "\n\n" >&2; 
+        echo "##########################################################################################" >&2
+	echo "########## TESTING END POINTS: 1) that they exist 2) that we have access to them  ########" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;        
         #We assume that the userid is identical on both end points AND on globusonline
 
         user=$( echo $USER )
@@ -164,25 +169,19 @@ fi
 
         if [ $? -ne 0 ]
         then
-            MSG="ssh cli.globusonline.org command failed on SOURCE $source." 
+            MSG="ssh cli.globusonline.org command failed on $source." 
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""           
             exit 1
         else
             echo -e "$source is ok"
         fi
 
-        echo "check one: ssh cli.globusonline.org on DESTINATION $destination" 
+        echo "checking ssh cli.globusonline.org on $destination" 
         ssh $user@cli.globusonline.org "ls $destination" 
         if [ $? -ne 0 ]
         then
             echo "$destination folder does not exist, creating it now" 
             ssh $user@cli.globusonline.org "mkdir $destination" 
-            if [ $? -ne 0 ]
-            then
-                MSG="ssh $user@cli.globusonline.org failed on mkdir $destination. exiting now" 
-	        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
-                exit 1 
-            fi
         else
             echo -e "$destination is ok"
         fi
@@ -190,10 +189,12 @@ fi
 	echo `date`
 
 
-        echo "##########################################################################################"
-        echo "##########    Now lets create the README file and send a copy to archive          ########"
-        echo "##########################################################################################"
-
+        set +x; echo -e "\n\n" >&2; 
+        echo "##########################################################################################" >&2
+        echo "##########    Now lets create the README file and send a copy to archive          ########" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         ListGOFiles=$( cat $outputdir/SAMPLENAMES.list | sed "s/$/\.drt\n/g" | tr " " "\n" )
         readme=$delivery/docs/README.txt
         chmod ug=rw $readme
@@ -222,21 +223,30 @@ fi
         echo `date`
 
 	
-        echo "##########################################################################################"
-        echo "##########              Create al the qsub jobs  here for md5sum                  ########"
-        echo "##########          They will be executed from within a launcher                  ########"
-        echo "##########################################################################################"
-
+        set +x; echo -e "\n\n" >&2; 	
+        echo "##########################################################################################" >&2
+        echo "##########################################################################################" >&2
+        echo "##########              Create al the qsub jobs  here                             ########" >&2
+        echo "##########      md5sum commands will be executed from within a launcher           ########" >&2
+        echo "###      dart transfer commands will be launched from individual qsub jobs            ####" >&2
+        echo "##########################################################################################" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+ 
         
         if [ $skipmd5 == "YES" ]
         then 
-             echo "##########################################################################################"
-	     echo "##########       SKIP md5sum STEP because GO does it for us                       ########"
-             echo "##########################################################################################"
+             set +x; echo -e "\n\n" >&2; 
+             echo "##########################################################################################" >&2
+	     echo "##########       SKIP md5sum STEP because GO does it for us                       ########" >&2
+             echo "##########################################################################################" >&2
+             echo -e "\n\n" >&2; set -x;
         else     
-            echo "##########################################################################################"
-            echo "##########       Let's create the qsubs for the md5sum launcher                   ########"
-            echo "##########################################################################################"
+            set +x; echo -e "\n\n" >&2; 
+            echo "##########################################################################################" >&2
+            echo "##########       Let's create the qsubs for the md5sum launcher                   ########" >&2
+            echo "##########################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;
         
             echo -e "resetting the joblists and qsub files ..."
         
@@ -335,10 +345,11 @@ fi
              echo $md5sumVCFS_job >> $TopOutputLogs/md5sum.pbs
         fi
 
-        
-        echo "##########################################################################################"
-        echo "######       prep work for the dart and transfer operations                            ###"
-        echo "##########################################################################################"
+        set +x; echo -e "\n\n" >&2;         
+        echo "##########################################################################################" >&2
+        echo "######       prep work for the dart and transfer operations                            ###" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x; 
         
         echo -e  "this variable will be empty if we skip the md5sum block. However, the code will still work"
 
@@ -361,22 +372,28 @@ fi
         truncate -s 0 $TopOutputLogs/DART.pbs
         truncate -s 0 $TopOutputLogs/GOTransfer.pbs
         echo `date`
-        
-        echo -e "##########################################################################################"
-        echo -e "######  Next loop for creating qsub jobs for DART and populating lists of GO transfers  ##"
-        echo -e "##########################################################################################"
+
+        set +x; echo -e "\n\n" >&2;         
+        echo -e "##########################################################################################" >&2
+        echo -e "######  Next loop for creating qsub jobs for DART and populating lists of GO transfers  ##" >&2
+        echo -e "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
         
         while read SampleFolder 
         do
            if [ `expr ${#SampleFolder}` -lt 1 ]
            then
-               echo -e "##########################################################################################"           
-               echo -e "###########                skipping empty line                                      ######"
-               echo -e "##########################################################################################"               
+               set +x; echo -e "\n\n" >&2;            
+               echo -e "##########################################################################################" >&2           
+               echo -e "###########                skipping empty line                                      ######" >&2
+               echo -e "##########################################################################################" >&2 
+               echo -e "\n\n" >&2; set -x;               
            else
-               echo -e "##########################################################################################"
-               echo -e "#####           qsub job for DART packaging of $SampleFolder                        ######"
-               echo -e "##########################################################################################"
+               set +x; echo -e "\n\n" >&2;            
+               echo -e "##########################################################################################" >&2
+               echo -e "#####           qsub job for DART packaging of $SampleFolder                        ######" >&2
+               echo -e "##########################################################################################" >&2
+               echo -e "\n\n" >&2; set -x; 
                
                qsub_dart=$TopOutputLogs/qsub_DART_$SampleFolder
                cat $outputdir/qsubGenericHeader > $qsub_dart
@@ -399,9 +416,11 @@ fi
                `qhold  -h u $dart_job`
                echo $dart_job >> $TopOutputLogs/DART.pbs
 
-               echo -e "##########################################################################################"
-               echo -e "##### adding job to anisimov launcher for GO archival of $SampleFolder              ######"
-               echo -e "##########################################################################################"
+               set +x; echo -e "\n\n" >&2; 
+               echo -e "##########################################################################################" >&2
+               echo -e "##### adding job to anisimov launcher for GO archival of $SampleFolder              ######" >&2
+               echo -e "##########################################################################################" >&2
+               echo -e "\n\n" >&2; set -x;
 
                cmd="\"transfer --label $SampleFolder --verify-checksum --encryp -- $source/${SampleFolder}.drt $destination/$SampleFolder/${SampleFolder}.drt \""
 
@@ -425,10 +444,13 @@ fi
            echo -e "#####           NEXT SAMPLE PLEASE....        #####"
         done < $outputdir/SAMPLENAMES.list
 
-        echo "##########################################################################################"
-        echo "##########                  OUTSIDE  THE MAIN LOOP                                ########"
-        echo "##########       Now generating the qsubs for all GO joblists                     ########"
-        echo "##########################################################################################"
+        set +x; echo -e "\n\n" >&2; 
+        echo "##########################################################################################" >&2
+        echo "##########                  OUTSIDE  THE MAIN LOOP                                ########" >&2
+        echo "##########       Now generating the qsubs for all GO joblists                     ########" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         echo `date`     
         numGOLists=$i   #this is the number of GO job lists that were generated inside the loop. Each one has up to 32 jobs inside
 
@@ -437,10 +459,12 @@ fi
             GO_joblist=$TopOutputLogs/GO_Joblist_${inx}
             DART2GO_pbs=$( cat $TopOutputLogs/DART2GO_Joblist_${inx}.pbs | sed "s/\..*//" | tr "\n" ":" )
 	    qsubGO=$TopOutputLogs/qsub_GO_Joblist_$inx
-	    
-            echo "##########################################################################################" 	    
-            echo -e "#####            creating qsub for this GO package $GO_joblist                   ######"
-            echo "##########################################################################################" 	    
+
+            set +x; echo -e "\n\n" >&2; 	    
+            echo "##########################################################################################" >&2	    
+            echo -e "#####            creating qsub for this GO package $GO_joblist                   ######" >&2
+            echo "##########################################################################################" >&2 	    
+            echo -e "\n\n" >&2; set -x;
             
 	    cat $outputdir/qsubGenericHeader > $qsubGO
             echo "#PBS -N ${pipeid}_GO_Joblist_$inx" >> $qsubGO
@@ -457,9 +481,12 @@ fi
             echo $GO_job >> $TopOutputLogs/GOTransfer.pbs
         done
 
-        echo "##########################################################################################"
-        echo "##########    Now we release all the jobs for execution                           ########"
-        echo "##########################################################################################"
+        set +x; echo -e "\n\n" >&2; 
+        echo "##########################################################################################" >&2
+        echo "##########    Now we release all the jobs for execution                           ########" >&2
+        echo "##########################################################################################" >&2
+        echo -e "\n\n" >&2; set -x; 
+        
         md5sum_all=$( cat $TopOutputLogs/md5sum.pbs | sed "s/\..*//" | tr "\n" " " )
         globus_all=$( cat $TopOutputLogs/GOTransfer.pbs | sed "s/\..*//" | tr "\n" " " )
         dart_all=$( cat $TopOutputLogs/DART.pbs | sed "s/\..*//" | tr "\n" " " )

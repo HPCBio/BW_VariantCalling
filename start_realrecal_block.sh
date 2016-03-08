@@ -283,7 +283,7 @@ fi
             fi
 
             qsub_sortbammayo=$outputlogs/qsub.sortbammayo.$prefix
-            echo "#PBS -V" > $qsub_sortbammayo
+
             echo "#PBS -A $pbsprj" >> $qsub_sortbammayo
             echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub_sortbammayo
             echo "#PBS -l walltime=$pbscpu" >> $qsub_sortbammayo

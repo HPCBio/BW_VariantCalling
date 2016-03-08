@@ -31,6 +31,8 @@ else
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+        set +x; echo -e "\n#########   check params \n" >&2; set -x
+
 
 
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -48,8 +50,8 @@ else
 	    exit 1;
         fi
 
+        set +x; echo -e "\n#########   finding BAMs in input folder and updating config files \n" >&2; set -x
 
-        # finding BAMs in input folder and updating config files
 
         cd $inputdir
         newsamples=""
@@ -72,7 +74,9 @@ else
             fi
         done
 
-        # updating BOTH config files
+
+        set +x; echo -e "\n#########   Udpating configuration files \n" >&2; set -x  
+
         if [ `expr ${#newnames}` -gt 0 ]
         then
             directory=`dirname $samplefileinfo`
@@ -92,7 +96,9 @@ else
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        # updating runfile
+        
+        set +x; echo -e "\n#########   Udpating run files \n" >&2; set -x  
+        
         directory=`dirname $runfile`
         oldfile=`basename $runfile`
         oldrun=$directory/$oldfile.old

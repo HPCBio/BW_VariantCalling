@@ -32,6 +32,8 @@ else
 	    exit 1;
         fi
 
+        set +x; echo -e "\n#########   check params \n" >&2; set -x
+
         paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
         revertsam=$( cat $runfile | grep -w REVERTSAM | cut -d '=' -f2 )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -57,7 +59,8 @@ else
 	    exit 1;
         fi
 
-        # checking inputdir for fastq files tha need merging by sample
+        set +x; echo -e "\n#########   checking inputdir for fastq files tha need merging by sample \n" >&2; set -x
+ 
 
         cd $inputdir
 
@@ -79,12 +82,19 @@ else
 
         if [ $provenance == "SINGLE_SOURCE" ]
         then
+
+           set +x; echo -e "\n#########   CASE1: provenance is single source \n" >&2; set -x  
+        
+        
            echo "fastq files in $inputdir need further processing..."
            for fqfile in $fqfiles
            do
                thesamples=`find -name "*_1.${fqfile}*.fastq" | sed 's/.\///g' | sed 's/_1.[0-9]*.[a-z]*.fastq//'`
                echo -e $thesamples >> $allbams2fq
 	  done
+	  
+          set +x; echo -e "\n#########   constructing list of files that need conversion \n" >&2; set -x
+	  
           bam_samples=$( cat $allbams2fq | tr " " "\n" | sort | uniq -c | sed 's/^ *//g'  | tr " " ":")
           for line in $bam_samples
           do
@@ -93,7 +103,9 @@ else
 	       b2fsample=$( echo $nline | cut -d ':' -f2 | sed 's/_1.[0-9]*.[a-z]*.fastq//' )
                if [ $frq == "1" ]
                then
-                  echo "samplename produced by samtofastq is unique"
+               
+                  set +x; echo -e "\n#########   this file is unique. collect R1 and R2 \n" >&2; set -x
+               
                   readone=${b2fsample}_r1.fastq
                   touch $readone
                   cat ${b2fsample}_1.*.fastq >> $readone
@@ -122,7 +134,9 @@ else
                else
                   if [ $frq != "" ]
                   then
-                      echo "multisamples with same name. concatenate them..."
+
+                      set +x; echo -e "\n#########   multisamples with same name. concatenate them... \n" >&2; set -x
+               
                       readone=${b2fsample}_r1.fastq
                       touch $readone
                       cat ${b2fsample}_1.*.fastq >> $readone
@@ -151,7 +165,9 @@ else
 	fi
         if [ $provenance == "MULTI_SOURCE" ]
         then
-               echo "provenance=$provenance. fastq files in input dir do not need further processing"
+
+               set +x; echo -e "\n#########   CASE2: provenance is multi-source. fastq files in input dir do not need further processing \n" >&2; set -x  
+        
                for fqfile in $fqfiles 
                do
 		   if [ `find -name "*${fqfile}*" | wc -l` -gt 1 ]
@@ -171,7 +187,8 @@ else
         
         fi
 
-        # updating BOTH config files
+        set +x; echo -e "\n#########   Udpating configuration files \n" >&2; set -x  
+
         if [ `expr ${#newnames}` -gt 0 ]
         then
             directory=`dirname $samplefileinfo`
@@ -191,7 +208,9 @@ else
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
-        # updating runfile
+        
+        set +x; echo -e "\n#########   Udpating run files \n" >&2; set -x  
+        
         directory=`dirname $runfile`
         oldfile=`basename $runfile`
         oldrun=$directory/$oldfile.old

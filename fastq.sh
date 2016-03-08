@@ -29,7 +29,7 @@ else
         qsubfile=$9
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"        
        
-        #set +x; echo -e "\n\n############# preliminary parameter check  ###############\n\n" >&2
+        set +x; echo -e "\n\n############# preliminary parameter check  ###############\n\n" >&2
  
         # get folder path to logs
         LogsPath=`dirname $elog`
@@ -53,7 +53,8 @@ else
               exit 1;
         fi
 
-        echo -e "preparing delivery folder"
+        set +x; echo -e "\n\n############ preparing delivery folder ##############\n\n" >&2
+        
         deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
         rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         if [ `expr ${#deliveryfolder}` -lt 2 ]
@@ -67,12 +68,13 @@ else
             mkdir -p $delivery/fastqc
         fi
 
-        echo -e "gathering the pieces of the fastqc command"
+        set +x; echo -e "\n\n############ gathering the pieces of the fastqc command #############\n\n" >&2 
 
         fastqfile=$( echo $inputfiles | tr ":" " " )
         parameters=$( echo $fastqcparms | tr "_" " " )
 
-        echo -e "running the fastqc command"
+        set +x; echo -e "\n\n############ grunning the fastqc command #############\n\n" >&2
+
 
         cd $outputdir
         $fastqcdir/fastqc -o $outputdir $parameters $fastqfile
@@ -85,7 +87,8 @@ else
               exit 1;
         fi
 
-        echo -e "checking that output file was created"
+        set +x; echo -e "\n\n############ checking that output file was created #############\n\n" >&2 
+
 
         totlines=`ls -1 *.zip | wc -l | cut -d ' ' -f 1`
         if [ $totlines -lt 1 ]
@@ -95,7 +98,7 @@ else
               exit 1;
         fi
 
-        echo -e "transfer results to delivery folder"
+        set +x; echo -e "\n\n############ transfer results to delivery folder #############\n\n" >&2 
 
         cp *.zip $delivery/fastqc/
 	echo `date`

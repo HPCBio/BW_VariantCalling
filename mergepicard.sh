@@ -25,7 +25,14 @@ else
     qsubfile=${12}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-    #sanity check
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
     
     if [ ! -s $runfile ]
     then
@@ -79,11 +86,14 @@ else
     header=$( echo $RGparms  | tr ":" "\t" )
     rgheader=$( echo -n -e "@RG\t" )$( echo $header  | tr "=" ":" )
 
-    ## step 1: sort-merge and add RG tags all at once
+
+
     cd $outputdir
     sortedfiles=""
     for bamfile in listfiles
     do
+
+       set +x; echo -e "\n\n############# step 1: add RG tags  ###############\n\n" >&2; set -x;
          
        java -Xmx6g -Xms512m -jar $picardir/AddOrReplaceReadGroups.jar \
 	   INPUT=$bamfile \
@@ -100,6 +110,8 @@ else
 	   exit $exitcode;
        fi
        echo `date`
+
+       set +x; echo -e "\n\n############# step 2: sort  ###############\n\n" >&2; set -x;
 
        java -Xmx6g -Xms512m -jar $picardir/SortSam.jar \
 	   INPUT=wrg.$bamfile \
@@ -119,6 +131,8 @@ else
        echo `date`        
        sortedfiles=${sortedfiles}" INPUT=sorted.wrg.$bamfile"
     done
+
+    set +x; echo -e "\n\n############# step 3: merge  ###############\n\n" >&2; set -x;
 
     java -Xmx6g -Xms512m -jar $picardir/MergeSamFiles.jar $sortedfiles \
         MAX_RECORDS_IN_RAM=null \
@@ -142,7 +156,7 @@ else
         exit 1;
     fi
 
-    ## step 2: indexing merged bam file    
+    set +x; echo -e "\n\n############# step 4: index merged file  ###############\n\n" >&2; set -x;
     $samdir/samtools index $tmpfilewdups
     exitcode=$?
     if [ $exitcode -ne 0 ]
@@ -175,8 +189,11 @@ else
 	echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	exit $exitcode;
     fi
-    echo `date`        
-    ## step 3: marking and or removing duplicates        
+    echo `date`      
+    
+    set +x; echo -e "\n\n############# step 5:  marking and or removing duplicates  ###############\n\n" >&2; set -x;
+
+   
 
     if [ $markdup == "YES" -a $deldup != "TRUE" ]
     then

@@ -15,12 +15,15 @@
 #for example: H7FCKCCXX-6-IDX706_S8_L006_R2_001_2_sequence.txt.gz has ending pattern _R2_001_2_sequence.txt.gz and $3=2
 #
 
-
+set -x
 umask 0027
 
 InputFolder=$1
 EndingPattern=$2
 ReadSide=$3
+
+set +x; echo -e "\n\n####### loop for renaming fastq files      #######\n\n" >&2; set -x;
+
 
 
 for fastq in ${InputFolder}/*${EndingPattern} 

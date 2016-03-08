@@ -32,9 +32,11 @@ else
 
 
         cd $outputdir
-        #######################     PAIRED ALIGNMENT      ####################
         if [ $paired -eq 1 ]
         then
+
+           set +x; echo -e "\n\n############# Paired reads ###############\n\n" >&2; set -x;        
+
            R2=${11}
            elog=${12}
            olog=${13}
@@ -45,6 +47,8 @@ else
            if [ $samprocessing == "SAMTOOLS" ]
            then
               echo `date`
+
+              set +x; echo -e "\n\n############# novoalign then samtools ###############\n\n" >&2; set -x;        
 
               $memprof $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters | $samdir/samtools view -bS -o $bamfile 
               novoalign_exitcode=${PIPESTATUS[0]}
@@ -81,6 +85,8 @@ else
            then
               echo `date`
 
+              set +x; echo -e "\n\n############# novoalign then sambamba ###############\n\n" >&2; set -x;        
+
               $memprof $alignerdir/novoalign -d $ref -f $R1 $R2 -o SAM $parameters | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
               sambamba_exitcode=${PIPESTATUS[1]}
@@ -110,12 +116,10 @@ else
               echo `date`
            fi
 
-
-
-
-
-        #######################     SINGLE-ENDED ALIGNMENT      ####################
         else
+        
+           set +x; echo -e "\n\n############# Single reads ###############\n\n" >&2; set -x;        
+        
            elog=${11}
            olog=${12}
            email=${13}
@@ -125,6 +129,9 @@ else
            if [ $samprocessing == "SAMTOOLS" ]
            then
               echo `date`
+
+              set +x; echo -e "\n\n############# novoalign then samtools ###############\n\n" >&2; set -x;        
+
 
               $memprof $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters | $samdir/samtools view -bS -o $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}
@@ -159,6 +166,9 @@ else
            elif [ $samprocessing == "SAMBAMBA" ]
            then
               echo `date`
+
+              set +x; echo -e "\n\n############# novoalign then sambamba ###############\n\n" >&2; set -x;        
+
 
               $memprof $alignerdir/novoalign -d $ref -f $R1 -o SAM $parameters | ${sambambadir}/sambamba view -f bam -h --sam-input /dev/stdin -t $threads --output-filename $bamfile
               novoalign_exitcode=${PIPESTATUS[0]}

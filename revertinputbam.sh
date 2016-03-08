@@ -27,6 +27,13 @@ else
         qsubfile=$9
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################  SANITY CHECK         ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
         if [ ! -s $infile ]
         then
 	    MSG="$infile input bam file not found"
@@ -46,7 +53,11 @@ else
 	    MSG="SAMDIR=$samdir  directory not found"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
-        fi      
+        fi   
+        
+        
+        set +x; echo -e "\n\n####### Step1: RevertSam command      #######\n\n" >&2; set -x;
+       
 	outputdir=`dirname $outfile`
         cd $outputdir
         prefix=`basename $infile`
@@ -73,6 +84,8 @@ else
             echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+
+        set +x; echo -e "\n\n####### Step2: sam to bam command      #######\n\n" >&2; set -x;
 
 	$samdir/samtools view -bS -o $outfile $samfile
         exitcode=$?

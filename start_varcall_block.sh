@@ -25,6 +25,14 @@ else
 	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+        
+   set +x; echo -e "\n\n" >&2;
+   # wrapping commends in echoes, so that the output logs would be easier to read: they will have more structure
+   echo "####################################################################################################" >&2
+   echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+   echo "##################################### AND SANITY CHECK      ########################################" >&2
+   echo "####################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
         pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
@@ -146,6 +154,16 @@ else
 	    exit 1;
         fi
 
+
+
+   set +x; echo -e "\n\n" >&2;
+   echo "####################################################################################################" >&2
+   echo "#####################################                       ########################################" >&2
+   echo "#####################################  CREATE  DIRECTORIES  ########################################" >&2
+   echo "#####################################                       ########################################" >&2
+   echo "####################################################################################################" >&2
+   echo -e "\n\n" >&2; set -x;
+
         vardir=$outputrootdir/variant
         varlogdir=$outputrootdir/logs/variant
         pipeid=$( cat $outputrootdir/logs/pbs.CONFIGURE )
@@ -163,7 +181,10 @@ else
 	    `rm $varlogdir/*`
         fi
 
-        #generating regions and intervals files in BED format
+
+        set +x; echo -e "\n #######   generating regions and intervals files in BED format\n" >&2; set -x
+
+        
         for chr in $indices
         do
             i=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/M/27/' )
@@ -180,14 +201,17 @@ else
             fi
         done
 
-        # main loop
+        set +x; echo -e "\n #######    main loop by sample\n" >&2; set -x
+
         while read sampledetail
         do
             echo "processing next line of input file..."
             if [ `expr ${#sampledetail}` -gt 0 ]
             then
-		echo "processing $sampledetail"
-                bam=$( echo $sampledetail | grep ^BAM | cut -d ':' -f2 | cut -d '=' -f2 )
+
+                set +x; echo -e "\n #######    processing $sampledetail \n" >&2; set -x
+
+		bam=$( echo $sampledetail | grep ^BAM | cut -d ':' -f2 | cut -d '=' -f2 )
 
 		if [ `expr ${#bam}` -lt 1  ]
 		then
@@ -205,21 +229,27 @@ else
 
 		prefix=`basename $bam`
 		dirname=`dirname $bam`
+		
+                set +x; echo -e "\n #######   next loop by chr \n" >&2; set -x
+		
 		for chr in $indices
 		do
-		    vcf_files=${vcf_files}":${prefix}"
-		    inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/MT/27/' )
+		
+                     set +x; echo -e "\n #######  constructing and launching varcall job for $prefix chr=$chr\n" >&2; set -x
 
-                     echo "invoking variant calling..."
+		     vcf_files=${vcf_files}":${prefix}"
+		     inx=$( echo $chr | sed 's/chr//' | sed 's/X/25/' | sed 's/Y/26/' | sed 's/MT/27/' )
+
+
 		     qsub3=$varlogdir/qsub.vcallgatk.${preffix}.$chr
-		     #echo "#PBS -V" > $qsub3
+		     
 		     echo "#PBS -A $pbsprj" >> $qsub3
-		     echo "#PBS -N ${pipeid}_vcallgatk_${preffix}_$chr" >> $qsub3
+		     echo "#PBS -N ${pipeid}_vcallgatk_${prefix}_$chr" >> $qsub3
 		     echo "#PBS -l epilogue=$epilogue" >> $qsub3
 		     echo "#PBS -l walltime=$pbscpu" >> $qsub3
 		     echo "#PBS -l nodes=1:ppn=$thr" >> $qsub3
-		     echo "#PBS -o $varlogdir/log.vcallgatk.${preffix}.$chr.ou" >> $qsub3
-		     echo "#PBS -e $varlogdir/log.vcallgatk.${preffix}.$chr.in" >> $qsub3
+		     echo "#PBS -o $varlogdir/log.vcallgatk.${prefix}.$chr.ou" >> $qsub3
+		     echo "#PBS -e $varlogdir/log.vcallgatk.${prefix}.$chr.in" >> $qsub3
 		     echo "#PBS -q $pbsqueue" >> $qsub3
 		     echo "#PBS -m ae" >> $qsub3
 		     echo "#PBS -M $email" >> $qsub3
@@ -228,11 +258,18 @@ else
 		     #`chmod a+r $qsub3`
 		     vcalljobid=`qsub $qsub3`
 		     echo $vcalljobid >> $outputrootdir/logs/pbs.VARCALL
+		     
+                     set +x; echo -e "\n #######   bottom of the loop by chr \n" >&2; set -x
+
+		     
 		done
             else
                  echo "skipping empty line"
             fi
 	    echo `date`
+	    
+            set +x; echo -e "\n #######   bottom of the loop by sample \n" >&2; set -x
+	    
      done < $samplefileinfo
 
      #`chmod -R 770 $vardir/`
@@ -241,13 +278,12 @@ else
      mergevcfjobid=""
      cleanjobid=""
 
-     # producing a single VCF file only if analysis=REALIGNMENT
-     # and SKIPVCALL=NO
+     set +x; echo -e "\n #######   producing a single vcf if skipvcall == NO  \n" >&2; set -x
 
      if [ $skipvcall == "NO" ]
      then
 	 qsub1=$varlogdir/qsub.mergevcf
-	 echo "#PBS -V" > $qsub1
+
 	 echo "#PBS -A $pbsprj" >> $qsub1
 	 echo "#PBS -N ${pipeid}_mergevcf" >> $qsub1
 	 echo "#PBS -l epilogue=$epilogue" >> $qsub1
@@ -265,12 +301,12 @@ else
 	 echo $mergevcfjobid >> $outputrootdir/logs/pbs.MERGEVCF
      fi
 
-     # removing temporary files
+     set +x; echo -e "\n #######   remove temp files  \n" >&2; set -x
 
      if [ $cleanupflag == "YES" ]
      then
 	 qsub6=$outputrootdir/logs/qsub.cleanup.vcall
-	 echo "#PBS -V" > $qsub6
+
 	 echo "#PBS -A $pbsprj" >> $qsub6
 	 echo "#PBS -N ${pipeid}_cleanup_vcall" >> $qsub6
 	 echo "#PBS -l epilogue=$epilogue" >> $qsub6
@@ -293,10 +329,10 @@ else
 	 echo $cleanjobid >> $outputrootdir/logs/pbs.CLEANUP
      fi
 
-     # producing summary report
+     set +x; echo -e "\n #######   produce summary  \n" >&2; set -x
      `sleep 30s`
      qsub4=$outputrootdir/logs/qsub.summary.vcall.allok
-     echo "#PBS -V" > $qsub4
+
      echo "#PBS -A $pbsprj" >> $qsub4
      echo "#PBS -N ${pipeid}_summaryok" >> $qsub4
      echo "#PBS -l epilogue=$epilogue" >> $qsub4
@@ -327,7 +363,7 @@ else
      then
          echo "at least one job aborted"
 	 qsub5=$outputrootdir/logs/qsub.summary.vcall.afterany
-	 echo "#PBS -V" > $qsub5
+
 	 echo "#PBS -A $pbsprj" >> $qsub5
 	 echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub5
 	 echo "#PBS -l epilogue=$epilogue" >> $qsub5
@@ -348,6 +384,6 @@ else
      echo `date`
 fi
 
-echo -e "############## now making PBS logs group readable"
+
 
 find $outputrootdir -name logs -type d | awk 'print "chmod -R g=rwx "$1}' | sh -x

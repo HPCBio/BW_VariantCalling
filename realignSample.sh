@@ -34,6 +34,10 @@ else
 	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+
+
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
+        
         javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
         threads=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
         refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
@@ -103,10 +107,12 @@ else
 	    exit 1;
         fi
 
-        echo "#################################################################################"
-        echo "################## STEP1: splitting sample=$sample by chr=$chr...################"
-        echo "#################################################################################"
-
+        set +x; echo -e "\n\n" >&2; 
+        echo "#################################################################################" >&2
+        echo "################## STEP1: splitting sample=$sample by chr=$chr...################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         cd $realigndir
 
         tmpfile=`basename $infile`
@@ -133,11 +139,13 @@ else
         $samdir/samtools view -H -@ $thr $tmpfile $chr > ${chr}.$tmpfile.header
 
 	echo `date`
-
-        echo "#################################################################################"
-        echo "################## STEP2: realign SAMPLE $sample on chr=$chr  ###################"
-        echo "#################################################################################"
 	
+        set +x; echo -e "\n\n" >&2;
+        echo "#################################################################################" >&2
+        echo "################## STEP2: realign SAMPLE $sample on chr=$chr  ###################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         echo "GATK is creating a target list...."
         $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realigndir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
@@ -192,6 +200,12 @@ else
             exit 1;
         fi	
 
+        set +x; echo -e "\n\n" >&2;
+        echo "#################################################################################" >&2
+        echo "################## STEP3: samtools calmd                      ###################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         $samdir/samtools calmd -Erbu ${chr}.${tmpfile}.realigned.bam $refdir/$ref > $outputfile
 	exitcode=$?
 	echo `date`
@@ -210,7 +224,8 @@ else
             exit 1;
         fi
 
-        echo "generating stats for $outputfile before exiting"
+        set +x; echo -e "\n\n#############generating stats for $outputfile before exiting###############\n\n" >&2; set -x;
+
         $samdir/samtools index $outputfile
         $samdir/samtools view -H  $outputfile > ${outputfile}.header
         $samdir/samtools flagstat $outputfile > ${outputfile}.flagstat

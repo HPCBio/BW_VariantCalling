@@ -37,6 +37,7 @@ else
 	    exit 1;
         fi
 
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
 
         thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
         scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -92,9 +93,8 @@ else
         cd $tmpdir
 	echo `date`
 
-        ############################
-        # sort by name
-        ############################       
+        set +x; echo -e "\n\n############# sort by name ###############\n\n" >&2; set -x;
+      
 
         echo "sorting bam by readname..."
         $sortdir/novosort --namesort --threads $thr $infile > $temfile".name_sorted"
@@ -140,9 +140,8 @@ else
                 exit $exitcode;
         fi
 
-        ############################
-        # remove singletons
-        ############################       
+        set +x; echo -e "\n\n############# remove singletons ###############\n\n" >&2; set -x;
+      
         echo "removing singletons from bam"
         awk '{print $1}' $temfile".name_sorted.sam" > $temfile".name_sorted.sam.names_only"
         exitcode=$?
@@ -200,9 +199,10 @@ else
 		#echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
         fi
-        ############################
-        # revertsam (optional)
-        ############################
+
+        set +x; echo -e "\n\n############# revertsam (optional) ###############\n\n" >&2; set -x;
+        
+
         echo "optional conversion: revertsam"
 
         if [ $revertsam == "YES" -o $revertsam == "1" ]
@@ -257,9 +257,8 @@ else
 	    exit 1;
 	fi
 
-        #########################
-        #  bam2fastq
-        #########################
+        set +x; echo -e "\n\n############# bam2fastq ###############\n\n" >&2; set -x;
+
         echo "final conversion: samtofastq"
 
         if [ $provenance == "SINGLE_SOURCE" ]

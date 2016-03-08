@@ -31,11 +31,13 @@ else
 	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 
-       echo "##############################################################################"
-       echo "##############################################################################"
-       echo "##########         sanity checks with input params                 ###########"
-       echo "##############################################################################"
-       echo "##############################################################################"
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
        
         if [ ! -s $runfile ]
         then
@@ -190,12 +192,14 @@ else
 	    exit 1;
         fi
 	echo `date`
-	
-       echo "##############################################################################"
-       echo "##############################################################################"
-       echo "##########      setting up filters and parameters for snvcaller    ###########"
-       echo "##############################################################################"
-       echo "##############################################################################"
+
+       set +x; echo -e "\n\n" >&2; 	
+       echo "##############################################################################" >&2
+       echo "##############################################################################" >&2
+       echo "##########      setting up filters and parameters for snvcaller    ###########" >&2
+       echo "##############################################################################" >&2
+       echo "##############################################################################" >&2
+       echo -e "\n\n" >&2; set -x;
 
        #infile=`basename $inputfile`
        infile=$inputfile
@@ -254,14 +258,17 @@ else
 	   exit 1;
        fi
 
-
-       echo "############################################################################################"
-       echo "############################################################################################"
-       echo "##########      calculating variant calling w HaplotypeCaller                    ###########"
-       echo "##########We did not check, but we assume that variant caller is HaplotypeCaller ###########"
-       echo "############################################################################################"        
-
+       set +x; echo -e "\n\n" >&2; 
+       echo "############################################################################################" >&2
+       echo "############################################################################################" >&2
+       echo "##########      calculating variant calling w HaplotypeCaller                    ###########" >&2
+       echo "##########We did not check, but we assume that variant caller is HaplotypeCaller ###########" >&2
+       echo "############################################################################################" >&2        
+       echo -e "\n\n" >&2; set -x;
+       
        echo `date`
+
+       set +x; echo -e "\n\n#############    gathering gender and sample info  ###############\n\n" >&2; set -x;
 	
        echo $genderinfo # Can take this line out later 
        strip_right="${outputdir%/*}"
@@ -270,12 +277,14 @@ else
        echo "Sample: $sample_id, gender: $gender" # Can take this line out later                                                                 
        echo $chr # Can take this line out later
 
-       # Start of calling conditions. 
+       set +x; echo -e "\n\n#############    var-calling conditions start here  ###############\n\n" >&2; set -x;        
 
        ## Calling X 
        if [ $chr == "X" ];
        then
-         echo "call X" # Can take this line out later
+       
+         set +x; echo -e "\n\n#############   calling chr=X with for TWO genders and THREE regions X_PAR1 X_PAR2 X_nonPAR ###############\n\n" >&2; set -x;        
+      
 	 # The X PAR coordinates can be found here: ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.regions.txt
          x_par1="X:60001-2699520"
          x_par2="X:154931044-155260560"
@@ -283,8 +292,9 @@ else
          ### Calling male X
          if [ $gender == "Male" ];
          then
-           echo "Calling male X" # Can take this line out later
-           #### Calling male X_PAR1
+ 
+           set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR1  ###############\n\n" >&2; set -x;        
+
            ploidy=2
            site="-L "$x_par1
            site_name="X_PAR1"
@@ -322,7 +332,10 @@ else
 	   cp $outfile $deliverydir
            cp ${outfile}.tbi $deliverydir
 	   echo `date`	   
-           #### Calling male X_PAR2
+ 
+           set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR2  ###############\n\n" >&2; set -x;        
+
+
            site="-L "$x_par2
            site_name="X_PAR2"
            outfile=$infile.$site_name.raw.g.vcf.gz
@@ -360,7 +373,10 @@ else
            cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
-           #### Calling male X_nonPAR
+ 
+           set +x; echo -e "\n\n#############   calling chr=X gender=male X_nonPAR  ###############\n\n" >&2; set -x;        
+
+
            ploidy=1
            site="-L X -XL "$x_par1" -XL "$x_par2
            site_name="X_nonPAR"
@@ -405,7 +421,9 @@ else
          ### Calling female X
          if [ $gender == "Female" ];
          then
-           echo "Calling female X" # Can take this line out later
+ 
+           set +x; echo -e "\n\n#############   calling chr=X gender=female   ###############\n\n" >&2; set -x;        
+
            ploidy=2
            outfile=$infile.$chr.raw.g.vcf.gz
 
@@ -443,13 +461,18 @@ else
          fi
          ### End calling female X
 
-       ## End calling X
+ 
+       set +x; echo -e "\n\n#############   end calling chr=X   ###############\n\n" >&2; set -x;        
+
+
        echo `date`
        
        ## Calling Y
        elif [ $chr == "Y" ];
        then
-         echo "call Y"; # Can take this line out later
+       
+         set +x; echo -e "\n\n#############   calling chr=Y with for TWO genders and THREE regions Y_PAR1 Y_PAR2 Y_nonPAR ###############\n\n" >&2; set -x;        
+      
          # The X PAR coordinates can be found here: ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.regions.txt
          y_par1="Y:10001-2649520"
          y_par2="Y:59034050-59363566"
@@ -457,8 +480,9 @@ else
          ### Calling male Y
          if [ $gender == "Male" ];
          then
-           echo "Calling male Y"  # Can take this line out later
-           #### Calling male Y_PAR1
+ 
+           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR1  ###############\n\n" >&2; set -x;        
+
            ploidy=2
            site="-L "$y_par1
            site_name="Y_PAR1"
@@ -497,7 +521,9 @@ else
            cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
-           #### Calling male Y_PAR2
+ 
+           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR2  ###############\n\n" >&2; set -x;        
+
            site="-L "$y_par2
            site_name="Y_PAR2"
            outfile=$infile.$site_name.raw.g.vcf.gz
@@ -535,7 +561,9 @@ else
            cp ${outfile}.tbi $deliverydir
 	   echo `date`
 	   
-           #### Calling male Y_nonPAR
+ 
+           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_nonPAR  ###############\n\n" >&2; set -x;        
+
            ploidy=1
            site="-L Y -XL "$y_par1" -XL "$y_par2
            site_name="Y_nonPAR"
@@ -576,12 +604,15 @@ else
          fi
          ### End calling male Y
 
-       ## End calling Y
+
+       set +x; echo -e "\n\n#############   end calling chr=X   ###############\n\n" >&2; set -x;        
 
        ## Calling MT
        elif [ $chr == "MT" ];
        then
-         echo "call MT" # Can take this line out later
+       
+         set +x; echo -e "\n\n#############   calling chr=MT   ###############\n\n" >&2; set -x;        
+
          ploidy=1
          site_name=$chr
          outfile=$infile.$site_name.raw.g.vcf.gz
@@ -616,11 +647,16 @@ else
          fi  
 	 cp $outfile $deliverydir
          cp ${outfile}.tbi $deliverydir
-	 echo `date`	 
-       ## End calling MT
+	 echo `date`
+	 
+	 
+         set +x; echo -e "\n\n#############   end calling chr=MT   ###############\n\n" >&2; set -x;        
 
-       ## Calling the autosomes
+
        else
+       
+         set +x; echo -e "\n\n#############  Calling the autosomes, chr-1-chr22    ###############\n\n" >&2; set -x;        
+       
          echo "Call 1->22" # Can take this line out later
          ploidy=2
          site_name=$chr
@@ -659,19 +695,23 @@ else
        fi
        ## End calling the autosomes
 
-       echo "############################################################################################"
-       echo "############################################################################################"
-       echo "####################     End of calling conditions         #################################"
-       echo "############################################################################################"
- 
+       set +x; echo -e "\n\n" >&2; 
+       echo "############################################################################################" >&2
+       echo "############################################################################################" >&2
+       echo "####################     End of calling conditions         #################################" >&2
+       echo "############################################################################################" >&2
+       echo -e "\n\n" >&2; set -x; 
 
         if [ $ped != "NA" -a $snvcaller == "GATK" ]
         then
-	    echo "##############################################################################"
-	    echo "##############################################################################"
-	    echo "##########      calculating phasebytransmission                    ###########"
-	    echo "##############################################################################"
-	    echo "##############################################################################"        
+        
+            set +x; echo -e "\n\n" >&2;         
+	    echo "##############################################################################" >&2
+	    echo "##############################################################################" >&2
+	    echo "##########      calculating phasebytransmission                    ###########" >&2
+	    echo "##############################################################################" >&2
+	    echo "##############################################################################" >&2        
+            echo -e "\n\n" >&2; set -x;
 	    echo `date`
 
             $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
@@ -702,11 +742,14 @@ else
 
         elif [ $snvcaller != "GATK" ]
         then
-	    echo "##############################################################################"
-	    echo "##############################################################################"
-	    echo "########## calculating variants by snvmix and then merging results ###########"
-	    echo "##############################################################################"
-	    echo "##############################################################################"
+        
+            set +x; echo -e "\n\n" >&2;          
+	    echo "##############################################################################" >&2
+	    echo "##############################################################################" >&2
+	    echo "########## calculating variants by snvmix and then merging results ###########" >&2
+	    echo "##############################################################################" >&2
+	    echo "##############################################################################" >&2
+            echo -e "\n\n" >&2; set -x;
 	    echo `date`
 
             pilefile=$outfile.pileup
@@ -808,11 +851,10 @@ else
 		exit 1;
             fi
         else
-	    echo "##############################################################################"
-	    echo "##############################################################################"
-	    echo "##########      Skipping PhaseByTransmission and SNVMix            ###########"
-	    echo "##############################################################################"
-	    echo "##############################################################################"
+
+            set +x; echo -e "\n\n#############   skipping phasebytransmission and snvmix  ###############\n\n" >&2; set -x;        
+
+
 	fi
 	
 

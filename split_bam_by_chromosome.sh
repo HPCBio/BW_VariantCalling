@@ -6,8 +6,6 @@ then
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 else
-    echo -e "\n\n############# BEGIN PROCEDURE TO SPLIT ALIGNED BAM BY CHROMOSOME ###############\n\n" >&2
-
     set -x
     echo `date`
     umask 0027
@@ -29,9 +27,10 @@ else
     RealignOutputLogs=${16}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+    set +x; echo -e "\n\n#############      cheching parameters  ###############\n\n" >&2; set -x;
+
     memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
     javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-
 
 
     if [ ! -d $outputdir ]
@@ -73,6 +72,11 @@ else
 	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	exit 1;
     fi
+
+
+    set +x; echo -e "\n\n#############     parameters  ok ###############\n\n" >&2; set -x;
+
+    set +x; echo -e "\n\n#############     next, split $infile by chr $chr ###############\n\n" >&2; set -x;
 
     cd $outputdir
     echo `date`
@@ -186,6 +190,9 @@ else
 	exit 1;
     fi
     echo `date`
+
+
+    set +x; echo -e "\n\n#############     next, sortsam ###############\n\n" >&2; set -x;
 
     $memprof $javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
 	INPUT=$tmpfile \

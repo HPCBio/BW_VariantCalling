@@ -87,7 +87,7 @@ else
         outputlogs=$outputdir/logs
 	set +x; echo -e "\n ### launching the pipeline configuration script ### \n"; set -x;
         qsub1=$outputlogs/qsub.CONFIGURE
-        echo "#PBS -V" > $qsub1
+
         echo "#PBS -A $pbsprj" >> $qsub1
         echo "#PBS -N CONFIGURE" >> $qsub1
         echo "#PBS -l epilogue=$epilogue" >> $qsub1

@@ -28,6 +28,14 @@ else
         qsubfile=${12}
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
         if [ ! -s $infile ]
         then
 	    MSG="$infile input bam file not found"
@@ -49,7 +57,10 @@ else
         temfile=${prefix}_${sufix}
         cd $outputdir
 	echo `date`
-        echo "sorting bam by readname..."
+	
+        set +x; echo -e "\n\n############# step 1: sorting bam by readname   ###############\n\n" >&2; set -x;
+	
+	
             $sortdir/novosort --namesort --threads $thr $infile > $temfile".name_sorted"
 
             exitcode=$?
@@ -89,6 +100,8 @@ else
                 exit $exitcode;
             fi
 
+            set +x; echo -e "\n\n############# step 2: extract names   ###############\n\n" >&2; set -x;
+	
 
             awk '{print $1}' $temfile".name_sorted.sam" > $temfile".name_sorted.sam.names_only"
             exitcode=$?
@@ -118,6 +131,8 @@ else
 		echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 		exit $exitcode;
             fi
+
+            set +x; echo -e "\n\n############# step 3: run  perl script findDifferencesInOutput.pl  ###############\n\n" >&2; set -x;
 
             $scriptdir/FindDifferencesInOutput.pl  $temfile".name_sorted.sam.names_only.counted.occur_only_twice" $temfile".name_sorted.sam"  $temfile".reads_not_twice" $temfile".preprocessed_no_header.sam"
             exitcode=$?

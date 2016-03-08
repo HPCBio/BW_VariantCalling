@@ -27,7 +27,14 @@ else
     qsubfile=${12}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-    #sanity check
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
     
     if [ ! -s $runfile ]
     then
@@ -99,8 +106,9 @@ else
     header=$( echo $RGparms  | tr ":" "\t" )
     rgheader=$( echo -n -e "@RG\t" )$( echo $header  | tr "=" ":" )
 
-    ## step 1: sort-merge and add RG tags all at once
-    ## novosort ingests bam files and outputs bam files as well
+    set +x; echo -e "\n\n############# step 1: sort-merge and add RG tags all at once ###############\n\n" >&2; set -x;
+
+
     cd $outputdir
     if [ $markduplicatestool == "PICARD" ]
     then
@@ -164,6 +172,8 @@ else
     #echo `date`
         
     ## step 3: marking and or removing duplicates        
+
+    set +x; echo -e "\n\n#############  step 3: marking and or removing duplicates ###############\n\n" >&2; set -x;
 
     if [ $markdup == "YES" -a $deldup == "NO" ]
     then

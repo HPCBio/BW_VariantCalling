@@ -37,8 +37,8 @@ else
         rgheader=$( echo -n -e "@RG\t" )$( echo $header  | tr "=" ":" )
 
 
+        set +x; echo -e "\n\n######################### step 1: align, mark duplicates, convert to bam - on the fly #################\n\n" >&2; set -x;
 
-########## step 1: align, mark duplicates, convert to bam - on the fly
         cd $outputdir
         $aligndir/bwa mem $parameters -R "${rgheader}" $ref $Rone | $samblasterdir/samblaster |  $samdir/samtools view -bS -> ${bamfile}.wdups
 
@@ -59,8 +59,8 @@ else
         fi
         echo `date`
 
-
-########## step 2: indexing merged bam file    
+        set +x; echo -e "\n\n######################### step 2: indexing merged bam file                           #################\n\n" >&2; set -x;
+    
         $samdir/samtools index ${bamfile}.wdups
         exitcode=$?
         if [ $exitcode -ne 0 ]

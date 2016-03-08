@@ -226,7 +226,6 @@ echo -e "\n\n###################################################################
                         #########################
 
 			qsub1=$TopLogsFolder/qsub.convertbam2newbam.$suffix
-			echo "#PBS -V" > $qsub1
 			echo "#PBS -A $pbsprj" >> $qsub1
 			echo "#PBS -N ${pipeid}_convertbam2newbam_${suffix}" >> $qsub1
 			echo "#pbs -l epilogue=$epilogue" >> $qsub1
@@ -263,7 +262,7 @@ echo -e "\n\n###################################################################
                         #########################
 
 			qsub1=$TopLogsFolder/qsub.convertbam2fq.$suffix
-			echo "#PBS -V" > $qsub1
+
 			echo "#PBS -A $pbsprj" >> $qsub1
 			echo "#PBS -N ${pipeid}_convertbam2fq_${suffix}" >> $qsub1
 			echo "#pbs -l epilogue=$epilogue" >> $qsub1
@@ -312,7 +311,7 @@ echo -e "\n\n###################################################################
                 ###############################
 
 		qsub2=$TopLogsFolder/qsub.updateconfig_wnewfq
-		echo "#PBS -V" > $qsub2
+
 		echo "#PBS -A $pbsprj" >> $qsub2
 		echo "#PBS -N ${pipeid}_updateconfig_wnewfq" >> $qsub2
 		echo "#pbs -l epilogue=$epilogue" >> $qsub2
@@ -343,7 +342,7 @@ echo -e "\n\n###################################################################
                    ###############################
 
 		   qsub3=$TopLogsFolder/qsub.updateconfig_wnewbam
-		   echo "#PBS -V" > $qsub3
+
 		   echo "#PBS -A $pbsprj" >> $qsub3
 		   echo "#PBS -N ${pipeid}_updateconfig_wnewbam" >> $qsub3
 		   echo "#pbs -l epilogue=$epilogue" >> $qsub3
@@ -386,7 +385,7 @@ echo -e "\n\n###################################################################
         then
             set +x; echo -e "\n# input is BAM, convert to fastq\n" >&2;  set -x;
 	    qsub1=$TopLogsFolder/qsub.main.alnFQ.afterbam2fastq
-	    echo "#PBS -V" > $qsub1
+
 	    echo "#PBS -A $pbsprj" >> $qsub1
 	    echo "#PBS -N ${pipeid}_alnFQ_afterbam2fastq" >> $qsub1
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
@@ -417,7 +416,7 @@ echo -e "\n\n###################################################################
             ####################################
 
             qsub2=$TopLogsFolder/qsub.alignbams
-            echo "#PBS -V" > $qsub2
+
             echo "#PBS -A $pbsprj" >> $qsub2
             echo "#PBS -N ${pipeid}_alignbam" >> $qsub2
             echo "#PBS -l epilogue=$epilogue" >> $qsub2
@@ -440,7 +439,7 @@ echo -e "\n\n###################################################################
         then
             set +x; echo -e "\n# aligning fastq files directly\n" >&2;  set -x;
             qsub3=$TopLogsFolder/qsub.alignfastq
-            echo "#PBS -V" > $qsub3
+
             echo "#PBS -A $pbsprj" >> $qsub3
             echo "#PBS -N ${pipeid}_alignfastq" >> $qsub3
             echo "#PBS -l epilogue=$epilogue" >> $qsub3

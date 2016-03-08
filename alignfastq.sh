@@ -22,22 +22,19 @@ fi
         qsubfile=$5
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
+        set +x; echo -e "\n\n" >&2; 
+        echo "####################################################################################################" >&2
+        echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+        echo "##################################### AND SANITY CHECK      ########################################" >&2
+        echo "####################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         if [ !  -s $runfile ]
         then
            MSG="$runfile configuration file not found."
            echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
            exit 1;
         fi
-
-
-set +x; echo -e "\n\n" >&2; 
-# wrapping comments in echoes, so that the output logs would be easier to read: they will have more structure
-echo "####################################################################################################" >&2
-echo "##################################### PARSING RUN INFO FILE ########################################" >&2
-echo "##################################### AND SANITY CHECK      ########################################" >&2
-echo "####################################################################################################" >&2
-echo -e "\n\n" >&2; set -x;
 
 
         reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
@@ -68,7 +65,6 @@ echo -e "\n\n" >&2; set -x;
         markduplicatestool=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
         profiling=$( cat $runfile | grep -w PROFILING | cut -d '=' -f2 )
-################## MUST PUT IN A CHECK FOR CORRECT SETTING ON THE PROFILING VARIABLE
         profiler=$( cat $runfile | grep -w PROFILER | cut -d '=' -f2 )
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
@@ -106,7 +102,7 @@ echo -e "\n\n" >&2; set -x;
         fi
 
 
-        set +x; echo -e "\n\n\n# check that sampledir exists\n" >&2; set -x
+        set +x; echo -e "\n\n\n############# check that sampledir exists\n" >&2; set -x
         if [ ! -d $sampledir ]
         then
            MSG="SAMPLEDIR=$sampledir directory not found"
@@ -115,7 +111,7 @@ echo -e "\n\n" >&2; set -x;
         fi
 
 
-        set +x; echo -e "\n\n\n# check number of samples\n" >&2; set -x
+        set +x; echo -e "\n\n\n############# check number of samples\n" >&2; set -x
         numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
         if [ $numsamples -gt 1 -a $multisample == "YES" ]
         then
@@ -128,7 +124,7 @@ echo -e "\n\n" >&2; set -x;
         fi
 
 
-        set +x; echo -e "\n\n\n# check whether fastq will be chunked\n" >&2; set -x
+        set +x; echo -e "\n\n\n############# check whether fastq will be chunked\n" >&2; set -x
         if [ $chunkfastq != "YES" -a $chunkfastq != "NO" ]
         then
             MSG="CHUNKFASTQ variable must be binary YES/NO; incorrect value encountered"
@@ -305,12 +301,11 @@ echo -e "\n\n" >&2; set -x;
        fi
 
 
-set +x; echo -e "\n\n">&2
-echo "############################################################################################################" >&2
-echo "###############################  CREATE  DIRECTORY STRUCTURE  AT TOP LEVEL ONLY  ###########################" >&2
-echo "############################################################################################################" >&2
-echo -e "\n\n" >&2; set -x;
-
+       set +x; echo -e "\n\n">&2
+       echo "############################################################################################################" >&2
+       echo "###############################  CREATE  DIRECTORY STRUCTURE. TOP LEVEL ONLY     ###########################" >&2
+       echo "############################################################################################################" >&2
+       echo -e "\n\n" >&2; set -x;
 
 
         TopOutputLogs=$outputdir/logs
@@ -385,13 +380,11 @@ echo -e "\n\n" >&2; set -x;
 
 
 
-
-
-set +x; echo -e "\n\n">&2
-echo "############################################################################################################" >&2
-echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
-echo "############################################################################################################" >&2
-echo -e "\n\n" >&2; set -x;
+        set +x; echo -e "\n\n">&2
+        echo "############################################################################################################" >&2
+        echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
+        echo "############################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
         # this variable is a hack to decide whether to run align and markdups together or in separate jobs
         # perhaps a better way is with an additional parameter in the runfile
@@ -424,11 +417,11 @@ echo -e "\n\n" >&2; set -x;
 
         while read SampleLine
         do
-          set +x; echo -e "\n\n processing next sample \n" >&2; set -x;
+          set +x; echo -e "\n\n############ processing next sample \n" >&2; set -x;
           # this will evaluate the length of string
           if [ `expr ${#SampleLine}` -lt 1 ]
           then
-             set +x; echo -e "\n\n skipping empty line \n" >&2; set -x;
+             set +x; echo -e "\n\n############ skipping empty line \n" >&2; set -x;
           else
 
             
@@ -597,7 +590,7 @@ echo -e "\n\n" >&2; set -x;
             if [ $chunkfastq == "YES" ]
             then
 
-               ## splitting files into chunks before aligning;
+               set +x; echo -e "\n ######## splitting files into chunks before aligning \n" >&2; set -x;
                ## remember that one fastq read is made up of four lines
                NumChunks=`expr $nodes "-" 1`
                if [ $NumChunks -lt 1 ]
@@ -643,6 +636,8 @@ echo -e "\n\n" >&2; set -x;
 	   	   fi
                fi
             else
+
+               set +x; echo -e "\n ######## NO splitting of files into chunks before aligning \n" >&2; set -x;            
                NumChunks=0
                set +x; echo -e "\n\n" >&2; 
                echo "# copying original fastq into a single chunk takes too long for whole genome" >&2;
@@ -668,18 +663,18 @@ echo -e "\n\n" >&2; set -x;
 	    echo -e "#################################### SELECTING CASE --BASED ON ALIGNER       ########################################" >&2
             echo -e "\n\n" >&2; set -x
 
-set +x; echo -e "\n\n" >&2;       
-echo -e "############################################################################################################"
-echo -e "#####################################                               ########################################"
-echo -e "##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ########################################"
-echo -e "################## IT WILL ITERATE AT LEAST ONCE EVEN IF NO CHUNKING WAS PERFORMED  #########################"
-echo -e "############################################################################################################"
-echo -e "\n\n" >&2; set -x;  
+            set +x; echo -e "\n\n" >&2;       
+            echo -e "#####################################################################################################################" >&2
+            echo -e "#####################################                               #################################################" >&2
+            echo -e "##################################### ALIGNMENT: LOOP2 OVER CHUNKS   ################################################" >&2
+            echo -e "################## IT WILL ITERATE AT LEAST ONCE EVEN IF NO CHUNKING WAS PERFORMED  #################################" >&2
+            echo -e "#####################################################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;  
 
             allfiles=""
             for i in $(seq 0 $NumChunks)
             do
-                set +x; echo -e "\n # step 1: grab  chunk $i " >&2; set -x
+                set +x; echo -e "\n ######### step 1: grab  chunk $i from each read file" >&2; set -x
 		echo `date`
                 if (( $i < 10 ))
                 then
@@ -711,7 +706,7 @@ echo -e "\n\n" >&2; set -x;
                     fi
                 fi
                 
-                set +x; echo -e "\n # step 2: generate the alignment cmd depending on the aligner " >&2; set -x
+                set +x; echo -e "\n ######### step 2: generate the alignment cmd depending on the aligner " >&2; set -x
                 
                 if [ $aligner == "NOVOALIGN"  ]
 		then
@@ -727,7 +722,6 @@ echo -e "\n\n" >&2; set -x;
                 then
                     set +x; echo -e "\n############# bwa is used as aligner. input file format is in fastq. this segment needs to be rewritten ###############\n" >&2; set -x
                     qsub_bwar1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix
-                    echo "#PBS -V" > $qsub_bwar1
                     echo "#PBS -N ${pipeid}_bwar1_${SampleName}_$OutputFileSuffix" >> $qsub_bwar1
 		    echo "#PBS -o $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwar1
 		    echo "#PBS -e $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwar1
@@ -748,7 +742,6 @@ echo -e "\n\n" >&2; set -x;
                     then
                         set +x; echo -e "\n########## bwa aligner. paired-end reads #################\n" >&2; set -x
 			qsub_bwar2=$AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix
-			echo "#PBS -V" > $qsub_bwar2
 			echo "#PBS -N ${pipeid}_bwar2_${SampleName}_$OutputFileSuffix" >> $qsub_bwar2
 			echo "#PBS -o $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwar2
 			echo "#PBS -e $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwar2
@@ -766,7 +759,6 @@ echo -e "\n\n" >&2; set -x;
 			echo $jobr2 >> $AlignOutputLogs/ALIGNED_$SampleName
 
 			qsub_bwasampe=$AlignOutputLogs/qsub.bwasampe.$SampleName.node$OutputFileSuffix
-			echo "#PBS -V" > $qsub_bwasampe
 			echo "#PBS -N ${pipeid}_bwasampe_${SampleName}_$OutputFileSuffix" >> $qsub_bwasampe
 			echo "#PBS -o $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwasampe
 			echo "#PBS -e $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwasampe
@@ -786,7 +778,6 @@ echo -e "\n\n" >&2; set -x;
                     else
                         set +x; echo -e "\n############# bwa aligner. single read #################\n" >&2; set -x
 			qsub_bwasamse=$AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix
-			echo "#PBS -V" > $qsub_bwasamse
 			echo "#PBS -N ${pipeid}_bwasamse_${SampleName}_$OutputFileSuffix" >> $qsub_bwasamse
 			echo "#PBS -o $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwasamse
 			echo "#PBS -e $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwasamse
@@ -821,17 +812,17 @@ echo -e "\n\n" >&2; set -x;
                         fi
                         if [ $chunkfastq == "NO" ]
                         then
-                             echo -e  "#######                                   chunkfastq == NO                      ###############"
-                             echo -e  "#######  we need to see which alignment case applies depending on value of FLAG ###############"
+                             set +x; echo -e  "#######                                   chunkfastq == NO                      ###############\n" >&2
+                             echo -e  "#######  we need to see which alignment case applies depending on value of FLAG ###############\n" >&2; set -x
                              
                              if [ $SpecialCase != "Split2Jobs" ]
                              then
-                                  echo -e "################# CASE is NOT SPLIT, alignment and markduplicates in one job ############"
+                                  set +x; echo -e "################# CASE is NOT SPLIT, alignment and markduplicates in one job ############\n" >&2; set -x
                                   echo "nohup $scriptdir/bwamem_pe_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
                              else
-                                  echo -e "################# CASE is SPLIT, alignment in one job and markduplicates in another job ##"
+                                  set +x; echo -e "################# CASE is SPLIT, alignment in one job and markduplicates in another job ##\n" >&2; set -x
                                   echo "nohup $scriptdir/bwamem_pe_qctest.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $runfile $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfile
                                   jobfilename=$( basename $jobfile )
                                   echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
@@ -845,7 +836,6 @@ echo -e "\n\n" >&2; set -x;
                      else
                         set +x; echo -e "\n################ bwa mem aligner. single-end reads ################\n" >&2; set -x
                         qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix
-                        echo "#PBS -V" > $qsub_bwamem
                         echo "#PBS -N ${pipeid}_bwamem_${SampleName}_$OutputFileSuffix" >> $qsub_bwamem
                         echo "#PBS -o $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwamem
                         echo "#PBS -e $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwamem
@@ -883,22 +873,23 @@ echo -e "\n\n" >&2; set -x;
 		echo `date`
             done # end loop over chunks of the current fastq
 
-set +x; echo -e "\n\n\n" >&2;
-echo -e "#############################################################################################################"
-echo -e "#############                   end loop2 over chunks of the current fastq                     ##############"
-echo -e "#############################################################################################################"
-echo -e "#############               WE ARE STILL INSIDE THE LOOP OVER INPUT FASTQ!!!                   ##############"
-echo -e "#############################################################################################################"
-echo -e "\n\n\n" >&2; set -x
+	set +x; echo -e "\n\n\n" >&2;
+	echo -e "####################################################################################################################" >&2
+	echo -e "#############                   end loop2 over chunks of the current fastq                     #####################" >&2
+	echo -e "####################################################################################################################" >&2
+	echo -e "#############               WE ARE STILL INSIDE THE LOOP OVER INPUT FASTQ!!!                   #####################" >&2
+	echo -e "####################################################################################################################" >&2
+	echo -e "\n\n\n" >&2; set -x
 
-set +x; echo -e "\n\n\n" >&2;
-echo -e "##########################################################################################################################################" >&2
-echo -e "###########################                                                                            ###################################" >&2
-echo -e "###########################   FORM POST-ALIGNMENT QSUBS: MERGING, SORTING, MARKING DUPLICATES          ###################################" >&2
-echo -e "###########################   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ###################################" >&2
-echo -e "###########################                                                                            ###################################" >&2
-echo -e "##########################################################################################################################################" >&2
-echo -e "\n\n\n" >&2; set -x
+
+	set +x; echo -e "\n\n\n" >&2;
+	echo -e "####################################################################################################################" >&2
+	echo -e "############                                                                            ############################" >&2
+	echo -e "############   FORM POST-ALIGNMENT QSUBS: MERGING, SORTING, MARKING DUPLICATES          ############################" >&2
+	echo -e "############   SKIP THIS BLOCK IF READS WHERE NOT CHUNKED                               ############################" >&2
+	echo -e "############                                                                            ############################" >&2
+	echo -e "####################################################################################################################" >&2
+	echo -e "\n\n\n" >&2; set -x
 
             cat $AlignOutputLogs/ALIGNED_$SampleName >> $TopOutputLogs/pbs.ALIGNED
 
@@ -921,7 +912,6 @@ echo -e "\n\n\n" >&2; set -x
                else
                    set +x; echo -e "\n # merging aligned chunks with picard \n" >&2; set -x 
 		   qsub_sortmerge=$AlignOutputLogs/qsub.sortmerge.picard.$SampleName
-		   echo "#PBS -V" > $qsub_sortmerge
 		   echo "#PBS -A $pbsprj" >> $qsub_sortmerge
 		   echo "#PBS -N ${pipeid}_sortmerge_picard_$SampleName" >> $qsub_sortmerge
 		   echo "#PBS -l walltime=$pbscpu" >> $qsub_sortmerge
@@ -944,21 +934,21 @@ echo -e "\n\n\n" >&2; set -x
           (( inputfastqcounter++ )) # was not initialized at beginning of loop, so starts at zero
 	done <  $TheInputFile # end loop over input fastq
 
-set +x; echo -e "\n\n\n" >&2;
-echo "######################################################################################################################" >&2
-echo "####################################         end loop1 over input fastq              #################################" >&2
-echo "####################################   ALL QSUB JOBS SHOULD HAVE BEEN FORMED BY NOW  #################################" >&2
-echo "######################################################################################################################" >&2
-echo -e "\n\n" >&2; set -x
+	set +x; echo -e "\n\n\n" >&2;
+	echo "######################################################################################################################" >&2
+	echo "####################################         end loop1 over input fastq              #################################" >&2
+	echo "####################################   ALL QSUB JOBS SHOULD HAVE BEEN FORMED BY NOW  #################################" >&2
+	echo "######################################################################################################################" >&2
+	echo -e "\n\n" >&2; set -x
 
 
-set +x; echo -e "\n\n\n" >&2
-echo "#####################################################################################################################" >&2
-echo "#####################################                                        ########################################" >&2
-echo "#####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################" >&2
-echo "#####################################                                        ########################################" >&2
-echo "#####################################################################################################################" >&2
-echo -e "\n\n" >&2; set -x
+	set +x; echo -e "\n\n\n" >&2
+	echo "#####################################################################################################################" >&2
+	echo "#####################################                                        ########################################" >&2
+	echo "#####################################  SCHEDULE BWA-MEM QSUBS CREATED ABOVE  ########################################" >&2
+	echo "#####################################                                        ########################################" >&2
+	echo "#####################################################################################################################" >&2
+	echo -e "\n\n" >&2; set -x
 
 
 
@@ -984,7 +974,6 @@ echo -e "\n\n" >&2; set -x
               
               qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
               echo "#!/bin/bash" > $qsubAlignLauncher
-              echo "#PBS -V" >> $qsubAlignLauncher
               echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
               echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
               echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
@@ -1012,7 +1001,6 @@ echo -e "\n\n" >&2; set -x
                  set +x; echo -e "\n # run_method is LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x
                  qsubMarkdupLauncher=$AlignOutputLogs/qsub.Markdup.Anisimov
                  echo "#!/bin/bash" > $qsubMarkdupLauncher
-                 echo "#PBS -V" >> $qsubMarkdupLauncher
                  echo "#PBS -A $pbsprj" >> $qsubMarkdupLauncher
                  echo "#PBS -N ${pipeid}_Markdup_Anisimov" >> $qsubMarkdupLauncher
                  echo "#PBS -l walltime=$pbscpu" >> $qsubMarkdupLauncher
@@ -1047,7 +1035,6 @@ echo -e "\n\n" >&2; set -x
                   
                   qsubFastqcLauncher=$FastqcOutputLogs/qsub.Fastqc.Anisimov
                   echo "#!/bin/bash" > $qsubFastqcLauncher
-                  echo "#PBS -V" >> $qsubFastqcLauncher
                   echo "#PBS -A $pbsprj" >> $qsubFastqcLauncher
                   echo "#PBS -N ${pipeid}_Fastqc_Anisimov" >> $qsubFastqcLauncher
                   echo "#PBS -l walltime=$pbscpu" >> $qsubFastqcLauncher
@@ -1146,13 +1133,13 @@ echo -e "\n\n" >&2; set -x
 
 
 
-set +x; echo -e "\n\n\n" >&2
-echo "#####################################################################################################################################" >&2;
-echo "#####################################                                                        ########################################" >&2;
-echo "#####################################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CREATED ABOVE  ########################################" >&2;
-echo "#####################################                                                        ########################################" >&2;
-echo "#####################################################################################################################################" >&2;
-echo -e "\n\n" >&2; set -x
+	set +x; echo -e "\n\n\n" >&2
+	echo "#####################################################################################################################" >&2;
+	echo "#####################                                                        ########################################" >&2;
+	echo "#####################  SCHEDULE NOVOALIGN and MERGENOVO QSUBS CREATED ABOVE  ########################################" >&2;
+	echo "#####################                                                        ########################################" >&2;
+	echo "#####################################################################################################################" >&2;
+	echo -e "\n\n" >&2; set -x
 
 
         if [ $chunkfastq == "YES" -a $aligner == "NOVOALIGN" -a $sortool == "NOVOSORT" ]
@@ -1427,17 +1414,12 @@ echo -e "\n\n" >&2; set -x
         fi
 
 
-
-
-
-
-
-set +x; echo -e "\n\n\n" >&2
-echo "#####################################################################################################################################" >&2
-echo "###############################     WRAP UP ALIGNMENT BLOCK                                  ########################################" >&2
-echo "###############################     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE  ########################################" >&2
-echo "#####################################################################################################################################" >&2
-echo -e "\n\n" >&2; set -x;
+	set +x; echo -e "\n\n\n" >&2
+	echo "#####################################################################################################################" >&2
+	echo "###############     WRAP UP ALIGNMENT BLOCK                                  ########################################" >&2
+	echo "###############     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DONE  ########################################" >&2
+	echo "#####################################################################################################################" >&2
+	echo -e "\n\n" >&2; set -x;
 
         if [ $SpecialCase == "Split2Jobs" ]
         then
@@ -1467,7 +1449,6 @@ echo -e "\n\n" >&2; set -x;
             then 
 		set +x; echo -e "\n ###### Removing temporary files  ######\n" >&2; set -x;
 		qsub_cleanup=$TopOutputLogs/qsub.cleanup.align
-		echo "#PBS -V" > $qsub_cleanup
 		echo "#PBS -A $pbsprj" >> $qsub_cleanup
 		echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub_cleanup
 		echo "#PBS -l walltime=$pbscpu" >> $qsub_cleanup
@@ -1487,7 +1468,6 @@ echo -e "\n\n" >&2; set -x;
             `sleep 30s`
 	    set +x; echo -e "\n ###### Generating Summary report   ######\n" >&2; set -x;
 	    qsub_summary=$TopOutputLogs/qsub.summary.aln.allok
-	    echo "#PBS -V" > $qsub_summary
 	    echo "#PBS -A $pbsprj" >> $qsub_summary
 	    echo "#PBS -N ${pipeid}_summaryok" >> $qsub_summary
 	    echo "#PBS -l walltime=01:00:00" >> $qsub_summary # 1 hour should be more than enough
@@ -1511,7 +1491,6 @@ echo -e "\n\n" >&2; set -x;
             # if at least one job failed, the summary script will be executed anyway with the following bock
 
             qsub_summaryany=$TopOutputLogs/qsub.summary.aln.afterany
-	    echo "#PBS -V" > $qsub_summaryany
 	    echo "#PBS -A $pbsprj" >> $qsub_summaryany
 	    echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub_summaryany
 	    echo "#PBS -l walltime=01:00:00" >> $qsub_summaryany # 1 hour should be more than enough
@@ -1533,7 +1512,6 @@ echo -e "\n\n" >&2; set -x;
 	then
             set +x; echo -e "\n ###### ANALYSIS == $analysis. Pipeline execution continues with realignment   ###### \n" >&2; set -x;
 	    qsub_realign=$TopOutputLogs/qsub.start_realrecal_block
-	    echo "#PBS -V" > $qsub_realign
 	    echo "#PBS -A $pbsprj" >> $qsub_realign
 	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK" >> $qsub_realign
 	    echo "#PBS -l walltime=01:00:00" >> $qsub_realign # 1 hour should be more than enough

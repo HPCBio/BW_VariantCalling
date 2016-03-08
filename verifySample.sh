@@ -22,9 +22,13 @@ fi
     qsubfile=$9
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-    echo -e "##########################################################################"
-    echo -e "################  parse runfile and sanity check #########################"
-    echo -e "##########################################################################"
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
     memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
     samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
@@ -73,6 +77,9 @@ fi
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
+
+    set +x; echo -e "\n\n#############    resetting files and logs  ###############\n\n" >&2; set -x;
+    
     goodSamples=$rootdir/VERIFIED_ok_SAMPLES.list
     badSamples=$rootdir/VERIFIED_notok_SAMPLES.list
     mergedfile=${sample}.realignedSample.calmd.bam
@@ -101,11 +108,9 @@ fi
 	#exit $exitcode;
     #fi
 
-    echo -e "##########################################################################"
-    echo -e "##########################################################################"
-    echo -e "#############  merging all chr files for sample=$sample  #################"
-    echo -e "##########################################################################"
-    echo -e "##########################################################################"
+
+    set +x; echo -e "\n\n#############   merging all chr for calmd.bam corresponding to sample=$sample  ###############\n\n" >&2; set -x;
+    
     `echo date`
 
     cd $RealignOutput
@@ -139,7 +144,7 @@ fi
         fi
     fi
 
-    echo -e "making sure  $mergedfile was created"
+    set +x; echo -e "\n\n#############  checking that file was created  ###############\n\n" >&2; set -x;
 
     if [ ! -s $mergedfile ]
     then
@@ -149,7 +154,8 @@ fi
 	    exit $exitcode;
     fi
 
-    echo -e "generating an index file for   $mergedfile because verifyBamID needs it"
+
+    set +x; echo -e "generating an index file for   $mergedfile because verifyBamID needs it" >&2; set -x;
 
 
     #$samdir/samtools index $mergedfile 
@@ -162,11 +168,14 @@ fi
 	    exit $exitcode;
     fi
 
-    echo -e "##########################################################################"
-    echo -e "##########################################################################"
-    echo -e "#############  populating delivery folder                #################"
-    echo -e "#############  with improved bam folr sample=$sample     #################"
-    echo -e "##########################################################################"
+    set +x; echo -e "\n\n" >&2; 
+    echo -e "##########################################################################" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "#############  populating delivery folder                #################" >&2
+    echo -e "#############  with improved bam folr sample=$sample     #################" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "\n\n" >&2; set -x;
+
     `echo date`
     cp $mergedfile $outputfile
     cp $mergedfile.bai $outputfile.bai
@@ -178,12 +187,14 @@ fi
 	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
     fi
 
-    echo -e "##########################################################################"
-    echo -e "##########################################################################"
-    echo -e "#############  running verifyBamID for sample=$sample    #################"
-    echo -e "##########################################################################"
-    echo -e "##########################################################################"
-
+    set +x; echo -e "\n\n" >&2; 
+    echo -e "##########################################################################" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "#############  running verifyBamID for sample=$sample    #################" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "\n\n" >&2; set -x;
+    
     `echo date`
 
 
@@ -205,34 +216,45 @@ fi
 	exit 1;
     fi
 
-    echo -e "##########################################################################"
-    echo -e "#############  filtering for sample=$sample              #################"
-    echo -e "               parsing verifybam output file"
-    echo -e "##########################################################################"
-   
+    set +x; echo -e "\n\n" >&2; 
+    echo -e "##########################################################################" >&2
+    echo -e "#############  filtering for sample=$sample              #################" >&2
+    echo -e "               parsing verifybam output file" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "\n\n" >&2; set -x;
+    
+    
     verifyfile=`find ./ -name "*.selfSM"`
 
     freemix=$( cat $verifyfile | sed '2q;d' | cut -f 7 ) 
 
-    echo -e "##########################################################################"
-    echo -e "checking that we actually grabbed something that is a number"
-    echo -e "using a weird trick to do the comparison in bash between noninteger variables"
-    echo -e "##########################################################################"
-    
+    set +x; echo -e "\n\n" >&2; 
+    echo -e "##########################################################################" >&2
+    echo -e "checking that we actually grabbed something that is a number" >&2
+    echo -e "using a weird trick to do the comparison in bash between noninteger variables" >&2
+    echo -e "##########################################################################" >&2
+    echo -e "\n\n" >&2; set -x;    
  
     if [ $(echo "$freemix < $freemix_cutoff"|bc) -eq 1 ]
     then
-	echo -e "##########################################################################"
-        echo -e "sample-$sample passed verifyBamID filter\nadd to list of good-samples"
-	echo -e "##########################################################################"
+        set +x; echo -e "\n\n" >&2;    
+	echo -e "##########################################################################" >&2
+        echo -e "sample-$sample PASSED verifyBamID filter\nadd to list of good-samples" >&2
+	echo -e "##########################################################################" >&2
+        echo -e "\n\n" >&2; set -x;	
+	
         filterflag="PASSED"	
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $goodSamples
         echo -e "$detail" >> $qc_result
     else
-	echo -e "############################################################################"
-        echo -e "sample-$sample DID NOT passed verifyBamID filter\nadd to list of bad-samples"
-	echo -e "############################################################################"
+    
+        set +x; echo -e "\n\n" >&2;  
+	echo -e "##########################################################################" >&2
+        echo -e "sample-$sample FAILED verifyBamID filter\nadd to list of bad-samples" >&2
+	echo -e "##########################################################################" >&2
+        echo -e "\n\n" >&2; set -x;	
+
         filterflag="FAILED"
         detail=$( echo -e "$sample\t$filterflag\tfreemix_value=$freemix\tfreemix_cutoff=$freemix_cutoff" )
         echo -e "$detail" >> $badSamples
@@ -242,18 +264,24 @@ fi
 
     if [ $filterflag == "FAILED" ]
     then
-	echo -e "##########################################################################"
-	echo -e "#############  $sample FAILED the verifyBamId filter     #################"
-	echo -e "#############  analysis is STOPPED now                  #################"
-	echo -e "##########################################################################"
+
+        set +x; echo -e "\n\n" >&2;  
+	echo -e "##########################################################################" >&2
+        echo -e "############# $sample FAILED the verifyBamId filter" >&2
+	echo -e "##########################################################################" >&2
+        echo -e "\n\n" >&2; set -x;	
+        
+
 	MSG="$sample DID NOT PASS the VerifyBamID filter. Stopping analysis now"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	#exit 1;
     else
-	echo -e "##########################################################################"
-	echo -e "#############  $sample PASSED the verifyBamId filter     #################"
-	echo -e "#############  analysis continues with vcallgatk.sh      #################"
-	echo -e "##########################################################################"
+        set +x; echo -e "\n\n" >&2;  
+	echo -e "##########################################################################" >&2
+        echo -e "############# $sample PASSED the verifyBamId filter" >&2
+	echo -e "##########################################################################" >&2
+        echo -e "\n\n" >&2; set -x;	
+        
         exit 0;
     fi

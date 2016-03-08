@@ -31,6 +31,7 @@ else
 	    exit 1;
         fi
 
+        set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
 
         refdir=$( cat $run_info | grep -w '^REFGENOMEDIR' | cut -d '=' -f2)
 	refgen=$( cat $run_info | grep -w '^REFGENOME' | cut -d '=' -f2)
@@ -147,6 +148,8 @@ else
 	done
 	echo `date`
 
+        set +x; echo -e "\n\n############# extract read for excluded chromosomes ###############\n\n" >&2; set -x;
+
 	## extract read for excluded chromosomes
 	input=""
         cd $output
@@ -184,7 +187,8 @@ else
 	done
         echo `date`
 
-	### extract unmapped reads
+        set +x; echo -e "\n\n############ extract unmapped reads ###############\n\n" >&2; set -x;
+
 	$samtools/samtools view -b -f 12 $bam > $bam.unmapped.bam
         exitcode=$?
         if [ $exitcode -ne 0 ]
@@ -237,8 +241,10 @@ else
 	    #echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
             exit 1;
         fi
-        echo `date`        
-        ## moving temporary files to extradir and results to delivery folder
+        echo `date`  
+        
+        set +x; echo -e "\n\n########### moving temporary files to extradir and results to delivery folder#######\n\n" >&2; set -x;        
+        
 
         mv $bam.unmapped* $extradir/
         mv $bam.chr* $extradir/

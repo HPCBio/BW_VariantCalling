@@ -23,13 +23,16 @@ else
     qsubfile=${10}
     LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
-    #sanity check
+
+
     if [ ! -s $runfile ]
     then
        MSG="$runfile configuration file not found"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
        exit 1;
     fi
+
+    set +x; echo -e "\n\n#############      parameter checking ###############\n\n" >&2; set -x;
 
     sample=`basename $outputdir .bam`
     picardir=$( cat $runfile | grep -w PICARDIR | cut -d "=" -f2 )
@@ -90,6 +93,7 @@ else
         fi
     fi
 
+
     cd $outputdir
 
     if [ ! -s $inbamfile ]
@@ -99,9 +103,8 @@ else
        exit 1;
     fi
 
-    #########################  
-    # step 1: reversam (optional, then addreadgroup
-    #########################
+    set +x; echo -e "\n\n#############    params are ok                                 ###############\n\n" >&2; set -x;
+
 
     bamfile=`basename $inbamfile`
     tmpfile=temp.$bamfile
@@ -109,6 +112,9 @@ else
 
     if [ $revertsam == "1" ]
     then
+    
+         set +x; echo -e "\n\n#############    step 1: reversam (optional)                   ###############\n\n" >&2; set -x;
+  
         echo "revertsam then addreadgroup..."
 	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/RevertSam.jar \
         COMPRESSION_LEVEL=0 \
@@ -132,6 +138,9 @@ else
 	    exit 1;
 	fi    
 
+        set +x; echo -e "\n\n#############    step 2: addreadgroup               ###############\n\n" >&2; set -x;
+
+
 	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	    INPUT=$tmpfilerevertsam \
 	    OUTPUT=$tmpfile \
@@ -151,7 +160,11 @@ else
 	echo `date`		
 
     else
-        echo "just addreadgroup"
+        set +x; echo -e "\n\n#############    step 1: reversam (skipped)        ###############\n\n" >&2; set -x;
+    
+        set +x; echo -e "\n\n#############    step 2: addreadgroup              ###############\n\n" >&2; set -x;
+
+
 	$javadir/java -Xmx1024m -Xms1024m -jar $picardir/AddOrReplaceReadGroups.jar \
 	    INPUT=$inbamfile \
 	    OUTPUT=$tmpfile \
@@ -178,9 +191,7 @@ else
     fi    
     echo `date`
 
-    #########################  
-    # step : sortsam
-    #########################
+    set +x; echo -e "\n\n#############    step 3: sortsam                 ###############\n\n" >&2; set -x;
 
     $javadir/java -Xmx1024m -Xms1024m -jar $picardir/SortSam.jar \
 	INPUT=$tmpfile \
@@ -214,12 +225,14 @@ else
 
     echo `date`
         
-    #########################  
-    # step 3: marking and or removing duplicates
-    #########################
+    set +x; echo -e "\n\n#############    step 4: mardups  step               ###############\n\n" >&2; set -x;
+
 
     if [ $markdup == "YES" -a $deldup != "TRUE" ]
     then
+
+        set +x; echo -e "\n\n#############    step 4: mark but keep   duplicates       ###############\n\n" >&2; set -x;
+
         echo "marking duplicates in sorted bam file"
         $javadir/java -Xmx1024m -Xms1024m -jar $picardir/MarkDuplicates.jar \
 	    INPUT=$sortedplain \
@@ -250,7 +263,8 @@ else
 	$samdir/samtools flagstat $outfilewdups > $outfilewdups.flagstat
 	$samdir/samtools view -H $outfilewdups > $outfilewdups.header
     else
-        echo "remove duplicates or nothing to do"
+        set +x; echo -e "\n\n#############    step 4: mark and remove   duplicates       ###############\n\n" >&2; set -x;
+
 	if [ $deldup == "TRUE" ]
 	then
             echo "removing marked duplicates in sorted bam file"

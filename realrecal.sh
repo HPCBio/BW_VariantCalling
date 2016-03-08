@@ -40,6 +40,14 @@ else
 	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
 	    exit 1;
         fi
+
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
         
         javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
         threads=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
@@ -162,10 +170,13 @@ else
         cd $realrecaldir
 
         infile=`basename $inputfile`
-        echo "#################################################################################"
-	echo "################   STEP1: extract chromosome from aligned bam ###################"
-        echo "#################################################################################"
 
+        set +x; echo -e "\n\n" >&2;
+        echo "#################################################################################" >&2
+        echo "################  STEP1: extract chromosome from aligned bam  ###################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         cd $realrecaldir
 	$samdir/samtools view -bu -@ $thr -h $inputfile $chr > presorted_wrg.${chr}.$infile  
 	#$sambambadir/sambamba view -f bam -h -t $thr $inputfile $chr > presorted_wrg.${chr}.$infile  
@@ -204,13 +215,11 @@ else
 	$samdir/samtools view -H  sorted_wrg.${chr}.$infile > sorted_wrg.${chr}.${infile}.header  
 	echo `date`
 
-        echo "#################################################################################"
-        echo "        split by chromosome was generated filename=sorted_wrg.$chr.$infile"
-        echo "#################################################################################"
-
-        echo "#################################################################################"
-	echo "##############################   STEP2: realign              ####################"
-        echo "#################################################################################"
+        set +x; echo -e "\n\n" >&2;
+        echo "#################################################################################" >&2
+        echo "################  STEP2: realign                              ###################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 		
         $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 	    -R $refdir/$ref \
@@ -262,15 +271,21 @@ else
             exit 1;
         fi
 
-        echo "#################################################################################"
-	echo "##############################   STEP3: recalibration       #####################"
-        echo "#################################################################################"
+        set +x; echo -e "\n\n" >&2;
+        echo "#################################################################################" >&2
+        echo "################  STEP3: recalibration                        ###################" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+
 
         if [ "$recalibrator" == "BQSR" ]
         then
-            echo "#################################################################################"
-	    echo "                            recalibrator == BQSR"
-            echo "#################################################################################"
+            set +x; echo -e "\n\n" >&2;       
+            echo "#################################################################################" >&2
+	    echo "                            recalibrator == BQSR" >&2
+            echo "#################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;         
+            
             $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
                 -R $refdir/$ref \
                 --knownSites $refdir/$dbSNP \
@@ -325,9 +340,13 @@ else
                 exit 1;
             fi
         else
-            echo "#################################################################################"
-	    echo "                           recalibrator =! BQSR"
-            echo "#################################################################################"
+            set +x; echo -e "\n\n" >&2;       
+            echo "#################################################################################" >&2
+	    echo "                            recalibrator IS NOT BQSR" >&2
+            echo "#################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;         
+            
+
    	    $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$realrecaldir -jar $gatk/GenomeAnalysisTK.jar \
 		-R $refdir/$ref \
                 --knownSites $refdir/$dbSNP \
@@ -385,12 +404,14 @@ else
 
         fi # end choosing between BQSR and CountCovariates/TableRecalibration
 
-        echo "#################################################################################"
-	echo "#########                          done with recalibration             ##########"
-        echo "#################################################################################"
-	echo "#########     Optional QC step. if a with-QCsample then run samtools calmd ######"
-        echo "#################################################################################"
-
+        set +x; echo -e "\n\n" >&2;                
+        echo "#################################################################################" >&2
+	echo "#########                          done with recalibration             ##########" >&2
+        echo "#################################################################################" >&2
+	echo "#########     Optional QC step. if a with-QCsample then run samtools calmd ######" >&2
+        echo "#################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
         if [ -s $outputrootdir/SAMPLENAMES_multiplexed.list ]
         then
             $samdir/samtools calmd -Erb $realrecaldir/recal.$chr.$infile.real.recal.bam $refdir/$ref > $outputfile
@@ -414,7 +435,8 @@ else
             cp $realrecaldir/recal.$chr.$infile.real.recal.bam  $outputfile
         fi
 
-        ###### indexing the recalibrated.bam file to make variant callers happy
+        set +x; echo -e "\n\n#######indexing the recalibrated.bam file to make variant callers happy#######\n\n" >&2; set -x;
+
         
         $sambambadir/sambamba index -t $thr $outputfile
 	exitcode=$?

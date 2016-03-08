@@ -23,6 +23,15 @@ else
         qsubfile=$8
         LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+set +x; echo -e "\n\n" >&2; 
+echo -e "####################################################################################################" >&2
+echo -e "#####################################                       ########################################" >&2
+echo -e "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo -e "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
+
         if [ ! -d $vardir ]
 	then
             MSG="$vardir directory not found"
@@ -31,7 +40,8 @@ else
             exit 1;	    
         fi
 
-        # first, let's check that vcf files were produced for all chr        
+        set +x; echo -e "\n\n############# step 1: first, let's check that vcf files were produced for all chr    ###############\n\n" >&2; set -x;
+       
 	cd $vardir 
         if [ `expr ${#filenames}` -lt 1 ]
         then
@@ -80,7 +90,9 @@ else
            fi
         done        
 
-        # next sep, concatenate the files
+        set +x; echo -e "\n\n############# step 2: concatenate the files    ###############\n\n" >&2; set -x;
+
+
         `$vcftoolsdir/vcf-concat $vcf_files > ${outfile}.tmp`
         exitcode=$?
         echo `date`

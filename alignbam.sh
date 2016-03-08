@@ -30,7 +30,12 @@ else
            exit 1;
         fi
 
-        ## parsing run info file
+        set +x; echo -e "\n\n" >&2; 
+        echo "####################################################################################################" >&2
+        echo "##################################### PARSING RUN INFO FILE ########################################" >&2
+        echo "##################################### AND SANITY CHECK      ########################################" >&2
+        echo "####################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
 	outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
         nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
@@ -150,7 +155,7 @@ else
 
         if [ $multisample != "1" -a $multisample != "0" -a $multisample != "YES" -a $multisample != "NO" ]
         then
-           MSG="Invalid value for MULTISAMPLE=$multisample"
+            MSG="Invalid value for MULTISAMPLE=$multisample"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
             #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
             exit 1;
@@ -275,9 +280,11 @@ else
         igv=$outputdir/$igvdir
         extradir=$outputdir/extrareads
 
-        ######################
-        #  simple QC of config file  samplefilenames
-        ######################
+        set +x; echo -e "\n\n" >&2; 
+        echo "####################################################################################################" >&2
+        echo "##################################### simple QC test on input files    #############################" >&2
+        echo "####################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
         numsamples=0
         for name in $samples
@@ -328,9 +335,11 @@ else
            mkdir -p $output_logs
         fi
 
-        ##############################
-        # main alignment module
-        ##############################
+        set +x; echo -e "\n\n">&2
+        echo "############################################################################################################" >&2
+        echo "##############################         MAIN ALIGNMENT LOOP                       ###########################" >&2
+        echo "############################################################################################################" >&2
+        echo -e "\n\n" >&2; set -x;
 
         allfiles=""
         while read sampledetail
@@ -338,9 +347,15 @@ else
           echo "processing next line in samplefile..."
           if [ `expr ${#sampledetail}` -lt 7 ]
           then
-              echo "skipping empty line"
+              set +x; echo -e "\n\n########################          skipping empty line                     #######################\n\n" >&2; set -x;
           else
-              echo "aligning: $sampledetail"
+
+              set +x; echo -e "\n\n" >&2; 
+              echo "####################################################################################################" >&2
+              echo "##################################### processing $sampledetail         #############################" >&2
+              echo "####################################################################################################" >&2
+              echo -e "\n\n" >&2; set -x;
+              
               dirname=$( echo $sampledetail | cut -d ':' -f2 | cut -d '=' -f1 )
               BAM=$( echo $sampledetail | cut -d '=' -f2 )
               outputalign=$oualigndir/$dirname
@@ -372,13 +387,16 @@ else
               sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
               RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 
-              ## aligning
-              
+              set +x; echo -e "\n\n" >&2; 
+              echo "####################################################################################################" >&2
+              echo "##################################### aligning  $sampledetail         #############################" >&2
+              echo "####################################################################################################" >&2
+              echo -e "\n\n" >&2; set -x;
+               
               if [ $aligner == "NOVOALIGN"  ]
 	      then
                 echo "novoalign is used as aligner. input file in bam format"
                 qsub=$outputlogs/qsub.novoalnbam.$dirname
-                echo "#PBS -V" > $qsub
                 echo "#PBS -A $pbsprj" >> $qsub
                 echo "#PBS -N ${pipeid}_novoalnbam_${dirname}" >> $qsub
 		echo "#PBS -l epilogue=$epilogue" >> $qsub
@@ -399,7 +417,6 @@ else
                 echo "bwa is used as aligner. input file format is BAM"
                 readparm="-b1"
                 qsub1=$outputlogs/qsub.bwabamr1.$dirname
-                echo "#PBS -V" > $qsub1
                 echo "#PBS -N ${pipeid}_bwabamr1_${dirname}" >> $qsub1
 		echo "#PBS -o $outputlogs/log.bwabamr1.$dirname.ou" >> $qsub1
 		echo "#PBS -e $outputlogs/log.bwabamr1.$dirname.in" >> $qsub1
@@ -421,7 +438,6 @@ else
                     echo "bwa aligner. paired-end reads"
                     readparm="-b2"
 		    qsub2=$outputlogs/qsub.bwabamr2.$dirname
-		    echo "#PBS -V" > $qsub2
 		    echo "#PBS -N ${pipeid}_bwabamr2_${dirname}" >> $qsub2
 		    echo "#PBS -o $outputlogs/log.bwabamr2.$dirname.ou" >> $qsub2
 		    echo "#PBS -e $outputlogs/log.bwabamr2.$dirname.in" >> $qsub2
@@ -440,7 +456,6 @@ else
 		    echo $jobr2 >> $outputlogs/ALIGNED_$dirname
 
 		    qsub3=$outputlogs/qsub.bwabamsampe.$dirname
-		    echo "#PBS -V" > $qsub3
 		    echo "#PBS -N ${pipeid}_bwabamsampe_$dirname" >> $qsub3
 		    echo "#PBS -o $outputlogs/log.bwabamsampe.${dirname}.ou" >> $qsub3
 		    echo "#PBS -e $outputlogs/log.bwabamsampe.${dirname}.in" >> $qsub3
@@ -461,7 +476,6 @@ else
                 else
                     echo "bwa aligner. single read"
 		    qsub3=$outputlogs/qsub.bwabamsamse.$dirname
-		    echo "#PBS -V" > $qsub3
 		    echo "#PBS -N ${pipeid}_bwabamsamse_$dirname" >> $qsub3
 		    echo "#PBS -o $outputlogs/log.bwabamsamse.${dirname}.ou" >> $qsub3
 		    echo "#PBS -e $outputlogs/log.bwabamsamse.${dirname}.in" >> $qsub3
@@ -483,9 +497,12 @@ else
             fi
 	    echo `date`
 
-            ###########################
-            # merging all aligned chunks
-            ###########################
+
+            set +x; echo -e "\n\n" >&2; 
+            echo "####################################################################################################" >&2
+            echo "##################################### merging chunks                   #############################" >&2
+            echo "####################################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;
 
             listfiles="$outputsam.bam"
 	    ALIGNED=$( cat $outputlogs/ALIGNED_$dirname | sed "s/\.[a-z]*//" | tr "\n" ":" )
@@ -493,7 +510,6 @@ else
             if [ $sortool == "NOVOSORT" ]
             then
 		qsub1=$outputlogs/qsub.novosort.inbam.$dirname
-		echo "#PBS -V" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_mergenovo_inbam.$dirname" >> $qsub1
 		echo "#PBS -l epilogue=$epilogue" >> $qsub1
@@ -512,7 +528,6 @@ else
 		echo $mergejob  >> $outputlogs/MERGED_$dirname
             else
 		qsub1=$outputlogs/qsub.sortmerge.picard.inbam.$dirname
-		echo "#PBS -V" > $qsub1
 		echo "#PBS -A $pbsprj" >> $qsub1
 		echo "#PBS -N ${pipeid}_sortmergepicard_$dirname" >> $qsub1
 		echo "#PBS -l epilogue=$epilogue" >> $qsub1
@@ -531,14 +546,16 @@ else
 		echo $mergejob  >> $outputlogs/MERGED_$dirname
             fi
 
-            #########################
-            #  extract regions that will  not be part of further analysis
-            #########################
+
+            set +x; echo -e "\n\n" >&2; 
+            echo "####################################################################################################" >&2
+            echo "##############  extracting regions that will not be included in analysis         ###################" >&2
+            echo "####################################################################################################" >&2
+            echo -e "\n\n" >&2; set -x;
 
 	    echo `date`
 	    echo "extract reads specified in CHRINDEX param"
 	    qsub5=$outputlogs/qsub.extractreadsbam.$dirname
-	    echo "#PBS -V" > $qsub5
 	    echo "#PBS -A $pbsprj" >> $qsub5
 	    echo "#PBS -N ${pipeid}_extrabam_${dirname}" >> $qsub5
             echo "#PBS -l epilogue=$epilogue" >> $qsub5
@@ -560,9 +577,14 @@ else
           fi
 	done < $samplefileinfo
 
-     ##################
-     ## wrapup if analysis ends here
-     ##################
+
+     set +x; echo -e "\n\n" >&2; 
+     echo "####################################################################################################" >&2
+     echo "#####################################          OUT OF THE LOOP         #############################" >&2
+     echo "####################################################################################################" >&2
+     echo "#####################################     WRAP-UP IF ANALYSIS ENDS HERE         ####################" >&2
+     echo "####################################################################################################" >&2
+     echo -e "\n\n" >&2; set -x;
 
      pbsids=$( cat $output_logs/pbs.MERGED | sed "s/\.[a-z]*//" | tr "\n" ":" )
      extraids=$( cat $output_logs/pbs.EXTRACTREADS | sed "s/\.[a-z]*//" | tr "\n" " " )
@@ -582,7 +604,6 @@ else
          if [ $cleanupflag == "YES" ]
          then 
 	     qsub6=$output_logs/qsub.cleanup.align
-	     echo "#PBS -V" > $qsub6
 	     echo "#PBS -A $pbsprj" >> $qsub6
 	     echo "#PBS -N ${pipeid}_cleanup_aln" >> $qsub6
 	     echo "#PBS -l epilogue=$epilogue" >> $qsub6
@@ -603,7 +624,6 @@ else
          `sleep 30s`
 
 	 qsub4=$output_logs/qsub.summary.aln.allok
-	 echo "#PBS -V" > $qsub4
 	 echo "#PBS -A $pbsprj" >> $qsub4
 	 echo "#PBS -N ${pipeid}_summaryok" >> $qsub4
 	 echo "#PBS -l epilogue=$epilogue" >> $qsub4
@@ -629,7 +649,6 @@ else
 	 then
              echo "at least one job aborted"
 	     qsub5=$output_logs/qsub.summary.aln.afterany
-	     echo "#PBS -V" > $qsub5
 	     echo "#PBS -A $pbsprj" >> $qsub5
 	     echo "#PBS -N ${pipeid}_summary_afterany" >> $qsub5
 	     echo "#PBS -l epilogue=$epilogue" >> $qsub5
@@ -648,15 +667,16 @@ else
 	 fi
      fi
 
-     ##################
-     ## call next module if analysis continues
-     ##################
+     set +x; echo -e "\n\n" >&2; 
+     echo "####################################################################################################" >&2
+     echo "########################     CALL THE NEXT MODULE IF ANALYSIS CONTINUES         ####################" >&2
+     echo "####################################################################################################" >&2
+     echo -e "\n\n" >&2; set -x;
 
      if [ $analysis == "REALIGNMENT" -o $analysis == "REALIGN" ]
      then
             echo " analysis continues with realignment"
 	    qsub2=$output_logs/qsub.start_realrecal_block
-	    echo "#PBS -V" > $qsub2
 	    echo "#PBS -A $pbsprj" >> $qsub2
 	    echo "#PBS -N ${pipeid}_START_REALRECAL_BLOCK" >> $qsub2
 	    echo "#pbs -l epilogue=$epilogue" >> $qsub2
