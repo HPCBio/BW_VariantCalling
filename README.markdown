@@ -50,3 +50,14 @@ instead of commenting out the emails when debugging
 6. edit the comments statements so they look good in the logs
 7. brush through and remove any mention of specific names or institutions or projects (found Gerrit mentioned somewhere)
 
+## Example runfiles for commonly used configurations
+
+1. Bundle all jobs by chromosome, do maximum QC, use qsub directly without aprun
+1.1. Align-Realign-VariantCalling
+1.1.1. analyze individual samples, sequenced 1 per lane
+1.1.2. analyze multiplexed samples
+1.1.3. perform a multisample analysis, where each sample was sequenced without multiplexing 
+1.2. AlignOnly - each individual fastq or pair of fastq
+2. Unbundle all jobs, do minimum QC, use qsub directly without aprun
+2.1. Align-Realign-VariantCalling: analyze individual samples, sequenced 1 per lane
+2.2. AlignOnly: analyze individual samples, sequenced 1 per lane 
