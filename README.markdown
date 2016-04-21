@@ -1,3 +1,11 @@
+  * [Workflow file naming conventions](#workflow-file-naming-conventions)
+    * [Error capture](#error-capture)
+    * [Auto-archiving](#auto-archiving)
+    * [Scalability testing](#scalability-testing)
+    * [To-Dos](#to-dos)
+    * [Example runfiles for commonly used configurations](#example-runfiles-for-commonly-used-configurations)
+
+
 This workflow originated of collaboration with Mayo Bioinformatics core group, 
 and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
 
