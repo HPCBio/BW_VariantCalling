@@ -1,4 +1,16 @@
-  * [Workflow file naming conventions](#workflow-file-naming-conventions)
+Variant Calling Workflow for HPC systems
+========================================
+
+This workflow originated of collaboration with Mayo Bioinformatics core group, and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
+
+  * [Variant Calling Workflow for HPC systems](#variant-calling-workflow-for-hpc-systems)
+  * [Basics](#basics)
+    * [Installation](#installation)
+    * [Documentation](#documentation)
+  * [For users](#for-users)
+    * [Usage examples](#usage-examples)
+  * [For developers](#for-developers)
+    * [Workflow file naming conventions](#workflow-file-naming-conventions)
     * [Error capture](#error-capture)
     * [Auto-archiving](#auto-archiving)
     * [Scalability testing](#scalability-testing)
@@ -6,22 +18,30 @@
     * [Example runfiles for commonly used configurations](#example-runfiles-for-commonly-used-configurations)
 
 
-This workflow originated of collaboration with Mayo Bioinformatics core group, 
-and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
+# Basics
 
-# Workflow file naming conventions
+## Installation
 
-*Input files*
+git clone https://github.com/HPCBio/BW_VariantCalling.git
 
+## Documentation
+
+# For users
+
+## Usage examples
+
+# For developers
+
+## Workflow file naming conventions
+
+__Input files__
 Convention on input fastq names: must be in form of samplename_read?.fq(.gz) or samplename_read?.fastq(.gz)
 
-*Scripts*
-
+__Scripts__
 * qsub.whatever = qsub scripts
 * log.whatever.in = output log for that qsub
 * log.whatever.ou = pbs output message log for that qsub
 * pbsWHATEVER = list of jobids for that step in the workflow 
-
 * there are a few jobs that delineate major blocks of computation; their log files are in CAPS:
 log.CONFIGURE.in
 
