@@ -57,6 +57,8 @@ echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmin
 The script autoArchive.sh is specific to Blue Waters and NCSA Globus endpoints.
 It also makes use of Dart archiving utility, which is not yet available as opensource. 
 
+The userids are now explicitly stated in the script, but will be moved to config file in the due course of time.
+
 
 ## Scalability testing
 
