@@ -1,12 +1,13 @@
 Variant Calling Workflow for HPC systems
 ========================================
 
-This workflow originated of collaboration with Mayo Bioinformatics core group, and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
+This workflow originated from collaboration with Mayo Bioinformatics core group, and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
 
   * [Variant Calling Workflow for HPC systems](#variant-calling-workflow-for-hpc-systems)
   * [Basics](#basics)
     * [Installation](#installation)
     * [Documentation](#documentation)
+    * [Features](#Features)
   * [For users](#for-users)
     * [Usage examples](#usage-examples)
   * [For developers](#for-developers)
@@ -25,6 +26,8 @@ This workflow originated of collaboration with Mayo Bioinformatics core group, a
 git clone https://github.com/HPCBio/BW_VariantCalling.git
 
 ## Documentation
+
+## Features
 
 # For users
 
