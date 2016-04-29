@@ -1,0 +1,12 @@
+alignfastq.sh:317:           # not sure if we want to reset this: useful for debugging ....
+start.sh:98:        echo "#PBS -q debug" >> $qsub1
+vcallgatk.sh:7:DEBUG=0
+vcallgatk.sh:320:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:360:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:402:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:446:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:508:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:548:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:589:           if [ $DEBUG -eq 0 ]
+vcallgatk.sh:636:         if [ $DEBUG -eq 0 ]
+vcallgatk.sh:680:         if [ $DEBUG -eq 0 ]

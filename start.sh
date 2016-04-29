@@ -95,10 +95,10 @@ else
 	echo "#PBS -l nodes=1:ppn=1" >> $qsub1
 	echo "#PBS -o $outputlogs/log.CONFIGURE.ou" >> $qsub1
 	echo "#PBS -e $outputlogs/log.CONFIGURE.in" >> $qsub1
-        echo "#PBS -q debug" >> $qsub1
+        echo "#PBS -q $pbsqueue" >> $qsub1
         echo "#PBS -m ae" >> $qsub1
         echo "#PBS -M $email" >> $qsub1
-        echo "$scriptdir/configure.sh $runfile batch $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE " >> $qsub1
+        echo "$scriptdir/configure.sh $runfile $outputlogs/log.CONFIGURE.in $outputlogs/log.CONFIGURE.ou $email $outputlogs/qsub.CONFIGURE " >> $qsub1
         echo -e "\n\n" >> $qsub1
         echo "exitcode=\$?" >> $qsub1
         echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
