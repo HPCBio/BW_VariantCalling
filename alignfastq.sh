@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # alignfastq.sh
-# align module to be used for input files in fastq format
+# align module to be used for input files in fastq format. This module schedules fastqc, alignment and dedup jobs
 ##redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 5 ]
 then
@@ -68,6 +68,16 @@ fi
         profiler=$( cat $runfile | grep -w PROFILER | cut -d '=' -f2 )
         cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
+        run_cmd="qsub"       # this is a hack. it should be read from config file. Possible values: {qsub|aprun}
+
+        SpecialCase="Normal" # this is a hack. it should be read from config file. Possible values: {Normal|Split2Jobs}
+        
+        # The file to read sampleinfo from. This file always exists. It has variable number of columns.
+        # 5 columns when input is multiplexed
+        # 3 columns when input is nonmultiplexed && paired fastq
+        # 2 columns when input is nonmultiplexed && bam
+
+        TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
 
         set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
 
@@ -102,7 +112,7 @@ fi
         fi
 
 
-        set +x; echo -e "\n\n\n############# check that sampledir exists\n" >&2; set -x
+        set +x; echo -e "\n\n\n############# check that sampledir exists and the sampleinfo file exists\n" >&2; set -x
         if [ ! -d $sampledir ]
         then
            MSG="SAMPLEDIR=$sampledir directory not found"
@@ -111,6 +121,13 @@ fi
         fi
 
 
+        if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
+        then
+           MSG="$outputdir/SAMPLENAMES_multiplexed.list file not found"
+           echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+           exit 1;
+        fi
+        
         set +x; echo -e "\n\n\n############# check number of samples\n" >&2; set -x
         numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
         if [ $numsamples -gt 1 -a $multisample == "YES" ]
@@ -380,39 +397,13 @@ fi
 
 
 
+
+
         set +x; echo -e "\n\n">&2
         echo "############################################################################################################" >&2
         echo "##################################### ALIGNMENT: LOOP1 OVER SAMPLES ########################################" >&2
         echo "############################################################################################################" >&2
         echo -e "\n\n" >&2; set -x;
-
-        # this variable is a hack to decide whether to run align and markdups together or in separate jobs
-        # perhaps a better way is with an additional parameter in the runfile
-        SpecialCase=""
-        
-        # select the file to read
-        if [ -s $outputdir/SAMPLENAMES_multiplexed.list ]
-        then 
-             TheInputFile=$outputdir/SAMPLENAMES_multiplexed.list
-             SpecialCase="Split2Jobs"
-             set +x; echo -e "\n\n">&2
-             echo "############################################################################################################" >&2
-             echo "##################################### FLAG: Aligment case is SPLIT                         #################" >&2
-             echo "##################################### Alignment then markduplicates is separate jobs       #################" >&2
-             echo "############################################################################################################" >&2
-             echo -e "\n\n" >&2; set -x;
-             
-        else
-             TheInputFile=$outputdir/SAMPLENAMES.list
-             SpecialCase="Normal"             
-             set +x; echo -e "\n\n">&2
-             echo "############################################################################################################" >&2
-             echo "##################################### FLAG: Aligment case is Normal            ##############################" >&2
-             echo "##################################### Alignment AND markduplicates  together   #############################" >&2
-             echo "############################################################################################################" >&2
-             echo -e "\n\n" >&2; set -x;
- 
-        fi
 
 
         while read SampleLine
@@ -431,40 +422,41 @@ fi
             echo -e "\n\n" >&2; set -x;
 
 
-            if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
+            if [ $analysis == "MULTIPLEXED" ]
 	    then
-                set +x; echo -e "\n\nSAMPLENAMES_multiplexed.list DOES NOT exist." >&2
-		echo -e "\n ###### Current line has ONE field for SAMPLENAME." >&2;
-		echo -e "\n ###### The code parses PL CN and LB values from runfile\n" >&2; set -x;
-                # form and check the left reads file
-                SampleName=$( echo $SampleLine )
-		LeftReadsFastq=$( ls $sampledir/${SampleName}_read1.* )
-		RightReadsFastq=$( ls $sampledir/${SampleName}_read2.* )
+                set +x; echo -e "\n" >&2
+                echo -e "\n ###### SAMPLENAMES_multiplexed.list DOES exist." >&2
+                echo -e "\n ###### Current line has FIVE fields:" >&2
+                echo -e "\n ###### col1=sampleid col4=flowcell_and_lane_name col5=lib col2=read1 col3=read2." >&2
+		echo -e "\n ###### The code parses PL and CN from runfile\n" >&2; 
+                echo -w "\n" >&2; set -x;
 
-                # form the read group values for the aligner 
+                SampleName=$( echo -e "$SampleLine" | cut -f 4 )
+                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 2 )
+                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 2 )
+		sID=$( echo -e "$SampleLine" | cut -f 4 )
+		sPU=$( echo -e "$SampleLine" | cut -f 4 )
+		sSM=$( echo -e "$SampleLine" | cut -f 1 )
+		sLB=$( echo -e "$SampleLine" | cut -f 5 )
+		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
+		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
+	    else
+                set +x; echo -e "\n" >&2
+                echo -e "\n ###### SAMPLENAMES_multiplexed.list DOES exist." >&2
+                echo -e "\n ###### Current line has THREE fields:" >&2
+                echo -e "\n ###### col1=sampleid col2=read1 col3=read2 " >&2
+		echo -e "\n ###### The code parses PL and CN from runfile\n" >&2; 
+                echo -w "\n" >&2; set -x;
+
+                SampleName=$( echo -e "$SampleLine" | cut -f 1 )
+                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 2 )
+                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 3 )
 		sID=$SampleName
 		sPU=$SampleName
 		sSM=$SampleName
 		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
-		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
-	    else
-                set +x; echo -e "\n" >&2
-                echo -e "\n ###### SAMPLENAMES_multiplexed.list DOES exist." >&2
-                echo -e "\n ###### Current line has FIVE fields:" >&2
-                echo -e "\n ###### col1=sampleid col2=flowcell_and_lane_name col3=lib col4=read1 col5=read2." >&2
-		echo -e "\n ###### The code parses PL and CN from runfile\n" >&2; 
-                echo -w "\n" >&2; set -x;
-
-                SampleName=$( echo -e "$SampleLine" | cut -f 2 )
-                LeftReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 4 )
-                RightReadsFastq=${sampledir}/$( echo -e "$SampleLine" | cut -f 5 )
-		sID=$( echo -e "$SampleLine" | cut -f 2 )
-		sPU=$( echo -e "$SampleLine" | cut -f 2 )
-		sSM=$( echo -e "$SampleLine" | cut -f 1 )
-		sLB=$( echo -e "$SampleLine" | cut -f 3 )
-		sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
-		sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
+		sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )		
 	    fi
 
             set +x; echo -e "\n\n checking that it actually worked: we must have RG line and file names of the reads... \n" >&2; set -x;
@@ -716,84 +708,27 @@ fi
                     then
 			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $scriptdir $runfile $paired $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix
                     else
-			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $scriptdir $runfile $paired $AlignOutputDir/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix
+			echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $scriptdir $runfile $paired $AlignOutputDir/$Rone $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix   
                     fi
 		elif [ $aligner == "BWA_ALN" ] 
                 then
                     set +x; echo -e "\n############# bwa is used as aligner. input file format is in fastq. this segment needs to be rewritten ###############\n" >&2; set -x
-                    qsub_bwar1=$AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix
-                    echo "#PBS -N ${pipeid}_bwar1_${SampleName}_$OutputFileSuffix" >> $qsub_bwar1
-		    echo "#PBS -o $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwar1
-		    echo "#PBS -e $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwar1
-                    echo "#PBS -A $pbsprj" >> $qsub_bwar1
-		    echo "#PBS -l walltime=$pbscpu" >> $qsub_bwar1
-		    echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwar1
-                    echo $ccmgres_string >> $qsub_bwar1
-                    echo "#PBS -q $pbsqueue" >> $qsub_bwar1
-                    echo "#PBS -m ae" >> $qsub_bwar1
-                    echo "#PBS -M $email" >> $qsub_bwar1
-		    echo "aprun -n 1 -d $thr $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix" >> $qsub_bwar1
+ 
+		    echo "$scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/bwar1.${SampleName}.node$OutputFileSuffix
 
-                    #`chmod a+r $qsub_bwar1`
-                    jobr1=`qsub $qsub_bwar1`
-                    `qhold -h u $jobr1`
-                    echo $jobr1 >> $AlignOutputLogs/ALIGNED_$SampleName
                     if [ $paired -eq 1 ]
                     then
                         set +x; echo -e "\n########## bwa aligner. paired-end reads #################\n" >&2; set -x
-			qsub_bwar2=$AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix
-			echo "#PBS -N ${pipeid}_bwar2_${SampleName}_$OutputFileSuffix" >> $qsub_bwar2
-			echo "#PBS -o $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwar2
-			echo "#PBS -e $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwar2
-			echo "#PBS -A $pbsprj" >> $qsub_bwar2
-			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwar2
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwar2
-                        echo $ccmgres_string >> $qsub_bwar2
-			echo "#PBS -q $pbsqueue" >> $qsub_bwar2
-			echo "#PBS -m ae" >> $qsub_bwar2
-			echo "#PBS -M $email" >> $qsub_bwar2
-			echo "$run_string $profiler_string $scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix" >> $qsub_bwar2
-			#`chmod a+r $qsub_bwar2`
-                        jobr2=`qsub $qsub_bwar2`
-			`qhold -h u $jobr2`
-			echo $jobr2 >> $AlignOutputLogs/ALIGNED_$SampleName
 
-			qsub_bwasampe=$AlignOutputLogs/qsub.bwasampe.$SampleName.node$OutputFileSuffix
-			echo "#PBS -N ${pipeid}_bwasampe_${SampleName}_$OutputFileSuffix" >> $qsub_bwasampe
-			echo "#PBS -o $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwasampe
-			echo "#PBS -e $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwasampe
-			echo "#PBS -A $pbsprj" >> $qsub_bwasampe
-			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwasampe
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwasampe
-                        echo $ccmgres_string >> $qsub_bwasampe
-			echo "#PBS -q $pbsqueue" >> $qsub_bwasampe
-			echo "#PBS -m ae" >> $qsub_bwasampe
-			echo "#PBS -M $email" >> $qsub_bwasampe
-			echo "#PBS -W depend=afterok:$jobr1:$jobr2" >> $qsub_bwasampe
-			echo "$run_string $profiler_string $scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$OutputFileSuffix" >> $qsub_bwasampe
-			#`chmod a+r $qsub_bwasampe`
-                        jobwa=`qsub $qsub_bwasampe`
-			`qhold -h u $jobwa`
-			echo $jobwa >> $AlignOutputLogs/ALIGNED_$SampleName
+		        echo "$scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rtwo $scriptdir $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar2.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar2.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/bwar2.${SampleName}.node$OutputFileSuffix
+
+			echo "$scriptdir/bwaS2.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $outputsamfileprefix.node$OutputFileSuffix.R2.sai $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasampe.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasampe.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/bwaS2.${SampleName}.node$OutputFileSuffix
+
                     else
                         set +x; echo -e "\n############# bwa aligner. single read #################\n" >&2; set -x
-			qsub_bwasamse=$AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix
-			echo "#PBS -N ${pipeid}_bwasamse_${SampleName}_$OutputFileSuffix" >> $qsub_bwasamse
-			echo "#PBS -o $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwasamse
-			echo "#PBS -e $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwasamse
-			echo "#PBS -A $pbsprj" >> $qsub_bwasamse
-			echo "#PBS -l walltime=$pbscpu" >> $qsub_bwasamse
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwasamse
-                        echo $ccmgres_string >> $qsub_bwasamse
-			echo "#PBS -q $pbsqueue" >> $qsub_bwasamse
-			echo "#PBS -m ae" >> $qsub_bwasamse
-			echo "#PBS -M $email" >> $qsub_bwasamse
-			echo "#PBS -W depend=afterok:$jobr1" >> $qsub_bwasamse
-			echo "aprun -n 1 -d $thr $scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix" >> $qsub_bwasamse
-			#`chmod a+r $qsub_bwasamse`
-                        jobwa=`qsub $qsub_bwasamse`
-			`qhold -h u $jobwa`
-                        echo $qsub_bwasamse >> $AlignOutputLogs/ALIGNED_$SampleName
+
+			echo "$scriptdir/bwaS3.sh $alignerdir $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $samdir $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwasamse.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwasamse.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/bwasamse.${SampleName}.node$OutputFileSuffix
+
                     fi
                 elif [ $aligner == "BWA_MEM" ]
                 then
@@ -834,17 +769,10 @@ fi
                         #`chmod ug=rwx $jobfile`
                         #`chmod ug=rwx $jobfileMarkdup`
                      else
-                        set +x; echo -e "\n################ bwa mem aligner. single-end reads ################\n" >&2; set -x
-                        qsub_bwamem=$AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix
-                        echo "#PBS -N ${pipeid}_bwamem_${SampleName}_$OutputFileSuffix" >> $qsub_bwamem
-                        echo "#PBS -o $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou" >> $qsub_bwamem
-                        echo "#PBS -e $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" >> $qsub_bwamem
-                        echo "#PBS -A $pbsprj" >> $qsub_bwamem
-                        echo "#PBS -l walltime=$pbscpu" >> $qsub_bwamem
-                        echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_bwamem
-                        echo "#PBS -q $pbsqueue" >> $qsub_bwamem
-                        echo "#PBS -m ae" >> $qsub_bwamem
-                        echo "#PBS -M $email" >> $qsub_bwamem
+                        set +x; echo -e "\n############### bwa mem aligner. single reads. this segment needs to be rewritten ###################\n" >&2; set -x
+                        jobfile=$AlignOutputDir/logs/bwamem.$SampleName.node$OutputFileSuffix.jobfile
+                        jobfileMarkdup=$AlignOutputDir/logs/Markdup.$SampleName.node$OutputFileSuffix.jobfile
+
 
                         if [ $chunkfastq == "YES" ]
                         then
@@ -852,17 +780,28 @@ fi
                         elif [ $chunkfastq == "NO" ]
                         then
                            echo "aprun -n 1 -d $thr $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.bam $AlignOutputDir/$Rone $scriptdir $samdir $samblasterdir $picardir $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwamem.$SampleName.node$OutputFileSuffix $RGparms" >> $qsub_bwamem
-                        fi
-   
 
-                       #`chmod a+r $qsub_bwamem`
-                       jobbwamemse=`qsub $qsub_bwamem`
-                       `qhold -h u $jobbwamemse`
-                       echo $jobbwamemse >> $AlignOutputLogs/ALIGNED_$SampleName
-
-
-                    fi
-                fi
+                             set +x; echo -e  "#######                                   chunkfastq == NO                      ###############\n" >&2
+                             echo -e  "#######  we need to see which alignment case applies depending on value of FLAG ###############\n" >&2; set -x
+                             
+                             if [ $SpecialCase != "Split2Jobs" ]
+                             then
+                                  set +x; echo -e "################# CASE is NOT SPLIT, alignment and markduplicates in one job ############\n" >&2; set -x
+                                  echo "nohup $scriptdir/bwamem_se_markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone  $runfile $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                                  jobfilename=$( basename $jobfile )
+                                  echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                             else
+                                  set +x; echo -e "################# CASE is SPLIT, alignment in one job and markduplicates in another job ##\n" >&2; set -x
+                                  echo "nohup $scriptdir/bwamem_se_qctest.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone  $runfile $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.ou $email $jobfile $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.bwamem.se.$SampleName.node$OutputFileSuffix.in" > $jobfile
+                                  jobfilename=$( basename $jobfile )
+                                  echo "$AlignOutputDir/logs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+                                  echo "nohup $scriptdir/markduplicates.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix $AlignOutputDir/$Rone $runfile $AlignOutputDir/logs/log.Markdup.se.$SampleName.node$OutputFileSuffix.in $AlignOutputDir/logs/log.Markdup.se.$SampleName.node$OutputFileSuffix.ou $email $jobfileMarkdup $RGparms $AlignOutputLogs > $AlignOutputDir/logs/log.Markdup.se.$SampleName.node$OutputFileSuffix.in" > $jobfileMarkdup
+                                  jobfilenameMarkdup=$( basename $jobfileMarkdup )
+                                  echo "$AlignOutputDir/logs $jobfilenameMarkdup" >> $AlignOutputLogs/MarkdupsAnisimov.joblist
+                             fi   # end specialCase  
+                        fi  #end chunkfasta
+                    fi  # end single reads
+                fi # end bwa-mem
 
                 if (( $i < 10 ))
                 then
@@ -983,7 +922,13 @@ fi
               echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
               echo "#PBS -m ae" >> $qsubAlignLauncher
               echo "#PBS -M $email" >> $qsubAlignLauncher
-              echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+
+              if [ $run_cmd == "aprun" ]
+              then
+                    echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+              else
+                    echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+              fi
 
               echo "exitcode=\$?" >> $qsubAlignLauncher
               echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
@@ -995,7 +940,7 @@ fi
               echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
               #echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
 
-                             
+                            
               if [ $SpecialCase == "Split2Jobs" ]
               then
                  set +x; echo -e "\n # run_method is LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x
@@ -1012,8 +957,13 @@ fi
                  echo "#PBS -M $email" >> $$qsubMarkdupLauncher
                  echo "#PBS -W depend=afterok:$AlignAnisimovJoblistId" >> $qsubMarkdupLauncher 
                  
+                 if [ $run_cmd == "aprun" ]  
+                 then
+                       echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+                 else
+                       echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+                 fi
                  
-                 echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
                  echo "exitcode=\$?" >> $qsubMarkdupLauncher
                  echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMarkdupLauncher
                  echo "   echo -e \"\n\n MarkdupsAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.Markdup.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMarkdupLauncher
@@ -1025,6 +975,8 @@ fi
                  #echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
                  echo $MarkDupAnisimovJoblistId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk                     
               fi
+
+              set +x; echo -e "\n # run_method is LAUNCHER. scheduling the FastQC Launcher\n" >&2; set -x
               
               if [ $fastqcflag == "YES" ]
               then
@@ -1044,8 +996,14 @@ fi
                   echo "#PBS -q $pbsqueue" >> $qsubFastqcLauncher
                   echo "#PBS -m ae" >> $qsubFastqcLauncher
                   echo "#PBS -M $email" >> $qsubFastqcLauncher
-                  echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
- 
+                  
+                  if [ $run_cmd == "aprun" ]
+                  then        
+                        echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+                  else        
+                        echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+                  fi
+                  
                   echo "exitcode=\$?" >> $qsubFastqcLauncher
                   echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubFastqcLauncher
                   echo "   echo -e \"\n\n FastqcAnisimov failed with exit code = \$exitcode \n logfile=$FastqcOutputLogs/log.Fastqc.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubFastqcLauncher
@@ -1060,14 +1018,12 @@ fi
            "APRUN")
               while read SampleName
               do              
-                 set +x; echo -e "\n # run_method is APRUN. scheduling qsubs\n" >&2; set -x
-            	 if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
-                 then
-                     SampleName=$( echo $SampleLine )
-	         else
-                     SampleName=$( echo -e "$SampleLine" | cut -f 2 )
-                 fi
+                 set +x; echo -e "\n # run_method is APRUN. scheduling qsubs. This section needs editing\n" >&2; set -x
+            	 
+                 SampleName=$( echo -e "$SampleLine" | cut -f 1 )
+                 
                  AlignOutputDir=$outputdir/${SampleName}/align
+                 FastqcOutputDir=$outputdir/$SampleName/fastqc 
                  
                  qsub_bwa=$AlignOutputDir/logs/qsub.bwa.${SampleName}
                  # appending the generic header to the qsub
@@ -1095,35 +1051,93 @@ fi
            "QSUB")
               while read SampleName
               do
-                 set +x; echo -e "\n # run_method is QSUB. scheduling qsubs\n" >&2; set -x
-            	 if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
-                 then
-                     SampleName=$( echo $SampleLine )
-	         else
-                     SampleName=$( echo -e "$SampleLine" | cut -f 2 )
-                 fi
-                 AlignOutputDir=$outputdir/${SampleName}/align
-                                  
-                 qsub_bwa=$AlignOutputDir/logs/qsub.bwa.${SampleName}
+                 set +x; echo -e "\n # run_method is QSUB. scheduling qsubs, one per sample.\n" >&2; set -x
+            	 
+                 SampleName=$( echo -e "$SampleLine" | cut -f 1 )
+
+                 AlignOutputDir=$outputdir/${SampleName}/align   
+                 FastqcOutputDir=$outputdir/$SampleName/fastqc 
+
+                 jobfilebwa=$( ls -1 $AlignOutputDir/logs/bwamem.$SampleName.*.jobfile )
+                 jobfileMarkdup=$( ls -1 $AlignOutputDir/logs/Markdup.$SampleName.*.jobfile )
+                 jonfileFastqc=$( ls -1 $FastqcOutputDir/logs/Fastqc.$SampleName.*.jobfile )
+                 
+                 qsub_bwa=$AlignOutputDir/logs/qsub.bwamem.${SampleName}
+                 qsub_Markdup=$AlignOutputDir/logs/qsub.Markdup.${SampleName}
+                 qsub_Fastqc=$FastqcOutputDir//logs/qsub.Fastqc.${SampleName}
+                 
                  # appending the generic header to the qsub
                  cat $outputdir/qsubGenericHeader > $qsub_bwa
+                 cat $outputdir/qsubGenericHeader > $qsub_Markdup
+                 cat $outputdir/qsubGenericHeader > $qsub_Fastqc
+                 
+                 # getting the names of the qsub log files from the jobfiles
+                 qsub_bwa_ou=$( cat $jobfilebwa | cut -d ' ' -f 12 )
+                 qsub_bwa_er=$( cat $jobfilebwa | cut -d ' ' -f 11 )
+                 qsub_Markdup_ou=$( cat $jobfileMarkdup | cut -d ' ' -f 12 )
+                 qsub_Markdup_er=$( cat $jobfileMarkdup | cut -d ' ' -f 11 )
+                 qsub_Fastqc_ou=$( cat $jobfileFastqc | cut -d ' ' -f 9 )
+                 qsub_Fastqc_er=$( cat $jobfileFastqc | cut -d ' ' -f 8 )
+                 
+                 # constructing qsubs
+                 if [ $fastqcflag == "YES" ]
+                 then
+ 
+                         set +x; echo -e "\n # run_method is QSUB. scheduling the Fastqc Launcher\n" >&2; set -x 
+			 echo -e "\n################# constructing qsub for Fastqc.${SampleName}\n"
+			 echo "#PBS -N ${pipeid}_Fastqc.${SampleName}" >> $qsub_Fastqc
+			 echo "#PBS -l walltime=$pbscpu" >> $qsub_Fastqc
+			 echo "#PBS -o $qsub_Fastqc_ou " >> $qsub_Fastqc
+			 echo "#PBS -e $qsub_Fastqc_er " >> $qsub_Fastqc
+			 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_Fastqc                
+			 echo "/bin/bash $jobfileFastqc" >> $qsub_Fastqc
+			 Fastqc_job=`qsub $qsub_Fastqc`
+			 `qhold -h u $Fastqc_job`
+			 echo $Fastqc_job >> $TopOutputLogs/pbs.FASTQC # so that this job could be released in the next section.                         
+                 fi
+                 
+                 if [ $SpecialCase == "Split2Jobs" ]
+                 then
+			 set +x; echo -e "\n # run_method is QSUB. scheduling the Align then MarkDuplicates\n" >&2; set -x                
+			 echo -e "\n################# constructing qsub for bwamem.${SampleName}\n"
+			 echo "#PBS -N ${pipeid}_bwamem.${SampleName}" >> $qsub_bwa
+			 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+			 echo "#PBS -o $qsub_bwa_ou " >> $qsub_bwa
+			 echo "#PBS -e $qsub_bwa_er " >> $qsub_bwa
+			 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa                
+			 echo "/bin/bash $jobfilebwa" >> $qsub_bwa
+			 bwa_job=`qsub $qsub_bwa`
+			 `qhold -h u $bwa_job`
+			 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+			 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 else
+			 set +x; echo -e "\n # run_method is QSUB. scheduling the Align And MarkDuplicates together\n" >&2; set -x                
+			 echo -e "\n################# constructing qsub for bwamem.${SampleName}\n"
+			 echo "#PBS -N ${pipeid}_bwamem.${SampleName}" >> $qsub_bwa
+			 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
+			 echo "#PBS -o $qsub_bwa_ou " >> $qsub_bwa
+			 echo "#PBS -e $qsub_bwa_er " >> $qsub_bwa
+			 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa                
+			 echo "/bin/bash $jobfilebwa" >> $qsub_bwa
+			 bwa_job=`qsub $qsub_bwa`
+			 `qhold -h u $bwa_job`
+			 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section.
+			 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
+                 
+ 			 set +x; echo -e "\n # run_method is QSUB. scheduling the Align And MarkDuplicates together\n" >&2; set -x                
+			 echo -e "\n################# constructing qsub for bwamem.${SampleName}\n"
+			 echo "#PBS -N ${pipeid}_Markdup.${SampleName}" >> $qsub_Markdup
+			 echo "#PBS -l walltime=$pbscpu" >> $qsub_Markdup
+			 echo "#PBS -o $qsub_Markdup_ou " >> $qsub_Markdup
+			 echo "#PBS -e $qsub_Markdup_er " >> $qsub_Markdup
+			 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_Markdup                
+			 echo "/bin/bash $jobfileMarkdup" >> $qsub_Markdup
+			 Markdup_job=`qsub $qsub_Markdup`
+			 `qhold -h u $Markdup_job`
+			 echo $bwa_job >> $TopOutputLogs/pbs.MARKED # so that this job could be released in the next section. 
+                
+                 fi
 
-
-                 ###############################
-                 echo -e "\n################# constructing qsub for bwamem\n"
-                 echo "#PBS -N ${pipeid}_bwa.${SampleName}" >> $qsub_bwa
-                 echo "#PBS -l walltime=$pbscpu" >> $qsub_bwa
-                 echo "#PBS -o $AlignOutputDir/logs/log.bwa.${SampleName}.ou" >> $qsub_bwa
-                 echo "#PBS -e $AlignOutputDir/logs/log.bwa.${SampleName}.in" >> $qsub_bwa
-                 echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_bwa
-
-                 # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 echo "/bin/bash $AlignOutputDir/logs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile" >> $qsub_bwa
-
-                 bwa_job=`qsub $qsub_bwa`
-                 `qhold -h u $bwa_job`
-                 echo $bwa_job >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
-                 echo $bwa_job >> $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
               done < $TheInputFile # done looping over samples
            ;;
            esac
