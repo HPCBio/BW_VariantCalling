@@ -927,7 +927,7 @@ fi
               then
                     echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
               else
-                    echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+                    echo "mpirun -np $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist /bin/bash > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
               fi
 
               echo "exitcode=\$?" >> $qsubAlignLauncher
@@ -961,7 +961,7 @@ fi
                  then
                        echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
                  else
-                       echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+                       echo "mpirun -np $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
                  fi
                  
                  echo "exitcode=\$?" >> $qsubMarkdupLauncher
@@ -1001,7 +1001,7 @@ fi
                   then        
                         echo "aprun -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
                   else        
-                        echo "qsub -n $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+                        echo "mpirun -np $numalignnodes -N 1 -d $thr ~anisimov/scheduler/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist /bin/bash > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
                   fi
                   
                   echo "exitcode=\$?" >> $qsubFastqcLauncher
