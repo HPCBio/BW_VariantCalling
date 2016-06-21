@@ -70,6 +70,7 @@ tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
+analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
 if [ `expr ${#tmpdir}` -lt 1  ]
 then
@@ -485,6 +486,7 @@ do
 	echo "echo `date`" >> $qsub1
 	`chmod a+r $qsub1`               
 	jobid=`qsub $qsub1` 
+        `qhold -h u $jobid`
 	echo $jobid >> $TopOutputLogs/pbs.ALIGN
 	echo `date`
 
@@ -497,16 +499,26 @@ do
         fi
 	echo -e "\n\n#######  this jobid=$jobid will be used to hold execution of realign_varcall.sh     ########\n\n"
 
-	echo -e "\n\n########################################################################################"                
-	echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"
-	echo -e "########################################################################################\n\n"
+        if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
+	then
+	    set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
+            # release all held jobs
+            `qrls -h u $jobid`
+        else
 
-        alnjobid=$( echo $jobid | cut -d '.' -f 1 )
+
+
+
+	   echo -e "\n\n########################################################################################"                
+	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"
+	   echo -e "########################################################################################\n\n"
+
+           alnjobid=$( echo $jobid | cut -d '.' -f 1 )
         
-	truncate -s 0 $TopOutputLogs/pbs.VCALL.$sample
+	   truncate -s 0 $TopOutputLogs/pbs.VCALL.$sample
 	
-        for chr in $indices
-        do
+           for chr in $indices
+           do
 
 
 		echo -e "\n\n########################################################################################"                
@@ -535,38 +547,37 @@ do
 
 		fi
 
-        done
+           done
         
-        
-	echo -e "\n\n########################################################################################"                
-	echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########"
-	echo -e "########################################################################################\n\n"
+	   echo -e "\n\n########################################################################################"                
+	   echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########"
+	   echo -e "########################################################################################\n\n"
 
-        vcalljobids=$( cat $TopOutputLogs/pbs.VCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+           vcalljobids=$( cat $TopOutputLogs/pbs.VCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
-	echo -e "\n\n### this list of jobids=[$vcalljobids] will be used to hold execution of merge_vcfs.sh #####\n\n"
+	   echo -e "\n\n### this list of jobids=[$vcalljobids] will be used to hold execution of merge_vcfs.sh #####\n\n"
 
-	qsub1=$TopOutputLogs/qsub.merge.$sample
-	cat $generic_qsub_header > $qsub1
-	echo "#PBS -N merge.$sample" >> $qsub1
-	echo "#PBS -o $TopOutputLogs/log.merge.$sample.ou" >> $qsub1
-	echo "#PBS -e $TopOutputLogs/log.merge.$sample.in" >> $qsub1
-        echo "#PBS -W depend=afterok:$vcalljobids" >> $qsub1
-	echo "echo `date`" >> $qsub1        
-	echo "$scriptdir/merge_vcf_and_bam.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
-	echo "echo `date`" >> $qsub1
-	`chmod a+r $qsub1`               
-	mergejobid=`qsub $qsub1` 
-	echo $mergejobid >> $TopOutputLogs/pbs.MERGE
-	echo `date`
+	   qsub1=$TopOutputLogs/qsub.merge.$sample
+	   cat $generic_qsub_header > $qsub1
+	   echo "#PBS -N merge.$sample" >> $qsub1
+	   echo "#PBS -o $TopOutputLogs/log.merge.$sample.ou" >> $qsub1
+	   echo "#PBS -e $TopOutputLogs/log.merge.$sample.in" >> $qsub1
+           echo "#PBS -W depend=afterok:$vcalljobids" >> $qsub1
+	   echo "echo `date`" >> $qsub1        
+	   echo "$scriptdir/merge_vcf_and_bam.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
+	   echo "echo `date`" >> $qsub1
+	   `chmod a+r $qsub1`               
+	   mergejobid=`qsub $qsub1` 
+	   echo $mergejobid >> $TopOutputLogs/pbs.MERGE
+	   echo `date`
 	
-        if [ `expr ${#mergejobid}` -lt 1 ]
-        then
-	     MSG="unable to launch qsub merge job for $sample. Exiting now"
-	     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
-	     exit 1        
-        
-        fi	
+           if [ `expr ${#mergejobid}` -lt 1 ]
+              then
+	        MSG="unable to launch qsub merge job for $sample. Exiting now"
+	        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
+	        exit 1        
+           fi	
+        fi # close the if statement checking whether the workflow end with alignment or not
         
    fi  # end non-empty line
 done <  $sampleinfo
