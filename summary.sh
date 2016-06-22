@@ -21,7 +21,6 @@ qsubfile=$4
 LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )        
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )

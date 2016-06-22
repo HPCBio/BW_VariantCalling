@@ -41,7 +41,6 @@ deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
-sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
@@ -177,23 +176,6 @@ then
     MSG="SAMPLEINFORMATION=$sampleinfo  file not found."
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
-fi
-
-if [ ! -d $sampledir ]
-then
-    MSG="INPUTDIR=$sampledir  directory not found."
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-fi
-
-numfiles=$( ls -1 $sampledir | wc -l )
-numsamples=$( wc -l $sampleinfo )	
-
-if [ $numfiles -lt 1 ]
-then
-    MSG="INPUTDIR=$sampledir  directory is empty."
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;	
 fi
 
 if [ $numsamples -lt 1 ]
