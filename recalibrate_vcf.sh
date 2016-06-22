@@ -41,7 +41,7 @@ fi
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
-thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
+thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )

@@ -11,6 +11,7 @@ Changelog
 
 June 22, 2016:
 - The tool SNVMix is not used, so removed from the run fil
+- The tool SAMBAMBA is also not used
 - Deleted all mentions of INPUTDIR and SAMPLEDIR 
 - The following options are not in use:
 -  	MEMPROFCOMMAND 
@@ -58,3 +59,14 @@ June 22, 2016:
 - 	BWADIR
 -	BWAMEMDIR
 - 	SNVMIXDIR
+- 	PBSCPUOTHEREXOME
+- 	PBSCPUOTHERWGEN
+- 	PBSCPUOTHEREXOME
+- 	CPUALIGNWGEN
+- 	SNV_CALLER
+- 	RECALIBRATOR
+
+New and changed parameters and meanings:
+- PBSWALLTIME : wall time for the job (still need to account for this in the workflow code)
+- PBSCORES: instead of PBSTHREADS
+- PBSQUEUE: instead of PBSQUEUEEXOME
