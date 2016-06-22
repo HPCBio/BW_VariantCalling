@@ -39,7 +39,6 @@ outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )  
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
-input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
@@ -152,15 +151,6 @@ then
    MSG="Invalid value for CHRNAMES in the configuration file"
    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
-fi
-
-if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" ]
-then
-    pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
-else
-    MSG="Invalid value for parameter INPUTTYPE=$input_type  in the configuration file."
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
 fi
 
 

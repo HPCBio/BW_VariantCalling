@@ -44,7 +44,6 @@ nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
-input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )        
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
@@ -143,15 +142,6 @@ then
    MSG="Invalid value for parameter PBSEMAIL=$email in the configuration file"
    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
-fi
-
-if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" ]
-then
-    pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
-else
-    MSG="Invalid value for parameter INPUTTYPE=$input_type  in the configuration file."
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
 fi
 
 if [ ! -s $sampleinfo ]
