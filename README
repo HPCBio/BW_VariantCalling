@@ -4,3 +4,4 @@ Workflow assumptions:
 - Inputs are fastq not bam (the RESORTBAM os not active)
 - Temporary files are not removed (the REMOVETEMPFILES is not active)
 - The tool SNVMix is not used, so removed from the run file
+- The AnisimovLauncher is not used in this workflow
