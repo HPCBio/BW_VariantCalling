@@ -70,3 +70,6 @@ New and changed parameters and meanings:
 - PBSWALLTIME : wall time for the job (still need to account for this in the workflow code)
 - PBSCORES: instead of PBSTHREADS
 - PBSQUEUE: instead of PBSQUEUEEXOME
+- TMPDIR: folder for temporary files
+- MAP_CUTOFF: Minimum quality cutoff
+- DUP_CUTOFF: Maximum duplication level cutoff
