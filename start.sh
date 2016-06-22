@@ -39,7 +39,6 @@ outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )  
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
-scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
@@ -119,12 +118,6 @@ then
     exit 1;
 fi
 
-if [ ! -d $scriptdir ]
-then
-   MSG="SCRIPTDIR=$scriptdir directory not found"
-   echo -e "Program $0 stopped at line=$LINENO.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-   exit 1;
-fi
 if [ -z $email ]
 then
    MSG="Invalid value for parameter PBSEMAIL=$email in the configuration file"
