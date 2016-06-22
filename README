@@ -12,9 +12,15 @@ Changelog
 June 22, 2016:
 - The tool SNVMix is not used, so removed from the run fil
 - Deleted all mentions of INPUTDIR and SAMPLEDIR 
-- The MEMPROFCOMMAND option is not in use
-- The IGVDIR is	not in use  
-- The PBSPROJECTID is not in use
-- The PBSQUEUEWGEN is not in use   
-- The SKIPVCALL is also	not in use
-
+- The following options are not in use:
+-  	MEMPROFCOMMAND 
+- 	IGVDIR
+- 	PBSPROJECTID 
+-	PBSQUEUEWGEN    
+- 	SKIPVCALL
+- 	INPUTTYPE 
+- 	DISEASE 
+- 	GROUPNAMES	
+- 	LABINDEX 
+- 	LANEINDEX
+- 	SOMATIC_CALLER
