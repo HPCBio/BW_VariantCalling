@@ -42,7 +42,6 @@ email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
-scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )        
@@ -131,12 +130,6 @@ then
 	exit 1;
 fi
 
-if [ ! -d $scriptdir ]
-then
-   MSG="SCRIPTDIR=$scriptdir directory not found"
-   echo -e "Program $0 stopped at line=$LINENO.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-   exit 1;
-fi
 if [ -z $email ]
 then
    MSG="Invalid value for parameter PBSEMAIL=$email in the configuration file"
