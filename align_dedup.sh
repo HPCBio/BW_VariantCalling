@@ -292,14 +292,9 @@ then
 
 
 	echo -e "\n\n##################################################################################"	     
-<<<<<<< HEAD
-	echo -e "###################  step one: alignment                                 ############"
-        echo -e "##################################################################################\n\n"
-=======
 	echo -e "#############  step one: alignment                                 ############"
 	echo -e "##################################################################################\n\n"
         
->>>>>>> ea3dd0fcb15b0c9ba986520a3e2df3f4968b878c
 
         if [ $aligner == "BWA" ]
         then
@@ -313,6 +308,7 @@ then
 	       exit $exitcode;
 	   fi
         elif [ $aligner == "NOVOALIGN" ]
+	then
            $novoaligndir/novoalign $novoalign_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | samtools view -@ $thr -bS - > $alignedbam
            exitcode=$?
            echo `date`
@@ -411,7 +407,7 @@ then
 	echo -e "#############  step one: alignment                                 ############"
 	echo -e "##################################################################################\n\n"
 
-	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtools view -@ $thr -bSu -> $alignedbam 
+	$bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir view -@ $thr -bSu -> $alignedbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
