@@ -49,7 +49,7 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner_mod=$( cat $runfile | grep -w ALIGNERMODULE | cut -d '=' -f2  )
+aligner=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2  )
 aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
 samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
@@ -77,7 +77,7 @@ echo -e "#######################################################################
 
 module load $samtools_mod
 module load $sorttool_mod
-module load $aligner_mod
+
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -203,7 +203,7 @@ then
 	echo -e "############# step one: alignment and deduplication                ############"	     
 	echo -e "##################################################################################\n\n"
 	
-	bwa mem $aligner_parms -t $thr -R "${rgheader}" $ref_local $R1 $R2 | samblaster | samtools view -@ $thr -bSu -> $dedupbam 
+	$aligner/bwa mem  aligner_parms -t $thr -R "${rgheader}" $ref_local $R1 $R2 | samblaster | samtools view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -658,7 +658,6 @@ echo -e "#######################################################################
 
 module unload $samtools_mod
 module unload $sorttol_mod
-module load $aligner_mod
 echo `date`
 
 ### perhaps this bam file is not necessary in the delivery folder           

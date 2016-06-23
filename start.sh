@@ -51,8 +51,7 @@ dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
 paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
 aligner_tool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-aligner_mod=$( cat $runfile | grep -w ALIGNERMODULE | cut -d '=' -f2 )
-samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
+samtools=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
 samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
 sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
@@ -199,105 +198,7 @@ echo -e "\n\n###################################################################
 echo -e "###########                      checking tools                       ##################"
 echo -e "########################################################################################\n\n"
 
-`module load $aligner_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for ALIGNERMODULE=$aligner_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $aligner_mod`
-
-`module load $samblaster_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for SAMBLASTERMODULE=$samtools_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $samblaster_mod`
-
-`module load $samtools_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for SAMTOOLSMODULE=$samtools_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $samtools_mod`
-
-`module load $vcftools_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for VCFTOOLSMODULE=$vcftools_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $samtools_mod`
-
-`module load $sorttool_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for SORTMODULE=$sorttool_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $sorttool_mod`
-
-`module load $tabix_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for TABIXMODULE=$tabix_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-`module unload $tabix_mod`
-
-`module load $gatk_mod`
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for GATKMODULE=$gatk_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-
-`module unload $gatk_mod`
-`module unload java`
-`module load $java_mod`
-`module load $picard_mod`
-
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-    MSG="Invalid value specified for PICARDMODULE=$picard_mod in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-
-fi
-
-
+########################## Insert commands to check the full paths of tools :)
 
 echo -e "\n\n########################################################################################"
 echo -e "#############  Everything seems ok. Now setup/configure output folders and files   #########"
@@ -324,7 +225,7 @@ runfile=$outputdir/$deliverydir/docs/runfile.txt
 TopOutputLogs=$outputdir/logs
 
 truncate -s 0 $TopOutputLogs/pbs.ALIGN
-truncate -s 0 $TopOutputLogs/pbs.MERGE
+truncate -s 0 $TopOutputLogs/pbs.summary_dependencies
 
 generic_qsub_header=$TopOutputLogs/qsubGenericHeader
 truncate -s 0 $generic_qsub_header
@@ -450,25 +351,26 @@ do
 	echo "$scriptdir/align_dedup.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.alignDedup.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
 	echo "echo `date`" >> $qsub1
 	`chmod a+r $qsub1`               
-	jobid=`qsub $qsub1` 
-        `qhold -h u $jobid`
-	echo $jobid >> $TopOutputLogs/pbs.ALIGN
+	alignjobid=`qsub $qsub1` 
+        `qhold -h u $alignjobid`
+	echo $alignjobid >> $TopOutputLogs/pbs.ALIGN
+	echo $alignjobid >> $TopOutputLogs/pbs.summary_dependencies
 	echo `date`
 
-        if [ `expr ${#jobid}` -lt 1 ]
+        if [ `expr ${#alignjobid}` -lt 1 ]
         then
 	     MSG="unable to launch qsub align job for $sample. Exiting now"
 	     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
 	     exit 1        
         
         fi
-	echo -e "\n\n#######  this jobid=$jobid will be used to hold execution of realign_varcall.sh     ########\n\n"
+	echo -e "\n\n#######  this jobid=$alignjobid will be used to hold execution of realign_varcall.sh     ########\n\n"
 
         if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 	then
 	    set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
             # release all held jobs
-            `qrls -h u $jobid`
+            `qrls -h u $alignjobid`
         else
 
 
@@ -478,7 +380,7 @@ do
 	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"
 	   echo -e "########################################################################################\n\n"
 
-           alnjobid=$( echo $jobid | cut -d '.' -f 1 )
+           alnjobid=$( echo $alignjobid | cut -d '.' -f 1 )
         
 	   truncate -s 0 $TopOutputLogs/pbs.VCALL.$sample
 	
@@ -533,7 +435,7 @@ do
 	   echo "echo `date`" >> $qsub1
 	   `chmod a+r $qsub1`               
 	   mergejobid=`qsub $qsub1` 
-	   echo $mergejobid >> $TopOutputLogs/pbs.MERGE
+	   echo $mergejobid >> $TopOutputLogs/pbs.summary_dependencies
 	   echo `date`
 	
            if [ `expr ${#mergejobid}` -lt 1 ]
@@ -556,7 +458,7 @@ echo -e "#################     Now, we need to generate summary           ######
 echo -e "########################################################################################"
 echo -e "########################################################################################\n\n"
 
-alljobids=$( cat $TopOutputLogs/pbs.MERGE | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+alljobids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
 echo -e "\n\n### this list of jobids=[$alljobids] will be used to hold execution of summary.sh #####\n\n"
 

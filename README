@@ -38,7 +38,6 @@ June 22, 2016:
 - 	REMOVE_DUP
 - 	REORDERSAM
 - 	REALIGNORDER
--	CHRINDEX
 - 	PEDIGREE
 - 	VARIANT_TYPE
 - 	UNIFIEDGENOTYPERPARMS
@@ -73,3 +72,13 @@ New and changed parameters and meanings:
 - TMPDIR: folder for temporary files
 - MAP_CUTOFF: Minimum quality cutoff
 - DUP_CUTOFF: Maximum duplication level cutoff
+- BWADIR : Directory of the BWA MEM
+- CHRNAMES: Instead of CHRINDEX to represent the crhomosomes/ contigs under consideration
+- SAMPLEINFORMATION: This entry was repeated twice in the original file. Just keep the entry directing to the sampleinfo file
+
+Code changes:
+- pbs.MERGE
+- Use the variable alignjobid : instead of jobid, and save to pbs.ALIGN and pbs.summary_dependencies (to solve problems in deducing the right pbs job id in the queue)
+
+To do:
+- The old pipeline assumes that all tools are module loaded first then called directly. For more generality, the complete path of each tool is specified instead: SAMMODULE is replaced with SAMDIR, and the variable name is samtools. Still need to check the full path of each tool and update that the executable actually exists
