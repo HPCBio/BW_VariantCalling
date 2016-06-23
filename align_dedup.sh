@@ -60,9 +60,7 @@ samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-<<<<<<< HEAD
-=======
->>>>>>> ea3dd0fcb15b0c9ba986520a3e2df3f4968b878c
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
@@ -78,7 +76,6 @@ echo -e "#######################################################################
 echo -e "##################################################################################\n\n"          
 
 module load $sorttool_mod
-javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
