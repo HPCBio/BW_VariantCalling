@@ -51,6 +51,7 @@ indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
 aligner=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2  )
 aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+bwa_index=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
 samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
 samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
 sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
@@ -203,7 +204,7 @@ then
 	echo -e "############# step one: alignment and deduplication                ############"	     
 	echo -e "##################################################################################\n\n"
 	
-	$aligner/bwa mem  aligner_parms -t $thr -R "${rgheader}" $ref_local $R1 $R2 | samblaster | samtools view -@ $thr -bSu -> $dedupbam 
+	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samblaster | samtools view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]

@@ -48,11 +48,9 @@ June 22, 2016:
 - 	EMIT_ALL_SITES
 - 	DEPTH_FILTER
 - 	TARGETTED
-- 	SCRIPTDIR
 - 	KGENOME
 -	ONTARGET
 -	NOVOINDEX
--	BWAINDEX
 -	BWAMEMINDEX
 -	NOVODIR
 - 	BWADIR
@@ -73,7 +71,7 @@ New and changed parameters and meanings:
 - MAP_CUTOFF: Minimum quality cutoff
 - DUP_CUTOFF: Maximum duplication level cutoff
 - BWADIR : Directory of the BWA MEM
-- CHRNAMES: Instead of CHRINDEX to represent the crhomosomes/ contigs under consideration
+- CHRNAMES: Instead of CHRINDEX to represent the crhomosomes/ contigs under consideration (The existing names are approapriate for use with soybeans as is)
 - SAMPLEINFORMATION: This entry was repeated twice in the original file. Just keep the entry directing to the sampleinfo file
 
 Code changes:
@@ -82,3 +80,7 @@ Code changes:
 
 To do:
 - The old pipeline assumes that all tools are module loaded first then called directly. For more generality, the complete path of each tool is specified instead: SAMMODULE is replaced with SAMDIR, and the variable name is samtools. Still need to check the full path of each tool and update that the executable actually exists
+
+Mistakes in previous README update:
+- The variable SCRIPTDIR is actually needed in this workflow. Its proper use is now documented
+- The variable BWAINDEX is actually needed. It points to the indexed reference genome, and should be passed to the align_dedup.sh

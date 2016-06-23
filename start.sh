@@ -67,6 +67,7 @@ thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 
 if [ `expr ${#tmpdir}` -lt 1  ]
 then
