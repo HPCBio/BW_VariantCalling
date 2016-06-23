@@ -49,22 +49,26 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2  )
-aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2  )
+bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2  )
+novoaligndir=$( cat $runfile | grep -w NOVOALIGNDIR | cut -d '=' -f2  )
+bwamem_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+novoalign_parms=$( cat $runfile | grep -w NOVOALIGNPARAMS | cut -d '=' -f2 )
 bwa_index=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
-samtools=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
-sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
+novoalign_index=$( cat $runfile | grep -w NOVOALIGNINDEX | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
+<<<<<<< HEAD
+=======
+>>>>>>> ea3dd0fcb15b0c9ba986520a3e2df3f4968b878c
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
+dbsnp_local=${refdir}/$dbSNP
 outputdir=$rootdir/$SampleName
 
 echo -e "\n\n##################################################################################"  
@@ -74,7 +78,7 @@ echo -e "#######################################################################
 echo -e "##################################################################################\n\n"          
 
 module load $sorttool_mod
-
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -291,18 +295,37 @@ then
 
 
 	echo -e "\n\n##################################################################################"	     
+<<<<<<< HEAD
 	echo -e "###################  step one: alignment                                 ############"
         echo -e "##################################################################################\n\n"
+=======
+	echo -e "#############  step one: alignment                                 ############"
+	echo -e "##################################################################################\n\n"
+        
+>>>>>>> ea3dd0fcb15b0c9ba986520a3e2df3f4968b878c
 
-	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtools view -@ $thr -bSu -> $alignedbam 
-	exitcode=$?
-	echo `date`
-	if [ $exitcode -ne 0 ]
-	then
-	    MSG="alignment step  failed for sample $SampleName exitcode=$exitcode."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit $exitcode;
-	fi   
+        if [ $aligner == "BWA" ]
+        then
+	   $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samtools view -@ $thr -bSu -> $alignedbam 
+	   exitcode=$?
+	   echo `date`
+	   if [ $exitcode -ne 0 ]
+	   then
+	       MSG="alignment step  failed for sample $SampleName exitcode=$exitcode."
+	       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	       exit $exitcode;
+	   fi
+        elif [ $aligner == "NOVOALIGN" ]
+           $novoaligndir/novoalign $novoalign_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | samtools view -@ $thr -bS - > $alignedbam
+           exitcode=$?
+           echo `date`
+           if [ $exitcode -ne 0 ]
+           then
+               MSG="alignment step  failed for sample $SampleName exitcode=$exitcode."
+               echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+               exit $exitcode;
+           fi
+        fi   
 
 	echo -e "\n\n##################################################################################"	     
 	echo -e "#############  step two:making sure that a file was produced with alignments     #####"
@@ -318,15 +341,15 @@ then
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
 	    then
-	        echo -e "${SampleName}\tALIGNMENT\tFAIL\tbwa mem command did not produce alignments for $AlignDir/$alignedbam\n" >> $qcfile	    
-		MSG="bwa mem command did not produce alignments for $AlignDir/$alignedbam alignment failed"
+	        echo -e "${SampleName}\tALIGNMENT\tFAIL\taligner command did not produce alignments for $AlignDir/$alignedbam\n" >> $qcfile	    
+		MSG="aligner command did not produce alignments for $AlignDir/$alignedbam alignment failed"
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"      
 		exit 1;
 	    else
 		echo -e "####### $AlignDir/$alignedbam seems to be in order ###########"
 	    fi
 	else 
-	    MSG="bwa mem command did not produce a file $AlignDir/$alignedbam alignment failed"
+	    MSG="aligner command did not produce a file $AlignDir/$alignedbam alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"       
 	    exit 1;          
 	fi       
