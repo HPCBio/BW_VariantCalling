@@ -49,19 +49,17 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner=$( cat $runfile | grep -w BWADIR | cut -d '=' -f2  )
-aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2  )
+bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2  )
+novoaligndir=$( cat $runfile | grep -w NOVOALIGNDIR | cut -d '=' -f2  )
+bwamem_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
+novoalign_parms=$( cat $runfile | grep -w NOVOALIGNPARAMS | cut -d '=' -f2 )
 bwa_index=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
 novoalign_index=$( cat $runfile | grep -w NOVOALIGNINDEX | cut -d '=' -f2 )
-samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
-samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
-sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
-java_mod=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
@@ -76,7 +74,6 @@ echo -e "#######   we will need these guys throughout, let's take care of them n
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
 
-module load $samtools_mod
 module load $sorttool_mod
 
 
@@ -204,7 +201,7 @@ then
 	echo -e "############# step one: alignment and deduplication                ############"	     
 	echo -e "##################################################################################\n\n"
 	
-	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samblaster | samtools view -@ $thr -bSu -> $dedupbam 
+	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samblaster | $samtools view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -222,7 +219,7 @@ then
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( samtools view -c $AlignDir/$dedupbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$dedupbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -263,7 +260,7 @@ then
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( samtools view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -301,7 +298,7 @@ then
 
         if [ $aligner == "BWA" ]
         then
-	   bwa mem $aligner_parms -t $thr -R "${rgheader}" $ref_local $R1 $R2 | samtools view -@ $thr -bSu -> $alignedbam 
+	   $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samtools view -@ $thr -bSu -> $alignedbam 
 	   exitcode=$?
 	   echo `date`
 	   if [ $exitcode -ne 0 ]
@@ -311,7 +308,7 @@ then
 	       exit $exitcode;
 	   fi
         elif [ $aligner == "NOVOALIGN" ]
-           novoalign $aligner_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | samtools view -@ $thr -bS - > $alignedbam
+           $novoaligndir/novoalign $novoalign_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | samtools view -@ $thr -bS - > $alignedbam
            exitcode=$?
            echo `date`
            if [ $exitcode -ne 0 ]
@@ -331,7 +328,7 @@ then
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
 
-	    numAlignments=$( samtools view -c $AlignDir/$alignedbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$alignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -372,7 +369,7 @@ then
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
 	    
-	    numAlignments=$( samtools view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -402,9 +399,7 @@ then
 	echo -e "##################################################################################\n\n"
 
 
-        module unload java
         module load $java_mod       
-        module load $picard_mod
         
  
         
@@ -412,7 +407,7 @@ then
 	echo -e "#############  step one: alignment                                 ############"
 	echo -e "##################################################################################\n\n"
 
-	bwa mem $aligner_parms -t $thr -R "${rgheader}" $ref_local $R1 $R2 | samtools view -@ $thr -bSu -> $alignedbam 
+	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtools view -@ $thr -bSu -> $alignedbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -431,7 +426,7 @@ then
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
 
-	    numAlignments=$( samtools view -c $AlignDir/$alignedbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$alignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -494,7 +489,7 @@ VALIDATION_STRINGENCY=SILENT
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
 	    
-	    numAlignments=$( samtools view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -513,7 +508,6 @@ VALIDATION_STRINGENCY=SILENT
 	fi   
 
 
-        `module unload $picard_mod`
         
 	echo -e "\n\n##################################################################################"
 	echo -e "#############      END PICARD  BLOCK                                 ############"
@@ -554,7 +548,7 @@ echo -e "#######################################################################
 flagstats=${dedupsortedbam}.flagstats
 
 echo `date`             
-samtools flagstat $dedupsortedbam > $flagstats
+$samtools flagstat $dedupsortedbam > $flagstats
 echo `date`
 
 echo -e "\n\n##################################################################################"	     
@@ -671,7 +665,6 @@ echo -e "#######################################################################
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
 
-module unload $samtools_mod
 module unload $sorttol_mod
 echo `date`
 
