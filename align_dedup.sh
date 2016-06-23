@@ -59,7 +59,7 @@ markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | t
 gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-java_mod=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
@@ -291,8 +291,8 @@ then
 
 
 	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step one: alignment                                 ############"
-	echo -e "##################################################################################\n\n"
+	echo -e "###################  step one: alignment                                 ############"
+        echo -e "##################################################################################\n\n"
 
 	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtools view -@ $thr -bSu -> $alignedbam 
 	exitcode=$?
@@ -384,8 +384,7 @@ then
 	echo -e "##################################################################################\n\n"
 
 
-        module load $java_mod       
-        
+
  
         
 	echo -e "\n\n##################################################################################"	     
@@ -449,7 +448,7 @@ then
 	echo -e "##################################################################################\n\n"
 
 
-java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $picardir/picard.jar  MarkDuplicates \
+$javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $picardir/picard.jar  MarkDuplicates \
 INPUT=$alignedsortedbam OUTPUT=$dedupsortedbam TMP_DIR=$tmpdir \
 ASSUME_SORTED=true MAX_RECORDS_IN_RAM=null CREATE_INDEX=true \
 METRICS_FILE=${SampleName}.picard.metrics \
