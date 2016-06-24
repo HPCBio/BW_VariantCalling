@@ -350,7 +350,7 @@ then
 	echo -e "#############  step three: sort + dedup + indexing                       ############"
 	echo -e "##################################################################################\n\n"
 
-	$novocraftdir/novosort -markduplicates  -t $tmpdir -m 16G -c 8 -i -o $dedupsortedbam $alignedbam
+	$novocraftdir/novosort --markDuplicates  -t $tmpdir -c $thr -i -o $dedupsortedbam $alignedbam
 
 	exitcode=$?
 	echo `date`
