@@ -115,7 +115,7 @@ then
    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 else
-   if [ ${alignertool} != "BWAMEM"  -a $alignertool != "BWA_MEM" -a i$alignertool != "NOVOALIGN" ]
+   if [ ${alignertool} != "BWAMEM"  -a $alignertool != "BWA_MEM" -a $alignertool != "NOVOALIGN" ]
    then
       MSG="Incorrect value for ALIGNERTOOL=$aligner_tool in the configuration file."
       echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
