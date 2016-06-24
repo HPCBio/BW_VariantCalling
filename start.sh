@@ -353,9 +353,7 @@ do
 	echo "#PBS -N alignDedup.$sample" >> $qsub1
 	echo "#PBS -o $TopOutputLogs/log.alignDedup.$sample.ou" >> $qsub1
 	echo "#PBS -e $TopOutputLogs/log.alignDedup.$sample.in" >> $qsub1
-	echo "echo `date`" >> $qsub1
 	echo "$scriptdir/align_dedup.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.alignDedup.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
-	echo "echo `date`" >> $qsub1
 	`chmod a+r $qsub1`               
 	alignjobid=`qsub $qsub1` 
         `qhold -h u $alignjobid`
@@ -401,9 +399,7 @@ do
 		echo "#PBS -o $TopOutputLogs/log.realVcall.$sample.$chr.ou" >> $qsub1
 		echo "#PBS -e $TopOutputLogs/log.realVcall.$sample.$chr.in" >> $qsub1
                 echo "#PBS -W depend=afterok:$alnjobid" >> $qsub1
- 	        echo "echo `date`" >> $qsub1               
 		echo "$scriptdir/realign_varcall_by_chr.sh $runfile $sample $chr $TopOutputLogs/log.realVcall.$sample.$chr.in $TopOutputLogs/log.realVcall.$sample.$chr.ou $TopOutputLogs/qsub.realVcall.$sample.$chr" >> $qsub1
-	        echo "echo `date`" >> $qsub1
 		`chmod a+r $qsub1`               
 		realjobid=`qsub $qsub1` 
 		echo $realjobid >> $TopOutputLogs/pbs.VCALL.$sample
@@ -433,9 +429,7 @@ do
 	   echo "#PBS -o $TopOutputLogs/log.merge.$sample.ou" >> $qsub1
 	   echo "#PBS -e $TopOutputLogs/log.merge.$sample.in" >> $qsub1
            echo "#PBS -W depend=afterok:$vcalljobids" >> $qsub1
-	   echo "echo `date`" >> $qsub1        
 	   echo "$scriptdir/merge_vcf_and_bam.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
-	   echo "echo `date`" >> $qsub1
 	   `chmod a+r $qsub1`               
 	   mergejobid=`qsub $qsub1` 
 	   echo $mergejobid >> $TopOutputLogs/pbs.summary_dependencies
