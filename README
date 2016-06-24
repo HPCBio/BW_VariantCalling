@@ -79,7 +79,12 @@ Code changes:
 - Use the variable alignjobid : instead of jobid, and save to pbs.ALIGN and pbs.summary_dependencies (to solve problems in deducing the right pbs job id in the queue)
 
 To do:
-- The old pipeline assumes that all tools are module loaded first then called directly. For more generality, the complete path of each tool is specified instead: SAMMODULE is replaced with SAMDIR, and the variable name is samtools. Still need to check the full path of each tool and update that the executable actually exists
+- The old pipeline assumes that all tools are module loaded first then called directly. For more generality, the complete path of each tool is specified instead: SAMMODULE is replaced with SAMDIR, and the variable name is samtools. Still need to check the full path of each tool and update that the executable actually exists. So far, the following paths have been integrated:
+-	BWAMEMDIR
+-	SAMTOOLSDIR
+-	NOVOCRAFTDIR
+
+
 
 Mistakes in previous README update:
 - The variable SCRIPTDIR is actually needed in this workflow. Its proper use is now documented
