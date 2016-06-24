@@ -49,7 +49,7 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner_tool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2  )
+alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2  )
 bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2  )
 novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2  )
 bwamem_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
@@ -294,7 +294,7 @@ then
 	echo -e "##################################################################################\n\n"
         
 
-        if [ $aligner _tool== "BWA" ]
+        if [ $alignertool== "BWA" ]
         then
 
 
@@ -307,7 +307,7 @@ then
 	       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	       exit $exitcode;
 	   fi
-        elif [ $aligner_tool == "NOVOALIGN" ]
+        elif [ $alignertool == "NOVOALIGN" ]
 	then
            $novocraftdir/novoalign $novoalign_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | $samtoolsdir view -@ $thr -bS - > $alignedbam
            exitcode=$?
