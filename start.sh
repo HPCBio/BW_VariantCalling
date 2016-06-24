@@ -63,6 +63,7 @@ tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
+pbswalltime=$( cat $runfile | grep -w PBSWALLTIME | cut -d '=' -f2 )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 
@@ -240,6 +241,7 @@ echo "#PBS -q $queue" >> $generic_qsub_header
 echo "#PBS -m ae" >> $generic_qsub_header
 echo "#PBS -M $email" >> $generic_qsub_header
 echo "#PBS -l nodes=$nodes:ppn=$thr" >> $generic_qsub_header
+echo "#PBS -l walltime=${pbswalltime}" >> $generic_qsub_header
 
 
 echo -e "##### let's check that it worked and that the file was created                     ####"
