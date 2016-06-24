@@ -51,12 +51,12 @@ dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
 paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
 alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-samtools=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
 sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 )        
-gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
@@ -94,9 +94,9 @@ then
 	exit 1;
 fi
 
-if [ ! -d  $gatk_dir  ]
+if [ ! -d  $gatkdir  ]
 then
-	MSG="Invalid value specified for GATKDIR=$gatk_dir in the configuration file."
+	MSG="Invalid value specified for GATKDIR=$gatkdir in the configuration file."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
