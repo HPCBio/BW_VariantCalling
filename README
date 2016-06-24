@@ -89,7 +89,7 @@ To do:
 -	SAMTOOLSDIR
 -	NOVOCRAFTDIR
 -	SAMBLASTERDIR (just to allow the option, not sure if will be of value)
-
+- 	all mentions of configuration file shoule be changed to runfile
 
 
 Mistakes in previous README update:

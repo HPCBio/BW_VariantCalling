@@ -350,33 +350,34 @@ do
 	echo -e "####   Launching Alignment script for SAMPLE $sample with R1=$FQ_R1 R2=$FQ_R2     ##########"
 	echo -e "########################################################################################\n\n"
 
-	qsub1=$TopOutputLogs/qsub.alignDedup.$sample
-	cat $generic_qsub_header > $qsub1
-	echo "#PBS -N alignDedup.$sample" >> $qsub1
-	echo "#PBS -o $TopOutputLogs/log.alignDedup.$sample.ou" >> $qsub1
-	echo "#PBS -e $TopOutputLogs/log.alignDedup.$sample.in" >> $qsub1
-	echo "$scriptdir/align_dedup.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.alignDedup.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
-	`chmod a+r $qsub1`               
-	alignjobid=`qsub $qsub1` 
-        `qhold -h u $alignjobid`
-	echo $alignjobid >> $TopOutputLogs/pbs.ALIGN
-	echo $alignjobid >> $TopOutputLogs/pbs.summary_dependencies
-	echo `date`
-
-        if [ `expr ${#alignjobid}` -lt 1 ]
+	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
         then
-	     MSG="unable to launch qsub align job for $sample. Exiting now"
-	     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
-	     exit 1        
-        
-        fi
-	echo -e "\n\n#######  this jobid=$alignjobid will be used to hold execution of realign_varcall.sh     ########\n\n"
 
-        if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
-	then
-	    set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
-            # release all held jobs
-            `qrls -h u $alignjobid`
+		qsub1=$TopOutputLogs/qsub.alignDedup.$sample
+		cat $generic_qsub_header > $qsub1
+		echo "#PBS -N alignDedup.$sample" >> $qsub1
+		echo "#PBS -o $TopOutputLogs/log.alignDedup.$sample.ou" >> $qsub1
+		echo "#PBS -e $TopOutputLogs/log.alignDedup.$sample.in" >> $qsub1
+		echo "$scriptdir/align_dedup.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.alignDedup.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
+		`chmod a+r $qsub1`               
+		alignjobid=`qsub $qsub1` 
+        	`qhold -h u $alignjobid`
+		echo $alignjobid >> $TopOutputLogs/pbs.ALIGN
+		echo $alignjobid >> $TopOutputLogs/pbs.summary_dependencies
+		echo `date`
+
+        	if [ `expr ${#alignjobid}` -lt 1 ]
+	        then
+		     MSG="unable to launch qsub align job for $sample. Exiting now"
+		     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
+		     exit 1        
+	        
+	        fi
+		echo -e "\n\n#######  this jobid=$alignjobid will be used to hold execution of realign_varcall.sh     ########\n\n"
+
+		set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
+	            # release all held jobs
+        	    `qrls -h u $alignjobid`
         else
 
 	   echo -e "\n\n########################################################################################"                
@@ -479,8 +480,11 @@ then
      MSG="unable to launch qsub summary job. Exiting now"
      echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
      exit 1        
-
 fi
+
+ # release all held jobs
+ `qrls -h u $alignjobid`
+
         
 echo -e "\n\n########################################################################################"
 echo -e "##############                 EXITING NOW                            ##################"	
