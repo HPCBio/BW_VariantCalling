@@ -50,17 +50,14 @@ sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
 paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
-aligner_tool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 samtools=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
-samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
 sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 )        
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
-java_mod=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
@@ -111,11 +108,19 @@ then
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
-if [ $aligner_tool != "BWAMEM"  -a $aligner_tool != "BWA_MEM"  ]
+
+if [[ -z "${alignertool// }" ]]
 then
-    MSG="Incorrect value for ALIGNERTOOL=$aligner_tool in the configuration file."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+   MSG="Value for ALIGNERTOOL=$alignertool in the configuration file is empty. Please edit the runfile to specify the aligner name."
+   echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+   exit 1;
+else
+   if [ ${alignertool} != "BWAMEM"  -a $alignertool != "BWA_MEM" -a i$alignertool != "NOVOALIGN" ]
+   then
+      MSG="Incorrect value for ALIGNERTOOL=$aligner_tool in the configuration file."
+      echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+      exit 1;
+   fi
 fi
 
 if [ -z $email ]
@@ -373,9 +378,6 @@ do
             # release all held jobs
             `qrls -h u $alignjobid`
         else
-
-
-
 
 	   echo -e "\n\n########################################################################################"                
 	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"

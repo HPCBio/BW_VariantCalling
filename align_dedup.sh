@@ -49,13 +49,14 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2  )
+aligner_tool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2  )
 bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2  )
 novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2  )
 bwamem_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 novoalign_parms=$( cat $runfile | grep -w NOVOALIGNPARAMS | cut -d '=' -f2 )
 bwa_index=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
 novoalign_index=$( cat $runfile | grep -w NOVOALIGNINDEX | cut -d '=' -f2 )
+samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
 samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
@@ -195,13 +196,12 @@ then
 	echo -e "##CASE1: dedup tool is $markduplciates we use a single command for align-deduplication ##"  
 	echo -e "##################################################################################\n\n"
 
-	module load $samblaster_mod
-
 	echo -e "\n\n##################################################################################"
 	echo -e "############# step one: alignment and deduplication                ############"	     
 	echo -e "##################################################################################\n\n"
 	
-	$aligner/bwa mem $aligner_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | samblaster | $samtoolsdir view -@ $thr -bSu -> $dedupbam 
+
+        $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblaster | $samtoolsdir view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -278,8 +278,6 @@ then
 	    exit 1;          
 	fi       	
 	
-	module unload $samblaster_mod               
-
 	echo -e "\n\n##################################################################################"
 	echo -e "#############      END SAMBLASTER BLOCK                               ############"
 	echo -e "##################################################################################\n\n"             
@@ -296,8 +294,10 @@ then
 	echo -e "##################################################################################\n\n"
         
 
-        if [ $aligner == "BWA" ]
+        if [ $aligner _tool== "BWA" ]
         then
+
+
 	   $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir view -@ $thr -bSu -> $alignedbam 
 	   exitcode=$?
 	   echo `date`
@@ -307,7 +307,7 @@ then
 	       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	       exit $exitcode;
 	   fi
-        elif [ $aligner == "NOVOALIGN" ]
+        elif [ $aligner_tool == "NOVOALIGN" ]
 	then
            $novocraftdir/novoalign $novoalign_parms  -c $thr -d ${novoalign_index} -f $R1 $R2 | $samtoolsdir view -@ $thr -bS - > $alignedbam
            exitcode=$?
@@ -495,7 +495,7 @@ VALIDATION_STRINGENCY=SILENT
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$dedupbam seems to be in order ###########"
+		echo -e "####### $AlignDir/$dedupsortedbam seems to be in order ###########"
 	    fi
 	else 
 	    MSG="picard command did not produce a file $AlignDir/$dedupsortedbam"
@@ -661,7 +661,6 @@ echo -e "#######################################################################
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
 
-module unload $sorttol_mod
 echo `date`
 
 ### perhaps this bam file is not necessary in the delivery folder           

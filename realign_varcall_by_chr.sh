@@ -52,12 +52,12 @@ aligner_mod=$( cat $runfile | grep -w ALIGNERMODULE | cut -d '=' -f2  )
 aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
-gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 ) 
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 ) 
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
@@ -73,9 +73,7 @@ echo -e "#######   we will need these guys throughout, let's take care of them n
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
 
-module load $samtools_mod
 module load $sorttool_mod
-module load $gatk_mod
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -188,7 +186,7 @@ echo -e "\n### split aligned.bam by region with  $inputbam and chr=$chr         
 
 cd $RealignDir
 
-samtools view -bu -@ $thr -h $inputbam $chr > $dedupsortedbam
+$samtoolsdir view -bu -@ $thr -h $inputbam $chr > $dedupsortedbam
 
 exitcode=$?
 
@@ -203,7 +201,7 @@ if [ -s $dedupsortedbam ]
 then     
     echo -e "### the file was created. But we are not done.     #############"
     echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-    numAlignments=$( samtools view -c $dedupsortedbam ) 
+    numAlignments=$( $samtools view -c $dedupsortedbam ) 
 
     echo `date`
     if [ $numAlignments -eq 0 ]
@@ -223,7 +221,7 @@ fi
 
 echo -e "\n### index  $dedupsortedbam                                 ###\n"  
 
-samtools index $dedupsortedbam
+$samtools index $dedupsortedbam
 
 exitcode=$?
 
@@ -266,7 +264,7 @@ echo -e "#######################################################################
 
 cd $RealignDir
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -R $ref_local \
 	 -I $dedupsortedbam \
 	 -T RealignerTargetCreator \
@@ -292,7 +290,7 @@ else
 	echo -e "########### command two: executing GATK IndelRealigner and generating BAM    #####"
 	echo -e "##################################################################################\n\n"
 
-	java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+	$javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
                   -R $ref_local -I $dedupsortedbam -T IndelRealigner $realparms \
                   --targetIntervals ${SampleName}.$chr.realignTargetCreator.intervals \
                   -o $realignedbam
@@ -315,7 +313,7 @@ else
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( samtools view -c $realignedbam ) 
+	    numAlignments=$( $samtools view -c $realignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -340,7 +338,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command four: run GATK BaseRecalibrator using known indels and dbSNP    ##"
 echo -e "##################################################################################\n\n"
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T BaseRecalibrator \
          -R $ref_local \
          -I $realignedbam \
@@ -367,7 +365,7 @@ else
 	echo -e "##################################################################################\n\n"
 
 
-        java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+        $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
                 -R $ref_local \
                 -I $realignedbam \
                 -T PrintReads \
@@ -387,7 +385,7 @@ else
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( samtools view -c $recalibratedbam ) 
+	    numAlignments=$( $samtools view -c $recalibratedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -431,7 +429,7 @@ echo -e "#######################################################################
 
 
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -T HaplotypeCaller \
 	 -R $ref_local \
 	 --dbsnp $dbsnp_local \
@@ -476,9 +474,7 @@ echo -e "#######################################################################
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
 
-module unload $samtools_mod
 module unload $sorttol_mod
-module unload $gatk_mod
 echo `date`
  
 #cp $RealignDir/${SampleName}.$chr.recalibrated.bam   $DeliveryDir
