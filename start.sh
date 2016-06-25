@@ -26,7 +26,7 @@ scriptfile=$0
 runfile=$1
 if [ !  -s $runfile ]
 then
-   MSG="program=$0 stopped at line=$LINENO. $runfile configuration file not found."
+   MSG="program=$0 stopped at line=$LINENO. $runfile runfile not found."
    exit 1;
 fi
 
@@ -38,9 +38,11 @@ reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )  
+scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
+numsamples=$(wc -l sampleinfo)
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )        
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
@@ -50,54 +52,49 @@ sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
 paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
-alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
-sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
-markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 )        
-gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
-tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
+analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+samblasterdir=$( cat $runfile | grep -w SAMBLASTERDIR | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
+tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
+novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2 )
+vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
+fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 queue=$( cat $runfile | grep -w PBSQUEUE | cut -d '=' -f2 )
 pbswalltime=$( cat $runfile | grep -w PBSWALLTIME | cut -d '=' -f2 )
-analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 
 if [ `expr ${#tmpdir}` -lt 1  ]
 then
-	MSG="Invalid value specified for TMPDIR in the configuration file."
+	MSG="Invalid value specified for TMPDIR in the runfile."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
 
 if [ ! -d  $refdir  ]
 then
-	MSG="Invalid value specified for REFGENOMEDIR=$refdir in the configuration file."
+	MSG="Invalid value specified for REFGENOMEDIR=$refdir in the runfile."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
 
 if [ ! -s  $refdir/$refgenome  ]
 then
-	MSG="Invalid value specified for REFGENOME=$refgenome in the configuration file."
+	MSG="Invalid value specified for REFGENOME=$refgenome in the runfile."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
 
 if [ ! -s  $refdir/$dbSNP  ]
 then
-	MSG="Invalid value specified for DBSNP=$dbSNP in the configuration file."
-	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-fi
-
-if [ ! -d  $gatkdir  ]
-then
-	MSG="Invalid value specified for GATKDIR=$gatkdir in the configuration file."
+	MSG="Invalid value specified for DBSNP=$dbSNP in the runfile."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
@@ -105,20 +102,20 @@ fi
 
 if [ $inputformat != "FASTQ"  ]
 then
-    MSG="Incorrect value for INPUTFORMAT=$inputformat in the configuration file."
+    MSG="Incorrect value for INPUTFORMAT=$inputformat in the runfile."
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
 
 if [[ -z "${alignertool// }" ]]
 then
-   MSG="Value for ALIGNERTOOL=$alignertool in the configuration file is empty. Please edit the runfile to specify the aligner name."
+   MSG="Value for ALIGNERTOOL=$alignertool in the runfile is empty. Please edit the runfile to specify the aligner name."
    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 else
    if [ ${alignertool} != "BWAMEM"  -a $alignertool != "BWA_MEM" -a $alignertool != "NOVOALIGN" ]
    then
-      MSG="Incorrect value for ALIGNERTOOL=$aligner_tool in the configuration file."
+      MSG="Incorrect value for ALIGNERTOOL=$aligner_tool in the runfile."
       echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    fi
@@ -126,7 +123,7 @@ fi
 
 if [ -z $email ]
 then
-   MSG="Invalid value for parameter PBSEMAIL=$email in the configuration file"
+   MSG="Invalid value for parameter PBSEMAIL=$email in the runfile"
    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 fi
@@ -140,22 +137,23 @@ fi
 
 if [ `expr ${#dup_cutoff}` -lt 1 -o `expr ${#map_cutoff}` -lt 1 ]
 then
-   MSG="Invalid value for MAP_CUTOFF=$map_cutoff or for DUP_CUTOFF=$dup_cutoff  in the configuration file"
+   MSG="Invalid value for MAP_CUTOFF=$map_cutoff or for DUP_CUTOFF=$dup_cutoff  in the runfile"
    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 fi
 
 if [ `expr ${#indices}` -lt 1 ]
 then
-   MSG="Invalid value for CHRNAMES in the configuration file"
+   MSG="Invalid value for CHRNAMES in the runfile"
    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 fi
 
 
+
 if [ $markduplicates != "NOVOSORT" -a $markduplicates != "SAMBLASTER" -a $markduplicates != "PICARD" ]
 then
-    MSG="Invalid value for parameter MARKDUPLICATESTOOL=$markduplicates  in the configuration file."
+    MSG="Invalid value for parameter MARKDUPLICATESTOOL=$markduplicates  in the runfile."
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
@@ -176,7 +174,7 @@ fi
 
 if [ $paired -ne 1 -a $paired != "YES" ]
 then
-    MSG="Invalid value for parameter PAIRED=$paired in configuration file "
+    MSG="Invalid value for parameter PAIRED=$paired in runfile "
     echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
@@ -206,6 +204,63 @@ echo -e "###########                      checking tools                       #
 echo -e "########################################################################################\n\n"
 
 ########################## Insert commands to check the full paths of tools :)
+
+hash $samblasterdir 2>/dev/null || { echo >&2 "I require samblaster but it's not installed.  Aborting."; exit 1; }
+
+
+if [ ! -d  $picardir  ]
+then
+        MSG="Invalid value specified for PICARDIR=$picardir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+if [ ! -d  $gatkdir  ]
+then
+        MSG="Invalid value specified for GATKDIR=$gatkdir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+hash  $samtoolsdir 2>/dev/null || { echo >&2 "I require sambtools but it's not installed.  Aborting."; exit 1; }
+
+if [ ! -d  $bwamemdir  ]
+then
+        MSG="Invalid value specified for BWAMEMDIR=$bwamemdir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+if [ ! -d  $javadir  ]
+then
+        MSG="Invalid value specified for JAVADIR=$javadir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+if [ ! -d  $novocraftdir  ]
+then
+        MSG="Invalid value specified for NOVOCRAFTDIR=$novocraftdir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+if [ ! -d  $vcftoolsdir  ]
+then
+        MSG="Invalid value specified for VCFTOOLSDIR=$vcftoolsdir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+if [ ! -d  $fastqcdir  ]
+then
+        MSG="Invalid value specified for FASTQDIR=$fastqcdir in the runfile."
+        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+        exit 1;
+fi
+
+hash  $tabixdir  2>/dev/null || { echo >&2 "I require tabix but it's not installed.  Aborting."; exit 1; }
+
 
 echo -e "\n\n########################################################################################"
 echo -e "#############  Everything seems ok. Now setup/configure output folders and files   #########"
@@ -352,7 +407,6 @@ do
 
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
         then
-
 		qsub1=$TopOutputLogs/qsub.alignDedup.$sample
 		cat $generic_qsub_header > $qsub1
 		echo "#PBS -N alignDedup.$sample" >> $qsub1
@@ -380,7 +434,7 @@ do
         	    `qrls -h u $alignjobid`
         else
 
-	   echo -e "\n\n########################################################################################"                
+	   echo -e "\n\n########################################################################################"             
 	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"
 	   echo -e "########################################################################################\n\n"
 
@@ -391,8 +445,7 @@ do
            for chr in $indices
            do
 
-
-		echo -e "\n\n########################################################################################"                
+		echo -e "\n\n########################################################################################" 
 		echo -e "####   Realign-Vcall script for SAMPLE $sample chr=$chr                              #######"
 		echo -e "########################################################################################\n\n"
 
@@ -413,12 +466,11 @@ do
 		     MSG="unable to launch qsub realign job for $sample. Exiting now"
 		     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
 		     exit 1        
-
 		fi
 
            done
         
-	   echo -e "\n\n########################################################################################"                
+	   echo -e "\n\n########################################################################################"             
 	   echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########"
 	   echo -e "########################################################################################\n\n"
 
