@@ -210,7 +210,7 @@ then
 	set -x
 	
 
-        $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblaster | $samtoolsdir view -@ $thr -bSu -> $dedupbam 
+        $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblaster | $samtoolsdir/samtools view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -232,7 +232,7 @@ then
 	    echo -e "### the file was created. But we are not done.     #############" >&2
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
 	    set -x
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupbam ) 	
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$dedupbam ) 	
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
 	    then
@@ -279,7 +279,7 @@ then
 	    echo -e "### the file was created. But we are not done.     #############" >&2
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
 	    set -x 
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -323,7 +323,7 @@ then
         then
 
 
-	   $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir view -@ $thr -bSu -> $alignedbam 
+	   $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir/samtools view -@ $thr -bSu -> $alignedbam 
 	   exitcode=$?
 	   echo `date`
 	   if [ $exitcode -ne 0 ]
@@ -334,7 +334,7 @@ then
 	   fi
         elif [ $alignertool == "NOVOALIGN" ]
 	then
-           $novocraftdir/novoalign $novoalign_parms  -c $thr -d ${refdir}/${novoalign_index} -f $R1 $R2 | $samtoolsdir view -@ $thr -bS - > $alignedbam
+           $novocraftdir/novoalign $novoalign_parms  -c $thr -d ${refdir}/${novoalign_index} -f $R1 $R2 | $samtoolsdir/samtools view -@ $thr -bS - > $alignedbam
            exitcode=$?
            echo `date`
            if [ $exitcode -ne 0 ]
@@ -358,7 +358,7 @@ then
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
  	    set -x 		
 
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$alignedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$alignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -407,7 +407,7 @@ then
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
 	    set -x 
 	    
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -442,7 +442,7 @@ then
 	echo -e "##################################################################################\n\n" >&2
 	set -x 	
 
-	$bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir view -@ $thr -bSu -> $alignedbam 
+	$bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir/samtools view -@ $thr -bSu -> $alignedbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -464,7 +464,7 @@ then
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
 	    set -x
 
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$alignedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$alignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -535,7 +535,7 @@ VALIDATION_STRINGENCY=SILENT
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
 	    set -x 
 	    
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -598,7 +598,7 @@ set -x
 flagstats=${dedupsortedbam}.flagstats
 
 echo `date`             
-$samtoolsdir flagstat $dedupsortedbam > $flagstats
+$samtoolsdir/samtools flagstat $dedupsortedbam > $flagstats
 echo `date`
 
 set +x
@@ -609,7 +609,7 @@ set -x
 
 if [ ! -s $flagstats ]
 then
-	 echo -e "${SampleName}\tQCT/EST\tFAIL\tsamtools flagstat command produced an empty file $flagstats\n" >> $qcfile
+	 echo -e "${SampleName}\tQCT/EST\tFAIL\tsamtools/samtools flagstat command produced an empty file $flagstats\n" >> $qcfile
 	 MSG="samtools flagstat command produced an empty file  $flagstats"
 	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	 exit $exitcode;

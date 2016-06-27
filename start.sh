@@ -228,7 +228,7 @@ then
         exit 1;
 fi
 
-hash  $samtoolsdir 2>/dev/null || { echo >&2 "I require sambtools but it's not installed.  Aborting."; exit 1; }
+hash  $samtoolsdir/samtools 2>/dev/null || { echo >&2 "I require sambtools but it's not installed.  Aborting."; exit 1; }
 
 if [ ! -d  $bwamemdir  ]
 then
