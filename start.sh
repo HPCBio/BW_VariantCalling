@@ -5,6 +5,7 @@
 # In order to run this pipeline please type at the command line
 # start.sh <runfile>
 ################################################################################################
+set -x
 redmine=hpcbio-redmine@igb.illinois.edu
 
 if [ $# != 1 ]
@@ -14,13 +15,13 @@ then
         exit 1;
 fi
 
-
-echo -e "\n\n########################################################################################"
-echo -e     "#############                BEGIN VARIANT CALLING WORKFLOW              ###############"
-echo -e     "########################################################################################\n\n"
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e     "#############                BEGIN VARIANT CALLING WORKFLOW              ###############">&2
+echo -e     "########################################################################################\n\n">&2
+set -x
 
 umask 0027
-set -x
 echo `date`	
 scriptfile=$0
 runfile=$1
@@ -30,9 +31,11 @@ then
    exit 1;
 fi
 
-echo -e "\n\n########################################################################################"
-echo -e "#############                CHECKING PARAMETERS                         ###############"
-echo -e "########################################################################################\n\n"
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e "#############                CHECKING PARAMETERS                         ###############" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
@@ -179,9 +182,11 @@ then
     exit 1;
 fi
 
-echo -e "\n\n########################################################################################"
-echo -e "###########                      checking PBS params                      ##################"
-echo -e "########################################################################################\n\n"
+set +x 
+echo -e "\n\n########################################################################################" >&2
+echo -e "###########                      checking PBS params                      ##################" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 if [ `expr ${#thr}` -lt 1 ]
 then
@@ -198,10 +203,11 @@ then
     queue="default"
 fi
 
-
-echo -e "\n\n########################################################################################"
-echo -e "###########                      checking tools                       ##################"
-echo -e "########################################################################################\n\n"
+set +x 
+echo -e "\n\n########################################################################################" >&2
+echo -e "###########                      checking tools                       ##################" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 ########################## Insert commands to check the full paths of tools :)
 
@@ -261,10 +267,11 @@ fi
 
 hash  $tabixdir  2>/dev/null || { echo >&2 "I require tabix but it's not installed.  Aborting."; exit 1; }
 
-
-echo -e "\n\n########################################################################################"
-echo -e "#############  Everything seems ok. Now setup/configure output folders and files   #########"
-echo -e "########################################################################################\n\n"
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e "#############  Everything seems ok. Now setup/configure output folders and files   #########" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 if [ ! -d $outputdir/logs  ]
 then
@@ -298,8 +305,9 @@ echo "#PBS -M $email" >> $generic_qsub_header
 echo "#PBS -l nodes=$nodes:ppn=$thr" >> $generic_qsub_header
 echo "#PBS -l walltime=${pbswalltime}" >> $generic_qsub_header
 
-
-echo -e "##### let's check that it worked and that the file was created                     ####"
+set +x
+echo -e "##### let's check that it worked and that the file was created                     ####" >&2
+set -x
 
 if [ ! -s $generic_qsub_header ]
 then 
@@ -308,12 +316,13 @@ then
     exit 1;
 fi
 
-echo -e "\n\n########################################################################################"
-echo -e "################### Documenting progress on redmine with this message ##################"
-echo -e "########################################################################################"
-echo -e "##### the first part of the Report also needs to be stored in Summary.Report      ######"
-echo -e "########################################################################################\n\n"
-
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e "################### Documenting progress on redmine with this message ##################" >&2
+echo -e "########################################################################################" >&2
+echo -e "##### the first part of the Report also needs to be stored in Summary.Report      ######" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 
 MSG="Variant calling workflow  started by username:$USER at: "$( echo `date` )
@@ -321,30 +330,33 @@ LOGS="Documentation about this run such as config files and results of QC tests 
 echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 echo -e "$MSG\n\nDetails:\n\n$LOGS" >> $outputdir/$deliverydir/docs/Summary.Report
 
-
-echo -e "\n\n########################################################################################"
-echo -e "########################################################################################"
-echo -e "########################################################################################"
-echo -e "#####                               MAIN LOOP STARTS HERE                      #########"
-echo -e "########################################################################################"
-echo -e "#####  Trimming has been performed already                                     #########"
-echo -e "#####  Alignment-dedup analysis: one qsub per sample                           #########"
-echo -e "#####  Realignment-recalibration-variantCalling: 25 qsubs per sample, one per chr   ####"
-echo -e "########################################################################################\n\n"
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e "########################################################################################" >&2
+echo -e "########################################################################################" >&2
+echo -e "#####                               MAIN LOOP STARTS HERE                      #########" >&2
+echo -e "########################################################################################" >&2
+echo -e "#####  Trimming has been performed already                                     #########" >&2
+echo -e "#####  Alignment-dedup analysis: one qsub per sample                           #########" >&2
+echo -e "#####  Realignment-recalibration-variantCalling: 25 qsubs per sample, one per chr   ####" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 while read sampleLine
 do
     if [ `expr ${#sampleLine}` -lt 1 ]
     then
-	echo -e "\n\n########################################################################################"
-	echo -e "##############                 skipping empty line        ##############################"
-	echo -e "########################################################################################\n\n"
+	set +x 
+	echo -e "\n\n########################################################################################" >&2
+	echo -e "##############                 skipping empty line        ##############################" >&2
+	echo -e "########################################################################################\n\n" >&2
     else
-	echo -e "\n\n########################################################################################"
-	echo -e "#####         Processing next line $sampleLine                                ##########"
-	echo -e "##### col1=sample_name col2=read1 col3=read2  including full paths            ##########"
-	echo -e "##### sample_name will be used for directory namas and in RG line of BAM files##########"
-	echo -e "########################################################################################\n\n"
+	echo -e "\n\n########################################################################################" >&2
+	echo -e "#####         Processing next line $sampleLine                                ##########" >&2
+	echo -e "##### col1=sample_name col2=read1 col3=read2  including full paths            ##########" >&2
+	echo -e "##### sample_name will be used for directory namas and in RG line of BAM files##########" >&2
+	echo -e "########################################################################################\n\n" >&2
+	set -x
 
 	sample=$( echo "$sampleLine" | cut -d ' ' -f 1 )  
 	FQ_R1=$( echo "$sampleLine" | cut -d ' '  -f 2 )
@@ -380,10 +392,12 @@ do
 	     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
 	     exit 1                
 	fi
-
-	echo -e "\n\n########################################################################################"
-	echo -e "###   Everything seems in order. Now creating folders where results will go  ###########"
-	echo -e "########################################################################################\n\n"
+	
+	set +x
+	echo -e "\n\n########################################################################################" >&2
+	echo -e "###   Everything seems in order. Now creating folders where results will go  ###########" >&2
+	echo -e "########################################################################################\n\n" >&2
+	set -x
 
 	if [ -d $outputdir/$sample ]
 	then
@@ -400,10 +414,12 @@ do
 	     mkdir -p $outputdir/$sample/variant
 	     mkdir -p $outputdir/$deliverydir/$sample	     
 	fi
-
-	echo -e "\n\n########################################################################################"                
-	echo -e "####   Launching Alignment script for SAMPLE $sample with R1=$FQ_R1 R2=$FQ_R2     ##########"
-	echo -e "########################################################################################\n\n"
+	
+	set +x
+	echo -e "\n\n########################################################################################" >&2               
+	echo -e "####   Launching Alignment script for SAMPLE $sample with R1=$FQ_R1 R2=$FQ_R2     ##########" >&2
+	echo -e "########################################################################################\n\n" >&2
+	set -x
 
 	qsub1=$TopOutputLogs/qsub.alignDedup.$sample
 	cat $generic_qsub_header > $qsub1
@@ -425,8 +441,10 @@ do
 	     exit 1        
 	        
         fi
-
-	echo -e "\n\n#######  this jobid=$alignjobid will be used to hold execution of realign_varcall.sh     ########\n\n"
+	
+ 	set +x
+	echo -e "\n\n#######  this jobid=$alignjobid will be used to hold execution of realign_varcall.sh     ########\n\n" >&2
+	set -x	
 
 	if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
         then
@@ -434,20 +452,22 @@ do
 	            # release all held jobs
         	    `qrls -h u $alignjobid`
         else
-
-	   echo -e "\n\n########################################################################################"          
-	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####"
-	   echo -e "########################################################################################\n\n"
-
+	   set +x
+	   echo -e "\n\n########################################################################################" >&2         
+	   echo -e "####   Next loop2 for Launching Realign-Vcall script for SAMPLE $sample on all chr     #####" >&2
+	   echo -e "########################################################################################\n\n" >&2
+	   set -x
            alnjobid=$( echo $alignjobid | cut -d '.' -f 1 )
         
 	   truncate -s 0 $TopOutputLogs/pbs.VCALL.$sample
 	
            for chr in $indices
            do
-		echo -e "\n\n########################################################################################" 
-		echo -e "####   Realign-Vcall script for SAMPLE $sample chr=$chr                              #######"
-		echo -e "########################################################################################\n\n"
+		set +x
+		echo -e "\n\n########################################################################################" >&2 
+		echo -e "####   Realign-Vcall script for SAMPLE $sample chr=$chr                              #######" >&2
+		echo -e "########################################################################################\n\n" >&2
+		set -x
 
 		qsub1=$TopOutputLogs/qsub.realVcall.$sample.$chr
 		cat $generic_qsub_header > $qsub1
@@ -469,10 +489,11 @@ do
 		fi
 
            done
-        
-	   echo -e "\n\n########################################################################################"             
-	   echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########"
-	   echo -e "########################################################################################\n\n"
+           set +x  
+	   echo -e "\n\n########################################################################################" >&2            
+	   echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########" >&2
+	   echo -e "########################################################################################\n\n" >&2
+	   set -x 
 
            vcalljobids=$( cat $TopOutputLogs/pbs.VCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
@@ -502,18 +523,22 @@ do
    fi  # end non-empty line
 done <  $sampleinfo
 
-echo -e "\n\n########################################################################################"
-echo -e "########################################################################################"
-echo -e "#################           MAIN LOOP ENDS HERE                  #######################"
-echo -e "########################################################################################"
-echo -e "########################################################################################"
-echo -e "#################     Now, we need to generate summary           #######################"
-echo -e "########################################################################################"
-echo -e "########################################################################################\n\n"
+set +x
+echo -e "\n\n########################################################################################" >&2
+echo -e "########################################################################################" >&2
+echo -e "#################           MAIN LOOP ENDS HERE                  #######################" >&2
+echo -e "########################################################################################" >&2
+echo -e "########################################################################################" >&2
+echo -e "#################     Now, we need to generate summary           #######################" >&2
+echo -e "########################################################################################" >&2
+echo -e "########################################################################################\n\n" >&2
+set -x
 
 alljobids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
-echo -e "\n\n### this list of jobids=[$alljobids] will be used to hold execution of summary.sh #####\n\n"
+set +x
+echo -e "\n\n### this list of jobids=[$alljobids] will be used to hold execution of summary.sh #####\n\n" >&2
+set -x
 
 qsub2=$TopOutputLogs/qsub.summary
 cat $generic_qsub_header > $qsub2
@@ -538,7 +563,8 @@ fi
  # release all held jobs
  `qrls -h u $alignjobid`
 
-        
-echo -e "\n\n########################################################################################"
-echo -e "##############                 EXITING NOW                            ##################"	
-echo -e "########################################################################################\n\n"
+set +x        
+echo -e "\n\n########################################################################################" >&2
+echo -e "##############                 EXITING NOW                            ##################" >&2	
+echo -e "########################################################################################\n\n" >&2
+set -x
