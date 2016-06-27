@@ -211,7 +211,7 @@ set -x
 
 ########################## Insert commands to check the full paths of tools :)
 
-hash $samblasterdir 2>/dev/null || { echo >&2 "I require samblaster but it's not installed.  Aborting."; exit 1; }
+hash $samblasterdir/samblaster 2>/dev/null || { echo >&2 "I require samblaster but it's not installed.  Aborting."; exit 1; }
 
 
 if [ ! -d  $picardir  ]
