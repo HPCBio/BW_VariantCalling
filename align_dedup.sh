@@ -4,6 +4,8 @@
 # 
 redmine=hpcbio-redmine@igb.illinois.edu
 ##redmine=grendon@illinois.edu
+
+set -x
 if [ $# != 7 ]
 then
         MSG="Parameter mismatch. Rerun as: $0 <runfile> <SampleName> <read1> <read2> <log.in> <log.ou> <qsub>"
@@ -11,16 +13,17 @@ then
         exit 1;
 fi
 
-echo -e "\n\n#####################################################################################"        
-echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
-echo -e "#####################################################################################\n\n"        
+set +x
+echo -e "\n\n#####################################################################################" >&2       
+echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############" >&2
+echo -e "#####################################################################################\n\n" >&2
 
-echo -e "\n\n#####################################################################################"        
-echo -e "#############             DECLARING VARIABLES                         ###############"
-echo -e "#####################################################################################\n\n"        
+echo -e "\n\n#####################################################################################" >&2        
+echo -e "#############             DECLARING VARIABLES                         ###############" >&2
+echo -e "#####################################################################################\n\n" >&2
+set -x        
 
 umask 0027
-set -x
 echo `date`
 scriptfile=$0
 runfile=$1
@@ -70,11 +73,13 @@ map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
 dbsnp_local=${refdir}/$dbSNP
 outputdir=$rootdir/$SampleName
 
-echo -e "\n\n##################################################################################"  
-echo -e "##################################################################################"          	
-echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
-echo -e "##################################################################################"  
-echo -e "##################################################################################\n\n"          
+set +x
+echo -e "\n\n##################################################################################" >&2 
+echo -e "##################################################################################" >&2          	
+echo -e "#######   we will need these guys throughout, let's take care of them now   ######" >&2
+echo -e "##################################################################################" >&2 
+echo -e "##################################################################################\n\n" >&2
+set -x          
 
 module load $sorttool_mod
 
@@ -90,10 +95,11 @@ alignedsortedbam=${SampleName}.nodups.sorted.bam                 # name of the a
 dedupbam=${SampleName}.wdups.bam                                 # name of the deduplicated bam
 dedupsortedbam=${SampleName}.wdups.sorted.bam                    # name of the dedup-sorted bam (output of this module)
 
-
-echo -e "\n\n##################################################################################"        
-echo -e "#############                       SANITY CHECK                   ###############"
-echo -e "##################################################################################\n\n"        
+set +x
+echo -e "\n\n##################################################################################" >&2      
+echo -e "#############                       SANITY CHECK                   ###############" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x        
  
 if [ ! -d $tmpdir ]
 then
@@ -169,36 +175,39 @@ then
 fi
 
         
-
-echo -e "\n\n##################################################################################"  
-echo -e "##################################################################################"          
-echo -e "##################################################################################"        
-echo -e "#############   ALIGN-DEDUPPLICATION  FOR SAMPLE $SampleName       ###############"
-echo -e "##################################################################################" 
-echo -e "##################################################################################"  
-echo -e "##################################################################################\n\n"          
-
+set +x
+echo -e "\n\n##################################################################################" >&2 
+echo -e "##################################################################################" >&2          
+echo -e "##################################################################################" >&2        
+echo -e "#############   ALIGN-DEDUPPLICATION  FOR SAMPLE $SampleName       ###############" >&2
+echo -e "##################################################################################" >&2
+echo -e "##################################################################################" >&2 
+echo -e "##################################################################################\n\n" >&2          
+set -x 
 
 echo `date` 
 
 cd  $AlignDir
 
-echo -e "\n\n##################################################################################"
-echo -e "#############   select the dedup tool and then run the command        ############"
-echo -e "#############   choices:  SAMBLASTER or NOVOSORT                      ############"
-echo -e "##################################################################################\n\n"          
-
+set +x
+echo -e "\n\n##################################################################################" >&2
+echo -e "#############   select the dedup tool and then run the command        ############" >&2
+echo -e "#############   choices:  SAMBLASTER or NOVOSORT                      ############" >&2
+echo -e "##################################################################################\n\n" >&2          
+set -x
 
 
 if [ $markduplicates == "SAMBLASTER" ]
 then
-	echo -e "\n\n##################################################################################"
-	echo -e "##CASE1: dedup tool is $markduplciates we use a single command for align-deduplication ##"  
-	echo -e "##################################################################################\n\n"
+        set +x
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "##CASE1: dedup tool is $markduplciates we use a single command for align-deduplication ##" >&2 
+	echo -e "##################################################################################\n\n" >&2
 
-	echo -e "\n\n##################################################################################"
-	echo -e "############# step one: alignment and deduplication                ############"	     
-	echo -e "##################################################################################\n\n"
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "############# step one: alignment and deduplication                ############" >&2	     
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 	
 
         $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblaster | $samtoolsdir view -@ $thr -bSu -> $dedupbam 
@@ -210,17 +219,20 @@ then
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit $exitcode;
 	fi
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step two: making sure that a file was produced with alignments    #####"
-	echo -e "##################################################################################\n\n"
+	        
+	set +x
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step two: making sure that a file was produced with alignments    #####" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	if [ -s $AlignDir/$dedupbam ]
-	then     
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupbam ) 
-
+	then 
+	    set +x 		    
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+	    set -x
+	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupbam ) 	
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
 	    then
@@ -229,7 +241,9 @@ then
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$dedupbam seems to be in order ###########"
+		set +x
+		echo -e "####### $AlignDir/$dedupbam seems to be in order ###########" >&2
+		set -x
 	    fi
 	else 
 	    MSG="bwa mem command did not produce a file $AlignDir/$dedupbam alignment failed"
@@ -237,10 +251,11 @@ then
 	    exit 1;          
 	fi       
 
-
-	echo -e "\n\n##################################################################################"
-	echo -e "#############  step three: sort                                      ############"
-	echo -e "##################################################################################\n\n"
+	set +x
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "#############  step three: sort                                      ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	$novocraftdir/novosort --index --tmpdir $tmpdir --threads $thr --compression 1 -o $dedupsortedbam $dedupbam
 	exitcode=$?
@@ -251,15 +266,19 @@ then
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"       
 	    exit $exitcode;
 	fi
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step four: making sure that a file was produced with alignments    #####"
-	echo -e "##################################################################################\n\n"
+	
+	set +x
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step four: making sure that a file was produced with alignments    #####" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	if [ -s $AlignDir/$dedupsortedbam ]
-	then     
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	then 
+	    set +x	    
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+	    set -x 
 	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
 
 	    echo `date`
@@ -270,28 +289,34 @@ then
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$dedupbam seems to be in order ###########"
-	    fi
+		set +x
+		echo -e "####### $AlignDir/$dedupbam seems to be in order ###########" >&2
+	        set -x
+       
+        fi
 	else 
 	    MSG="novosort command did not produce a file $AlignDir/$dedupsortedbam"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"       
 	    exit 1;          
 	fi       	
-	
-	echo -e "\n\n##################################################################################"
-	echo -e "#############      END SAMBLASTER BLOCK                               ############"
-	echo -e "##################################################################################\n\n"             
+
+	set +x		
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "#############      END SAMBLASTER BLOCK                               ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x             
 
 elif  [ $markduplicates == "NOVOSORT" ]
 then
-	echo -e "\n\n##################################################################################"
-	echo -e "CASE2: dedup tool is NOVOSORT. one cmd for align and one for dedup-sort   ########"  
-	echo -e "##################################################################################\n\n"
+	set +x
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "CASE2: dedup tool is NOVOSORT. one cmd for align and one for dedup-sort   ########" >&2  
+	echo -e "##################################################################################\n\n" >&2
 
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step one: alignment                                 ############"
-	echo -e "##################################################################################\n\n"
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step one: alignment                                 ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x 
         
 
         if [ $alignertool== "BWA" ]
@@ -319,15 +344,19 @@ then
                exit $exitcode;
            fi
         fi   
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step two:making sure that a file was produced with alignments     #####"
-	echo -e "##################################################################################\n\n"
+	
+	set +x 
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step two:making sure that a file was produced with alignments     #####" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x 
 
 	if [ -s $AlignDir/$alignedbam ]
-	then            
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	then
+	    set +x            
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+ 	    set -x 		
 
 	    numAlignments=$( $samtoolsdir view -c $AlignDir/$alignedbam ) 
 
@@ -339,16 +368,20 @@ then
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"      
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$alignedbam seems to be in order ###########"
+		set +x
+		echo -e "####### $AlignDir/$alignedbam seems to be in order ###########" >&2
+		set -x 
 	    fi
 	else 
 	    MSG="aligner command did not produce a file $AlignDir/$alignedbam alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"       
 	    exit 1;          
-	fi       
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step three: sort + dedup + indexing                       ############"
-	echo -e "##################################################################################\n\n"
+	fi 
+	set +x      
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step three: sort + dedup + indexing                       ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	$novocraftdir/novosort --markDuplicates  -t $tmpdir -c $thr -i -o $dedupsortedbam $alignedbam
 
@@ -359,16 +392,20 @@ then
 	    MSG="alignment step  failed during sorting-deduplication for sample $SampleName exitcode=$exitcode."
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
             exit $exitcode
-	fi 
-	
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step four: making sure that a file was produced with alignments #######"
-	echo -e "##################################################################################\n\n"
+	fi
+ 
+	set +x	
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step four: making sure that a file was produced with alignments #######" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 	
 	if [ -s $AlignDir/$dedupsortedbam ]
 	then
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	    set +x	
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+	    set -x 
 	    
 	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
 
@@ -395,13 +432,15 @@ then
 
 elif  [ $markduplicates == "PICARD" ]
 then
-	echo -e "\n\n##################################################################################"
-	echo -e "CASE2: dedup tool is PICARD. one cmd for align, one for sort, one for dedup   ########"  
-	echo -e "##################################################################################\n\n"
+	set +x
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "CASE2: dedup tool is PICARD. one cmd for align, one for sort, one for dedup   ########" >&2 
+	echo -e "##################################################################################\n\n" >&2
 
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step one: alignment                                 ############"
-	echo -e "##################################################################################\n\n"
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step one: alignment                                 ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x 	
 
 	$bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samtoolsdir view -@ $thr -bSu -> $alignedbam 
 	exitcode=$?
@@ -412,15 +451,18 @@ then
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	    exit $exitcode;
 	fi   
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step two:making sure that a file was produced with alignments     #####"
-	echo -e "##################################################################################\n\n"
+	set +x
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step two:making sure that a file was produced with alignments     #####" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	if [ -s $AlignDir/$alignedbam ]
-	then            
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	then 
+	    set +x		           
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+	    set -x
 
 	    numAlignments=$( $samtoolsdir view -c $AlignDir/$alignedbam ) 
 
@@ -432,16 +474,20 @@ then
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"      
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$alignedbam seems to be in order ###########"
+		set +x
+		echo -e "####### $AlignDir/$alignedbam seems to be in order ###########" >&2
+		set -x 
 	    fi
 	else 
 	    MSG="bwa mem command did not produce a file $AlignDir/$alignedbam alignment failed"
 	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"       
 	    exit 1;          
-	fi       
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step three: sort                                        ############"
-	echo -e "##################################################################################\n\n"
+	fi      
+	set +x 
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "#############  step three: sort                                        ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 
 	$novocraftdir/novosort -t $tmpdir -c ${thr} -i -o $alignedsortedbam $alignedbam
 
@@ -454,10 +500,11 @@ then
             exit $exitcode
 	fi 
 
-
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step four: dedup                                        ############"
-	echo -e "##################################################################################\n\n"
+	set +x
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "#############  step four: dedup                                        ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x 
 
 
 $javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $picardir/picard.jar  MarkDuplicates \
@@ -475,15 +522,18 @@ VALIDATION_STRINGENCY=SILENT
             exit $exitcode
 	fi 
 
-	
-	echo -e "\n\n##################################################################################"	     
-	echo -e "#############  step five: making sure that a file was produced with alignments #######"
-	echo -e "##################################################################################\n\n"
+	set +x	
+	echo -e "\n\n##################################################################################" >&2	     
+	echo -e "#############  step five: making sure that a file was produced with alignments #######" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x
 	
 	if [ -s $AlignDir/$dedupsortedbam ]
 	then
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	    set +x			
+	    echo -e "### the file was created. But we are not done.     #############" >&2
+	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###" >&2
+	    set -x 
 	    
 	    numAlignments=$( $samtoolsdir view -c $AlignDir/$dedupsortedbam ) 
 
@@ -495,7 +545,9 @@ VALIDATION_STRINGENCY=SILENT
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" 
 		exit 1;
 	    else
-		echo -e "####### $AlignDir/$dedupsortedbam seems to be in order ###########"
+		set +x
+		echo -e "####### $AlignDir/$dedupsortedbam seems to be in order ###########" >&2
+		set -x
 	    fi
 	else 
 	    MSG="picard command did not produce a file $AlignDir/$dedupsortedbam"
@@ -504,10 +556,11 @@ VALIDATION_STRINGENCY=SILENT
 	fi   
 
 
-        
-	echo -e "\n\n##################################################################################"
-	echo -e "#############      END PICARD  BLOCK                                 ############"
-	echo -e "##################################################################################\n\n"             
+        set +x 
+	echo -e "\n\n##################################################################################" >&2
+	echo -e "#############      END PICARD  BLOCK                                 ############" >&2
+	echo -e "##################################################################################\n\n" >&2
+	set -x             
 
 	
 else
@@ -518,28 +571,29 @@ else
 fi
 
 
-        
-echo -e "\n\n##################################################################################"
-echo -e "#############     END ALIGNMENT-DEDUPLICATION BLOCK                   ############"
-echo -e "##################################################################################\n\n"
+set +x 
+echo -e "\n\n##################################################################################" >&2
+echo -e "#############     END ALIGNMENT-DEDUPLICATION BLOCK                   ############" >&2
+echo -e "##################################################################################\n\n" >&2
 
 echo `date`
 
-echo -e "\n\n##################################################################################"  
-echo -e "##################################################################################"          
-echo -e "##################################################################################"        
-echo -e "########   ALIGNMENT QC TEST   FOR SAMPLE $SampleName              ###############"
-echo -e "########   QC rule1: duplication cutoff <= $dup_cutoff             ###############"
-echo -e "########   QC rule2: mapped_reads cutoff >= $map_cutoff            ###############"
-echo -e "##################################################################################"
-echo -e "##################################################################################"  
-echo -e "##################################################################################\n\n"
+echo -e "\n\n##################################################################################" >&2
+echo -e "##################################################################################" >&2          
+echo -e "##################################################################################" >&2        
+echo -e "########   ALIGNMENT QC TEST   FOR SAMPLE $SampleName              ###############" >&2
+echo -e "########   QC rule1: duplication cutoff <= $dup_cutoff             ###############" >&2
+echo -e "########   QC rule2: mapped_reads cutoff >= $map_cutoff            ###############" >&2
+echo -e "##################################################################################" >&2
+echo -e "##################################################################################" >&2 
+echo -e "##################################################################################\n\n" >&2
         
      
 
-echo -e "\n\n##################################################################################"	     
-echo -e "#############  step one: generating the relevant file with flagstat       ############"
-echo -e "##################################################################################\n\n"
+echo -e "\n\n##################################################################################" >&2	     
+echo -e "#############  step one: generating the relevant file with flagstat       ############" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x
 
 flagstats=${dedupsortedbam}.flagstats
 
@@ -547,9 +601,11 @@ echo `date`
 $samtoolsdir flagstat $dedupsortedbam > $flagstats
 echo `date`
 
-echo -e "\n\n##################################################################################"	     
-echo -e "#############  step two: sanity check                                 ############"
-echo -e "##################################################################################\n\n" 
+set +x
+echo -e "\n\n##################################################################################" >&2	     
+echo -e "#############  step two: sanity check                                 ############" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x  
 
 if [ ! -s $flagstats ]
 then
@@ -559,9 +615,11 @@ then
 	 exit $exitcode;
 fi
 
-echo -e "\n\n##################################################################################"	     
-echo -e "#############  step three: parsing the file and grabbing stats for the QC test     ###"
-echo -e "##################################################################################\n\n"            
+set +x
+echo -e "\n\n##################################################################################" >&2	     
+echo -e "#############  step three: parsing the file and grabbing stats for the QC test     ###" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x           
 
 
 tot_mapped=$( cat $flagstats | grep "mapped (" | cut -d ' ' -f1 )
@@ -596,10 +654,11 @@ else
 	exit $exitcode;
 fi
 
-           
-echo -e "\n\n##################################################################################"	     
-echo -e "#############  step four: calculating stats according to QC rules                  ###"
-echo -e "##################################################################################\n\n"            
+set +x           
+echo -e "\n\n##################################################################################" >&2	     
+echo -e "#############  step four: calculating stats according to QC rules                  ###" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x        
 
 
 perc_dup=$(( tot_dups * 100 / tot_reads ))
@@ -624,10 +683,11 @@ else
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit $exitcode;
 fi
-
-echo -e "\n\n##################################################################################"	     
-echo -e "#############  step five: applying the  QC rules                                  ###"
-echo -e "##################################################################################\n\n"            
+set +x
+echo -e "\n\n##################################################################################" >&2	     
+echo -e "#############  step five: applying the  QC rules                                  ###" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x         
 
 if [ $perc_dup -lt $dup_cutoff ]
 then
@@ -646,22 +706,23 @@ else
 	echo -e "${SampleName}\tQCTEST\tFAIL\trule1 not ok: percent_duplication=$perc_dup <? duplication_cutoff=$dup_cutoff\trule2 not evaluated: percent_mapped=$perc_mapped >? mapping_cutoff=$map_cutoff" >> $qcfile
 fi
 
-
-echo -e "\n\n##################################################################################"
-echo -e "#############       END QC TEST                                       ############"        
-echo -e "##################################################################################\n\n"
-
-echo `date`
-
-echo -e "\n\n##################################################################################"  
-echo -e "##################################################################################"		
-echo -e "##################################################################################"        
-echo -e "#############   WRAP UP                                               ############"        
-echo -e "##################################################################################"
-echo -e "##################################################################################"  
-echo -e "##################################################################################\n\n"	
+set +x
+echo -e "\n\n##################################################################################" >&2
+echo -e "#############       END QC TEST                                       ############" >&2        
+echo -e "##################################################################################\n\n" >&2
 
 echo `date`
+
+echo -e "\n\n##################################################################################"  >&2
+echo -e "##################################################################################" >&2
+echo -e "##################################################################################" >&2        
+echo -e "#############   WRAP UP                                               ############" >&2       
+echo -e "##################################################################################" >&2
+echo -e "##################################################################################" >&2 
+echo -e "##################################################################################\n\n" >&2	
+
+echo `date`
+set -x
 
 ### perhaps this bam file is not necessary in the delivery folder           
 ### cp $AlignDir/${SampleName}.wdups.sorted.bam          $DeliveryDir   
@@ -672,6 +733,8 @@ echo -e "program=$scriptfile at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[T
 
 echo `date`
 
-echo -e "\n\n##################################################################################"
-echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
-echo -e "##################################################################################\n\n"
+set +x
+echo -e "\n\n##################################################################################" >&2
+echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x
