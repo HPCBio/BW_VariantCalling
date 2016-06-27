@@ -181,7 +181,7 @@ echo -e "\n### split aligned.bam by region with  $inputbam and chr=$chr         
 
 cd $RealignDir
 
-$samtoolsdir view -bu -@ $thr -h $inputbam $chr > $dedupsortedbam
+$samtoolsdir/samtools view -bu -@ $thr -h $inputbam $chr > $dedupsortedbam
 
 exitcode=$?
 
@@ -196,7 +196,7 @@ if [ -s $dedupsortedbam ]
 then     
     echo -e "### the file was created. But we are not done.     #############"
     echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-    numAlignments=$( $samtools view -c $dedupsortedbam ) 
+    numAlignments=$( $samtoolsdir/samtools view -c $dedupsortedbam ) 
 
     echo `date`
     if [ $numAlignments -eq 0 ]
@@ -216,7 +216,7 @@ fi
 
 echo -e "\n### index  $dedupsortedbam                                 ###\n"  
 
-$samtools index $dedupsortedbam
+$samtoolsdir/samtools index $dedupsortedbam
 
 exitcode=$?
 
@@ -308,7 +308,7 @@ else
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( $samtools view -c $realignedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $realignedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]
@@ -380,7 +380,7 @@ else
 	then     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    numAlignments=$( $samtools view -c $recalibratedbam ) 
+	    numAlignments=$( $samtoolsdir/samtools view -c $recalibratedbam ) 
 
 	    echo `date`
 	    if [ $numAlignments -eq 0 ]

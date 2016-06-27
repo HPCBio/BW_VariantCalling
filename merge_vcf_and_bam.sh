@@ -33,7 +33,7 @@ LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 if [ ! -s $runfile ]
 then
-    MSG="$runfile configuration file not found"
+    MSG="$runfile runfile not found"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "Variant Calling Workflow failure message" "$redmine"
     exit 1;
 fi
@@ -47,12 +47,9 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
-vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
-samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
-sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
@@ -64,22 +61,11 @@ indel_local=${refdir}/$indeldir
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 outputdir=$rootdir/$SampleName
 
-## add these lines to the runfile
-picardir=/home/apps/picard-tools/picard-tools-2.1.0
-picard_mod=picard-tools/2.1.0
-java_mod=java/1.8.0_25
-
-
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
-
-
-module load $tabix_mod
-module load $sorttool_mod
-module load $vcftools_mod
 
 
 SampleDir=$outputdir
@@ -113,7 +99,7 @@ fi
 
 if [ ! -d $rootdir ]
 then
-    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the configuration file."
+    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the runfile."
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
@@ -185,7 +171,7 @@ if [ -s $outbam ]
 then     
     echo -e "### the file was created. But we are not done.     #############"
     echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-    numAlignments=$( samtools view -c $outbam ) 
+    numAlignments=$($samtools view -c $outbam ) 
 
     echo `date`
     if [ $numAlignments -eq 0 ]
@@ -313,9 +299,8 @@ echo -e "\n\n###################################################################
 echo -e "########### command three: merge with GATK-CombineGVCFs                          #####"
 echo -e "##################################################################################\n\n"
 
-module load $gatk_mod
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
 	 -R $ref_local \
 	 --dbsnp $dbsnp_local \
 	 $ordered_vcfs  \
