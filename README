@@ -80,7 +80,7 @@ Code changes:
 - ALIGNERTOOL: checks for the tools used for alignment (instead of the variable ALIGNER 
 - gatkdir: this is introduced instead of gatk_dir
 - NOVOCRAFT is introduced as replacement for NOVOSORT to allow for the use of both novoalign and novosort
-
+- A new variable INDELDIR: directory of known indels split by chromosome name
 
 
 To do:
