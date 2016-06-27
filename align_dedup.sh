@@ -35,7 +35,7 @@ LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 if [ ! -s $runfile ]
 then
-    MSG="$runfile configuration file not found"
+    MSG="$runfile runfile not found"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "Variant Calling Workflow failure message" "$redmine"
     exit 1;
 fi
@@ -102,7 +102,7 @@ fi
 
 if [ ! -d $rootdir ]
 then
-    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the configuration file."
+    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the runfile."
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
@@ -242,7 +242,7 @@ then
 	echo -e "#############  step three: sort                                      ############"
 	echo -e "##################################################################################\n\n"
 
-	$novocraftdir/novosort --index --tmpdir $tmpdir --threads $thr -m 16g --compression 1 -o $dedupsortedbam $dedupbam
+	$novocraftdir/novosort --index --tmpdir $tmpdir --threads $thr --compression 1 -o $dedupsortedbam $dedupbam
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
@@ -443,7 +443,7 @@ then
 	echo -e "#############  step three: sort                                        ############"
 	echo -e "##################################################################################\n\n"
 
-	$novocraftdir/novosort -t $tmpdir -m 16G -c 8 -i -o $alignedsortedbam $alignedbam
+	$novocraftdir/novosort -t $tmpdir -c ${thr} -i -o $alignedsortedbam $alignedbam
 
 	exitcode=$?
 	echo `date`

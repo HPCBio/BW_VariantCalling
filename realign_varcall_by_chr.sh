@@ -34,7 +34,7 @@ LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 if [ ! -s $runfile ]
 then
-    MSG="$runfile configuration file not found"
+    MSG="$runfile runfile not found"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "Variant Calling Workflow failure message" "$redmine"
     exit 1;
 fi
@@ -48,14 +48,10 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-aligner_mod=$( cat $runfile | grep -w ALIGNERMODULE | cut -d '=' -f2  )
 aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
-picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-samblaster_mod=$( cat $runfile | grep -w SAMBLASTERMODULE | cut -d '=' -f2 )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-sorttool_mod=$( cat $runfile | grep -w SORTMODULE | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 ) 
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
@@ -73,7 +69,6 @@ echo -e "#######   we will need these guys throughout, let's take care of them n
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
 
-module load $sorttool_mod
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -122,7 +117,7 @@ rgheader=$( echo -n -e "@RG\t" )$( echo -e "${RGparms}"  | tr ":" "\t" | tr "=" 
 
 if [ ! -d $rootdir ]
 then
-    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the configuration file."
+    MSG="Invalid value specified for OUTPUTDIR=$rootdir in the runfile."
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
@@ -474,7 +469,6 @@ echo -e "#######################################################################
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
 
-module unload $sorttol_mod
 echo `date`
  
 #cp $RealignDir/${SampleName}.$chr.recalibrated.bam   $DeliveryDir
