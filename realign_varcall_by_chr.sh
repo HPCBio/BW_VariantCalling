@@ -259,12 +259,12 @@ echo -e "#######################################################################
 
 cd $RealignDir
 
-$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
-	 -R $ref_local \
-	 -I $dedupsortedbam \
-	 -T RealignerTargetCreator \
-	 -nt $thr \
-	 $realparms \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+	 -R $ref_local\
+	 -I $dedupsortedbam\
+	 -T RealignerTargetCreator\
+	 -nt $thr\
+	 $realparms\
 	 -o ${SampleName}.$chr.realignTargetCreator.intervals
 
 exitcode=$?

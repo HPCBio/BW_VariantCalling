@@ -51,10 +51,8 @@ samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-picard_mod=$( cat $runfile | grep -w PICARDMODULE | cut -d '=' -f2 )
 java_mod=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
-tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 indel_local=${refdir}/$indeldir
