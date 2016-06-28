@@ -210,7 +210,7 @@ then
 	set -x
 	
 
-        $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblasterdir/samblaster | $samtoolsdir/samtools view -@ $thr -bSu -> $dedupbam 
+        $bwamemdir/bwa mem $bwamem_parms -t $thr -R "${rgheader}" $bwa_index $R1 $R2 | $samblaster | $samtoolsdir/samtools view -@ $thr -bSu -> $dedupbam 
 	exitcode=$?
 	echo `date`
 	if [ $exitcode -ne 0 ]
