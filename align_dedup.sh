@@ -81,8 +81,6 @@ echo -e "#######################################################################
 echo -e "##################################################################################\n\n" >&2
 set -x          
 
-module load $sorttool_mod
-
 SampleDir=$outputdir
 AlignDir=$outputdir/align
 RealignDir=$outputdir/realign
