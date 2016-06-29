@@ -338,6 +338,7 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
          -R $ref_local \
          -I $realignedbam \
          $recalparms1 \
+	 $recalparms2 \
          --out $SampleName.$chr.recal_report.grp \
          -nct $thr 
 

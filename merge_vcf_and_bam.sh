@@ -47,12 +47,9 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-markduplicates=$( cat $runfile | grep -w MARKDUPLICATESTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-java_mod=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
-picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2  )
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 indel_local=${refdir}/$indeldir
@@ -70,6 +67,7 @@ SampleDir=$outputdir
 RealignDir=$outputdir/realign
 VarcallDir=$outputdir/variant
 DeliveryDir=$rootdir/$deliverydir/$SampleName
+DeliveredGVCFs=$rootdir/$deliverydir/rawTotalVCFS
 
 qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the txt file with all QC test results
 tmpvariant=${SampleName}.raw.vcf                                 # name of raw variant file pre-sorting
@@ -149,7 +147,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command two: novosort to merge and sort at the same time             #####"
 echo -e "##################################################################################\n\n"
 
-#novosort --index --threads $thr --tmpdir $tmpdir -m 16g  -o $outbam  ${SampleName}.chr*.recalibrated.bam 
+#$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.chr*.recalibrated.bam 
 
 exitcode=$?
 
@@ -157,35 +155,35 @@ echo -e "\n\n###################################################################
 echo -e "########### command three: sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
 
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
-	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	 exit $exitcode;
-fi
+#echo `date`
+#if [ $exitcode -ne 0 ]
+#then
+#	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
+#	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+#	 exit $exitcode;
+#fi
 
-if [ -s $outbam ]
-then     
-    echo -e "### the file was created. But we are not done.     #############"
-    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-    numAlignments=$($samtools view -c $outbam ) 
+#if [ -s "$outbam" ]
+#then     
+#    echo -e "### the file was created. But we are not done.     #############"
+#    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+#    numAlignments=$($samtools view -c $outbam ) 
 
-    echo `date`
-    if [ $numAlignments -eq 0 ]
-    then
-	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
-	MSG="novosort command did not produce alignments for $outbam"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-    else
-	echo -e "####### $outbam seems to be in order ###########"
-    fi
-else 
-    MSG="novosort command did not produce a file $outbam"
-    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
-    exit 1;          
-fi	
+#    echo `date`
+#    if [ $numAlignments -eq 0 ]
+#    then
+#	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
+#	MSG="novosort command did not produce alignments for $outbam"
+#	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+#	exit 1;
+#    else
+#	echo -e "####### $outbam seems to be in order ###########"
+#    fi
+#else 
+#    MSG="novosort command did not produce a file $outbam"
+#    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
+#    exit 1;          
+#fi	
 
 
 
@@ -221,7 +219,6 @@ ordered_vcfs=""
 
 for chr in $indices
 do
-
 
 	echo -e "\n\n##################################################################################"  
 	echo -e "##################################################################################"          	
@@ -298,7 +295,7 @@ echo -e "########### command three: merge with GATK-CombineGVCFs                
 echo -e "##################################################################################\n\n"
 
 
-$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -R $ref_local \
 	 --dbsnp $dbsnp_local \
 	 $ordered_vcfs  \
@@ -321,10 +318,11 @@ then
 
 fi 
 
+
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"		
 echo -e "##################################################################################"        
-echo -e "#############   COPY RESULTS TO DELIVERY                              ############"        
+echo -e "#############   COPY RESULTS TO DELIVERY and also to                              ############"        
 echo -e "##################################################################################"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
@@ -345,6 +343,8 @@ fi
 
 cp $VarcallDir/$rawvariant   $DeliveryDir
 
+cp $VarcallDir/$rawvariant $DeliveredGVCFs
+
 if [ ! -s $DeliveryDir/$rawvariant ]
 then
 
@@ -353,6 +353,8 @@ then
     exit 1;
 
 fi
+
+
 
 echo -e "${SampleName}\tVARCALLING\tPASS\tAll analyses completed successfully for this sample" >> $qcfile
 MSG="REALIGNMENT-VARCALLING for $SampleName finished successfully"

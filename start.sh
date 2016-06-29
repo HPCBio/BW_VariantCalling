@@ -285,6 +285,14 @@ then
 	mkdir -p $outputdir/$deliverydir/docs
 fi
 
+if [ ! -d $outputdir/jointVCFs  ]
+then
+        # the jointVCF directory (containing files before VQSR) does not exist. create it
+        mkdir -p $outputdir/$deliverydir/rawTotalVCFS
+fi
+
+
+
 `cp $runfile    $outputdir/$deliverydir/docs/runfile.txt`
 `cp $sampleinfo $outputdir/$deliverydir/docs/sampleinfo.txt`
 truncate -s 0   $outputdir/$deliverydir/docs/Summary.Report
@@ -358,7 +366,7 @@ do
 	echo -e "########################################################################################\n\n" >&2
 	set -x
 
-	sample=$( echo "$sampleLine" | cut -d ' ' -f 1 )  
+	sample=$( echo "$sampleLine" | cut -d ' ' -f 1 ) 
 	FQ_R1=$( echo "$sampleLine" | cut -d ' '  -f 2 )
 	FQ_R2=$( echo "$sampleLine" | cut -d ' ' -f 3 )
 
@@ -516,12 +524,49 @@ do
 	        MSG="unable to launch qsub merge job for $sample. Exiting now"
 	        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email" 
 	        exit 1        
-           fi	
+           fi
 
         fi # close the if statement checking whether the workflow end with alignment or not
-        
+
    fi  # end non-empty line
-done <  $sampleinfo
+done <  $sampleinfo	
+
+########################################################################################################################################## azza's GenotypeGVCF
+
+	   set +x  
+           echo -e "\n\n########################################################################################" >&2
+           echo -e "####    Now launching joint_genotyping script for all SAMPLEs: each 200 together        ##########" >&2
+           echo -e "########################################################################################\n\n" >&2
+           set -x 
+
+           jointcalljobids=$( cat $TopOutputLogs/pbs.jointVCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+
+           echo -e "\n\n### this list of jobids=[$jointcalljobids] will be used to hold execution of joint_vcfs.sh #####\n\n"
+
+           qsub1=$TopOutputLogs/qsub.jointcall.$sample
+           cat $generic_qsub_header > $qsub1
+           echo "#PBS -N merge.$sample" >> $qsub1
+           echo "#PBS -o $TopOutputLogs/log.jointcall.$sample.ou" >> $qsub1
+           echo "#PBS -e $TopOutputLogs/log.jointcall.$sample.in" >> $qsub1
+           echo "#PBS -W depend=afterok:$jointcalljobids" >> $qsub1
+           echo "$scriptdir/joint_vcf.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.jointcall.$sample.ou $TopOutputLogs/qsub.jointcall.$sample" >> $qsub1
+           `chmod a+r $qsub1`
+           mergejobid=`qsub $qsub1`
+           echo $mergejobid >> $TopOutputLogs/pbs.summary_dependencies
+           echo `date`
+
+           if [ `expr ${#mergejobid}` -lt 1 ]
+              then
+                MSG="unable to launch qsub merge job for $sample. Exiting now"
+                echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                exit 1
+           fi
+
+
+########################################################################################################################################### end azza's block
+
+
+
 
 set +x
 echo -e "\n\n########################################################################################" >&2
