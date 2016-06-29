@@ -377,7 +377,7 @@ do
 	     exit 1
 	fi
 
-        echo $sample >> $outputdir/$deliverydir/docs/samplesnames.txt
+        echo $sample >> $outputdir/$deliverydir/docs/samplesnames.txt  # not really needed. but check!
 	
 	if [ `expr ${#FQ_R1}` -lt 1 ]
 	then
@@ -533,7 +533,7 @@ do
    fi  # end non-empty line
 done <  $sampleinfo	
 
-########################################################################################################################################## azza's GenotypeGVCF
+############################################################################################################################# azza's GenotypeGVCF
 
 	   set +x  
            echo -e "\n\n########################################################################################" >&2
@@ -541,34 +541,30 @@ done <  $sampleinfo
            echo -e "########################################################################################\n\n" >&2
            set -x 
 
-           jointcalljobids=$( cat $TopOutputLogs/pbs.jointVCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+           mergedjobsids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
            echo -e "\n\n### this list of jobids=[$jointcalljobids] will be used to hold execution of joint_vcfs.sh #####\n\n"
 
-           qsub1=$TopOutputLogs/qsub.jointcall.$sample
+           qsub1=$TopOutputLogs/qsub.jointcall
            cat $generic_qsub_header > $qsub1
-           echo "#PBS -N merge.$sample" >> $qsub1
-           echo "#PBS -o $TopOutputLogs/log.jointcall.$sample.ou" >> $qsub1
-           echo "#PBS -e $TopOutputLogs/log.jointcall.$sample.in" >> $qsub1
-           echo "#PBS -W depend=afterok:$jointcalljobids" >> $qsub1
-           echo "$scriptdir/joint_vcf.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.jointcall.$sample.ou $TopOutputLogs/qsub.jointcall.$sample" >> $qsub1
+           echo "#PBS -N JointCalling" >> $qsub1
+           echo "#PBS -o $TopOutputLogs/log.jointcall.ou" >> $qsub1
+           echo "#PBS -e $TopOutputLogs/log.jointcall.in" >> $qsub1
+           echo "#PBS -W depend=afterok:$mergedjobsids" >> $qsub1
+           echo "$scriptdir/joint_vcf.sh $runfile $TopOutputLogs/log.jointcall.in $TopOutputLogs/log.jointcall.ou $TopOutputLogs/qsub.jointcall.$sample" >> $qsub1
            `chmod a+r $qsub1`
-           mergejobid=`qsub $qsub1`
-           echo $mergejobid >> $TopOutputLogs/pbs.summary_dependencies
+           jointcalljobid=`qsub $qsub1`
+           echo $jointcalljobid >> $TopOutputLogs/pbs.summary_dependencies
            echo `date`
 
-           if [ `expr ${#mergejobid}` -lt 1 ]
+           if [ `expr ${#jointcalljobid}` -lt 1 ]
               then
-                MSG="unable to launch qsub merge job for $sample. Exiting now"
+                MSG="unable to launch qsub jointVCFcall job for 200 samples. Exiting now"
                 echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
                 exit 1
            fi
 
-
 ########################################################################################################################################### end azza's block
-
-
-
 
 set +x
 echo -e "\n\n########################################################################################" >&2
