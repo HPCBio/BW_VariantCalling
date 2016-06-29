@@ -551,7 +551,7 @@ done <  $sampleinfo
            echo "#PBS -o $TopOutputLogs/log.jointcall.ou" >> $qsub1
            echo "#PBS -e $TopOutputLogs/log.jointcall.in" >> $qsub1
            echo "#PBS -W depend=afterok:$mergedjobsids" >> $qsub1
-           echo "$scriptdir/joint_vcf.sh $runfile $TopOutputLogs/log.jointcall.in $TopOutputLogs/log.jointcall.ou $TopOutputLogs/qsub.jointcall.$sample" >> $qsub1
+           echo "$scriptdir/joint_vcf.sh $runfile $TopOutputLogs/log.jointcall.in $TopOutputLogs/log.jointcall.ou $TopOutputLogs/qsub.jointcall" >> $qsub1
            `chmod a+r $qsub1`
            jointcalljobid=`qsub $qsub1`
            echo $jointcalljobid >> $TopOutputLogs/pbs.summary_dependencies
@@ -564,7 +564,7 @@ done <  $sampleinfo
                 exit 1
            fi
 
-########################################################################################################################################### end azza's block
+################################################################################################################################### end azza's block
 
 set +x
 echo -e "\n\n########################################################################################" >&2
