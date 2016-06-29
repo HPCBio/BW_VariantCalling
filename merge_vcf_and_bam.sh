@@ -67,7 +67,6 @@ SampleDir=$outputdir
 RealignDir=$outputdir/realign
 VarcallDir=$outputdir/variant
 DeliveryDir=$rootdir/$deliverydir/$SampleName
-DeliveredGVCFs=$rootdir/$deliverydir/rawTotalVCFS
 
 qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the txt file with all QC test results
 tmpvariant=${SampleName}.raw.vcf                                 # name of raw variant file pre-sorting
@@ -342,8 +341,6 @@ then
 fi
 
 cp $VarcallDir/$rawvariant   $DeliveryDir
-
-cp $VarcallDir/$rawvariant $DeliveredGVCFs
 
 if [ ! -s $DeliveryDir/$rawvariant ]
 then
