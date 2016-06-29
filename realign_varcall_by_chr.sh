@@ -234,7 +234,7 @@ echo -e "###  because they are specified differently for each GATK tool         
 cd $indel_local
 
 
-recalparmsindels=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
+recalparmsindels=$( find ${PWD} -name "*${chr}.*.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
 recalparmsdbsnp=" -knownSites $dbsnp_local "
 
 realparms=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ -known /g" | tr "\n" " " )

@@ -50,6 +50,7 @@ dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2  )
+samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 indel_local=${refdir}/$indeldir
@@ -146,7 +147,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command two: novosort to merge and sort at the same time             #####"
 echo -e "##################################################################################\n\n"
 
-#$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.chr*.recalibrated.bam 
+$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.chr*.recalibrated.bam 
 
 exitcode=$?
 
@@ -154,35 +155,35 @@ echo -e "\n\n###################################################################
 echo -e "########### command three: sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
 
-#echo `date`
-#if [ $exitcode -ne 0 ]
-#then
-#	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
-#	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#	 exit $exitcode;
-#fi
+echo `date`
+if [ $exitcode -ne 0 ]
+then
+	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
+	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	 exit $exitcode;
+fi
 
-#if [ -s "$outbam" ]
-#then     
-#    echo -e "### the file was created. But we are not done.     #############"
-#    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-#    numAlignments=$($samtools view -c $outbam ) 
+if [ -s "$outbam" ]
+then     
+    echo -e "### the file was created. But we are not done.     #############"
+    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+    numAlignments=$( $samtoolsdir/samtools view -c $outbam ) 
 
-#    echo `date`
-#    if [ $numAlignments -eq 0 ]
-#    then
-#	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
-#	MSG="novosort command did not produce alignments for $outbam"
-#	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#	exit 1;
-#    else
-#	echo -e "####### $outbam seems to be in order ###########"
-#    fi
-#else 
-#    MSG="novosort command did not produce a file $outbam"
-#    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
-#    exit 1;          
-#fi	
+    echo `date`
+    if [ $numAlignments -eq 0 ]
+    then
+	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
+	MSG="novosort command did not produce alignments for $outbam"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+    else
+	echo -e "####### $outbam seems to be in order ###########"
+    fi
+else 
+    MSG="novosort command did not produce a file $outbam"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
+    exit 1;          
+fi	
 
 
 
