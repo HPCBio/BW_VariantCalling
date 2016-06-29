@@ -234,8 +234,17 @@ echo -e "###  because they are specified differently for each GATK tool         
 cd $indel_local
 
 
-recalparms=" -knownSites $dbsnp_local "
+recalparmsindels=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
+recalparmsdbsnp=" -knownSites $dbsnp_local "
+
 realparms=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ -known /g" | tr "\n" " " )
+
+if [ `expr ${#recalparmsindels}` -lt 1 ]
+then
+    MSG="no indels were found for $chr in this folder $indel_local"
+    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+    exit 1;
+fi
 
 if [ `expr ${#realparms}` -lt 1 ]
 then
@@ -245,7 +254,6 @@ then
 fi
 
 
-echo -e "\n\n##################################################################################"
 echo -e "########### command one: executing GATK RealignerTargetCreator using known indels ####" 
 echo -e "##################################################################################\n\n"
 
@@ -329,8 +337,8 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
          -T BaseRecalibrator \
          -R $ref_local \
          -I $realignedbam \
-         $recalparms1 \
-	 $recalparms2 \
+         $recalparmsindels \
+	 $recalparmsdbsnp \
          --out $SampleName.$chr.recal_report.grp \
          -nct $thr 
 
