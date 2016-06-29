@@ -288,7 +288,7 @@ fi
 if [ ! -d $outputdir/jointVCFs  ]
 then
         # the jointVCF directory (containing files before VQSR) does not exist. create it
-        mkdir -p $outputdir/$deliverydir/rawTotalVCFS
+        mkdir -p $outputdir/$deliverydir/jointVCFs
 fi
 
 
@@ -377,6 +377,8 @@ do
 	     exit 1
 	fi
 
+        echo $sample >> $outputdir/$deliverydir/docs/samplesnames.txt
+	
 	if [ `expr ${#FQ_R1}` -lt 1 ]
 	then
 	     MSG="unable to parse line $sampleLine"
