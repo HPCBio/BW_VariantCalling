@@ -234,18 +234,10 @@ echo -e "###  because they are specified differently for each GATK tool         
 cd $indel_local
 
 
-recalparms2=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
-recalparms1=" -knownSites $dbsnp_local "
+recalparms=" -knownSites $dbsnp_local "
 realparms=$( find ${PWD} -name "${chr}.*.vcf" | sed "s/^/ -known /g" | tr "\n" " " )
 
 if [ `expr ${#realparms}` -lt 1 ]
-then
-    MSG="no indels were found for $chr in this folder $indel_local"
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-fi
-
-if [ `expr ${#recalparms2}` -lt 1 ]
 then
     MSG="no indels were found for $chr in this folder $indel_local"
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
