@@ -352,11 +352,7 @@ then
 
 fi
 
-
-
 echo -e "${SampleName}\tVARCALLING\tPASS\tAll analyses completed successfully for this sample" >> $qcfile
-MSG="REALIGNMENT-VARCALLING for $SampleName finished successfully"
-echo -e "program=$scriptfile at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 echo `date`
 echo -e "\n\n##################################################################################"

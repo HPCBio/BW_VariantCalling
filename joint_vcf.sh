@@ -95,9 +95,6 @@ echo -e "#######################################################################
 
 cd $DeliveryDir
 
-#all samles' names are stored in the file: $outputdir/$deliverydir/docs/samplesnames.txt --> not really needed, but check
-
-
 variantFiles=$( find ${outputdir} -name "*.GATKCombineGVCF.raw.vcf" | sed "s/^/ --variant /g" | tr "\n" " " )
 
 if [ `expr ${#variantFiles}` -lt 1 ]
@@ -131,8 +128,6 @@ then
          exit $exitcode;
 
 fi
-
-
 
 echo -e "Joint VARCALLING\tPASS\tAll analyses completed successfully for all samples" >> $qcfile
 

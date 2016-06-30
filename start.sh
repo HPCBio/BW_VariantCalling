@@ -377,8 +377,6 @@ do
 	     exit 1
 	fi
 
-        echo $sample >> $outputdir/$deliverydir/docs/samplesnames.txt  # not really needed. but check!
-	
 	if [ `expr ${#FQ_R1}` -lt 1 ]
 	then
 	     MSG="unable to parse line $sampleLine"
@@ -543,7 +541,7 @@ done <  $sampleinfo
 
            mergedjobsids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
-           echo -e "\n\n### this list of jobids=[$jointcalljobids] will be used to hold execution of joint_vcfs.sh #####\n\n"
+           echo -e "\n\n### this list of jobids=[$mergedjobsids] will be used to hold execution of joint_vcfs.sh #####\n\n"
 
            qsub1=$TopOutputLogs/qsub.jointcall
            cat $generic_qsub_header > $qsub1
