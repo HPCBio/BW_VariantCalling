@@ -381,7 +381,7 @@ then
 	echo -e "##################################################################################\n\n" >&2
 	set -x
 
-	$novocraftdir/novosort --markDuplicates  -t $tmpdir -c $thr -i -o $dedupsortedbam $alignedbam
+	$novocraftdir/novosort -r "${rgheader}" --markDuplicates  -t $tmpdir -c $thr -i -o $dedupsortedbam $alignedbam
 
 	exitcode=$?
 	echo `date`
