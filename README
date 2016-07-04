@@ -73,6 +73,8 @@ New and changed parameters and meanings:
 - BWADIR : Directory of the BWA MEM
 - CHRNAMES: Instead of CHRINDEX to represent the crhomosomes/ contigs under consideration (The existing names are approapriate for use with soybeans as is)
 - SAMPLEINFORMATION: This entry was repeated twice in the original file. Just keep the entry directing to the sampleinfo file
+- BWAINDEX: points to the indexed reference genome, and should be passed to the align_dedup.sh
+- SCRIPTDIR
 
 Code changes:
 - pbs.MERGE
@@ -89,9 +91,22 @@ To do:
 -	SAMTOOLSDIR
 -	NOVOCRAFTDIR
 -	SAMBLASTERDIR (just to allow the option, not sure if will be of value)
-- 	all mentions of configuration file shoule be changed to runfile
 
+Analysis types supported:
+* Currently, there are the following options:
+-  ALIGNMENT, ALIGN, ALIGN_ONLY : to only do alignment. The pipeline stops at this stage
+-  Anything else would cause the complete gatk pipeline to run until variant calling stage
 
-Mistakes in previous README update:
-- The variable SCRIPTDIR is actually needed in this workflow. Its proper use is now documented
-- The variable BWAINDEX is actually needed. It points to the indexed reference genome, and should be passed to the align_dedup.sh
+* Useful analysis options (to do, but check variables naming first!):
+-  REALIGN_ONLY: alignment + indel realignment + variant calling + variant recalibration
+-  RECALIBRATE_ONLY: alignment + BQSR + variant calling + variant recalibration
+-  VCALL: alignment + realignment + recalibration + variant calling
+-  FULL: run the entire pipeline: alignment + realignment + recalibration + variant calling + variant recalibration
+
+* Useful debugging options:
+It would be handy if the pipeline could do a single piece of work as desired. For example:
+-  ALIGN: only perform alignment and exit ---> already implemented
+-  REALIGN: only perform realignment
+-  RECALIBRATE: only perform recalibration
+-  VCALL_ONLY: to only do variant calling
+-  VQSR_ONLY: to only do variant recalibration
