@@ -133,7 +133,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command one: checking that there are bam files to merge              #####"
 echo -e "##################################################################################\n\n"
 
-chr_bamList=$( ls -1 ${SampleName}.chr*.recalibrated.bam | tr "\n" " " )
+chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
 
 if [ `expr ${#chr_bamList}` -lt 1 ]
 then
@@ -147,7 +147,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command two: novosort to merge and sort at the same time             #####"
 echo -e "##################################################################################\n\n"
 
-$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.chr*.recalibrated.bam 
+$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}*.recalibrated.bam 
 
 exitcode=$?
 
