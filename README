@@ -84,7 +84,7 @@ Code changes:
 - NOVOCRAFT is introduced as replacement for NOVOSORT to allow for the use of both novoalign and novosort
 - A new variable INDELDIR: directory of known indels split by chromosome name
 - The script 'merge_vcf_and_bam.sh' has been modified to merge_vcf.sh, so that it only does the merging (by commenting out all instructions relevant to merging bams). If variants can be called on per chromosome basis, then no real value is added from merging the bams, except maybe the convenience of the client who might consider calling variants again from them. A little later, this functionality can be added, by copying the relevant code pieces from this script to a new script with a more meaningful name. 
-
+- Group read/write permissions were added by settingthe ACL (via setfacl command). The easier alternative would have been simply setting:  umask 0003
 
 To do:
 - The old pipeline assumes that all tools are module loaded first then called directly. For more generality, the complete path of each tool is specified instead: SAMMODULE is replaced with SAMDIR, and the variable name is samtools. Still need to check the full path of each tool and update that the executable actually exists. So far, the following paths have been integrated:
