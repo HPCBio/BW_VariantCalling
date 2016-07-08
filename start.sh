@@ -499,13 +499,13 @@ do
            done
            set +x  
 	   echo -e "\n\n########################################################################################" >&2            
-	   echo -e "####   Out of loop2. Now launching merge_vcfs script for SAMPLE $sample       ##########" >&2
+	   echo -e "####   Out of loop2. Now launching merge_vcf script for SAMPLE $sample       ##########" >&2
 	   echo -e "########################################################################################\n\n" >&2
 	   set -x 
 
            vcalljobids=$( cat $TopOutputLogs/pbs.VCALL.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
-	   echo -e "\n\n### this list of jobids=[$vcalljobids] will be used to hold execution of merge_vcfs.sh #####\n\n"
+	   echo -e "\n\n### this list of jobids=[$vcalljobids] will be used to hold execution of merge_vcf.sh #####\n\n"
 
 	   qsub1=$TopOutputLogs/qsub.merge.$sample
 	   cat $generic_qsub_header > $qsub1
@@ -513,7 +513,7 @@ do
 	   echo "#PBS -o $TopOutputLogs/log.merge.$sample.ou" >> $qsub1
 	   echo "#PBS -e $TopOutputLogs/log.merge.$sample.in" >> $qsub1
            echo "#PBS -W depend=afterok:$vcalljobids" >> $qsub1
-	   echo "$scriptdir/merge_vcf_and_bam.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
+	   echo "$scriptdir/merge_vcf.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
 	   `chmod a+r $qsub1`               
 	   mergejobid=`qsub $qsub1` 
 	   echo $mergejobid >> $TopOutputLogs/pbs.summary_dependencies
