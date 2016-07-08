@@ -21,7 +21,7 @@ echo -e     "#############                BEGIN VARIANT CALLING WORKFLOW        
 echo -e     "########################################################################################\n\n">&2
 set -x
 
-umask 0027
+#umask 0027
 
 echo `date`	
 scriptfile=$0
@@ -276,7 +276,8 @@ set -x
 
 mkdir $outputdir
 
-setfacl -Rm d:g::07 $outputdir
+setfacl -Rm   g::rwx $outputdir  #gives the group rwx permission, and to subdirectories
+setfacl -Rm d:g::rwx $outputdir  #passes the permissions to newly created files/folders
 
 if [ ! -d $outputdir/logs  ]
 then
