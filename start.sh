@@ -22,6 +22,7 @@ echo -e     "###################################################################
 set -x
 
 umask 0027
+
 echo `date`	
 scriptfile=$0
 runfile=$1
@@ -272,6 +273,10 @@ echo -e "\n\n###################################################################
 echo -e "#############  Everything seems ok. Now setup/configure output folders and files   #########" >&2
 echo -e "########################################################################################\n\n" >&2
 set -x
+
+mkdir $outputdir
+
+setfacl -Rm d:g::07 $outputdir
 
 if [ ! -d $outputdir/logs  ]
 then
