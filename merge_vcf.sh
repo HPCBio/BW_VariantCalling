@@ -127,7 +127,7 @@ echo -e "#######   MERGE BAMS BLOCK STARTS HERE  FOR              $SampleName   
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
 
-#cd $RealignDir
+cd $RealignDir
 
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: skipping the merging for the bam files              #####"
@@ -148,11 +148,12 @@ echo -e "#######################################################################
 
 $novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.*.recalibrated.bam 
 
-#exitcode=$?
+exitcode=$?
 
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: skipping the sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
+
 
 echo `date`
 if [ $exitcode -ne 0 ]
@@ -161,7 +162,6 @@ then
 	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	 exit $exitcode;
 fi
-
 if [ -s "$outbam" ]
 then     
     echo -e "### the file was created. But we are not done.     #############"
