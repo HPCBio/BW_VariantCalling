@@ -133,21 +133,20 @@ echo -e "\n\n###################################################################
 echo -e "########### command one: skipping the merging for the bam files              #####"
 echo -e "##################################################################################\n\n"
 
-#chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
+chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
 
-#if [ `expr ${#chr_bamList}` -lt 1 ]
-#then
-#    MSG="no bam files were found at $RealignDir"
-#    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#    exit 1;
-
-#fi
+if [ `expr ${#chr_bamList}` -lt 1 ]
+then
+    MSG="no bam files were found at $RealignDir"
+    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+    exit 1;
+fi
 
 echo -e "\n\n##################################################################################" 
 echo -e "########### command two: skipping the novosort part             #####"
 echo -e "##################################################################################\n\n"
 
-#$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}*.recalibrated.bam 
+$novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.*.recalibrated.bam 
 
 #exitcode=$?
 
@@ -155,36 +154,35 @@ echo -e "\n\n###################################################################
 echo -e "########### command three: skipping the sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
 
-#echo `date`
-#if [ $exitcode -ne 0 ]
-#then
-#	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
-#	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#	 exit $exitcode;
-#fi
+echo `date`
+if [ $exitcode -ne 0 ]
+then
+	 MSG="novosort command failed exitcode=$exitcode. merge for sample $SampleName stopped"
+	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	 exit $exitcode;
+fi
 
-#if [ -s "$outbam" ]
-#then     
-#    echo -e "### the file was created. But we are not done.     #############"
-#    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-#    numAlignments=$( $samtoolsdir/samtools view -c $outbam ) 
+if [ -s "$outbam" ]
+then     
+    echo -e "### the file was created. But we are not done.     #############"
+    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+    numAlignments=$( $samtoolsdir/samtools view -c $outbam ) 
 
-#    echo `date`
-#    if [ $numAlignments -eq 0 ]
-#    then
-#	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
-#	MSG="novosort command did not produce alignments for $outbam"
-#	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#	exit 1;
-#    else
-#	echo -e "####### $outbam seems to be in order ###########"
-#    fi
-#else 
-#    MSG="novosort command did not produce a file $outbam"
-#    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
-#    exit 1;          
-#fi	
-
+    echo `date`
+    if [ $numAlignments -eq 0 ]
+    then
+	echo -e "${SampleName}\tMERGE\tFAIL\tnovosort command did not produce alignments for $outbam\n" >> $qcfile	    
+	MSG="novosort command did not produce alignments for $outbam"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+    else
+	echo -e "####### $outbam seems to be in order ###########"
+    fi
+else 
+    MSG="novosort command did not produce a file $outbam"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
+    exit 1;          
+fi	
 
 
 echo -e "\n\n##################################################################################"  
@@ -330,16 +328,16 @@ echo -e "#######################################################################
 
 echo `date`
 
-#cp $RealignDir/$outbam       $DeliveryDir
+cp $RealignDir/$outbam       $DeliveryDir
 
-#if [ ! -s $DeliveryDir/$outbam ]
-#then
+if [ ! -s $DeliveryDir/$outbam ]
+then
 
-#    MSG="copy failed from $DeliveryDir/$outbam to $DeliveryDir/$outbam"
-#    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-#    exit 1;
+    MSG="copy failed from $DeliveryDir/$outbam to $DeliveryDir/$outbam"
+    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+    exit 1;
 
-#fi
+fi
 
 cp $VarcallDir/$rawvariant   $DeliveryDir
 
