@@ -536,7 +536,8 @@ do
 #azza: here should be calling variants using HC
 
         fi # close the if statement checking whether the workflow end with alignment or not
-
+        # release all held jobs
+        `qrls -h u $alignjobid`
    fi  # end non-empty line
 done <  $sampleinfo	
 
