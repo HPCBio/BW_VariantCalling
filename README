@@ -75,6 +75,7 @@ New and changed parameters and meanings:
 - SAMPLEINFORMATION: This entry was repeated twice in the original file. Just keep the entry directing to the sampleinfo file
 - BWAINDEX: points to the indexed reference genome, and should be passed to the align_dedup.sh
 - SCRIPTDIR
+- OMNI: This is another database that is valuable for VQSR for human data (VQSR is done differently in plant datasets though!)
 
 Code changes:
 - pbs.MERGE

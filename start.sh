@@ -489,6 +489,7 @@ do
 		echo "#PBS -o $TopOutputLogs/log.realVcall.$sample.$chr.ou" >> $qsub1
 		echo "#PBS -e $TopOutputLogs/log.realVcall.$sample.$chr.in" >> $qsub1
                 echo "#PBS -W depend=afterok:$alnjobid" >> $qsub1
+################################################# azza: here should only realign/recalibrate!
 		echo "$scriptdir/realign_varcall_by_chr.sh $runfile $sample $chr $TopOutputLogs/log.realVcall.$sample.$chr.in $TopOutputLogs/log.realVcall.$sample.$chr.ou $TopOutputLogs/qsub.realVcall.$sample.$chr" >> $qsub1
 		`chmod a+r $qsub1`               
 		realjobid=`qsub $qsub1` 
@@ -519,6 +520,7 @@ do
 	   echo "#PBS -o $TopOutputLogs/log.merge.$sample.ou" >> $qsub1
 	   echo "#PBS -e $TopOutputLogs/log.merge.$sample.in" >> $qsub1
            echo "#PBS -W depend=afterok:$vcalljobids" >> $qsub1
+################################################### azza: here should only be merge_bams of each sample
 	   echo "$scriptdir/merge_vcf.sh $runfile $sample $TopOutputLogs/log.mergeVcf.$sample.in $TopOutputLogs/log.merge.$sample.ou $TopOutputLogs/qsub.merge.$sample" >> $qsub1
 	   `chmod a+r $qsub1`               
 	   mergejobid=`qsub $qsub1` 
@@ -531,6 +533,7 @@ do
 	        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email" 
 	        exit 1        
            fi
+#azza: here should be calling variants using HC
 
         fi # close the if statement checking whether the workflow end with alignment or not
 

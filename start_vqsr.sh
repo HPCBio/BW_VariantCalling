@@ -52,8 +52,7 @@ indels=$( cat $runfile | grep -w INDELS | cut -d '=' -f2 )
 phase1=$( cat $runfile | grep -w PHASE1 | cut -d '=' -f2 )
 samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 )        
-gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 gvcf_mod=$( cat $runfile | grep -w GVCFTOOLMODULE | cut -d '=' -f2 )
@@ -123,9 +122,9 @@ then
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
     exit 1
 fi
-if [ ! -d  $gatk_dir  ]
+if [ ! -d  $gatkdir  ]
 then
-	MSG="Invalid value specified for GATKDIR=$gatk_dir in the configuration file."
+	MSG="Invalid value specified for GATKDIR=$gatkdir in the configuration file."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi

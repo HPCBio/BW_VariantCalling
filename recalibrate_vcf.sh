@@ -52,7 +52,7 @@ phase1=$( cat $runfile | grep -w PHASE1 | cut -d '=' -f2 )
 samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
 gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
-gatk_dir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
 gvcf_mod=$( cat $runfile | grep -w GVCFTOOLMODULE | cut -d '=' -f2 )
 ref_local=${refdir}/$refgenome
@@ -143,17 +143,17 @@ echo -e "########### command one: VariantRecalibrator for SNPs                  
 echo -e "##################################################################################\n\n"
 
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T VariantRecalibrator \
 	 -R $ref_local \
          -input $input_vcf \
          -nt $thr \
-         -resource:omni,known=false,training=true,truth=true,prior=12.0   $omni_local \
 	 -resource:hapmap,known=false,training=true,truth=true,prior=15.0 $hapmap_local \
+         -resource:omni,known=false,training=true,truth=true,prior=12.0   $omni_local \
          -resource:1000G,known=false,training=true,truth=false,prior=10.0 $phase1_local \
 	 -resource:dbsnp,known=true,training=false,truth=false,prior=2.0  $dbsnp_local \
          -an QD -an MQ -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an InbreedingCoeff \
-         -mode SNP \
+	 -mode SNP \
          -recalFile $recal_file \
          -tranchesFile $tranches_file \
          -rscriptFile $Rplots_snp
@@ -191,13 +191,13 @@ echo -e "########### command three: VariantRecalibrator for Indels              
 echo -e "##################################################################################\n\n"
 
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T VariantRecalibrator \
 	 -R $ref_local \
          -input $input_vcf \
          -nt $thr \
          --maxGaussians 4 \
-         -resource:mills,known=false,training=true,truth=false,prior=12.0 $indels_local \
+         -resource:mills,known=false,training=true,truth=true,prior=12.0 $mills \
 	 -resource:dbsnp,known=true,training=false,truth=false,prior=2.0  $dbsnp_local \
          -an QD -an FS -an SOR -an ReadPosRankSum -an MQRankSum  -an InbreedingCoeff \
          -mode INDEL \
@@ -244,7 +244,7 @@ echo -e "########### command one: ApplyRecalibration for SNPs                   
 echo -e "##################################################################################\n\n"
 
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T ApplyRecalibration \
 	 -R $ref_local \
          -input $input_vcf \
@@ -263,7 +263,7 @@ echo -e "########### command three: ApplyRecalibration for INDELs               
 echo -e "##################################################################################\n\n"
 
 
-java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T ApplyRecalibration \
 	 -R $ref_local \
          -input $input_vcf \
