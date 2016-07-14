@@ -333,7 +333,7 @@ echo -e "\n\n###################################################################
 echo -e "########### command four: run GATK BaseRecalibrator using known indels and dbSNP    ##"
 echo -e "##################################################################################\n\n"
 
-$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T BaseRecalibrator \
          -R $ref_local \
          -I $realignedbam \
