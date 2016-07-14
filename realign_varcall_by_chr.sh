@@ -425,7 +425,7 @@ echo -e "#######################################################################
 
 
 
-$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -T HaplotypeCaller \
 	 -R $ref_local \
 	 --dbsnp $dbsnp_local \
