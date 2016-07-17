@@ -274,7 +274,11 @@ echo -e "#############  Everything seems ok. Now setup/configure output folders 
 echo -e "########################################################################################\n\n" >&2
 set -x
 
-mkdir $outputdir
+if [ ! -d $outputdir ]; then
+	mkdir $outputdir
+else
+	rm -rf $outputdir/*
+fi
 
 setfacl -Rm   g::rwx $outputdir  #gives the group rwx permission, and to subdirectories
 setfacl -Rm d:g::rwx $outputdir  #passes the permissions to newly created files/folders
