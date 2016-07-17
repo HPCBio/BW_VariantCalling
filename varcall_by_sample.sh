@@ -25,11 +25,10 @@ echo `date`
 scriptfile=$0
 runfile=$1
 SampleName=$2
-elog=$4
-olog=$5
-qsubfile=$6
+elog=$3
+olog=$4
+qsubfile=$5
 LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
-
 
 if [ ! -s $runfile ]
 then
@@ -44,16 +43,12 @@ deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
-indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 ) 
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
-indel_local=${refdir}/$indeldir
 
 outputdir=$rootdir/$SampleName
 
@@ -71,18 +66,9 @@ VarcallDir=$outputdir/variant
 DeliveryDir=$rootdir/$deliverydir/$SampleName
 
 qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the txt file with all QC test results
-inputbam=$AlignDir/${SampleName}.wdups.sorted.bam                # name of the bam file that align-dedup produced
-dedupsortedbam=${SampleName}.$chr.wdups.sorted.bam               # name of the aligned file -one chr out of inputbam
-realignedbam=${SampleName}.$chr.realigned.bam                    # name of the realigned file
-recalibratedbam=${SampleName}.$chr.recalibrated.bam              # name of the recalibrated file
 
-
-
-qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the txt file with all QC test results
-tmpvariant=${SampleName}.raw.vcf                                 # name of raw variant file pre-sorting
-rawvariant=${SampleName}.GATKCombineGVCF.raw.vcf                 # name of the raw variant file (hc output could go to this program)
-outbam=$RealignDir/${SampleName}.recalibrated.bam                # name of the ready-for-analysis bam file (input to hc)
-rawvariant=${SampleName}.$chr.raw.g.vcf                          # name of the raw variant file (output from hc)
+inputbam=$RealignDir/${SampleName}.recalibrated.bam              # name of the ready-for-analysis bam file (input to hc)
+rawvariant=${SampleName}.raw.g.vcf                          # name of the raw variant file (output from hc)
 
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
@@ -95,25 +81,6 @@ then
     mkdir -p $tmpdir
 fi
 
-if [ `expr ${#SampleName}` -lt 1]
-then
-    MSG="$SampleName sample undefined variable"
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
-    exit 1     
-else
-    sID=$SampleName
-    sPU=$SampleName
-    sSM=$SampleName
-fi
-if [ `expr ${#sLB}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ] 
-then
-    MSG="SAMPLELB=$sLB SAMPLEPL=$sPL SAMPLECN=$sCN at least one of these fields has invalid values. "
-    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-fi
-
-RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
-rgheader=$( echo -n -e "@RG\t" )$( echo -e "${RGparms}"  | tr ":" "\t" | tr "=" ":" )
 
 if [ ! -d $rootdir ]
 then
@@ -137,25 +104,10 @@ fi
 
 if [ ! -s $inputbam ]
 then
-    MSG="$inputbam aligned-dedup file not found"
+    MSG="$inputbam Realinged-Recalibrated file not found"
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
-
-echo -e "\n\n##################################################################################"
-echo -e "########### PREP WORK: split aligned.bam by chr and grab indels for chr            ###" 
-echo -e "##################################################################################\n\n"
-
-echo -e "\n### ploidy variable, its value is 2 for all chr except mitochondrial               ###\n"
-
-if [ $chr == "M" ]
-then
-    ploidy=1
-else
-    ploidy=2
-fi
-
-echo -e "\n### split aligned.bam by region with  $inputbam and chr=$chr                       ###\n"     
 
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"	
@@ -173,19 +125,16 @@ echo -e "\n\n###################################################################
 echo -e "########### command one: executing GATK HaplotypeCaller command         ##########" 
 echo -e "##################################################################################\n\n"
 
-
-
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -T HaplotypeCaller \
 	 -R $ref_local \
 	 --dbsnp $dbsnp_local \
-	 -I $RealignDir/$recalibratedbam \
+	 -I $inputbam \
 	 --emitRefConfidence GVCF \
 	 -gt_mode DISCOVERY \
 	 -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
 	 -stand_call_conf 30 \
 	 -stand_emit_conf 30 \
-	 --sample_ploidy $ploidy \
 	 -nt 1 -nct $thr \
 	 -o $rawvariant
 
@@ -223,7 +172,7 @@ echo -e "#######################################################################
 echo `date`
  
 # we will merge all variant files for this sample and copy that file to delivery
-#cp $VarcallDir/rawvariant=${SampleName}.raw.vcf $DeliveryDir  
+cp $VarcallDir/$rawvariant $DeliveryDir  
 
 echo `date`
 echo -e "\n\n##################################################################################"

@@ -437,6 +437,7 @@ $javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.j
 	 -stand_emit_conf 30 \
 	 --sample_ploidy $ploidy \
 	 -nt 1 -nct $thr \
+	 -L $chr
 	 -o $rawvariant
 
 
