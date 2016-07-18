@@ -51,10 +51,7 @@ indels=$( cat $runfile | grep -w INDELS | cut -d '=' -f2 )
 phase1=$( cat $runfile | grep -w PHASE1 | cut -d '=' -f2 )
 samtools_mod=$( cat $runfile | grep -w SAMTOOLSMODULE | cut -d '=' -f2 )
 vcftools_mod=$( cat $runfile | grep -w VCFTOOLSMODULE | cut -d '=' -f2 )
-gatk_mod=$( cat $runfile | grep -w GATKMODULE | cut -d '=' -f2 ) 
 gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-tabix_mod=$( cat $runfile | grep -w TABIXMODULE | cut -d '=' -f2 )
-gvcf_mod=$( cat $runfile | grep -w GVCFTOOLMODULE | cut -d '=' -f2 )
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 hapmap_local=${refdir}/$hapmap
@@ -63,7 +60,7 @@ indels_local=${refdir}/$indels
 phase1_local=${refdir}/$phase1
 outputdir=$rootdir
 sample=$( basename $input_vcf )
-prefix=${sample%.GATKCombineGVCF.raw.vcf}
+prefix=${sample.GATKCombineGVCF.raw.vcf}
 recal_file=${prefix}_recal
 tranches_file=${prefix}_tranches
 Rplots_snp=${prefix}_plots_snp.R
@@ -78,12 +75,6 @@ echo -e "#######################################################################
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
-
-
-module load $tabix_mod
-module load $gatk_mod
-module load $gvf_mod
-module load htslib/1.3
 
 
 echo -e "\n\n##################################################################################" 
