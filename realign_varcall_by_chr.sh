@@ -95,7 +95,7 @@ then
     mkdir -p $tmpdir
 fi
 
-if [ `expr ${#SampleName}` -lt 1]
+if [ `expr ${#SampleName}` -lt 1 ]
 then
     MSG="$SampleName sample undefined variable"
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
