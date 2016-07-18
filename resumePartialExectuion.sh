@@ -4,7 +4,8 @@
 
 # Two Inputs: your specfic logs directory where your qsub files are. Make sure the names of your qsub files are specific to the parts of the workflow that you want to run.
 
-logsdir=/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs
+
+logsdir="/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs"
 
 ls $logsdir/qsub*realVcall* > qsubsscripts
 
@@ -13,11 +14,11 @@ readarray qsubs < qsubsscripts
 rm qsubsscripts
 
 i=0
-while [ i -lt ${#qsubs}  ];
+while [ $i -lt ${#qsubs[@]}  ];
 do
-	qsub1=${qsubs[i]}
-	qsub $qsub1
+	qsub1=${qsubs[$i]}
+	sed -i '/afterok/d' $qsub1
+    	qsub $qsub1
 	let i+=1
-
 done
 
