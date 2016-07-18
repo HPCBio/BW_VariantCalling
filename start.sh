@@ -46,7 +46,7 @@ scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
-numsamples=$(wc -l sampleinfo)
+numsamples=$(wc -l $sampleinfo)
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )        
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
@@ -274,7 +274,11 @@ echo -e "#############  Everything seems ok. Now setup/configure output folders 
 echo -e "########################################################################################\n\n" >&2
 set -x
 
-mkdir $outputdir
+if [ ! -d $outputdir ]; then
+	mkdir $outputdir
+else
+	rm -rf $outputdir/*
+fi
 
 setfacl -Rm   g::rwx $outputdir  #gives the group rwx permission, and to subdirectories
 setfacl -Rm d:g::rwx $outputdir  #passes the permissions to newly created files/folders

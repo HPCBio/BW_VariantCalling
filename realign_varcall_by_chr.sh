@@ -95,7 +95,7 @@ then
     mkdir -p $tmpdir
 fi
 
-if [ `expr ${#SampleName}` -lt 1]
+if [ `expr ${#SampleName}` -lt 1 ]
 then
     MSG="$SampleName sample undefined variable"
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
@@ -234,10 +234,10 @@ echo -e "###  because they are specified differently for each GATK tool         
 cd $indel_local
 
 
-recalparmsindels=$( find ${PWD} -name "*${chr}*.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
+recalparmsindels=$( find ${PWD} -name "*${chr}.vcf" | sed "s/^/ --knownSites /g" | tr "\n" " " )
 recalparmsdbsnp=" -knownSites $dbsnp_local "
 
-realparms=$( find ${PWD} -name "*${chr}*.vcf" | sed "s/^/ -known /g" | tr "\n" " " )
+realparms=$( find ${PWD} -name "*${chr}.vcf" | sed "s/^/ -known /g" | tr "\n" " " )
 
 if [ `expr ${#recalparmsindels}` -lt 1 ]
 then
@@ -437,6 +437,7 @@ $javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.j
 	 -stand_emit_conf 30 \
 	 --sample_ploidy $ploidy \
 	 -nt 1 -nct $thr \
+	 -L $chr\
 	 -o $rawvariant
 
 
