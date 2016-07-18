@@ -112,3 +112,6 @@ It would be handy if the pipeline could do a single piece of work as desired. Fo
 -  RECALIBRATE: only perform recalibration
 -  VCALL_ONLY: to only do variant calling
 -  VQSR_ONLY: to only do variant recalibration
+
+The chromosome names within the indeldir (the dbSNP files) need to be named in the following convention: *.<chrnumber>.vcf
+Make sure that the chromosome names within the dbSNPfiles, the reference, and the Runfile are all labelled the same, ie. chr01, chr1 Chr01, Chr1  Gm01, Gm1, 1, 01,  etc.
