@@ -23,7 +23,6 @@ echo -e "#############             DECLARING VARIABLES                         #
 echo -e "#####################################################################################\n\n" >&2
 set -x        
 
-umask 0027
 echo `date`
 scriptfile=$0
 runfile=$1

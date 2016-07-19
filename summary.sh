@@ -10,7 +10,6 @@ then
 fi
 
 
-umask 0027
 set -x
 echo `date`	
 scriptfile=$0
