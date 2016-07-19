@@ -11,6 +11,7 @@ then
         exit 1;
 fi
 
+set +x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -18,6 +19,7 @@ echo -e "#######################################################################
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             DECLARING VARIABLES                         ###############"
 echo -e "#####################################################################################\n\n"        
+set -x
 
 umask 0027
 set -x
@@ -56,11 +58,13 @@ indel_local=${refdir}/$indeldir
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 outputdir=$rootdir/$SampleName
 
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
+set -x
 
 SampleDir=$outputdir
 RealignDir=$outputdir/realign
@@ -71,13 +75,13 @@ qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the t
 tmpvariant=${SampleName}.raw.vcf                                 # name of raw variant file pre-sorting
 rawvariant=${SampleName}.GATKCombineGVCF.raw.vcf                 # name of the raw variant file
 outbam=${SampleName}.recalibrated.bam                            # name of the ready-for-analysis bam file
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x
 if [ ! -d $tmpdir ]
 then
     mkdir -p $tmpdir
@@ -117,19 +121,19 @@ then
 fi
 
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   MERGE BAMS BLOCK STARTS HERE  FOR              $SampleName        ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
-
+set -x 
 cd $RealignDir
-
+set +x 
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: skipping the merging for the bam files              #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
 
 if [ `expr ${#chr_bamList}` -lt 1 ]
@@ -138,19 +142,19 @@ then
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command two: skipping the novosort part             #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 $novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.*.recalibrated.bam 
 
 exitcode=$?
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: skipping the sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
 echo `date`
 if [ $exitcode -ne 0 ]
@@ -180,7 +184,7 @@ else
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
     exit 1;          
 fi	
-
+set +x 
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"		
 echo -e "##################################################################################"        
@@ -188,7 +192,7 @@ echo -e "#############   COPY RESULTS TO DELIVERY and also to                   
 echo -e "##################################################################################"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
-
+set -x 
 
 echo `date`
 
@@ -205,10 +209,10 @@ fi
 
 
 echo -e "${SampleName}\tVARCALLING\tPASS\tAll analyses completed successfully for this sample" >> $qcfile
-
+set +x 
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x 
 

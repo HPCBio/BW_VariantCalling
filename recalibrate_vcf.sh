@@ -10,7 +10,7 @@ then
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-
+set +x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -18,7 +18,7 @@ echo -e "#######################################################################
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             DECLARING VARIABLES                         ###############"
 echo -e "#####################################################################################\n\n"        
-
+set -x 
 umask 0027
 set -x
 echo `date`
@@ -69,7 +69,7 @@ outputfile_snp_gvcf=${prefix}_recalibrated_snp_GVCF.vcf
 outputfile_indel_gvcf=${prefix}_recalibrated_indel_GVCF.vcf
 outputfile_snp_vcf=${prefix}_recalibrated_snp.vcf
 outputfile_indel_vcf=${prefix}_recalibrated_indel.vcf
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
@@ -82,7 +82,7 @@ echo -e "#######################################################################
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x 
 if [ ! -d $tmpdir ]
 then
     mkdir -p $tmpdir
@@ -120,19 +120,19 @@ then
     exit 1
 fi
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   STEP1: run VariantRecalibrator on $input_vcf                      ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
-
+set -x 
 cd $outputdir
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: VariantRecalibrator for SNPs                       #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T VariantRecalibrator \
@@ -150,11 +150,11 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
          -rscriptFile $Rplots_snp
 	 
 exitcode=$?
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command two: sanity check  VariantRecalibrator for SNPs              #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 echo `date`
 if [ $exitcode -ne 0 ]
 then
@@ -176,11 +176,11 @@ then
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
     exit 1;          
 fi
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: VariantRecalibrator for Indels                       #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T VariantRecalibrator \
@@ -196,11 +196,11 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
          -tranchesFile $tranches_file \
          -rscriptFile $Rplots_indel	 
 exitcode=$?
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command four: sanity check VariantRecalibrator for Indels            #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 echo `date`
 if [ $exitcode -ne 0 ]
 then
@@ -223,7 +223,7 @@ then
     exit 1;          
 fi
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   STEP2: run ApplyRecalibration on $input_vcf                       ######"
@@ -233,7 +233,7 @@ echo -e "#######################################################################
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: ApplyRecalibration for SNPs                       #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T ApplyRecalibration \
@@ -248,11 +248,11 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
 	 
 exitcode=$?
 
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: ApplyRecalibration for INDELs                       #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T ApplyRecalibration \
@@ -268,10 +268,10 @@ $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.ja
 exitcode=$?
 
 
-
+set +x
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x 
 

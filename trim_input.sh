@@ -19,9 +19,9 @@ else
     outdir=$rootdir/results
     tmpdir=$rootdir/src
     adapters=/home/apps/trimmomatic/trimmomatic-0.33/adapters/TruSeq3-PE-2.fa
-    
+    set +x	    
     echo -e "\n\n############ parameter check                  #################\n\n"
-
+    set -x 
     if [ ! -s $infile ]
     then
 	echo -e "$0 stopped at line $LINENO\nREASON=input file not found $infile"
@@ -48,21 +48,23 @@ else
         `mkdir $tmpdir`
     fi
 
-
+    set +x
     echo -e "\n\n############ parameters ok                  #################\n\n"
-    
+    set -x 
     echo -e "\n\n############ trimming loop start here       #################\n\n"
 
     while read sampledetail
     do
+       set +x	
        echo -e "\n############# processing next line in file...#################\n"
-
+       set -x 
        if [ `expr ${#sampledetail}` -lt 1 ]
        then
+	   set +x
            echo -e "\n############ skipping empty line            #################\n"
        else
            echo -e "\n############ processing: $sampledetails     #################\n"
-
+           set -x 
            # we are assuming input is paired reads, three fields per row as follows
 
            samplename=$( echo $sampledetail | cut -d ' ' -f1 )
@@ -86,8 +88,9 @@ else
 	       echo -e "$0 stopped at line $LINENO\nREASON=reads file not found $R2"
 	       exit 1;
            fi
-
+	   set +x
            echo -e "\n############ preparing output folders      #################\n"
+	   set -x 
            outputdir=$outdir/${samplename}/trimmed
            fqdir2=$outdir/${samplename}/FastQC-trimmed
            fqdir1=$outdir/${samplename}/FastQC-raw
@@ -98,9 +101,9 @@ else
            mkdir -p $fqdir1
 #           mkdir -p $fqdir2
            mkdir -p $outputdir          
-          
+           set +x 
            echo -e "\n############ results will go here: outputdir=$outdir/${samplename}    #################\n"           
-
+	   set -x 
  
 
 	   qsub1=$tmpdir/qsub.trim.$samplename
