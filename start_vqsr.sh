@@ -15,7 +15,7 @@ then
         exit 1;
 fi
 
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "#############                BEGIN VARIANT CALLING WORKFLOW              ###############"
 echo -e "########################################################################################\n\n"
@@ -29,11 +29,11 @@ then
    MSG="program=$0 stopped at line=$LINENO. $runfile configuration file not found."
    exit 1;
 fi
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "#############                CHECKING PARAMETERS                         ###############"
 echo -e "########################################################################################\n\n"
-
+set -x 
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
@@ -61,13 +61,13 @@ hapmap_local=${refdir}/$hapmap
 omni_local=${refdir}/$omni
 indels_local=${refdir}/$indels
 phase1_local=${refdir}/$phase1
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x 
 if [ `expr ${#tmpdir}` -lt 1  ]
 then
 	MSG="Invalid value specified for TMPDIR in the configuration file."
@@ -151,11 +151,11 @@ then
     exit 1;	
 fi
 
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "###########                      checking PBS params                      ##################"
 echo -e "########################################################################################\n\n"
-
+set -x 
 if [ `expr ${#thr}` -lt 1 ]
 then
     thr=$PBS_NUM_PPN
@@ -172,11 +172,11 @@ then
 fi
 
 
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "#############  Everything seems ok. Now setup/configure output folder          #########"
 echo -e "########################################################################################\n\n"
-
+set -x
 if [ ! -d $outputdir ]
 then
         # the output directory does not exist. create it
@@ -200,9 +200,9 @@ echo "#PBS -m ae" >> $generic_qsub_header
 echo "#PBS -M $email" >> $generic_qsub_header
 echo "#PBS -l nodes=$nodes:ppn=$thr" >> $generic_qsub_header
 
-
+set +x
 echo -e "##### let's check that it worked and that the file was created                     ####"
-
+set -x 
 if [ ! -s $generic_qsub_header ]
 then 
     MSG="$generic_qsub_header is empty"
@@ -210,25 +210,28 @@ then
     exit 1;
 fi
 
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "########################################################################################"
 echo -e "#####                               MAIN LOOP STARTS HERE                      #########"
 echo -e "########################################################################################"
 echo -e "########################################################################################\n\n"
-
+set -x 
 while read rawvcf
 do
     if [ `expr ${#rawvcf}` -lt 1 ]
     then
+	set +x
 	echo -e "\n\n########################################################################################"
 	echo -e "##############                 skipping empty line        ##############################"
 	echo -e "########################################################################################\n\n"
+	set -x 
     else
+	set +x
 	echo -e "\n\n########################################################################################"
 	echo -e "#####         Processing next line $srawvcf                                ##########"
 	echo -e "########################################################################################\n\n"
-
+	set -x 
         if [ ! -s $rawvcf ]
 	then
 	     MSG="$rawvcf file not found"
@@ -237,11 +240,11 @@ do
 	fi
 
         sample=$( basename $rawvcf )
-
+	set +x
 	echo -e "\n\n########################################################################################"
 	echo -e "###   Everything seems in order. Now launching the vqsr script for $sample     ###########"
 	echo -e "########################################################################################\n\n"
-
+	set -x 
 	qsub1=$TopOutputLogs/qsub.vqsr.$sample
 	cat $generic_qsub_header > $qsub1
 	echo "#PBS -N vqsr.$sample" >> $qsub1
@@ -265,7 +268,7 @@ do
         
     fi  # end non-empty line
 done <  $sampleinfo
-
+set +x
 echo -e "\n\n########################################################################################"
 echo -e "########################################################################################"
 echo -e "#################           MAIN LOOP ENDS HERE                  #######################"
@@ -276,3 +279,4 @@ echo -e "#######################################################################
 echo -e "\n\n########################################################################################"
 echo -e "##############                 EXITING NOW                            ##################"	
 echo -e "########################################################################################\n\n"
+set -x

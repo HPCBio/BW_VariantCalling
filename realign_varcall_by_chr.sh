@@ -10,7 +10,7 @@ then
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-
+set +x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -61,13 +61,13 @@ dbsnp_local=${refdir}/$dbSNP
 indel_local=${refdir}/$indeldir
 
 outputdir=$rootdir/$SampleName
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
-
+set -x
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -82,13 +82,13 @@ realignedbam=${SampleName}.$chr.realigned.bam                    # name of the r
 recalibratedbam=${SampleName}.$chr.recalibrated.bam              # name of the recalibrated file
 rawvariant=${SampleName}.$chr.raw.g.vcf                          # name of the raw variant file
 
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x 
 if [ ! -d $tmpdir ]
 then
     mkdir -p $tmpdir
@@ -154,7 +154,7 @@ then
     exit 1;
 fi
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   REALIGN-RECALIBRATION BLOCK STARTS HERE   $SampleName $chr        ######"
@@ -168,16 +168,16 @@ echo -e "########### PREP WORK: split aligned.bam by chr and grab indels for chr
 echo -e "##################################################################################\n\n"
 
 echo -e "\n### ploidy variable, its value is 2 for all chr except mitochondrial               ###\n"
-
+set -x
 if [ $chr == "M" ]
 then
     ploidy=1
 else
     ploidy=2
 fi
-
+set +x
 echo -e "\n### split aligned.bam by region with  $inputbam and chr=$chr                       ###\n"     
-
+set -x
 cd $RealignDir
 
 $samtoolsdir/samtools view -bu -@ $thr -h $inputbam $chr > $dedupsortedbam
@@ -192,11 +192,13 @@ then
 	 exit $exitcode;
 fi
 if [ -s $dedupsortedbam ]
-then     
+then  
+    set +x	   
     echo -e "### the file was created. But we are not done.     #############"
     echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+    set -x
     numAlignments=$( $samtoolsdir/samtools view -c $dedupsortedbam ) 
-
+    
     echo `date`
     if [ $numAlignments -eq 0 ]
     then
@@ -205,7 +207,9 @@ then
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
     else
+	set +x
 	echo -e "####### $dedupsortedbam seems to be in order ###########"
+   	set -x 
     fi
 else 
     MSG="samtools command did not produce a file $dedupsortedbam"
@@ -226,10 +230,10 @@ then
 	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
 	 exit $exitcode;
 fi
-
+set +x
 echo -e "\n\n### grab indels for this region. We need two variables one for realignment and one for recalibration"
 echo -e "###  because they are specified differently for each GATK tool                            ##############\n\n"
-
+set -x
 cd $indel_local
 
 
@@ -252,10 +256,10 @@ then
     exit 1;
 fi
 
-
+set +x
 echo -e "########### command one: executing GATK RealignerTargetCreator using known indels ####" 
 echo -e "##################################################################################\n\n"
-
+set -x
 cd $RealignDir
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
@@ -279,22 +283,22 @@ then
 	 echo -e "${SampleName}\tREALIGNMENT\tWARN\t${SampleName}.$chr.RealignTargetCreator.intervals is an empty file. Skipping Indel realignment cmd\n" >> $qcfile
          ln -s $dedupsortedbam $RealignDir/$realignedbam
 else 
-
+ 	set +x
 	echo -e "\n\n##################################################################################" 
 	echo -e "########### command two: executing GATK IndelRealigner and generating BAM    #####"
 	echo -e "##################################################################################\n\n"
-
+	set -x
 	$javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
                   -R $ref_local -I $dedupsortedbam -T IndelRealigner $realparms \
                   --targetIntervals ${SampleName}.$chr.realignTargetCreator.intervals \
                   -o $realignedbam
 
 	exitcode=$?
-
+	set +x
 	echo -e "\n\n##################################################################################" 
 	echo -e "########### command three: sanity check for GATK IndelRealigner                  #####"
 	echo -e "##################################################################################\n\n"
-
+	set -x
 	echo `date`
 	if [ $exitcode -ne 0 ]
 	then
@@ -304,9 +308,11 @@ else
 	fi
 
 	if [ -s $realignedbam ]
-	then     
+	then
+   	    set +x		     
 	    echo -e "### the file was created. But we are not done.     #############"
 	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	    set -x 			
 	    numAlignments=$( $samtoolsdir/samtools view -c $realignedbam ) 
 
 	    echo `date`
@@ -327,11 +333,11 @@ else
 fi
 
 echo `date`     
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command four: run GATK BaseRecalibrator using known indels and dbSNP    ##"
 echo -e "##################################################################################\n\n"
-
+set -x 
 $javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
          -T BaseRecalibrator \
          -R $ref_local \
@@ -355,10 +361,11 @@ then
 	echo -e "${SampleName}\tRECALIBRATION\tWARN\t$SampleName.$chr.recal_report.grp is an empty file. Skipping recalibration cmd\n" >> $qcfile
         ln -s $dedupsortedbam $RealignDir/$recalibratedbam
 else
+	set +x 
 	echo -e "\n\n##################################################################################" 
 	echo -e "########### command five: GATK BQSR step                                         #####"
 	echo -e "##################################################################################\n\n"
-
+	set -x
 
         $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
                 -R $ref_local \
@@ -370,11 +377,11 @@ else
 
         exitcode=$?
 
-
+	set +x
 	echo -e "\n\n##################################################################################" 
 	echo -e "########### command six: sanity check for GATK BQSR step                        #####"
 	echo -e "##################################################################################\n\n"
-
+	set -x
 
 	if [ -s $recalibratedbam ]
 	then     
@@ -390,7 +397,9 @@ else
 		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 		exit 1;
 	    else
+	        set +x
 		echo -e "####### $realignedbam seems to be in order ###########"
+		set -x 
 	    fi
 	else 
 	    MSG="GATK BQSR Recalibrator command did not produce a file $recalibratedbam"
@@ -400,7 +409,7 @@ else
 
 fi      
 echo `date` 
-
+set +x
 echo -e "\n\n##################################################################################"
 echo -e "#############     END REALIGN-RECALIBRATION BLOCK                         ############"
 echo -e "##################################################################################\n\n"          
@@ -421,7 +430,7 @@ cd $VarcallDir
 echo -e "\n\n##################################################################################"            
 echo -e "########### command one: executing GATK HaplotypeCaller command         ##########" 
 echo -e "##################################################################################\n\n"
-
+set -x
 
 
 $javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
@@ -456,7 +465,7 @@ then
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
-
+set +x
 echo -e "\n\n##################################################################################"
 echo -e "#############       END VARIANT CALLING BLOCK                         ############"        
 echo -e "##################################################################################\n\n"
@@ -469,17 +478,17 @@ echo -e "#############   WRAP UP                                               #
 echo -e "##################################################################################"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
-
+set -x
 echo `date`
  
 #cp $RealignDir/${SampleName}.$chr.recalibrated.bam   $DeliveryDir
 
 # we will merge all variant files for this sample and copy that file to delivery
 #cp $VarcallDir/rawvariant=${SampleName}.$chr.raw.vcf $DeliveryDir  
-
+set +x
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x
 

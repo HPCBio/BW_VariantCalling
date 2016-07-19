@@ -11,7 +11,9 @@
 set -x
 echo `date`
 
+set +x
 echo "\n\n##############  Step1: Setup\n\n"
+set -x
 
 refgenome=/home/groups/hpcbio/projects/LifeSpan/exome-March2016/genome/genome.fa
 dbSNP=/home/groups/hpcbio/projects/LifeSpan/exome-March2016/genome/dbSNP.vcf
@@ -41,8 +43,9 @@ then
     exit 1;
 
 fi
-
+set +x
 echo "\n\n##############  Step2: MuTect command with -PON param \n\n"
+set -x
 
 #java -Xmx10g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
 #         -T MuTect2 \
@@ -54,8 +57,9 @@ echo "\n\n##############  Step2: MuTect command with -PON param \n\n"
 #	 -nct $thr \
 #	 -o $outputfile
 
-
+set +x
 echo "\n\n##############  Step2: MuTect command without -PON param \n\n"
+set -x
 
 java -Xmx10g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
          -T MuTect2 \
@@ -67,7 +71,10 @@ java -Xmx10g  -Djava.io.tmpdir=$tmpdir -jar $gatk_dir/GenomeAnalysisTK.jar \
 	 -o $outputfile
 	 
 exitcode=$?
+set +x
 echo "\n\n##############  Step3: Sanity Check \n\n"
+set -x 
+
 echo `date`
 if [ $exitcode -ne 0 ]
 then
@@ -82,5 +89,6 @@ then
 	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
 	 exit $exitcode;
 else 
-
+set +x
 echo "\n\n##############  Done. Exiting now \n\n"
+set -x

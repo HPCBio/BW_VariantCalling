@@ -10,7 +10,7 @@ then
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-
+set +x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -50,13 +50,13 @@ ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 
 outputdir=$rootdir/$SampleName
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
-
+set -x 
 
 SampleDir=$outputdir
 AlignDir=$outputdir/align
@@ -68,13 +68,13 @@ qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the t
 
 inputbam=$RealignDir/${SampleName}.recalibrated.bam              # name of the ready-for-analysis bam file (input to hc)
 rawvariant=${SampleName}.raw.g.vcf                          # name of the raw variant file (output from hc)
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x
 if [ ! -d $tmpdir ]
 then
     mkdir -p $tmpdir
@@ -107,7 +107,7 @@ then
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"	
 echo -e "##################################################################################"        
@@ -115,15 +115,15 @@ echo -e "#############    GATK VARIANT CALLING   FOR SAMPLE $SampleName     ####
 echo -e "##################################################################################"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"
-
+set -x 
 echo `date`        
 
 cd $VarcallDir
-
+set +x
 echo -e "\n\n##################################################################################"            
 echo -e "########### command one: executing GATK HaplotypeCaller command         ##########" 
 echo -e "##################################################################################\n\n"
-
+set -x 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -T HaplotypeCaller \
 	 -R $ref_local \
@@ -154,7 +154,7 @@ then
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
-
+set +x
 echo -e "\n\n##################################################################################"
 echo -e "#############       END VARIANT CALLING BLOCK                         ############"        
 echo -e "##################################################################################\n\n"
@@ -169,13 +169,13 @@ echo -e "#######################################################################
 echo -e "##################################################################################\n\n"	
 
 echo `date`
- 
+set -x  
 # we will merge all variant files for this sample and copy that file to delivery
 cp $VarcallDir/$rawvariant $DeliveryDir  
-
+set +x
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x 
 

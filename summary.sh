@@ -25,11 +25,11 @@ reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
 summaryok="YES"
 samplesProcessed=""
-
+set +x
 echo -e "\n\n############################################################################################################"
 echo -e "###########                        SANITY   CHECK   HERE                                  ##################"
 echo -e "############################################################################################################\n\n"
-
+set -x 
 if [ ! -s $outputdir/$deliverydir/docs/Summary.Report ]
 then 
     MSG="$outputdir/$deliverydir/docs/Summary.Report  file not found"
@@ -41,21 +41,23 @@ while read sampleLine
 do
     if [ `expr ${#sampleLine}` -lt 1 ]
     then
+	set +x
 	echo -e "\n\n############################################################################################################"
 	echo -e "##############                              skipping empty line        #####################################"
 	echo -e "############################################################################################################\n\n"
+	set -x 
     else
-
+	set +x
 	echo -e "\n\n############################################################################################################"
 	echo -e "##############                      Processing next line $sampleLine   #####################################"
 	echo -e "############################################################################################################\n\n"
-
+	set -x 
 	sample=$( echo "$sampleLine" | cut -d ' ' -f 1 ) 
-
+	set +x
 	echo -e "\n\n############################################################################################################"
 	echo -e "############## checking that there are results available for sample $sample in $outputdir/$sample/ #########"
 	echo -e "############################################################################################################\n\n"
-
+	set -x 
 	if [ -s $outputdir/$sample ]
 	then
 	    echo -e "$sample\tResults folder:\t$outputdir/$sample" >> $samplesProcessed
@@ -68,11 +70,11 @@ do
    fi 
 done <  $sampleinfo                
 
-
+set +x
 echo -e "\n\n############################################################################################################"
 echo -e "####   now putting together the second part of the Summary.Report file with the list of jobs executed   ####"
 echo -e "############################################################################################################\n\n"
-
+set -x 
 listjobids=$( cat $outputdir/logs/pbs.* | sort | uniq | tr "\n" "\t" )
 
 if [ $summaryok == "YES" ]
@@ -87,8 +89,8 @@ echo -e "$MSG\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 echo -e "$MSG\n\n$LOGS" >> $outputdir/$deliverydir/docs/Summary.Report
 
 chmod -R g+r $outputdir
-
+set +x
 echo -e "\n\n############################################################################################################"
 echo -e "############                              DONE. EXITING NOW                                      ###########"
 echo -e "############################################################################################################\n\n"
-
+set -x

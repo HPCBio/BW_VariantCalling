@@ -10,7 +10,7 @@ then
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-
+set +x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -18,6 +18,7 @@ echo -e "#######################################################################
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             DECLARING VARIABLES                         ###############"
 echo -e "#####################################################################################\n\n"        
+set -x
 
 set -x
 echo `date`
@@ -47,24 +48,24 @@ gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 ref_local=${refdir}/$refgenome
 
 outputdir=$rootdir
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"            
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"   
-
+set -x 
 DeliveryDir=$rootdir/$deliverydir/jointVCFs
 
 qcfile=$rootdir/$deliverydir/docs/QC_test_results.txt            # name of the txt file with all QC test results
 jointVCF=jointVCFcalled.vcf					# name of the resulting jointly called variants file
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
-
+set -x 
 if [ ! -d $tmpdir ]
 then
     mkdir -p $tmpdir
@@ -85,13 +86,13 @@ then
 fi
 
 ############# This is actually what i need to do:
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"            
 echo -e "########### Joint genotyping script for all SAMPLEs: each 200 together          #####"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
-
+set -x 
 cd $DeliveryDir
 
 variantFiles=$( find ${outputdir} -name "*.GATKCombineGVCF.raw.vcf" | sed "s/^/ --variant /g" | tr "\n" " " )
@@ -129,10 +130,10 @@ then
 fi
 
 echo -e "Joint VARCALLING\tPASS\tAll analyses completed successfully for all samples" >> $qcfile
-
+set +x
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x 
 

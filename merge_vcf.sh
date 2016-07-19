@@ -10,7 +10,7 @@ then
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-
+set -x
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             BEGIN ANALYSIS PROCEDURE                    ###############"
 echo -e "#####################################################################################\n\n"        
@@ -18,7 +18,6 @@ echo -e "#######################################################################
 echo -e "\n\n#####################################################################################"        
 echo -e "#############             DECLARING VARIABLES                         ###############"
 echo -e "#####################################################################################\n\n"        
-
 set -x
 echo `date`
 scriptfile=$0
@@ -56,12 +55,13 @@ indel_local=${refdir}/$indeldir
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 outputdir=$rootdir/$SampleName
 
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   we will need these guys throughout, let's take care of them now   ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"          
-
+set -x 
 
 SampleDir=$outputdir
 RealignDir=$outputdir/realign
@@ -73,11 +73,13 @@ tmpvariant=${SampleName}.raw.vcf                                 # name of raw v
 rawvariant=${SampleName}.GATKCombineGVCF.raw.vcf                 # name of the raw variant file
 outbam=${SampleName}.recalibrated.bam                            # name of the ready-for-analysis bam file
 
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "##################################################################################"        
 echo -e "#############                       SANITY CHECK                   ###############"
 echo -e "##################################################################################"
 echo -e "##################################################################################\n\n"
+set -x
 
 if [ ! -d $tmpdir ]
 then
@@ -119,19 +121,19 @@ then
 fi
 
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   MERGE BAMS BLOCK STARTS HERE  FOR              $SampleName        ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
-
+set -x
 cd $RealignDir
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: skipping the merging for the bam files              #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
 
 if [ `expr ${#chr_bamList}` -lt 1 ]
@@ -140,19 +142,19 @@ then
     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command two: skipping the novosort part             #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 $novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.*.recalibrated.bam 
 
 exitcode=$?
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: skipping the sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
 echo `date`
 if [ $exitcode -ne 0 ]
@@ -183,20 +185,20 @@ else
     exit 1;          
 fi	
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"          	
 echo -e "#######   MERGE VCFs BLOCK STARTS HERE  FOR              $SampleName        ######"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n" 
-
+set -x
 cd $VarcallDir
 
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command one: checking that there are vcf files to merge          #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 chr_vcfList=$( ls -1 ${SampleName}.*.vcf | tr "\n" " " )
 
 if [ `expr ${#chr_vcfList}` -lt 1 ]
@@ -206,23 +208,23 @@ then
     exit 1;
 
 fi
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command two: prepare vcfs and create ordered list of vcfs to merge   #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 
 ordered_vcfs=""
 
 for chr in $indices
 do
-
+	set +x
 	echo -e "\n\n##################################################################################"  
 	echo -e "##################################################################################"          	
 	echo -e "#######   Processing vcf for chr=$chr                                       ######"
 	echo -e "##################################################################################"  
 	echo -e "##################################################################################\n\n"
-
+	set -x
         ### the vcf file for this chr and  GATK-CombineGVCFs
         
         thisvcf=$( ls -1 ${SampleName}.$chr.*.vcf | sed 's/^/ --variant /' | sed 's/\n/ /' )
@@ -236,9 +238,9 @@ do
         ordered_vcfs=${ordered_vcfs}$thisvcf
 done
 
-
+set +x
 echo -e "\n\n#### outside of loop over indices   \n\n" 
-
+set -x
 
 
 if [ `expr ${#ordered_vcfs}` -lt 1 ]
@@ -248,11 +250,11 @@ then
     exit 1;
 
 fi
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: merge with picard-SortVcf using ordered list of vcfs   #####"
 echo -e "##################################################################################\n\n"
-
+set -x
 #module load $java_mod
 #module load picard_mod
 
@@ -286,11 +288,11 @@ echo -e "#######################################################################
 #	 exit $exitcode;
 #fi
 
-
+set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command three: merge with GATK-CombineGVCFs                          #####"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
 $javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 	 -R $ref_local \
@@ -315,7 +317,7 @@ then
 
 fi 
 
-
+set +x
 echo -e "\n\n##################################################################################"  
 echo -e "##################################################################################"		
 echo -e "##################################################################################"        
@@ -323,7 +325,7 @@ echo -e "#############   COPY RESULTS TO DELIVERY and also to                   
 echo -e "##################################################################################"
 echo -e "##################################################################################"  
 echo -e "##################################################################################\n\n"	
-
+set -x 
 
 echo `date`
 
@@ -350,10 +352,10 @@ then
 fi
 
 echo -e "${SampleName}\tVARCALLING\tPASS\tAll analyses completed successfully for this sample" >> $qcfile
-
+set +x
 echo `date`
 echo -e "\n\n##################################################################################"
 echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############"
 echo -e "##################################################################################\n\n"
-
+set -x 
 
