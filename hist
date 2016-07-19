@@ -1,0 +1,367 @@
+    1  eval `ssh-agent -s`
+    2  ssh-add /ui/ncsa/mkendzi2/.ssh/id_rsa.pub
+    3  ls -l /ui/ncsa/mkendzi2/.ssh/id_rsa.pub
+    4  chmod g-r /ui/ncsa/mkendzi2/.ssh/id_rsa.pub
+    5  ls -l /ui/ncsa/mkendzi2/.ssh/id_rsa.pub
+    6  ssh-add /ui/ncsa/mkendzi2/.ssh/id_rsa.pub
+    7  ssh-add -L
+    8  ssh-add /ui/ncsa/mkendzi2/.ssh/id_rsa
+    9  ssh-add -L
+   10  vi /ui/ncsa/mkendzi2/.ssh/id_rsa
+   11  vi /ui/ncsa/mkendzi2/.ssh/id_rsa.pub 
+   12  ssh-add
+   13  ssh-add -L
+   14  eval `ssh-agent -s`
+   15  ssh-add
+   16  ls -l /ui/ncsa/mkendzi2/.ssh/id_rsa
+   17  ssh-add /ui/ncsa/mkendzi2/.ssh/id_rsa
+   18  ssh-add -L
+   19  ls  /projects/bioinformatics/HudsonSoybeanProject/
+   20  mkdir /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016 
+   21  cd /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016 
+   22  gitclone https://github.com/HPCBio/BW_VariantCalling
+   23  git clone https://github.com/HPCBio/BW_VariantCalling
+   24  ls
+   25  cd BW_VariantCalling
+   26  ls
+   27  git checkout -b ParameterSweep origin/ParameterSweep
+   28  git branch
+   29  ls
+   30  vi README
+   31  git add README
+   32  git commit -am "adding a README file for this branch"
+   33  vi .git/config
+   34  git commit -am "adding a README file for this branch"
+   35  git push
+   36  git push
+   37  vi .git/config
+   38  ls
+   39  vi start.sh
+   40  git pull
+   41  vi start.sh
+   42  cd ~
+   43  /projects/bioinformatics
+   44  exit
+   45  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   46  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   47  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   48  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   49  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   50  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   51  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   52  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   53  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   54  ls
+   55  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   56  ls /home/projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/H3A_NextGen_assessment.Chr1_50X.set3.sampleinfo
+   57  ls /home/projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/
+   58  ls /home/projects/bioinformatics/HudsonSoybeanProject/MattKVariantW
+   59  ls
+   60  mv H3A_NextGen_assessment.Chr1_50X.set3.sampleinfo Align.Soy_4small_samples.sampleinfo
+   61  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   62  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   63  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   64  qstat -u mkendzi2
+   65  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   66  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup 
+   67  echo "lalalala"
+   68  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   69  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup 
+   70  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   71  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   72  ls /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling
+   73  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   74  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   75  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   76  /projects/bioinformatics/builds/novocraftV3.04.06.Linux2.6/novoalign
+   77  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   78  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   79  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile 
+   80  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   81  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   82  vi Align.Soy_4small_samples.runfile 
+   83  vi ../../VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs/log.alignDedup.Sample_Magellan.in 
+   84  vi Align.Soy_4small_samples.runfile 
+   85  ls -ltrh ../../VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Sample_Magellan/
+   86  ls -ltrh ../../VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Sample_Magellan/align/
+   87  ssh iforge080
+   88  vi Align.Soy_4small_samples.runfile 
+   89  vi ../../VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs/log.alignDedup.Sample_Magellan.in 
+   90  vi Align.Soy_4small_samples.runfile 
+   91  ssh iforge080
+   92  vi Align.Soy_4small_samples.runfile 
+   93  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.nohup
+   94  qstat -u mkendzi2
+   95  qdel 2329609
+   96  qdel 2329610
+   97  qdel 2329611
+   98  qstat -u mkendzi2
+   99  qstat -u mkendzi2
+  100  qstat -u mkendzi2
+  101  qstat -u mkendzi2
+  102  ls -ltrh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Sample_Magellan/align/
+  103  vi /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.runfile
+  104  cat /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Align.Soy_4small_samples.sampleinfo
+  105  ls -lh /projects/bioinformatics/HudsonSoybeanProject/SoyNAM_sequence/4_6_GB/Sample_Magellan_read1.fq
+  106  ls -ltrh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Sample_Magellan/align/
+  107  qstat -u mkendzi2
+  108  export PATH='$PATH:/projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6'
+  109  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz | gzip -c > ~/tmp.vcf.gz
+  110  perl
+  111  echo $PATH
+  112  export PATH='$PATH:/projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6:/usr/lib64/qt-3.3/bin:/usr/local/bin_first:/usr/local/bin:/usr/X11R6/bin:/usr/local/mpi/mvapich2/mvapich2-1.7rc1-intel-12.0.4/bin:/usr/local/intel/bin:/usr/local/moab/bin:/usr/local/moab/sbin:/ui/ncsa/mkendzi2/bin:.:/usr/kerberos/sbin:/usr/kerberos/bin:/usr/lpp/mmfs/bin/:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh-5.8p2.mechglue/bin:/opt/ibutils/bin:/usr/local/torque/bin:/usr/local/torque/sbin'
+  113  perl
+  114  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz | gzip -c > ~/tmp.vcf.gz
+  115  tabix
+  116  ls /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6
+  117  cd /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6/
+  118  make
+  119  ls
+  120  cd ../../vcftools-0.1.14/
+  121  cd vcftools-0.1.14
+  122  ls
+  123  cd bin/
+  124  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz | gzip -c > ~/tmp.vcf.gz
+  125  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz > ~/tmp.vcf
+  126  vi ~/tmp.vcf
+  127  vi ~/tmp.vcf
+  128  rm ~/tmp.vcf
+  129  cd ../
+  130  ls -1
+  131  cd ../
+  132  cd ../
+  133  cd vcftools
+  134  cd vcftools-0.1.14/
+  135  ls
+  136  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz > ~/tmp.vcf
+  137  ls
+  138  cd vcftools-0.1.14
+  139  ls
+  140  cd bin
+  141  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz > ~/tmp.vcf
+  142  ./vcf-merge /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_1.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_2.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_3.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_4.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_5.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_6.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_7.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_8.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_9.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_10.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_11.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_12.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_13.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_14.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_15.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_16.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_17.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_18.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_19.vcf.gz /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/vcf_chr_20.vcf.gz > /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/soybean_dbsnp_June2016/AllSoybeanDbsnp2016.vcf.gz
+  143  cd ../
+  144  ls
+  145  cd ../
+  146  cd ../
+  147  ls -1
+  148  cd tabix-0.2.6
+  149  ls
+  150  cd tabix-0.2.6
+  151  ls
+  152  cd ~
+  153  /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6 -p vcf /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/GCF_000004515.4_Glycine_max_v2.0/soybean_dbsnp_June2016/AllSoybeanDbsnp2016.vcf.gz
+  154  /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6/tabix -p vcf /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/GCF_000004515.4_Glycine_max_v2.0/soybean_dbsnp_June2016/AllSoybeanDbsnp2016.vcf.gz
+  155  n
+  156  /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6 -p vcf /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/GCF_000004515.4_Glycine_max_v2.0/soybean_dbsnp_June2016/AllSoybeanDbsnp2016.vcf.gz
+  157  /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6/tabix -p vcf /projects/bioinformatics/HudsonSoybeanProject/SoybeanAssembly/GCF_000004515.4_Glycine_max_v2.0/soybean_dbsnp_June2016/AllSoybeanDbsnp2016.vcf.gz
+  158  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Realign.Align.Soy_IA3023_L007.TopMillion.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Realign.Align.Soy_IA3023_L007.TopMillion.runfile.nohup
+  159  qstat -u mkendzi2
+  160  qstat -u mkendzi2
+  161  qdel 2329791
+  162  qdel 2329792
+  163  qdel 2329793
+  164  qdel 2329794
+  165  qdel 2329795
+  166  qdel 2329796
+  167  qdel 2329797
+  168  qdel 2329798
+  169  qdel mkendzi2
+  170  qdel 2329799
+  171  qstat -u mkendzi2
+  172  qstat -u mkendzi2
+  173  nohup /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/start.sh /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Realign.Align.Soy_IA3023_L007.TopMillion.runfile > /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/config/Realign.Align.Soy_IA3023_L007.TopMillion.runfile.nohup
+  174  qstat -u mkendzi2
+  175  qstat -u mkendzi2
+  176  exit
+  177  /projects/bioinformatics/builds/vcftools-0.1.14/vcftools-0.1.14/bin/vcf-merge vcf_chr_1.vcf.gz vcf_chr_2.vcf.gz vcf_chr_3.vcf.gz vcf_chr_4.vcf.gz vcf_chr_5.vcf.gz vcf_chr_6.vcf.gz vcf_chr_7.vcf.gz vcf_chr_8.vcf.gz vcf_chr_9.vcf.gz vcf_chr_10.vcf.gz vcf_chr_11.vcf.gz vcf_chr_12.vcf.gz vcf_chr_13.vcf.gz vcf_chr_14.vcf.gz vcf_chr_15.vcf.gz vcf_chr_16.vcf.gz vcf_chr_17.vcf.gz vcf_chr_18.vcf.gz vcf_chr_19.vcf.gz vcf_chr_20.vcf.gz > AllSoybean2016Dbsnp.vcf.gz
+  178  perl
+  179  /projects/bioinformatics/builds/vcftools-0.1.14/vcftools-0.1.14/bin/vcf-merge vcf_chr_1.vcf.gz vcf_chr_2.vcf.gz vcf_chr_3.vcf.gz vcf_chr_4.vcf.gz vcf_chr_5.vcf.gz vcf_chr_6.vcf.gz vcf_chr_7.vcf.gz vcf_chr_8.vcf.gz vcf_chr_9.vcf.gz vcf_chr_10.vcf.gz vcf_chr_11.vcf.gz vcf_chr_12.vcf.gz vcf_chr_13.vcf.gz vcf_chr_14.vcf.gz vcf_chr_15.vcf.gz vcf_chr_16.vcf.gz vcf_chr_17.vcf.gz vcf_chr_18.vcf.gz vcf_chr_19.vcf.gz vcf_chr_20.vcf.gz > AllSoybean2016Dbsnp.vcf.gz
+  180  perl
+  181  vi AllSoybean2016Dbsnp.vcf.gz
+  182  gunzip AllSoybean2016Dbsnp.vcf.gz
+  183  gunzip AllSoybean2016Dbsnp.vcf.gz > AllSoybean2016Dbsnp.vcf
+  184  ls
+  185  cd ../
+  186  ls
+  187  cd GCF_000004515.4_Glycine_max_v2.0/
+  188  ls
+  189  vi GCF_000004515.4_Glycine_max_v2.0.AllChromo.fa
+  190  cd ../
+  191  ls
+  192  cd soybean_dbsnp_June2016/
+  193  ls
+  194  vi vcf_chr_1.vcf   
+  195  ls
+  196  less AllSoybeanDbsnp2016.vcf.gz
+  197  man mv
+  198  mv AllSoybeanDbsnp2016.vcf.gz AllSoybeanDbsnp2016.vcf
+  199  ls
+  200  rm AllSoybean2016Dbsnp.vcf.gz 
+  201  rm AllSoybean2016Dbsnp.vcf 
+  202  ls
+  203  gzip -c AllSoybeanDbsnp2016.vcf > AllSoybeanDbsnp2016.vcf.gz
+  204  ls
+  205  ls
+  206  cd ../
+  207  ls
+  208  mv soybean_dbsnp_June2016 GCF_000004515.4_Glycine_max_v2.0
+  209  ls
+  210  cd GCF_000004515.4_Glycine_max_v2.0/
+  211  ls
+  212  ls /projects/bioinformatics/HudsonSoybeanProject/
+  213  cd ../
+  214  rm -r soybean_dbsnp_Sept2014
+  215  ls
+  216  cd GCF_000004515.4_Glycine_max_v2.0/
+  217  ls
+  218  cd soybean_dbsnp_June2016/
+  219  ls
+  220  rm AllSoybeanDbsnp2016.vcf.gz
+  221  ls /projects/bioinformatics/builds/
+  222  ls /projects/bioinformatics/builds/tabix-0.2.6/
+  223  ls /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6
+  224  /projects/bioinformatics/builds/tabix-0.2.6/tabix-0.2.6/bgzip -c AllSoybeanDbsnp2016.vcf > AllSoybeanDbsnp2016.vcf.gz 
+  225  exit
+  226  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  227  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  228  tracejob -q -n 5 2329493
+  229  tracejob -q -n 5 2335461
+  230  jobtrace=`tracejob -q -n 5 2335461`
+  231  echo $jobtrace
+  232  jobtrace=`tracejob -q -n 5 2335461` ; echo ${jobtrace##*=}
+  233  jobtrace=`tracejob -q -n 5 2335461` ; echo ${jobtrace##*jobname=}
+  234  jobtrace=`tracejob -q -n 5 2335461` ; tempvar1=${jobtrace##*jobname=}; echo ${$tempvar1queue=##*}
+  235  jobtrace=`tracejob -q -n 5 2335461` ; tempvar1=${jobtrace##*jobname=}; echo ${$tempvar1queue=%%*}
+  236  jobtrace=`tracejob -q -n 5 2335461` ; tempvar1=${jobtrace##*jobname=}; echo ${$tempvar1%%queue=}
+  237  jobtrace=`tracejob -q -n 5 2335461` ; tempvar1=${jobtrace##*jobname=}; echo ${tempvar1%%queue=}
+  238  jobtrace=`tracejob -q -n 5 2335461` ; tempvar1=${jobtrace##*jobname=}; echo ${tempvar1%%queue=*}
+  239  jobtrace=`tracejob -q -n 5 2335461 | tr "=" "\n" 
+  240  tracejob -q -n 5 2335461 | tr "=" "\n" 
+  241  jobtrace=`tracejob -q -n 5 2335461 | tr "=" "\n" `
+  242  echo $jobtrace
+  243  jobtrace=`tracejob -q -n 5 2335461 | tr "=" "\r" `
+  244  echo $jobtrace
+  245  jobtrace=`tracejob -q -n 5 2335461 | tr '=' '\n' `
+  246  echo $jobtrace
+  247  bash
+  248  jobtrace=`tracejob -q -n 5 2335461 | tr '=' '\n' `
+  249  echo $jobtrace
+  250  jobtrace=`tracejob -q -n 5 2335461 `
+  251  echo $jobtrace
+  252  echo $jobtrace | tr '=' '\n'
+  253  echo $jobtrace | tr ' ' '\n'
+  254  tracejob -q -n 5 2335461 | tr ' ' '\n' 
+  255  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep jobname=
+  256  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep jobname= | uniq
+  257  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep jobname= | uniq | sed "s/ \+//g" 
+  258  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep jobname= | uniq | sed "s/ \+//g" | sed "s/jobname=//g"
+  259  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep queuetime= | uniq | sed "s/ \+//g" | sed "s/jobname=//g"
+  260  tracejob -q -n 5 2335461 | tr ' ' '\n'  | grep queuetime 
+  261  tracejob -q -n 5 2335461
+  262  tracejob -q -n 5 2335461 | tr ' ' '\n' 
+  263  tracejob -q -n 5 2335461; tempvar1=${jobtrace##*enqueuing}; echo $tempvar1
+  264  jobtrace`tracejob -q -n 5 2335461; tempvar1=${jobtrace%%*enqueuing}; echo $tempvar1
+  265  tracejob -q -n 5 2335461; tempvar1=${jobtrace%%enqueuing*}; echo $tempvar1
+  266  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%enqueuing*}
+  267  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%enqueuing}
+  268  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%enqueuing*}; echo $tempvar1
+  269  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%enqueuing*}; ${tempvar1##*ifsched}
+  270  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%enqueuing*}; echo ${tempvar1##*ifsched}
+  271  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%S enqueuing*}; echo ${tempvar1##*ifsched}
+  272  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%S\ enqueuing*}; echo ${tempvar1##*ifsched}
+  273  jobtrace=`tracejob -q -n 5 2335461`; tempvar1=${jobtrace%%S*}; echo ${tempvar1##*ifsched}
+  274  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  275  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  276  jobtrace=`tracejob -q -n 5 2335461`
+  277  echo $jobtrace
+  278  jobtrace=`tracejob -q -n 5 2335461`
+  279  `tracejob -q -n 5 2335461` > ~/tmp
+  280  tracejob -q -n 5 2335461 > ~/tmp
+  281  vi ~/tmp
+  282  echo ~/tmp
+  283  cat ~/tmp
+  284  cat ~/tmp | grep "Job Run " | sed "s/ S*//g"
+  285  cat ~/tmp | grep "Job Run " | sed "s/ S//g"
+  286  cat ~/tmp | grep "Job Run " | sed "s/ S//"
+  287  cat ~/tmp | grep "Job Run " | sed "s/ S.*//"
+  288  cat ~/tmp | grep "Job Run " | sed "s/ S*//g"
+  289  cat ~/tmp | grep "Job Run " | sed "s/ S.*//"
+  290  cat ~/tmp | grep "jobname=" | tr " " "\n" 
+  291  cat ~/tmp | grep "jobname=" |
+  292  cat ~/tmp | grep "jobname=" | tr " " "\n" 
+  293  cat ~/tmp |  tr " " "\n" | grep "job name"
+  294  cat ~/tmp |  tr " " "\n" | grep "jobname"
+  295  cat ~/tmp |  tr " " "\n" | grep "jobname" | uniq
+  296  cat ~/tmp |  tr " " "\n" | grep "jobname" | uniq | sed 's/jobname=//'
+  297  man uniq
+  298  cat ~/tmp
+  299  cat ~/tmp | grep "enqueuing"
+  300  cat ~/tmp | grep "enqueuing" | sed 's/ S.*//'
+  301  cat ~/tmp | grep "Job Run" | sed 's/ S.*//'
+  302  cat ~/tmp | grep "Resource_List.walltime"
+  303  cat ~/tmp | tr " " "\n" | grep "Resource_List.walltime" 
+  304  cat ~/tmp | tr " " "\n" | grep "Resource_List.walltime" | uniq
+  305  cat ~/tmp | tr " " "\n" | grep "Resource_List.walltime" | uniq | sed 's/Resource_List.walltime=//'
+  306  cat ~/tmp | tr " " "\n" | grep "resources_used.walltime" | uniq | sed 's/resources_used.walltime=//'
+  307  cat ~/tmp | tr " " "\n" | grep "resources_used.walltime" | uniq | sed 's/resources_used.walltime=//'| awk -F':' '{if (NF == 2) {print $1 * 60 + $2} else {print $1 * 60 * 60 + $2 * 60 + $3}}' | bc
+  308       
+  309  cat ~/tmp | tr " " "\n" | grep "exec_host" | uniq
+  310  cat ~/tmp | tr " " "\n" | grep "exec_host"
+  311  cat ~/tmp | tr " " "\n" | grep "exec_host" | uniq | sed 's/exec_host=//'
+  312  cat ~/tmp | tr " " "\n" | grep "exec_host" | uniq | sed 's/exec_host=//' | sed 's/\/.*//'
+  313  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  314  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  315  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  316  tracejob -q -n 5 2329493
+  317  tracejob -q -n 10 2329493
+  318  cat /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs/*pbs* | grep 2329493
+  319  /bin/bash /projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/GetPricingForAnOldPipelineRun.iForge.sh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/ /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo 5
+  320  ls /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/
+  321  vi /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting
+  322  vi /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo
+  323  vi /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted
+  324  vi /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting 
+  325  gnuplot
+  326  echo "call \"/projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/PlotJobStarEnd_ForPresentations.gnuplot\" \"'/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting'\" \"'/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting.png'\" \"'Matts first try on GATK'\"" | gnuplot
+  327  ls -l /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting.png 
+  328  ls -lh /projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting.png 
+  329  echo "call \"/projects/bioinformatics/Documentation.BW_varcall_runs/GanttCharts/Code/PlotJobStarEnd_ForPresentations.gnuplot\" \"'/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting'\" \"'/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/Align.Soy_4small_samples.jobinfo.sorted.ForGanttPlotting.png'\" \"'Matts first try on GATK'\"" | gnuplot
+  330   ssh-add -L
+  331  eval `ssh-agent -s`
+  332  ssh-add -L
+  333  ssh-add ~/.ssh/id_rsa 
+  334  ssh-add -L
+  335  cd ~
+  336  cd /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/
+  337  git pull
+  338  git remote add origin git@github.com:HPCBio/BW_VariantCalling
+  339  ssh -T git@github.com
+  340  git remote rm origin
+  341  git remote add origin git@github.com:HPCBio/BW_VariantCalling.git
+  342  ssh -T git@github.com
+  343  cd ~/.ssh
+  344  ssh-keygen
+  345  cat ~/.ssh/id_rsa.pub
+  346  ssh -T git@github.com
+  347  cd /projects/bioinformatics/HudsonSoybeanProject/MattKVariantWorkflow2016/BW_VariantCalling/
+  348  cd ../config/
+  349  ls
+  350  vi Align.Soy_4small_samples.runfile 
+  351  ls
+  352  cd ../BW_VariantCalling/
+  353  ls
+  354  cd README 
+  355  vi README 
+  356  git pull
+  357  ls
+  358  vi resumePartialExectuion.sh 
+  359  git commit -am"updated resumepartialexecution script for logs directory"
+  360  git push
+  361  chmod +x resumePartialExectuion.sh
+  362  ls -l
+  363  ./resumePartialExectuion.sh
+  364  vi resumePartialExectuion.sh 
+  365  vi resumePartialExectuion.sh 
+  366  ./resumePartialExectuion.sh
+  367  history > hist
