@@ -45,14 +45,14 @@ fi
    scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
    refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
    input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-   realrecalflag=$( cat $runfile | grep -w REALIGNORDER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
    paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
    rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
    multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    region=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
-   resortflag=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+   resortbam=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
    revertsam=$( cat $runfile | grep -w REVERTSAM | cut -d '=' -f2  )
    indices=$( echo $region | sed 's/:/ /g' )
    picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
@@ -78,19 +78,19 @@ fi
       exit 1;
    fi
 
-   if [ $resortflag != "1" -a $resortflag != "0" -a $resortflag != "YES" -a $resortflag != "NO" ]
+   if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
    then
-      MSG="Invalid value for RESORTBAM=$resortflag"
+      MSG="Invalid value for RESORTBAM=$resortbam"
       echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
       exit 1;
    else
-      if [ $resortflag == "1" ]
+      if [ $resortbam == "1" ]
       then
-         $resortflag="YES"
+         $resortbam="YES"
       fi
-      if [ $resortflag == "0" ]
+      if [ $resortbam == "0" ]
       then
-         $resortflag="NO"
+         $resortbam="NO"
       fi
    fi
 
@@ -138,14 +138,6 @@ fi
          echo "single sample to be aligned."
       fi
    fi
-
-
-   if [ $realrecalflag != "1" -a $realrecalflag != "0" ]
-   then
-      echo "realign-recalibration order flag is not set properly. Default value [1] will be assiged to it"
-      realrecalflag="1"
-   fi
-      
 
 
 
@@ -211,49 +203,12 @@ fi
 
    listfiles="";
    sep=":";
-   JOBSmayo=""
+   JOBSmayo=""  
 
-   # finding all aligned BAMs to be realigned-recalibrated
-
-   if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
+   if [ $inputformat == "BAM" ]
    then
-      set +x; echo -e "\n # alignment was done inhouse. no need to resort\n" >&2; set -x
-   else
-      set +x; echo -e "\n # we need to check entries in samplefileinfo before launching other realignment analyses\n" >&2; set -x
-      while read sampledetail
-      do
-         set +x; echo -e "\n # processing next line in file ...\n" >&2; set -x
-         if [ `expr ${#sampledetail}` -lt 7 ]
-         then
-            set +x; echo -e "\n # skip empty line\n" >&2; set -x
-         else
-            set +x; echo -e "\n # preprocessing for realignment $sampledetail\n" >&2; set -x
-            bamfile=$( echo $sampledetail )
-            #bamfile=$( echo $sampledetail | cut -d '=' -f2 )
-            #sampletag=$( echo $sampledetail | cut -d '=' -f1 | cut -d ':' -f2 )
-            if [ `expr ${#PrefixName}` -lt 1 ]
-            then
-               MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start."
-               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-               exit 1;
-            fi
-         
-            if [ ! -s $bamfile ]
-            then
-               MSG="parsing SAMPLEFILENAMES file failed. realignment failed to start"
-               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-               exit 1;
-            fi
-         fi
-      done <  $outputdir/SAMPLENAMES.list
-      # end loop over input samples
-
-   fi   
-
-   if [ $resortflag == "YES" -a $analysis == "REALIGN_ONLY" ]
-   then
-      set +x; echo -e "\n # alignment was done separately; starting the workflow with realignment. Need to resort bam files. Checking input files\n" >&2; set -x
-      # loop over samples, by reading the SampleName file we constructed above: $TopOutputLogs/SAMPLENAMES.list
+      set +x; echo -e "\n # alignment was done elsewhere; starting the workflow with realignment.\n" >&2; set -x
+      
       while read SampleName
       do
          set +x; echo -e "\n # processing next sample\n" >&2; set -x
@@ -261,16 +216,25 @@ fi
          then
             set +x; echo -e "\n # skipping empty line\n" >&2; set -x
          else
-            set +x; echo -e "\n # realigning: $SampleName\n" >&2; set -x
+            set +x; echo -e "\n # processing $SampleName. The line should have two fields <samplename> <bamfile>\n" >&2; set -x
 
-            prefix=`basename $SampleName .wrg.sorted.bam`
-            outputalign=$outputdir/align/$prefix
-            outputlogs=$TopOutputLogs/align/$prefix
-            tmpbamfile=$SampleName
+            prefix=$( echo $sampledetail | cut -d ' ' -f1 )
+            inbamfile=$( echo $sampledetail | cut -d ' ' -f2 )
+
+            if [ ! -s $inbamfile ]
+            then
+               MSG="parsing $outputdir/SAMPLENAMES_multiplexed.list file failed. realignment failed to start"
+               echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+               exit 1;
+            fi
+            
+            outputalign=$outputdir/$prefix/align
+            outputlogs=$TopOutputLogs/$prefix/logs
+            tmpbamfile=$inbamfile
             sortedplain=${prefix}.wrg.sorted.bam
             sorted=${prefix}.wdups.sorted.bam
             sortednodups=${prefix}.nodups.sorted.bam
- 
+
             if [ ! -d $outputalign ]
             then
                mkdir -p $outputalign
@@ -282,50 +246,45 @@ fi
                fi
             fi
 
-            qsub_sortbammayo=$outputlogs/qsub.sortbammayo.$prefix
+            if [ $resortbam == "YES" ]
+            then
 
-            echo "#PBS -A $pbsprj" >> $qsub_sortbammayo
-            echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub_sortbammayo
-            echo "#PBS -l walltime=$pbscpu" >> $qsub_sortbammayo
-            echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortbammayo
-            echo "#PBS -o $outputlogs/log.sortbammayo.${prefix}.ou" >> $qsub_sortbammayo
-            echo "#PBS -e $outputlogs/log.sortbammayo.${prefix}.in" >> $qsub_sortbammayo
-            echo "#PBS -q $pbsqueue" >> $qsub_sortbammayo
-            echo "#PBS -m ae" >> $qsub_sortbammayo
-            echo "#PBS -M $email" >> $qsub_sortbammayo
-            echo "aprun -n 1 -d $thr $scriptdir/sortbammayo.sh $outputalign $tmpbamfile $sortedplain $sorted $sortednodups $runfile $outputlogs/log.sortbammayo.${prefix}.in $outputlogs/log.sortbammayo.${prefix}.ou $email $outputlogs/qsub.sortbammayo.${prefix}" >> $qsub_sortbammayo
-            #`chmod a+r $qsub_sortbammayo`
-            sortid=`qsub $qsub_sortbammayo`
-            #`qhold -h u $sortid`
-            echo $sortid >> $TopOutputLogs/pbs.REALSORTEDMAYO
+                set +x; echo -e "\n # $inbamfile needs to be resorted\n" >&2; set -x
+            
+            	qsub_sortbammayo=$outputlogs/qsub.sortbammayo.$prefix
 
-            listfiles=$outputalign/$sorted${sep}${listfiles}
+            	echo "#PBS -A $pbsprj" >> $qsub_sortbammayo
+            	echo "#PBS -N ${pipeid}_sortbamayo_${prefix}" >> $qsub_sortbammayo
+            	echo "#PBS -l walltime=$pbscpu" >> $qsub_sortbammayo
+            	echo "#PBS -l nodes=1:ppn=$thr" >> $qsub_sortbammayo
+            	echo "#PBS -o $outputlogs/log.sortbammayo.${prefix}.ou" >> $qsub_sortbammayo
+            	echo "#PBS -e $outputlogs/log.sortbammayo.${prefix}.in" >> $qsub_sortbammayo
+            	echo "#PBS -q $pbsqueue" >> $qsub_sortbammayo
+            	echo "#PBS -m ae" >> $qsub_sortbammayo
+            	echo "#PBS -M $email" >> $qsub_sortbammayo
+            	echo "aprun -n 1 -d $thr $scriptdir/sortbammayo.sh $outputalign $tmpbamfile $sortedplain $sorted $sortednodups $runfile $outputlogs/log.sortbammayo.${prefix}.in $outputlogs/log.sortbammayo.${prefix}.ou $email $outputlogs/qsub.sortbammayo.${prefix}" >> $qsub_sortbammayo
+            	#`chmod a+r $qsub_sortbammayo`
+            	sortid=`qsub $qsub_sortbammayo`
+            	#`qhold -h u $sortid`
+            	echo $sortid >> $TopOutputLogs/pbs.REALSORTEDMAYO
+            else
+                set +x; echo -e "\n # $inbamfile DOES NOT need to be resorted. create symlinks\n" >&2; set -x
+                ### TODO: header and index files need to be generated afresh
+                
+                cd $outputalign 
+		ln -s $inbamfile $sortedplain
+		ln -s $inbamfile $sorted
+		ln -s $inbamfile $sortednodups            
+            
+            fi # end of resortbam if stmt
          fi # end of if statement checking for empty line in the SampleName file
-      done <  $outputdir/SAMPLENAMES.list
+      done <  $outputdir/SAMPLENAMES_multiplexed.list
       # end loop over input samples
 
       cp $TopOutputLogs/pbs.REALSORTEDMAYO $TopOutputLogs/ALN_MAYO_jobids
       JOBSmayo=$( cat $TopOutputLogs/ALN_MAYO_jobids | sed "s/\..*//g" | tr "\n" ":" | sed "s/::/:/g" )
    fi
 
-   if [ $resortflag == "NO" -a $analysis == "REALIGN_ONLY" ]
-   then
-      set +x; echo -e "\n # starting the workflow with realignment, alignment step was done separartely. BAM files will not be resorted\n" >&2; set -x
-      if [ $revertsam == "0" -o $revertsam == "NO" ]
-      then
-         set +x; echo -e "\n # nput is aligned bam that is suitable for realignment and recalibration... no need for preprocessing\n" >&2; set -x
-         while read sampledetail
-         do
-            bam=$( echo $sampledetail )
-            listfiles=${bam}${sep}${listfiles}
-         done <  $outputdir/SAMPLENAMES.list
-         # end loop over input samples
-      else
-         MSG="invalid value for preprocessing this kind of input: aligned bam. set RESORTBAM=YES and rerun the pipeline"
-         echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-         exit 1;
-      fi
-   fi
 
 
    set +x; echo -e "\n\n" >&2;
@@ -341,11 +300,6 @@ fi
    sortedmayoids=$( cat $TopOutputLogs/pbs.REALSORTEDMAYO | sed "s/\..*//" | tr "\n" " " )
 
 
-
-
-
-
-
    set +x; echo -e "\n\n" >&2;
    echo "######################################################################################" >&2
    echo "#############   NOW THAT THE INPUT HAVE BEEN CHECKED AND RESORTED,  ##################" >&2
@@ -356,51 +310,32 @@ fi
 
    # the schedule_realrecal_per_chromosome should run on a MOM node, so submitting with qsub without aprun
 
-   if [ $analysis != "MULTIPLEXED" ]
+   qsub_schedule_realrecal_per_chromosome=$RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   cat $outputdir/qsubGenericHeader > $qsub_schedule_realrecal_per_chromosome
+   echo "#PBS -N ${pipeid}_schedule_realrecal_per_chromosome" >> $qsub_schedule_realrecal_per_chromosome
+   echo "#PBS -l walltime=01:00:00" >> $qsub_schedule_realrecal_per_chromosome
+   echo "#PBS -l nodes=1:ppn=1" >> $qsub_schedule_realrecal_per_chromosome
+   echo "#PBS -o $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou" >> $qsub_schedule_realrecal_per_chromosome
+   echo "#PBS -e $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in" >> $qsub_schedule_realrecal_per_chromosome
+
+   # inserting dependencies 
+   if [ `expr ${#JOBSmayo}` -gt 0 ]
    then
-       echo "$scriptdir/schedule_realrecal_per_chromosome.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
-   else
-       echo "$scriptdir/schedule_realrecal_multiplexed.sh $outputdir $runfile $realrecalflag $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" > $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+        echo "1i #PBS -W depend=afterok:$JOBSmayo" >> $qsub_schedule_realrecal_per_chromosome
    fi
 
-   set +x; echo -e "\n # schedule the schedule_realrecal_per_chromosome job(s)\n" >&2; set -x
-   case $run_method in
-   "APRUN"|"QSUB"|"LAUNCHER")
-      # schedule a single qsub for all samples
-      qsub_schedule_realrecal_per_chromosome=$RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   # choosing the script to run in the qsub script
+   if [ $analysis != "MULTIPLEXED" ]
+   then
+        echo "$scriptdir/schedule_realrecal_per_chromosome.sh $outputdir $runfile $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" >> $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   else
+        echo "$scriptdir/schedule_realrecal_multiplexed.sh $outputdir $runfile $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou $email $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome" >> $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome
+   fi
 
-      ################## constructing the qsub by editing the file in place
-      sed -i "1i \ " $qsub_schedule_realrecal_per_chromosome # this will separate the header from command
-
-      # inserting dependencies; 
-      # does not  depend on NCSA alignment jobs, as start_realrecal_block.sh depends on them
-      if [ `expr ${#JOBSmayo}` -gt 0 ]
-      then
-         sed -i "1i #PBS -W depend=afterok:$JOBSmayo" $qsub_schedule_realrecal_per_chromosome
-      fi
-
-      # appending the PBS options to the file in reverse order
-      sed -i "1i #PBS -l walltime=03:00:00" $qsub_schedule_realrecal_per_chromosome # allowing an hour for schedule_realrecal_per_chromosome: 
-      # should be more than enough (it only takes ~5 minutes), and increases job priority
-      sed -i "1i #PBS -l nodes=1:ppn=1" $qsub_schedule_realrecal_per_chromosome
-      sed -i "1i #PBS -o $RealignOutputLogs/log.schedule_realrecal_per_chromosome.ou" $qsub_schedule_realrecal_per_chromosome
-      sed -i "1i #PBS -e $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in" $qsub_schedule_realrecal_per_chromosome
-
-      # appending the generic header to the qsub
-      cat $outputdir/qsubGenericHeader $qsub_schedule_realrecal_per_chromosome > $qsub_schedule_realrecal_per_chromosome.tmp && mv $qsub_schedule_realrecal_per_chromosome.tmp $qsub_schedule_realrecal_per_chromosome
-
-      sed -i "1i #PBS -N ${pipeid}_schedule_realrecal_per_chromosome" $qsub_schedule_realrecal_per_chromosome
-
-      #`chmod a+r $qsub_schedule_realrecal_per_chromosome`               
-      realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
-      # `qhold -h u $realrecaljob` 
-      echo $realrecaljob >> $TopOutputLogs/pbs.RECALL
-      ;;
-   "SERVER")
-      nohup $RealignOutputLogs/qsub.schedule_realrecal_per_chromosome > $RealignOutputLogs/log.schedule_realrecal_per_chromosome.in 
-      ;;
-   esac
-
+   #`chmod a+r $qsub_schedule_realrecal_per_chromosome`               
+   realrecaljob=`qsub $qsub_schedule_realrecal_per_chromosome`
+   # `qhold -h u $realrecaljob` 
+   echo $realrecaljob >> $TopOutputLogs/pbs.RECALL
 
 
    set +x; echo -e "\n ###################### now making PBS log files read accessible to the group #################################\n" >&2; set -x

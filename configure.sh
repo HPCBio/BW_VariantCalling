@@ -23,8 +23,6 @@ LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 
 
-
-
 set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
 if [ !  -s $runfile ]
 then
@@ -87,48 +85,46 @@ then
    MSG="Invalid value for RESORTBAM=$resortbam"
    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
-else
-    if [ $resortbam == "1" ]
-    then
-	$resortbam="YES"
-    fi
-    if [ $resortbam == "0" ]
-    then
-	$resortbam="NO"
-    fi
 fi
+if [ $resortbam == "1" ]
+then
+   resortbam="YES"
+fi
+if [ $resortbam == "0" ]
+then
+   resortbam="NO"
+fi
+
 
 if [ $bamtofastqflag != "YES" -a $bamtofastqflag != "NO" -a $bamtofastqflag != "1" -a $bamtofastqflag != "0" ]
 then
     MSG="BM2FASTQFLAG=$bamtofastqflag  invalid value"
     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
-else
-    if [ $bamtofastqflag == "1" ]
-    then
-	$bamtofastqflag="YES"
-    fi
-    if [ $bamtofastqflag == "0" ]
-    then
-	$bamtofastqflag="NO"
-    fi
 fi
+if [ $bamtofastqflag == "1" ]
+then
+    bamtofastqflag="YES"
+fi
+if [ $bamtofastqflag == "0" ]
+then
+    bamtofastqflag="NO"
+fi
+
 if [ $multisample != "YES" -a $multisample != "NO" -a $multisample != "1" -a $multisample != "0" ]
 then
     MSG="MULTISAMPLE=$multisample  invalid value"
     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
-else
-    if [ $multisample == "1" ]
-    then
-	$multisample="YES"
-    fi
-    if [ $multisample == "0" ]
-    then
-	$multisample="NO"
-    fi
 fi
-
+if [ $multisample == "1" ]
+then
+    multisample="YES"
+fi
+if [ $multisample == "0" ]
+then
+    multisample="NO"
+fi
 
 if [ $resortbam == "YES" -a $bamtofastqflag == "YES" ]
 then
@@ -158,7 +154,7 @@ then
     mkdir -p $outputdir/logs
 else
     set +x; echo -e "\n resetting logs\n" >&2; set -x; 
-    `rm -r $outputdir/logs/*`
+    #`rm -r $outputdir/logs/*`
 fi
 #`chmod -R 770 $outputdir`
 #`chmod 740 $epilogue`
@@ -167,80 +163,34 @@ pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
 
 
-
-
 #############################
 set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline" >&2;
-echo -e "CASE1: analysis is multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated" >&2
-echo -e "CASE2: analysis is NOT multiplexed. Info sheet exists. Input format is FASTQ. We parse it and generate three files" >&2
-echo -e "CASE3: analysis is NOT multiplexed. Info sheet exists. Input format is BAM. We parse it and generate three files" >&2 
+echo -e "CASE1: analysis is multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has five columns" >&2
+echo -e "CASE2: analysis is NOT multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has three columns" >&2
+echo -e "CASE3: analysis is NOT multiplexed. Input format is BAM. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has two columns" >&2 
 echo -e "SELECTING CASE NOW\n" >&2; set -x;
 #############################
 
+
+set +x; echo -e "\n ### run perl script to create three configuration files ### \n"  >&2; set -x;
+
 if [ $analysis == "MULTIPLEXED" -a $inputformat == "FASTQ" ]
 then
-    set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED ! ############\n\n" >&2; 
+    set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED. Input format is FASTQ ! ############\n\n" >&2; 
     echo -e " ###### produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
     echo -e " ###### SAMPLENAMES_multiplexed.list has five columns: sampleid r1 r2 flowcell lib  " >&2            
     echo -e "\n ###### from  info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
-    #perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
+
     perl $scriptdir/configSAMPLENAMES.pl $outputdir $sampleinfo $inputformat SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
-    set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
-    if [ ! -s $outputdir/SAMPLENAMES.list ]
-    then
-	MSG="$outputdir/SAMPLENAMES.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-    fi
-    if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
-    then
-	MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-    elif [ ! -s $outputdir/SAMPLEGROUPS.list ]
-    then
-	MSG="$outputdir/SAMPLEGROUPS.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-    else
-	set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-	numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
-	numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-	echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
-    fi
+
 elif [ $analysis != "MULTIPLEXED" -a $inputformat == "FASTQ" ]
 then
 	echo +x; echo -e "\n ###### CASE2: ANALYSIS IS NOT MULTIPLEXED. Input format is FASTQ" >&2;
 	echo -e "###### Parse info sheet in $sampleinfo  and produce three files as we did in the multiplexed case" >&2;
 	echo -e "###### SAMPLENAMES_multiplexed.list has three columns: sampleid r1 r2  " >&2 	     	
 	echo -e "###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2; set -x;
-
-	#perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
+	
 	perl $scriptdir/configSAMPLENAMES.pl $outputdir $sampleinfo $inputformat SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
-
-	set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
-	if [ ! -s $outputdir/SAMPLENAMES.list ]
-	then
-	    MSG="$outputdir/SAMPLENAMES.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	fi
-	if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
-	then
-	    MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	elif [ ! -s $outputdir/SAMPLEGROUPS.list ]
-	then
-	    MSG="$outputdir/SAMPLEGROUPS.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	else
-	    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-	    numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
-	    numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-	    echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
-	fi
 
 elif [ $analysis != "MULTIPLEXED" -a $inputformat == "BAM" ]
 then
@@ -249,42 +199,47 @@ then
 	echo -e " ###### SAMPLENAMES_multiplexed.list has two columns: sampleid bamfile  " >&2 	     	
 	echo -e "###### At least one of them will be redundant SAMPLEGROUPS.list. No big deal, as long as we don't break the code" >&2; set -x;
 
-	#perl $scriptdir/Baylor2SAMPLENAMES.pl $outputdir $sampleinfo SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
 	perl $scriptdir/configSAMPLENAMES.pl $outputdir $sampleinfo $inputformat SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
 
-	set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
-	if [ ! -s $outputdir/SAMPLENAMES.list ]
-	then
-	    MSG="$outputdir/SAMPLENAMES.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	fi
-	if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
-	then
-	    MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	elif [ ! -s $outputdir/SAMPLEGROUPS.list ]
-	then
-	    MSG="$outputdir/SAMPLEGROUPS.list is empty"
-	    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	    exit 1;
-	else
-	    set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
-	    numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
-	    numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
-	    echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
-	fi
-
-     # end of two cases that are not multiplexed
 else
 	MSG="Configuration case is NOT covered. ANALYSIS=$analysis INPUTFORMAT=$inputformat SAMPLEINFORMATION=$sampleinfo"
 	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 
 fi
+
+set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
+if [ ! -s $outputdir/SAMPLENAMES.list ]
+then
+	MSG="$outputdir/SAMPLENAMES.list is empty"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
+then
+	MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+if [ ! -s $outputdir/SAMPLEGROUPS.list ]
+then
+	MSG="$outputdir/SAMPLEGROUPS.list is empty"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+
+set +x; echo -e "\n ### update autodocumentation script ### \n"; set -x;
+numinputs=`wc -l $outputdir/SAMPLENAMES_multiplexed.list | cut -d ' ' -f 1`
+numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
+echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
+    
+
+
+
 ###################################################
-set +x; echo -e "\n\nOne more configuration task: generate a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
+set +x; echo -e "\n\nTwo more configuration task: generate a QC_Results file and a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
+
+truncate -s 0 $outputdir/QC_Results.txt  # to report results of all QC tests
+
 generic_qsub_header=$outputdir/qsubGenericHeader
 truncate -s 0 $generic_qsub_header
 echo "#!/bin/bash" > $generic_qsub_header
@@ -303,39 +258,23 @@ fi
 
 
 
-
-
-###################################################
 set +x; 
-echo -e "\n\n"; 
+echo -e "\n\n###################################################"  >&2 
 echo -e "done with preprocessing and configuration steps" >&2
 echo -e "now we select analysis or analyses to run" >&2
 echo -e "based on the value specified in runfile in line ANALYSIS"  >&2 
+
+echo -e "\n\n###################################################"  >&2 
+echo -e "possible values for $case "  >&2 
+echo -e "vcall_only "  >&2 
+echo -e "realign_only "  >&2 
+echo -e "align_only"  >&2 
+echo -e "align_and_realign"  >&2 
+echo -e "\n\n###################################################"  >&2 
 echo -e "\n\n" >&2; set -x;
 
 
 case=""
-if [ $analysis == "ALIGN" -o $analysis == "ALIGNMENT" ]
-then
-	echo "Type of analysis to run: ALIGNMENT only"      
-	qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
-	echo "#!/bin/bash" > $qsub1
-	echo "#PBS -A $pbsprj" >> $qsub1
-	echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
-	echo "#pbs -l epilogue=$epilogue" >> $qsub1
-	echo "#PBS -l walltime=00:30:00" >> $qsub1
-	echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	echo "#PBS -o $TopOutputLogs/log.START_ALIGN_BLOCK.ou" >> $qsub1
-	echo "#PBS -e $TopOutputLogs/log.START_ALIGN_BLOCK.in" >> $qsub1
-	echo "#PBS -q $pbsqueue" >> $qsub1
-	echo "#PBS -m ae" >> $qsub1
-	echo "#PBS -M $email" >> $qsub1
-	echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.START_ALIGN_BLOCK" >> $qsub1
-	#`chmod a+r $qsub1`               
-	`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
-	echo `date`
-	case="alignonly"
-fi
 if [ $analysis == "REALIGNONLY" -o $analysis == "REALIGN_ONLY" ]
 then
 	echo "Type of analysis to run: REALIGNMENT only. bams provided"
@@ -355,8 +294,53 @@ then
 	#`chmod a+r $qsub2` 
 	`qsub $qsub2 >> $TopOutputLogs/pbs.REALRECAL`
 	echo `date`
-	case="realignonly" 
+	case="realign_only" 
  fi
+ 
+ if [ $analysis == "VCALL_ONLY" -o $analysis == "VCALL" ]
+ then
+ 	echo "variant calling only"
+ 	qsub3=$TopOutputLogs/qsub.START_VARCALL_BLOCK
+ 	echo "#!/bin/bash" > $qsub3
+ 	echo "#PBS -A $pbsprj" >> $qsub3
+ 	echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
+ 	echo "#PBS -l epilogue=$epilogue" >> $qsub3
+ 	echo "#PBS -l walltime=00:30:00" >> $qsub3
+ 	echo "#PBS -l nodes=1:ppn=1" >> $qsub3
+ 	echo "#PBS -o $TopOutputLogs/log.START_VARCALL_BLOCK.ou" >> $qsub3
+ 	echo "#PBS -e $TopOutputLogs/log.START_VARCALL_BLOCK.in" >> $qsub3
+ 	echo "#PBS -q $pbsqueue" >> $qsub3
+ 	echo "#PBS -m ae" >> $qsub3
+ 	echo "#PBS -M $email" >> $qsub3
+ 	echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.START_VARCALL_BLOCK.in $TopOutputLogs/log.START_VARCALL_BLOCK.ou $email $TopOutputLogs/qsub.START_VARCALL_BLOCK" >> $qsub3
+ 	#`chmod a+r $qsub3`
+ 	vcalljobid=`qsub $qsub3`
+ 	echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL
+ 	case="vcall_only"  
+ fi
+
+ if [ $analysis == "ALIGN" -o $analysis == "ALIGNMENT" -o $analysis == "ALIGNONLY" ]
+ then
+	echo "Type of analysis to run: ALIGNMENT only"      
+	qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
+	echo "#!/bin/bash" > $qsub1
+	echo "#PBS -A $pbsprj" >> $qsub1
+	echo "#PBS -N ${pipeid}_START_ALIGN_BLOCK" >> $qsub1
+	echo "#pbs -l epilogue=$epilogue" >> $qsub1
+	echo "#PBS -l walltime=00:30:00" >> $qsub1
+	echo "#PBS -l nodes=1:ppn=1" >> $qsub1
+	echo "#PBS -o $TopOutputLogs/log.START_ALIGN_BLOCK.ou" >> $qsub1
+	echo "#PBS -e $TopOutputLogs/log.START_ALIGN_BLOCK.in" >> $qsub1
+	echo "#PBS -q $pbsqueue" >> $qsub1
+	echo "#PBS -m ae" >> $qsub1
+	echo "#PBS -M $email" >> $qsub1
+	echo "$scriptdir/start_align_block.sh $runfile $TopOutputLogs/log.START_ALIGN_BLOCK.in $TopOutputLogs/log.START_ALIGN_BLOCK.ou $email $TopOutputLogs/qsub.START_ALIGN_BLOCK" >> $qsub1
+	#`chmod a+r $qsub1`               
+	`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
+	echo `date`
+	case="align_only"
+ fi
+
  if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
  then
 	echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
@@ -377,29 +361,9 @@ then
 	`qsub $qsub1 >> $TopOutputLogs/pbs.ALIGN`
 	echo `date`
 	echo "Note: realign module will be scheduled after align module ends"
-	case="align and realign"  
+	case="align_and_realign"  
  fi
- if [ $analysis == "VCALL_ONLY" -o $analysis == "VCALL" ]
- then
-	echo "variant calling only"
-	qsub3=$TopOutputLogs/qsub.START_VARCALL_BLOCK
-	echo "#!/bin/bash" > $qsub3
-	echo "#PBS -A $pbsprj" >> $qsub3
-	echo "#PBS -N ${pipeid}_START_VARCALL_BLOCK" >> $qsub3
-	echo "#PBS -l epilogue=$epilogue" >> $qsub3
-	echo "#PBS -l walltime=00:30:00" >> $qsub3
-	echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	echo "#PBS -o $TopOutputLogs/log.START_VARCALL_BLOCK.ou" >> $qsub3
-	echo "#PBS -e $TopOutputLogs/log.START_VARCALL_BLOCK.in" >> $qsub3
-	echo "#PBS -q $pbsqueue" >> $qsub3
-	echo "#PBS -m ae" >> $qsub3
-	echo "#PBS -M $email" >> $qsub3
-	echo "$scriptdir/start_varcall_block.sh $runfile $TopOutputLogs/log.START_VARCALL_BLOCK.in $TopOutputLogs/log.START_VARCALL_BLOCK.ou $email $TopOutputLogs/qsub.START_VARCALL_BLOCK" >> $qsub3
-	#`chmod a+r $qsub3`
-	vcalljobid=`qsub $qsub3`
-	echo $vcalljobid >> $TopOutputLogs/pbs.VARCALL
-	case="vcall_only"  
- fi
+ 
  if [ `expr ${#case}` -lt 1 ]
  then
 	MSG="Invalid value for parameter ANALYSIS=$analysis in configuration file."

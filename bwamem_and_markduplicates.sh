@@ -1,14 +1,15 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+redmine=hpcbio-redmine@igb.illinois.edu
 if [ $# != 11 ]
 then
         MSG="parameter mismatch"
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
 fi
-umask 0027	
+	
 set -x
 echo `date`
+umask 0027
 scriptfile=$0
 outputdir=$1
 inputfiles=$2
@@ -55,13 +56,12 @@ alignerdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
 refindex=$( cat $runfile | grep -w BWAMEMINDEX | cut -d '=' -f2 )
 alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )
 memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
-header=$( echo $RGparms  | tr ":" "\t" )
-rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
 dup_cutoff=$( cat $runfile | grep -w DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w MAP_CUTOFF | cut -d '=' -f2 )
 novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
 runqctest=$( cat $runfile | grep -w RUNDEDUPQC | cut -d '=' -f2 )
 QCfile=$rootdir/QC_Results.txt
+
 
 if [ $runqctest == "YES" -a ! -s $qc_result ]
 then
@@ -127,12 +127,6 @@ then
     exit 1;
 fi
 
-if [ $markduptool != "PICARD" ]
-then
-    MSG="$markduptool IS NOT PICARD. exiting now"
-    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-    exit 1;
-fi
 threads=`expr $thr "-" 1`
 
 header=$( echo $RGparms  | tr ":" "\t" )
@@ -146,43 +140,148 @@ sortedbam=${prefix}.temp.sorted.bam
 dedupbam=${prefix}.wdups.unsorted.bam
 all_exitcodes=0
 
-
-
-
 set +x; echo -e "\n\n" >&2;
 echo -e "#######################################################################################################" >&2
-echo -e "########    Mark duplictes with Picard. We assume the aligned bam is already sorted             #######" >&2
+echo -e "########    Run bwa mem -> conversion to bam -> dedup                                           #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
-        
+
 cd $outputdir
 echo `date`
 
-$javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
-     INPUT=$alignedbam \
-     OUTPUT=$dedupbam \
-     TMP_DIR=$outputdir \
-     METRICS_FILE=${sortedbam}.dup.metric \
-     ASSUME_SORTED=true \
-     MAX_RECORDS_IN_RAM=null \
-     CREATE_INDEX=true \
-     VALIDATION_STRINGENCY=SILENT
-
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
+if [ $markduptool != "PICARD" ]
 then
-	 MSG="picard-Markduplicates commands failed on $alignedbam  exitcode=$exitcode."
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit $exitcode;
-fi
-if [ ! -s $dedupbam ]
-then
-	 MSG="$dedupbam aligned file not created. alignment failed"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
-fi
+	set +x; echo -e "\n\n" >&2; 
+	echo -e "#######################################   CASE1: MARKDUPLICATESTOOL != PICARD ##################################################" >&2
+	echo -e "####################################### step 1: align, mark duplicates, convert to bam - on the fly ############################" >&2
+	echo -e "\n\n" >&2; set -x;
 
+
+        if [ $samprocessing == "SAMTOOLS" ]
+        then
+           echo `date`
+           $aligndir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> $dedupbam
+           exitcode=$?
+           echo `date`
+           all_exitcodes=$(( $exitcode + $all_exitcodes ))
+        elif [ $samprocessing == "SAMBAMBA" ]
+        then 
+           echo `date`
+           $aligndir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster -o $samfile
+           exitcode=$?
+           echo `date`
+           all_exitcodes=$(( $exitcode + $all_exitcodes ))
+           
+           $memprof $sambambadir/sambamba view -t $thr -f bam -S $samfile -o $dedupbam
+           exitcode=$?
+           echo `date`
+           all_exitcodes=$(( $exitcode + $all_exitcodes ))           
+        fi
+
+
+        set +x; echo -e "\n\n########################### cheching to see if any of the commands in this block failed #################\n\n" >&2; set -x;
+        
+      
+        if [ $exitcode -ne 0 ]
+        then
+            MSG="bwa mem/samblaster one of more commands failed on $Rone.  exitcode=$exitcode. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit $exitcode;
+        fi
+        if [ ! -s $dedupbam ]
+        then
+            MSG="$dedupbam aligned-dedup file not created. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit 1;
+        fi
+        echo `date`
+elif [ $markduptool == "PICARD" ]
+then
+        set +x; echo -e "\n\n" >&2; 
+        echo -e "#######################################   CASE2: MARKDUPLICATESTOOL == PICARD   ##################################################" >&2
+        echo -e "####################################### step 1: align, then convert sam to bam, then sort, then mark duplicates  #################" >&2
+        echo -e "\n\n" >&2; set -x;
+        
+        cd $outputdir
+        echo `date`
+        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
+        exitcode=$?
+        echo `date`
+        if [ $exitcode -ne 0 ]
+        then
+            MSG="bwa mem command failed on $fqfiles   exitcode=$exitcode. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit $exitcode;
+        fi        
+        if [ ! -s $unsortedbam ]
+        then
+            MSG="$unsortedbam aligned bam file not created. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit 1;
+        fi        
+
+        ### sometimes we may have a BAM file with NO alignmnets, just the header
+ 
+        numAlignments=$( $sambambadir/sambamba view -c -t $thr $unsortedbam ) 
+        echo `date`
+        if [ $numAlignments -eq 0 ]
+        then
+            MSG="bwa mem command did not produce alignments. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit 1;
+        fi
+
+        # sorting the bam file
+        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o $sortedbam $unsortedbam
+        exitcode=$?
+        echo `date`
+        if [ $exitcode -ne 0 ]
+        then
+            MSG="novosort  failed on $unsortedbam  exitcode=$exitcode. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit $exitcode;
+
+        fi        
+        if [ ! -s $sortedbam ]
+        then
+            MSG="$sortedbam aligned file not created. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit 1;
+        fi
+
+        # creating header file
+        
+        $samdir/samtools view -H $sortedbam > $sortedbam.header
+
+
+        # running the deduplication command
+        
+        $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
+             INPUT=$sortedbam \
+             OUTPUT=$dedupbam \
+             TMP_DIR=$outputdir \
+             METRICS_FILE=${sortedbam}.dup.metric \
+             ASSUME_SORTED=true \
+             MAX_RECORDS_IN_RAM=null \
+             CREATE_INDEX=true \
+             VALIDATION_STRINGENCY=SILENT
+             
+        exitcode=$?
+        echo `date`
+        if [ $exitcode -ne 0 ]
+        then
+                 MSG="picard-Markduplicates commands failed on $sortedbam  exitcode=$exitcode. alignment failed"
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+                 exit $exitcode;
+        fi
+        if [ ! -s $dedupbam ]
+        then
+                 MSG="$dedupbam aligned file not created. alignment failed"
+                 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+                 exit 1;
+        fi
+
+fi
 
 set +x; echo -e "\n\n" >&2;
 echo -e "#######################################################################################################" >&2
@@ -195,18 +294,16 @@ exitcode=$?
 echo `date`
 if [ $exitcode -ne 0 ]
 then
-	 MSG="novosort command failed on $dedupbam.  exitcode=$exitcode alignment failed"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit $exitcode;
-
+	MSG="novosort command failed on $dedupbam  exitcode=$exitcode alignment failed"
+        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	exit 1;
 fi
 
 if [ ! -s $outputbam ]
 then
-	 MSG="${bamprefix}.wdups.sorted.bam aligned file not created. alignment failed"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
-
+	MSG="$outputbam file not created. alignment failed"
+        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	exit 1;
 fi 
 
 $samdir/samtools view -H $outputbam > $outputbam.header
@@ -214,10 +311,9 @@ exitcode=$?
 echo `date`
 if [ $exitcode -ne 0 ]
 then
-	 MSG="samtools view command failed on $outputbam  exitcode=$exitcode. bwamem_pe_markduplicates stopped "
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit $exitcode;
-
+	MSG="samtools view command failed on $outputbam  exitcode=$exitcode. bwamem_pe_markduplicates stopped "
+        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	exit $exitcode;
 fi
 
 
@@ -270,14 +366,14 @@ then
      if [ ! -s $prestats ]
      then
 	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+	 exit $exitcode;
      fi
      if [ ! -s $poststats ]
       then
 	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam.properlyMapped.bam"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+	 exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
@@ -296,28 +392,31 @@ then
 
      if [ $tot_dups -eq $tot_dups 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$prestats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
      if [ $tot_reads -eq $tot_reads 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$prestats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      if [ $tot_mapped -eq $tot_mapped 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$prestats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
@@ -334,20 +433,22 @@ then
      #now testing if these variables have numbers
      if [ $perc_dup -eq $perc_dup 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$stats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$stats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      if [ $perc_mapped -eq $perc_mapped 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$stats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$stats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
@@ -388,3 +489,7 @@ echo -e "#######################################################################
 echo -e "########    Done with QC of aligned BAM, now exiting                                            #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x; 
+
+
+
+

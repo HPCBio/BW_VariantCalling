@@ -7,28 +7,31 @@
 DEBUG=0
 
 redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# != 10 ];
+if [ $# != 12 ];
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
         exit 1;
-else					
-	set -x
-	echo `date`
-        ulimit -s unlimited
-        umask 0027
-	scriptfile=$0
-        outputdir=$1
-        inputdir=$2
-        inputfile=$3
-        chr=$4
-        region=$5
-        runfile=$6
-	elog=$7
-	olog=$8
-	email=$9
-        qsubfile=${10}
-	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
+fi
+
+set -x
+echo `date`
+ulimit -s unlimited
+umask 0027
+scriptfile=$0
+sample=$1
+outputdir=$2
+inputdir=$3
+inputfile=$4
+chr=$5
+target=$6
+runfile=$7
+elog=$8
+olog=$9
+email=${10}
+qsubfile=${11}
+failedlog=${12}
+LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 
 set +x; echo -e "\n\n" >&2; 
@@ -39,230 +42,204 @@ echo -e "##################################### AND SANITY CHECK      ###########
 echo -e "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
        
-        if [ ! -s $runfile ]
-        then
-	    MSG="$runfile configuration file not found"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
+if [ ! -s $runfile ]
+then
+    MSG="$runfile configuration file not found"
+   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+   exit 1;
+fi
 
-        rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-        deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
-        region=$( echo $region | sed 's/:knownSites:/ /' | tr ":" " " )
-        refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
-        ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
-        picardir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
-        picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-        samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-        javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-        gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-        ped=$( cat $runfile | grep -w PEDIGREE | cut -d '=' -f2 )
-        allsites=$( cat $runfile | grep -w EMIT_ALL_SITES | cut -d '=' -f2 )
-        snvcaller=$( cat $runfile | grep -w SNV_CALLER | cut -d '=' -f2 )
-        snvmixdir=$( cat $runfile | grep -w SNVMIXDIR | cut -d '=' -f2 )
-        snvmixparms=$( cat $runfile | grep -w SNVMIX2PARMS | cut -d '=' -f2 )
-        snvmixfilter=$( cat $runfile | grep -w SNVMIX2FILTER | cut -d '=' -f2 )
-        uparms=$( cat $runfile | grep -w UNIFIEDGENOTYPERPARMS | cut -d '=' -f2 )
-        onlyontarget=$( cat $runfile | grep -w TARGETTED | cut -d '=' -f2 )
-        #javamodule=$( cat $runfile | grep -w JAVAMODULE | cut -d '=' -f2 )
-        skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
-        memprof=$( cat $runfile | grep -w MEMPROFCOMMAND | cut -d '=' -f2 )
-        dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-        genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
+rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
+ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
+gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+ped=$( cat $runfile | grep -w PEDIGREE | cut -d '=' -f2 )
+allsites=$( cat $runfile | grep -w EMIT_ALL_SITES | cut -d '=' -f2 )
+snvcaller=$( cat $runfile | grep -w SNV_CALLER | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
+skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
+dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+indelfile=$( cat $runfile | grep -w INDELFILE | cut -d '=' -f2 )
+genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
+input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+variantcmd=$( cat $runfile | grep -w VARIANT_CMD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
 
-        if [ `expr ${#deliveryfolder}` -lt 2 ]
-        then
-            deliverydir=$rootdir/delivery/Vcfs
-        else
-	    deliverydir=$rootdir/$deliveryfolder/Vcfs
-	fi
+if [ `expr ${#deliveryfolder}` -lt 2 ]
+then
+    deliverydir=$rootdir/delivery/Vcfs
+else
+    deliverydir=$rootdir/$deliveryfolder/Vcfs
+fi
 
-        if [ ! -d $deliverydir ]
-        then
-            `mkdir -p $deliverydir`
-        fi
-	
-        if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
-        then
-           MSG="Invalid value for SKIPVCALL=$skipvcall"
-            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$email""
-            exit 1;
-        else
-            if [ $skipvcall == "1" -o $skipvcall == "YES" ]
-            then
-		echo "skipping the execution of this variant calling module"
-		exit 0;
-            fi
-        fi
+if [ ! -d $deliverydir ]
+then
+    `mkdir -p $deliverydir`
+fi
 
-        if [ `expr ${#region}` -lt 1 ]
-        then
-	    MSG="$region interval for vcall was not specified"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
+if [ $skipvcall != "1" -a $skipvcall != "0" -a $skipvcall != "YES" -a $skipvcall != "NO" ]
+then
+    MSG="Invalid value for SKIPVCALL=$skipvcall"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+else
+    if [ $skipvcall == "1" -o $skipvcall == "YES" ]
+    then
+	echo "skipping the execution of this variant calling module"
+	exit 0;
+    fi
+fi
 
-        if [ ! -d $inputdir ]
-        then
-	    MSG="$inputdir directory with realigned bams not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ ! -s ${inputdir}/${inputfile} ]
-        then
-	    MSG="${inputdir}/${inputfile} realigned bam file not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ ! -s $genderinfo ]
-        then
-	    MSG="$genderinfo gender file not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ ! -d $outputdir ]
-        then
-	    mkdir -p $outputdir
-        fi
+if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
+then
+    input_type="WGS"
+fi
+if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
+then
+    input_type="WES"
+fi
 
-        if [ ! -d $picardir ]
-        then
-	    MSG="$picardir picard directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ ! -d $samdir ]
-        then
-	    MSG="$samdir samtools directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ -z $javadir ]
-        then
-	    MSG="A value must be specified for JAVADIR in configuration file"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        #else
-            #`/usr/local/modules-3.2.9.iforge/Modules/bin/modulecmd bash load $javamodule`
-        #    `module load $javamodule`
-        fi      
-        if [ ! -d $gatk ]
-        then
-	    MSG="$gatk GATK directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
+if [ $variantcmd == "HC" -o $variantcmd == "HAPLOTYPECALLER"  ]
+then
+    variantcmd="HAPLOTYPECALLER"
+fi
 
-        if [ ! -d $refdir ]
-        then
-	    MSG="$refdir reference genome directory not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi      
-        if [ ! -s $refdir/$ref ]
-        then
-	    MSG="$ref reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ ! -s $refdir/$dbsnp ]
-        then
-	    MSG="$refdir/$dbsnp dbSNP for reference genome not found"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-        if [ -z $snvcaller ]
-        then
-	    MSG="$snvcaller snvcaller tool was not specified in configuration file"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-        fi
-	echo `date`
+if [ ! -d $inputdir ]
+then
+    MSG="$inputdir directory with realigned bams not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
+if [ ! -s ${inputdir}/${inputfile} ]
+then
+    MSG="${inputdir}/${inputfile} realigned bam file not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
 
-       set +x; echo -e "\n\n" >&2; 	
-       echo "##############################################################################" >&2
-       echo "##############################################################################" >&2
-       echo "##########      setting up filters and parameters for snvcaller    ###########" >&2
-       echo "##############################################################################" >&2
-       echo "##############################################################################" >&2
-       echo -e "\n\n" >&2; set -x;
+if [ ! -d $outputdir ]
+then
+    mkdir -p $outputdir
+fi
 
-       #infile=`basename $inputfile`
-       infile=$inputfile
-       cd $outputdir
+if [ ! -d $refdir ]
+then
+    MSG="$refdir reference genome directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi      
+if [ ! -s $refdir/$ref ]
+then
+    MSG="$ref reference genome not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
+if [ ! -s $refdir/$dbsnp ]
+then
+    MSG="$refdir/$dbsnp dbSNP for reference genome not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
+if [ -z $snvcaller ]
+then
+    MSG="$snvcaller snvcaller tool was not specified in configuration file"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
 
-       if [ $snvcaller == "GATK" ]
-       then
-	   echo "snvcaller is GATK"
-           if [[ $allsites == "YES" && $input_type == "exome" ]]
-           then
-               pedfile=$infile.$chr.raw.all.pbt.vcf
-	       outfile=$infile.$chr.raw.all.vcf # This line can be removed? The outputfile naming is specified a bit further down below based on the site on which calling is done.
-	       umode="EMIT_ALL_SITES"
-	       utype="BOTH"
-           else
-               pedfile=$infile.$chr.raw.pbt.vcf
-	       outfile=$infile.$chr.raw.g.vcf.gz
-	       umode="EMIT_VARIANTS_ONLY"
-	       utype="BOTH"
-           fi
-       elif [ $snvcaller == "SNVMIX" -o $snvcaller == "SNVMix" ]
-       then
-	   echo "snvcaller is SNVMIX"
-           if [ $allsites == "YES" -a $input_type == "exome" ]
-           then
-	       snvfile=$infile.$chr.raw.snv.all.vcf
-	       outfile=$infile.$chr.raw.indel.all.vcf
-	       combfile=$infile.$chr.raw.multi.vcf
-	       combparms="-V $outputdir/$snvfile -V $outputdir/$outfile"
-	       umode="EMIT_ALL_SITES"
-	       utype="INDEL"
-               smode="all"
-           else
-	       snvfile=$infile.$chr.raw.snv.vcf
-	       outfile=$infile.$chr.raw.indel.vcf
-	       combfile=$infile.$chr.raw.multi.vcf
-	       combparms="$-V outputdir/$snvfile -V $outputdir/$outfile"
-	       umode="EMIT_VARIANTS_ONLY"
-	       utype="INDEL"
-	       smode="target"
-           fi
-       elif [ $snvcaller == "BEAUTY_EXOME" ]
-       then
-	   echo "snvcaller is BEAUTY_EXOME"
-	   snvfile=$infile.$chr.raw.snvmix.vcf
-	   outfile=$infile.$chr.raw.gatk.vcf
-	   combfile=$infile.$chr.raw.multi.vcf
-	   combparms="-V:GATK $outputdir/$outfile -V:SNVMix $outputdir/$snvfile -priority GATK,SNVMix" 
-	   umode="EMIT_VARIANTS_ONLY"
-	   utype="BOTH"
-	   smode="target"
-       else
-	   MSG="SNV_CALLER=$snvcaller. This case is not currently available at this site"
-	   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	   #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	   exit 1;
-       fi
+if [ $snvcaller == "GATK" -a $variantcmd != "HAPLOTYPECALLER" ]
+then
+    MSG="VARIANT_CMD=$variantcmd specified in configuration file. This script only runs HaplotypeCaller"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
 
-       set +x; echo -e "\n\n" >&2; 
+if [ ! -d $samdir ]
+then
+    MSG="$samdir samtools directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit 1;
+fi
+if [ -z $javadir ]
+then
+    MSG="A value must be specified for JAVADIR in configuration file"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi      
+if [ ! -d $gatk ]
+then
+    MSG="$gatk GATK directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
+
+if [ ! -d $tabixdir ]
+then
+    MSG="$tabixdir tabix directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+    exit 1;
+fi
+echo `date`
+
+#tabix needs to be on your path for GATK to produce *tbi files
+export PATH=${PATH}:$tabixdir
+
+set +x; echo "############################################################################################" >&2
+echo "############################################################################################" >&2
+echo "#############  extract $chr from  recalibrated bam                           ###############" >&2; 
+echo "############################################################################################" >&2
+set -x;       
+
+cd $outputdir
+
+infile=${chr}.${sample}.recalibrated.bam
+
+$samdir/samtools view -bu -@ $thr -h $inputfile $chr > $infile  
+  
+exitcode=$?
+echo `date`
+if [ $exitcode -ne 0 ]
+then
+    MSG="split by chromosome samtools command failed exitcode=$exitcode  varcall stopped for $inputfile"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit $exitcode;
+fi
+if [ ! -s $infile ]
+then
+    MSG="$infile file not produced. split by chromosome samtools command failed. exitcode=$exitcode  varcall stopped for $inputfile"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit $exitcode;
+fi
+
+$sambambadir/sambamba index -t $thr $infile
+exitcode=$?
+echo `date`		
+if [ $exitcode -ne 0 ]
+then
+   MSG="sambamba index command failed with $infile exitcode=$exitcode varcall stopped for $inputfile"
+   echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>>$RealignOutputLogs/FAILED_recalibrate.${sample}.Anisimov.msg
+   exit $exitcode;
+fi
+
+
+set +x; echo "############################################################################################" >&2
+echo "############################################################################################" >&2
+echo "#############  HaplotypeCaller cases: with or without gender information  ###############" >&2; 
+echo "############################################################################################" >&2
+set -x;       
+
+if [ -s $genderinfo ]
+then
+       set +x; echo -e "\n\n" >&2;
+       echo "############################################################################################" >&2       
        echo "############################################################################################" >&2
-       echo "############################################################################################" >&2
-       echo "##########      calculating variant calling w HaplotypeCaller                    ###########" >&2
-       echo "##########We did not check, but we assume that variant caller is HaplotypeCaller ###########" >&2
+       echo "##########   HaplotypeCaller   with GENDERINFO file AND WGS input data           ###########" >&2
        echo "############################################################################################" >&2        
        echo -e "\n\n" >&2; set -x;
        
@@ -271,8 +248,7 @@ echo -e "\n\n" >&2; set -x;
        set +x; echo -e "\n\n#############    gathering gender and sample info  ###############\n\n" >&2; set -x;
 	
        echo $genderinfo # Can take this line out later 
-       strip_right="${outputdir%/*}"
-       sample_id="${strip_right##*/}"
+       sample_id=$sample
        gender=`cat $genderinfo | grep -v "#" | grep $sample_id | awk -F$'\t' '{print $2}'` # Can take this line out later 
        echo "Sample: $sample_id, gender: $gender" # Can take this line out later                                                                 
        echo $chr # Can take this line out later
@@ -293,171 +269,155 @@ echo -e "\n\n" >&2; set -x;
          if [ $gender == "Male" ];
          then
  
-           set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR1  ###############\n\n" >&2; set -x;        
+		   set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR1  ###############\n\n" >&2; set -x;        
 
-           ploidy=2
-           site="-L "$x_par1
-           site_name="X_PAR1"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   ploidy=2
+		   site="-L "$x_par1
+		   site_name="X_PAR1"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
 
-           echo $cmd # Can take this line out later
+		   echo $cmd # Can take this line out later
 
-           if [ $DEBUG -eq 0 ]
-           then
-              eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi           
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`	   
+		   if [ $DEBUG -eq 0 ]
+		   then
+		      eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi           
  
-           set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR2  ###############\n\n" >&2; set -x;        
+		   set +x; echo -e "\n\n#############   calling chr=X gender=male X_PAR2  ###############\n\n" >&2; set -x;        
 
 
-           site="-L "$x_par2
-           site_name="X_PAR2"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   site="-L "$x_par2
+		   site_name="X_PAR2"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
 
-           echo $cmd # Can take this line out later
+		   echo $cmd # Can take this line out later
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-           cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`
-	   
- 
-           set +x; echo -e "\n\n#############   calling chr=X gender=male X_nonPAR  ###############\n\n" >&2; set -x;        
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
 
 
-           ploidy=1
-           site="-L X -XL "$x_par1" -XL "$x_par2
-           site_name="X_nonPAR"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   set +x; echo -e "\n\n#############   calling chr=X gender=male X_nonPAR  ###############\n\n" >&2; set -x;        
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
 
-           echo $cmd # Can take this line out later
+		   ploidy=1
+		   site="-L X -XL "$x_par1" -XL "$x_par2
+		   site_name="X_nonPAR"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`  
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`	   
-         fi
-         ### End calling male X  
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
+
+		   echo $cmd # Can take this line out later
+
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`  
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
+		 fi
+	 ### End calling male X  
 	 echo `date`
-	 
-         ### Calling female X
+
+	 ### Calling female X
          if [ $gender == "Female" ];
          then
  
-           set +x; echo -e "\n\n#############   calling chr=X gender=female   ###############\n\n" >&2; set -x;        
+		   set +x; echo -e "\n\n#############   calling chr=X gender=female   ###############\n\n" >&2; set -x;        
 
-           ploidy=2
-           outfile=$infile.$chr.raw.g.vcf.gz
+		   ploidy=2
+		   outfile=$infile.$chr.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           -o $outfile"
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   -o $outfile"
 
-           echo $cmd # Can take this line out later
+		   echo $cmd # Can take this line out later
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`	   
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
          fi
          ### End calling female X
 
@@ -481,126 +441,114 @@ echo -e "\n\n" >&2; set -x;
          if [ $gender == "Male" ];
          then
  
-           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR1  ###############\n\n" >&2; set -x;        
+		   set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR1  ###############\n\n" >&2; set -x;        
 
-           ploidy=2
-           site="-L "$y_par1
-           site_name="Y_PAR1"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   ploidy=2
+		   site="-L "$y_par1
+		   site_name="Y_PAR1"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
-  
-           echo $cmd # Can take this line out later
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`
-	   
- 
-           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR2  ###############\n\n" >&2; set -x;        
+		   echo $cmd # Can take this line out later
 
-           site="-L "$y_par2
-           site_name="Y_PAR2"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
-  
-           echo $cmd # Can take this line out later
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`
-	   
- 
-           set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_nonPAR  ###############\n\n" >&2; set -x;        
+		   set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_PAR2  ###############\n\n" >&2; set -x;        
 
-           ploidy=1
-           site="-L Y -XL "$y_par1" -XL "$y_par2
-           site_name="Y_nonPAR"
-           outfile=$infile.$site_name.raw.g.vcf.gz
+		   site="-L "$y_par2
+		   site_name="Y_PAR2"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
 
-           cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-           -T HaplotypeCaller \
-           -R $refdir/$ref \
-           -I ${inputdir}/${inputfile} \
-           --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
-           -gt_mode DISCOVERY \
-           -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-           -stand_call_conf 30 \
-           -stand_emit_conf 30 \
-           --sample_ploidy $ploidy \
-           -nt 1 -nct 1 \
-           --dbsnp $refdir/$dbsnp  \
-           $site \
-           -o $outfile"
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
 
-           echo $cmd # Can take this line out later
+		   echo $cmd # Can take this line out later
 
-           if [ $DEBUG -eq 0 ]
-           then
-             eval $cmd
-           fi
-	   echo `date`
-           if [ ! -s $outfile ] 
-           then
-	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    exit 1;
-           fi  
-	   cp $outfile $deliverydir
-           cp ${outfile}.tbi $deliverydir
-	   echo `date`	   
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
+
+
+		   set +x; echo -e "\n\n#############   calling chr=Y gender=male Y_nonPAR  ###############\n\n" >&2; set -x;        
+
+		   ploidy=1
+		   site="-L Y -XL "$y_par1" -XL "$y_par2
+		   site_name="Y_nonPAR"
+		   outfile=$infile.$site_name.raw.g.vcf.gz
+
+		   cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+		   -T HaplotypeCaller \
+		   -R $refdir/$ref \
+		   -I ${inputdir}/${inputfile} \
+		   --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+		   -gt_mode DISCOVERY \
+		   -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+		   -stand_call_conf 30 \
+		   -stand_emit_conf 30 \
+		   --sample_ploidy $ploidy \
+		   -nt 1 -nct 1 \
+		   --dbsnp $refdir/$dbsnp  \
+		   $site \
+		   -o $outfile"
+
+		   echo $cmd # Can take this line out later
+
+		   if [ $DEBUG -eq 0 ]
+		   then
+		     eval $cmd
+		   fi
+		   echo `date`
+		   if [ ! -s $outfile ] 
+		   then
+		    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+		    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+		    exit 1;
+		   fi  
          fi
          ### End calling male Y
 
@@ -615,6 +563,7 @@ echo -e "\n\n" >&2; set -x;
 
          ploidy=1
          site_name=$chr
+         site="-L $chr"
          outfile=$infile.$site_name.raw.g.vcf.gz
 
          cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
@@ -629,6 +578,7 @@ echo -e "\n\n" >&2; set -x;
          --sample_ploidy $ploidy \
          -nt 1 -nct 1 \
          --dbsnp $refdir/$dbsnp  \
+         $site \
          -o $outfile"
 
          echo $cmd # Can take this line out later
@@ -641,13 +591,9 @@ echo -e "\n\n" >&2; set -x;
          if [ ! -s $outfile ] 
          then
 	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	    exit 1;
          fi  
-	 cp $outfile $deliverydir
-         cp ${outfile}.tbi $deliverydir
-	 echo `date`
 	 
 	 
          set +x; echo -e "\n\n#############   end calling chr=MT   ###############\n\n" >&2; set -x;        
@@ -660,7 +606,8 @@ echo -e "\n\n" >&2; set -x;
          echo "Call 1->22" # Can take this line out later
          ploidy=2
          site_name=$chr
-
+         outfile=$infile.$site_name.raw.g.vcf.gz
+         
          cmd="$javadir/java -Xmx6g -Xms1g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
          -T HaplotypeCaller \
          -R $refdir/$ref \
@@ -671,6 +618,65 @@ echo -e "\n\n" >&2; set -x;
          -stand_call_conf 30 \
          -stand_emit_conf 30 \
          --sample_ploidy $ploidy \
+         -nt 1 -nct 1 \
+         --dbsnp $refdir/$dbsnp  \
+         -L $chr \
+         -o $outfile"
+
+         echo $cmd # Can take this line out later
+
+         if [ $DEBUG -eq 0 ]
+         then
+           eval $cmd
+         fi
+	 echo `date`
+         if [ ! -s $outfile ] 
+         then
+	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	    exit 1;
+         fi  
+       fi
+       ## End calling the autosomes
+
+       set +x; echo -e "\n\n" >&2; 
+       echo "############################################################################################" >&2
+       echo "############################################################################################" >&2
+       echo "####################     End HaplotypeCaller   with GENDERINFO file     ####################" >&2
+       echo "############################################################################################" >&2
+       echo -e "\n\n" >&2; set -x; 
+
+else
+       set +x; echo -e "\n\n" >&2; 
+       echo "############################################################################################" >&2       
+       echo "############################################################################################" >&2
+       echo "##########   HaplotypeCaller   without GENDERINFO file                           ###########" >&2
+       echo "############################################################################################" >&2        
+       echo -e "\n\n" >&2; set -x;
+       
+       set +x; echo -e "\n\n#############  SELECT ACTIVE REGION                            ###############\n\n" >&2; set -x; 
+
+       if [ $input_type == "WGS" -a $target != "NOTARGET" ]
+       then
+           set +x; echo -e "\n\n### for WES with available bed file, the target region is $target #########\n\n" >&2; set -x;         
+           #target=$target
+       else
+           set +x; echo -e "\n\n### for any other case, the target region is $chr            ###############\n\n" >&2; set -x;         
+           target=$chr
+       fi
+   
+       outfile=$infile.$site_name.raw.g.vcf.gz
+       
+       cmd="$javadir/java -Xmx8g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+         -T HaplotypeCaller \
+         -R $refdir/$ref \
+         -I ${inputdir}/${inputfile} \
+         --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+         -gt_mode DISCOVERY \
+         -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+         -stand_call_conf 30 \
+         -stand_emit_conf 30 \
+         -L $target \
          -nt 1 -nct 1 \
          --dbsnp $refdir/$dbsnp  \
          -o $outfile"
@@ -685,177 +691,29 @@ echo -e "\n\n" >&2; set -x;
          if [ ! -s $outfile ] 
          then
 	    MSG="$outfile HaplotypeCaller file not created. vcall failed."
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-	    #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
+	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	    exit 1;
-         fi  
-	 cp $outfile $deliverydir
-         cp ${outfile}.tbi $deliverydir
-	 echo `date`	 
-       fi
-       ## End calling the autosomes
+         fi 
 
        set +x; echo -e "\n\n" >&2; 
        echo "############################################################################################" >&2
        echo "############################################################################################" >&2
-       echo "####################     End of calling conditions         #################################" >&2
+       echo "####################     End HaplotypeCaller   without GENDERINFO file     #################" >&2
        echo "############################################################################################" >&2
        echo -e "\n\n" >&2; set -x; 
-
-        if [ $ped != "NA" -a $snvcaller == "GATK" ]
-        then
-        
-            set +x; echo -e "\n\n" >&2;         
-	    echo "##############################################################################" >&2
-	    echo "##############################################################################" >&2
-	    echo "##########      calculating phasebytransmission                    ###########" >&2
-	    echo "##############################################################################" >&2
-	    echo "##############################################################################" >&2        
-            echo -e "\n\n" >&2; set -x;
-	    echo `date`
-
-            $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-	    -R $refdir/$ref \
-	    -v $outfile \
-	    -T PhaseByTransmission \
-            --ped $ped \
-	    --out $pedfile
-
-            exitcode=$?
-	    echo `date`
-            if [ $exitcode -ne 0 ]
-            then
-		MSG="phasebytransmission command failed exitcode=$exitcode. vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-            fi
-
-            if [ ! -s $pedfile ]
-            then
-		MSG="$pedfile phasebytransmission file not created. vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit 1;
-            fi
-
-
-        elif [ $snvcaller != "GATK" ]
-        then
-        
-            set +x; echo -e "\n\n" >&2;          
-	    echo "##############################################################################" >&2
-	    echo "##############################################################################" >&2
-	    echo "########## calculating variants by snvmix and then merging results ###########" >&2
-	    echo "##############################################################################" >&2
-	    echo "##############################################################################" >&2
-            echo -e "\n\n" >&2; set -x;
-	    echo `date`
-
-            pilefile=$outfile.pileup
-            tmpfile=$infile.$chr.tmp.snv
-            $memprof $samdir/samtools mpileup -f $refdir/$ref $inputdir/$infile > $pilefile 
-
-            exitcode=$?
-	    echo `date`
-            if [ $exitcode -ne 0 ]
-            then
-		MSG="samtools mpileup command failed exitcode=$exitcode . vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-            fi
-
-	    if [ ! -s $pilefile ]
-            then
-		MSG="$pilefile pileup file not created. snvmix failed"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit 1;
-	    fi
-
-            if [ $smode == "all" ]
-            then
-		## question: modefile Mu_pi.txt does not exist in that folder
-		$memprof $snvmixdir/SNVMix2 -i $pilefile -f -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
-	    else
-		$memprof $snvmixdir/SNVMix2 -i $pilefile -m $snvmixdir/Mu_pi.txt -o $tmpfile $snvmixparms
-	    fi
-
-            exitcode=$?
-	    echo `date`
-            if [ $exitcode -ne 0 ]
-            then
-		MSG="snvmix2 command failed.  exitcode=$exitcode vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-            fi
-
-	    echo `date`
-
-	    if [ ! -s $tmpfile ]
-            then
-		MSG="$tmpfile snvmix file not created. snvmix failed"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit 1;
-	    fi
-
-	    $memprof perl $scriptdir/snvmix_to_vcf.pl -i $tmpfile -o $snvfile
-            exitcode=$?
-	    echo `date`
-            if [ $exitcode -ne 0 ]
-            then
-		MSG="snvmix2 command failed.  exitcode=$exitcode vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-            fi
-
-	    echo `date`
-
-	    if [ ! -s $snvfile ]
-            then
-		MSG="snv to vcf conversion failed"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit 1;
-	    fi
-
-            echo "combining VCF files"
-
-            $memprof $javadir/java -Xmx8g -Xms1024m -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-	    -R $refdir/$ref \
-	    $combparms \
-	    -T CombineVariants \
-	    -o  $combfile
-
-            exitcode=$?
-	    echo `date`
-            if [ $exitcode -ne 0 ]
-            then
-		MSG="combinevariants command failed.  exitcode=$exitcode vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit $exitcode;
-            fi
-
-	    echo `date`
-
-            if [ ! -s $combfile ]
-            then
-		MSG="$combfile combineVariants file not created. vcall failed."
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #| ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		#echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | ssh iforge "mailx -s '[Support #200] variant identification pipeline' "$redmine,$email""
-		exit 1;
-            fi
-        else
-
-            set +x; echo -e "\n\n#############   skipping phasebytransmission and snvmix  ###############\n\n" >&2; set -x;        
-
-
-	fi
-	
+         
 
 fi
+
+set +x; echo "############################################################################################" >&2
+echo "############################################################################################" >&2
+echo "#############  COPY OUTPUT FILES TO DELIVERY FOLDER                          ###############" >&2; 
+echo "############################################################################################" >&2
+set -x;
+
+echo `date`
+
+cp ${infile}.*.vcf.gz $deliverydir
+cp ${infile}.*.tbi $deliverydir
+
+echo `date`	 
