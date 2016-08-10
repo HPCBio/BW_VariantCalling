@@ -2,7 +2,9 @@
 #
 # start_align_block.sh
 # First module in the GGPS analysis pipeline
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=grendon@illinois.edu
+
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch"
@@ -39,7 +41,6 @@ echo -e "\n\n###################################################################
 
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
 pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
@@ -49,15 +50,8 @@ scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 aligner=$( cat $runfile | grep -w ALIGNER | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 bamtofastqflag=$( cat $runfile | grep -w BAM2FASTQFLAG | cut -d '=' -f2 )
-bamtofastqparms=$( cat $runfile | grep -w BAM2FASTQPARMS | cut -d '=' -f2 )
-picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
-samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
-rlen=$( cat $runfile | grep -w READLENGTH | cut -d '=' -f2 )
-multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
-sortool=$( cat $runfile | grep -w SORTMERGETOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
@@ -115,14 +109,14 @@ then
     exit 1;
 fi
 
-if [ -z $epilogue ]
-then
-   MSG="Value for EPILOGUE must be specified in configuration file"
-   echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-   exit 1;
-else
-   `chmod 740 $epilogue`
-fi
+#if [ -z $epilogue ]
+#then
+#   MSG="Value for EPILOGUE must be specified in configuration file"
+#   echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+#   exit 1;
+#else
+#   `chmod 740 $epilogue`
+#fi
 
 if [ ! -d $scriptdir ]
 then
@@ -181,7 +175,7 @@ else
 	set +x; echo -e "\n\n" >&2
 	echo "####################################################################" >&2
 	echo "####################################################################" >&2
-	echo "############      preprocessing BAM files before alignment   #######" >&2
+	echo "############    preprocessing INPUT files before alignment   #######" >&2
 	echo "####################################################################" >&2
 	echo "####################################################################" >&2
 	echo -e "\n\n" >&2; set -x
@@ -259,7 +253,7 @@ else
 			echo "#PBS -q $pbsqueue" >> $qsub1
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
-			echo "aprun -n 1 -d $thr $scriptdir/convertbam2newbam.sh $AlignmentOutputFolder $inputbam $AlignedOutputFile $runfile $AlignmentOutputLog/log.convertbam2newbam.${sample}.in $AlignmentOutputLog/log.convertbam2newbam.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2newbam.$sample" >> $qsub1
+			echo "$scriptdir/convertbam2newbam.sh $AlignmentOutputFolder $inputbam $AlignedOutputFile $runfile $AlignmentOutputLog/log.convertbam2newbam.${sample}.in $AlignmentOutputLog/log.convertbam2newbam.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2newbam.$sample" >> $qsub1
 			echo -e "\n\n" >> $qsub1
 			echo "exitcode=\$?" >> $qsub1
 			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
@@ -296,7 +290,7 @@ else
 			echo "#PBS -q $pbsqueue" >> $qsub1
 			echo "#PBS -m ae" >> $qsub1
 			echo "#PBS -M $email" >> $qsub1
-			echo "aprun -n 1 -d $thr $scriptdir/convertbam2fastq.sh $AlignmentOutputFolder $inputbam $sample $runfile $AlignmentOutputLog/log.convertbam2fq.${sample}.in $AlignmentOutputLog/log.convertbam2fq.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2fq.$sample" >> $qsub1
+			echo "$scriptdir/convertbam2fastq.sh $AlignmentOutputFolder $inputbam $sample $runfile $AlignmentOutputLog/log.convertbam2fq.${sample}.in $AlignmentOutputLog/log.convertbam2fq.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2fq.$sample" >> $qsub1
 
                         echo "exitcode=\$?" >> $qsub1
                         echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
@@ -341,7 +335,7 @@ else
 		echo "#PBS -m ae" >> $qsub2
 		echo "#PBS -M $email" >> $qsub2
 		echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub2
-		echo "aprun -n 1 -d 1 $scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
+		echo "$scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
 
                 echo "exitcode=\$?" >> $qsub2
                 echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub2

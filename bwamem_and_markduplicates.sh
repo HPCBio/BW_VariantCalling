@@ -160,14 +160,14 @@ then
         if [ $samprocessing == "SAMTOOLS" ]
         then
            echo `date`
-           $aligndir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> $dedupbam
+           $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> $dedupbam
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
         elif [ $samprocessing == "SAMBAMBA" ]
         then 
            echo `date`
-           $aligndir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster -o $samfile
+           $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster -o $samfile
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
@@ -194,6 +194,20 @@ then
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
             exit 1;
         fi
+        
+        ### sometimes we may have a BAM file with NO alignmnets, just the header
+ 
+        #numAlignments=$( $sambambadir/sambamba view -c -t $thr $dedupbam ) 
+        numAlignments=$( $samdir/samtools view -c -@ $thr $dedupbam )
+        echo `date`
+        if [ `expr ${#numAlignments}` -lt 1 ]
+        then
+            MSG="bwa mem command did not produce alignments. alignment failed"
+            echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+            exit 1;
+        fi
+        
+        
         echo `date`
 elif [ $markduptool == "PICARD" ]
 then
@@ -204,7 +218,7 @@ then
         
         cd $outputdir
         echo `date`
-        $aligndir/bwa mem -M $alignparms -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
+        $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -222,9 +236,9 @@ then
 
         ### sometimes we may have a BAM file with NO alignmnets, just the header
  
-        numAlignments=$( $sambambadir/sambamba view -c -t $thr $unsortedbam ) 
+        numAlignments=$( $samdir/samtools view -c -@ $thr $unsortedbam ) 
         echo `date`
-        if [ $numAlignments -eq 0 ]
+        if [ `expr ${#numAlignments}` -lt 1 ]
         then
             MSG="bwa mem command did not produce alignments. alignment failed"
             echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
@@ -232,7 +246,7 @@ then
         fi
 
         # sorting the bam file
-        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --kt --compression 1 -o $sortedbam $unsortedbam
+        $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --compression 1 -o $sortedbam $unsortedbam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -255,8 +269,9 @@ then
 
 
         # running the deduplication command
-        
-        $javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
+        #$javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
+
+        java -Xmx8g -jar $picardir/picard.jar MarkDuplicates \
              INPUT=$sortedbam \
              OUTPUT=$dedupbam \
              TMP_DIR=$outputdir \
@@ -347,31 +362,21 @@ then
      
      ### Need to know the sample name           
      
-     cd $outputdir
-     cd ../
+     cd $outputdir/..
      sample=`basename $PWD`
      cd $outputdir
 
      ### generate the files with the pertinent stats
-     prestats=${outputbam}.flagstat
-     properlyMapped=${outputbam}.properlyMappedOnly.bam
-     poststats=${outputbam}.properlyMappedOnly.flagstat
+     
+     bamstats=${outputbam}.flagstat
 
-     $samdir/samtools flagstat $outputbam > $prestats
-     $sambambadir/sambamba view -f bam -t $thr -F "proper_pair" $outputbam > $properlyMapped 
-     $samdir/samtools flagstat  $properlyMapped > $poststats
-
+     $samdir/samtools flagstat $outputbam > $bamstats
 
      ####### making sure that stats were produced 
-     if [ ! -s $prestats ]
+     
+     if [ ! -s $bamstats ]
      then
-	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam"
-	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
-	 exit $exitcode;
-     fi
-     if [ ! -s $poststats ]
-      then
-	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam.properlyMapped.bam"
+	 MSG="samtools flagstat command produced an empty file for ${outputbam}"
 	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
 	 exit $exitcode;
      fi
@@ -379,14 +384,14 @@ then
      set +x; echo -e "\n\n" >&2;
      echo "#####################################################################################################" >&2
      echo "#####################################################################################################" >&2
-     echo "             now extracting the stats of interest from the  flagstat files                           " >&2
+     echo "             now extracting the stats of interest from the  flagstat file                           " >&2
      echo "#####################################################################################################" >&2
      echo "#####################################################################################################" >&2
      echo -e "\n\n" >&2; set -x;            
 
-     tot_mapped=$( cat $poststats | grep "mapped (" | cut -d ' ' -f1 )
-     tot_reads=$( cat $prestats | grep "in total" | cut -d ' ' -f1 )
-     tot_dups=$( cat $poststats | grep "duplicates" | cut -d ' ' -f1 )
+     tot_mapped=$( cat $bamstats | grep "mapped (" | cut -d ' ' -f1 )
+     tot_reads=$( cat $bamstats | grep "in total" | cut -d ' ' -f1 )
+     tot_dups=$( cat $bamstats | grep "duplicates" | cut -d ' ' -f1 )
 
      #now testing if these variables have numbers
 
@@ -394,7 +399,7 @@ then
      then
        echo -e "ok val"
      else
-       MSG="$prestats samtools flagstat file parsed incorrectly"
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
        exit $exitcode;
@@ -403,7 +408,7 @@ then
      then
        echo -e "ok val"
      else
-       MSG="$prestats samtools flagstat file parsed incorrectly"
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
        exit $exitcode;
@@ -413,7 +418,7 @@ then
      then
        echo -e "ok val"
      else
-       MSG="$prestats samtools flagstat file parsed incorrectly"
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
        exit $exitcode;
@@ -435,7 +440,7 @@ then
      then
        echo -e "ok val"
      else
-       MSG="$stats samtools flagstat file parsed incorrectly"
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
        exit $exitcode;
@@ -445,7 +450,7 @@ then
      then
        echo -e "ok val"
      else
-       MSG="$stats samtools flagstat file parsed incorrectly"
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
        echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
        #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
        exit $exitcode;

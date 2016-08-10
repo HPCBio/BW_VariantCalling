@@ -158,7 +158,9 @@ echo -e "\n\n" >&2; set -x;
 cd $outputdir
 echo `date`
 
-$javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
+#$javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
+
+java -Xmx8g -jar $picardir/picard.jar MarkDuplicates \
      INPUT=$alignedbam \
      OUTPUT=$dedupbam \
      TMP_DIR=$outputdir \
@@ -251,73 +253,66 @@ then
      
      ### Need to know the sample name           
      
-     cd $outputdir
-     cd ../
+     cd $outputdir/..
      sample=`basename $PWD`
      cd $outputdir
 
      ### generate the files with the pertinent stats
-     prestats=${outputbam}.flagstat
-     properlyMapped=${outputbam}.properlyMappedOnly.bam
-     poststats=${outputbam}.properlyMappedOnly.flagstat
+     
+     bamstats=${outputbam}.flagstat
 
-     $samdir/samtools flagstat $outputbam > $prestats
-     $sambambadir/sambamba view -f bam -t $thr -F "proper_pair" $outputbam > $properlyMapped 
-     $samdir/samtools flagstat  $properlyMapped > $poststats
-
+     $samdir/samtools flagstat $outputbam > $bamstats
 
      ####### making sure that stats were produced 
-     if [ ! -s $prestats ]
+     
+     if [ ! -s $bamstats ]
      then
-	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
-     fi
-     if [ ! -s $poststats ]
-      then
-	 MSG="samtools flagstat command produced an empty file with ${bamprefix}.sorted.bam.properlyMapped.bam"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+	 MSG="samtools flagstat command produced an empty file for ${outputbam}"
+	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+	 exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
      echo "#####################################################################################################" >&2
      echo "#####################################################################################################" >&2
-     echo "             now extracting the stats of interest from the  flagstat files                           " >&2
+     echo "             now extracting the stats of interest from the  flagstat file                           " >&2
      echo "#####################################################################################################" >&2
      echo "#####################################################################################################" >&2
      echo -e "\n\n" >&2; set -x;            
 
-     tot_mapped=$( cat $poststats | grep "mapped (" | cut -d ' ' -f1 )
-     tot_reads=$( cat $prestats | grep "in total" | cut -d ' ' -f1 )
-     tot_dups=$( cat $poststats | grep "duplicates" | cut -d ' ' -f1 )
+     tot_mapped=$( cat $bamstats | grep "mapped (" | cut -d ' ' -f1 )
+     tot_reads=$( cat $bamstats | grep "in total" | cut -d ' ' -f1 )
+     tot_dups=$( cat $bamstats | grep "duplicates" | cut -d ' ' -f1 )
 
      #now testing if these variables have numbers
 
      if [ $tot_dups -eq $tot_dups 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
      if [ $tot_reads -eq $tot_reads 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      if [ $tot_mapped -eq $tot_mapped 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$prestats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
@@ -334,20 +329,22 @@ then
      #now testing if these variables have numbers
      if [ $perc_dup -eq $perc_dup 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$stats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      if [ $perc_mapped -eq $perc_mapped 2>/dev/null ]
      then
-         echo -e "ok val"
+       echo -e "ok val"
      else
-         MSG="$stats samtools flagstat file parsed incorrectly"
-	 echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	 exit 1;
+       MSG="$bamstats samtools flagstat file parsed incorrectly"
+       echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" #>> $failedlog
+       #echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+       exit $exitcode;
      fi
 
      set +x; echo -e "\n\n" >&2;
@@ -388,3 +385,7 @@ echo -e "#######################################################################
 echo -e "########    Done with QC of aligned BAM, now exiting                                            #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x; 
+
+
+
+

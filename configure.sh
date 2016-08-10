@@ -4,7 +4,7 @@ redmine=grendon@illinois.edu
 if [ $# != 5 ]
 then
         MSG="Parameter mismatch."
-        echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
+        echo -e "Program $0 stopped. Reason=$MSG" # | mail -s "Variant Calling Workflow failure message" "$redmine"
         exit 1;
 fi
 
@@ -27,7 +27,7 @@ set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2;
 if [ !  -s $runfile ]
 then
    MSG="$runfile configuration file not found."
-   echo -e "Program $0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
+   echo -e "Program $0 stopped. Reason=$MSG" # | mail -s "Variant Calling Workflow failure message" "$redmine"
    exit 1;
 fi
 
@@ -42,125 +42,134 @@ analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]
 resortbam=$( cat $runfile | grep -w RESORTBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 bamtofastqflag=$( cat $runfile | grep -w BAM2FASTQFLAG | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
-sampledir=$( cat $runfile | grep -w INPUTDIR | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
 inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+#sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
+sampleinfo=$outputdir/sampleinfo.txt
 
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
 then
-    pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
-    pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
-else
-    if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
-    then
+	pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
+	pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
+elif [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
+then
 	pbscpu=$( cat $runfile | grep -w PBSCPUOTHEREXOME | cut -d '=' -f2 )
 	pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
-    else
+else
 	MSG="Invalid value for INPUTTYPE=$input_type in configuration file."
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
-    fi
 fi
 
-if [ -z $thr -o -z $outputdir -o -z $pbsprj -o -z $epilogue ]
+if [ -z $thr -o -z $outputdir ]
 then
 	MSG="Invalid value specified for any of these paramaters in configuration file:\nPBSTHREADS=$thr\nOUTPUTDIR=$outputdir\nPBSPROJECTID=$pbsprj\nEPILOGUE=$epilogue"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
 
 if [ $inputformat != "FASTQ" -a $inputformat != "BAM" ]
 then
-    MSG="Incorrect value for INPUTFORMAT=$inputformat in the configuration file."
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="Incorrect value for INPUTFORMAT=$inputformat in the configuration file."
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 
 
 if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
 then
-   MSG="Invalid value for RESORTBAM=$resortbam"
-   echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	MSG="Invalid value for RESORTBAM=$resortbam"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 fi
 if [ $resortbam == "1" ]
 then
-   resortbam="YES"
+	resortbam="YES"
 fi
 if [ $resortbam == "0" ]
 then
-   resortbam="NO"
+	resortbam="NO"
 fi
 
 
 if [ $bamtofastqflag != "YES" -a $bamtofastqflag != "NO" -a $bamtofastqflag != "1" -a $bamtofastqflag != "0" ]
 then
-    MSG="BM2FASTQFLAG=$bamtofastqflag  invalid value"
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="BM2FASTQFLAG=$bamtofastqflag  invalid value"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 if [ $bamtofastqflag == "1" ]
 then
-    bamtofastqflag="YES"
+	bamtofastqflag="YES"
 fi
 if [ $bamtofastqflag == "0" ]
 then
-    bamtofastqflag="NO"
+	bamtofastqflag="NO"
 fi
 
 if [ $multisample != "YES" -a $multisample != "NO" -a $multisample != "1" -a $multisample != "0" ]
 then
-    MSG="MULTISAMPLE=$multisample  invalid value"
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="MULTISAMPLE=$multisample  invalid value"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 if [ $multisample == "1" ]
 then
-    multisample="YES"
+	multisample="YES"
 fi
 if [ $multisample == "0" ]
 then
-    multisample="NO"
+	multisample="NO"
 fi
 
 if [ $resortbam == "YES" -a $bamtofastqflag == "YES" ]
 then
-    MSG="Incompatible values for the pair RESORTBAM=$resortbam and BAM2FASTQFLAG=$bam2fqflag in the configuration file."
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="Incompatible values for the pair RESORTBAM=$resortbam and BAM2FASTQFLAG=$bam2fqflag in the configuration file."
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 
 set +x; echo -e "\nChecking that a tab delimited file with information about samples and lanes must exist for the analysis pipeline to start.\n" >&2; set -x;
 
 if [ ! -s $sampleinfo ]
 then
-    MSG="SAMPLEINFORMATION=$sampleinfo invalid value. A tab delimited file with lanes and samples must be specified. "
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="SAMPLEINFORMATION=$sampleinfo invalid value. A tab delimited file with lanes and samples must be specified. "
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 
 if [ ! -d $scriptdir ]
 then
-    MSG="SCRIPTDIR=$scriptdir directory not found"
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-fi
-if [ ! -d $outputdir ]
-then
-    mkdir -p $outputdir
-    mkdir -p $outputdir/logs
-else
-    set +x; echo -e "\n resetting logs\n" >&2; set -x; 
-    #`rm -r $outputdir/logs/*`
+	MSG="SCRIPTDIR=$scriptdir directory not found"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 #`chmod -R 770 $outputdir`
 #`chmod 740 $epilogue`
+
+set +x; echo -e "\nThe jobid assigned to this job becomes the pipeline id and should be found in outputdir/logs/pbs.CONFIGURE\n" >&2; set -x;
+
 TopOutputLogs=$outputdir/logs
 pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 
+if [ ! -d $outputdir ]
+then
+	set +x; echo -e "\n new output folder creation\n" >&2; set -x; 
+	mkdir -p $outputdir
+	mkdir -p $outputdir/logs
+else
+	set +x; echo -e "\n resetting output folder's logs\n" >&2; set -x; 
+	#`rm -r $outputdir/logs/*`
+	`rm $TopOutputLogs/pbs.ALIGNED`
+	`rm $TopOutputLogs/pbs.CONVERTBAM`
+	`rm $TopOutputLogs/pbs.FASTQC`
+	`rm $TopOutputLogs/pbs.MARKED`
+	`rm $TopOutputLogs/pbs.REALIGN`
+	`rm $TopOutputLogs/pbs.RECALIBRATE`
+	
+fi
 
 
 #############################
@@ -173,15 +182,17 @@ echo -e "SELECTING CASE NOW\n" >&2; set -x;
 
 
 set +x; echo -e "\n ### run perl script to create three configuration files ### \n"  >&2; set -x;
+cd $outputdir
+sampleinfo=`basename $sampleinfo`
 
 if [ $analysis == "MULTIPLEXED" -a $inputformat == "FASTQ" ]
 then
-    set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED. Input format is FASTQ ! ############\n\n" >&2; 
-    echo -e " ###### produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
-    echo -e " ###### SAMPLENAMES_multiplexed.list has five columns: sampleid r1 r2 flowcell lib  " >&2            
-    echo -e "\n ###### from  info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
+	set +x; echo -e "\n\n ######## CASE1: ANALYSIS IS MULTIPLEXED. Input format is FASTQ ! ############\n\n" >&2; 
+	echo -e " ###### produce SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list " >&2
+	echo -e " ###### SAMPLENAMES_multiplexed.list has five columns: sampleid r1 r2 flowcell lib  " >&2            
+	echo -e "\n ###### from  info sheet specified in runfile in line SAMPLEINFORMATION=$sampleinfo." >&2; set -x;
 
-    perl $scriptdir/configSAMPLENAMES.pl $outputdir $sampleinfo $inputformat SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
+	perl $scriptdir/configSAMPLENAMES.pl $outputdir $sampleinfo $inputformat SAMPLENAMES.list SAMPLENAMES_multiplexed.list SAMPLEGROUPS.list
 
 elif [ $analysis != "MULTIPLEXED" -a $inputformat == "FASTQ" ]
 then
@@ -203,27 +214,31 @@ then
 
 else
 	MSG="Configuration case is NOT covered. ANALYSIS=$analysis INPUTFORMAT=$inputformat SAMPLEINFORMATION=$sampleinfo"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 
 fi
 
 set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
-if [ ! -s $outputdir/SAMPLENAMES.list ]
-then
-	MSG="$outputdir/SAMPLENAMES.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-fi
+
 if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 then
 	MSG="$outputdir/SAMPLENAMES_multiplexed.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
+fi
+
+if [ ! -s $outputdir/SAMPLENAMES.list ]
+then
+	MSG="$outputdir/SAMPLENAMES.list is empty"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+
 if [ ! -s $outputdir/SAMPLEGROUPS.list ]
 then
 	MSG="$outputdir/SAMPLEGROUPS.list is empty"
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
 
@@ -233,15 +248,13 @@ numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
 echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
     
 
-
-
 ###################################################
-set +x; echo -e "\n\nTwo more configuration task: generate a QC_Results file and a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
-
-truncate -s 0 $outputdir/QC_Results.txt  # to report results of all QC tests
+set +x; echo -e "\n\nTwo more configuration tasks: generate a QC_Results file and a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
 
 generic_qsub_header=$outputdir/qsubGenericHeader
-truncate -s 0 $generic_qsub_header
+truncate -s 0 $outputdir/QC_Results.txt  # to report results of all QC tests
+truncate -s 0 $generic_qsub_header       # to print the generic qsub header lines
+
 echo "#!/bin/bash" > $generic_qsub_header
 echo "#PBS -A $pbsprj" >> $generic_qsub_header
 echo "#PBS -q $pbsqueue" >> $generic_qsub_header
@@ -251,9 +264,9 @@ set +x; echo -e "\n### check that this actually worked, " >&2
 echo -e "### because otherwise the bash script will just go on, as if there is no problem \n"  >&2; set -x;
 if [ ! -s $generic_qsub_header ]
 then 
-    MSG="$generic_qsub_header is empty"
-    echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
+	MSG="$generic_qsub_header is empty"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
 fi
 
 
@@ -263,15 +276,16 @@ echo -e "\n\n###################################################"  >&2
 echo -e "done with preprocessing and configuration steps" >&2
 echo -e "now we select analysis or analyses to run" >&2
 echo -e "based on the value specified in runfile in line ANALYSIS"  >&2 
-
 echo -e "\n\n###################################################"  >&2 
-echo -e "possible values for $case "  >&2 
+echo -e "possible values for ANALYSIS "  >&2 
 echo -e "vcall_only "  >&2 
 echo -e "realign_only "  >&2 
 echo -e "align_only"  >&2 
 echo -e "align_and_realign"  >&2 
+echo -e "align_and_realign_and_vcall"  >&2 
 echo -e "\n\n###################################################"  >&2 
-echo -e "\n\n" >&2; set -x;
+echo -e "\n\n" >&2; 
+set -x;
 
 
 case=""
@@ -367,7 +381,7 @@ then
  if [ `expr ${#case}` -lt 1 ]
  then
 	MSG="Invalid value for parameter ANALYSIS=$analysis in configuration file."
-	echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1; 
  fi
 

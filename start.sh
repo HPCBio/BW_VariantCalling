@@ -3,7 +3,8 @@
 ########################### 
 #		$1		=	       run info file
 ###########################
-redmine=hpcbio-redmine@igb.illinois.edu
+#redmine=hpcbio-redmine@igb.illinois.edu
+redmine=grendon@illinois.edu
 if [ $# != 1 ]
 then
         MSG="Parameter mismatch."
@@ -34,6 +35,7 @@ pbsprj=$( cat $runfile | grep -w PBSPROJECTID | cut -d '=' -f2 )
 epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
+sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 
 if [ ! -d $scriptdir ]
 then
@@ -77,6 +79,7 @@ fi
 #`chmod -R 770 $outputdir/`
 `chmod 740 $epilogue`
 `cp $runfile $outputdir/runfile.txt`
+`cp $sampleinfo $outputdir/sampleinfo.txt`
 runfile=$outputdir/runfile.txt
 
 

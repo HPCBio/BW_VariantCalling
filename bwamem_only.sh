@@ -97,7 +97,7 @@ cd $outputdir
 echo `date`
 
 
-$aligndir/bwa mem  $alignparms -R "${rgheader}" $refindex $fqfiles >  $samfile
+$alignerdir/bwa mem  $alignparms -R "${rgheader}" $refindex $fqfiles >  $samfile
 exitcode=$?
 echo `date`
 if [ $exitcode -ne 0 ]
@@ -143,6 +143,7 @@ echo -e "#######################################################################
 
 echo -e "\n\n" >&2; set -x;
 numAlignments=$( $sambambadir/sambamba view -c -t $thr $unsortedbam ) 
+numAlignments=$( $samdir/samtools view -c -@ $thr $dedupbam )
 echo `date`
 if [ $numAlignments -eq 0 ]
 then
