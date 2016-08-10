@@ -945,8 +945,8 @@ then
 				echo "   exit 1" >> $qsubFastqc
 				echo "fi" >> $qsubFastqc
 
-				Fastqc_${SampleName}_JobId=`qsub $qsubFastqc`
-				echo $Fastqc${SampleName}_JobId >> $TopOutputLogs/pbs.FASTQC # so that this job could be released in the next section. Should it be held to begin with?
+				FastqcJobId=`qsub $qsubFastqc`
+				echo $FastqcJobId >> $TopOutputLogs/pbs.FASTQC # so that this job could be released in the next section. Should it be held to begin with?
 			fi              
 
 
@@ -971,8 +971,9 @@ then
 			echo "   exit 1" >> $qsubAlign
 			echo "fi" >> $qsubAlign
 
-			Align_${SampleName}_JobId=`qsub $qsubAlign`
-			echo $Align_${SampleName}_JobId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
+			AlignJobId=`qsub $qsubAlign`
+			
+			echo $AlignJobId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 
 			set +x; echo -e "\n # run_method is not LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x   
 
@@ -997,10 +998,10 @@ then
 				echo "   exit 1" >> $qsubMarkdup
 				echo "fi" >> $qsubMarkdup
 
-				MarkDup_${SampleName}_JobId=`qsub $qsubMarkdup`
+				MarkDupJobId=`qsub $qsubMarkdup`
 				#`qhold -h u $MarkDup${SampleName}JoblistId`
 				#echo $MarkDup${SampleName}JoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
-				echo $MarkDup_${SampleName}_JobId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk                     
+				echo $MarkDupJobId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk                     
 			fi
 
 		done < $TheInputFile # done looping over samples
@@ -1292,13 +1293,12 @@ echo "###############     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DON
 echo "#####################################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
+markedids=$( cat "$TopOutputLogs/pbs.MARKED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
+mergeids=$( cat "$TopOutputLogs/pbs.MERGED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
+alignids=$( cat "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
+fastqcids=$( cat "$TopOutputLogs/pbs.FASTQC" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
 
-
-markedids=$( cat $TopOutputLogs/pbs.MARKED | sed "s/\..*//" | sed "s/\n\n/\n/g" | sed "s/  / /g" | sed "s/ /:/g" |tr "\n" ":" )
-mergeids=$( cat $TopOutputLogs/pbs.MERGED | sed "s/\..*//" | sed "s/\n\n/\n/g" | sed "s/  / /g" | sed "s/ /:/g" |tr "\n" ":" )
-alignids=$( cat $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | sed "s/\n\n/\n/g" | sed "s/  / /g" | sed "s/ /:/g" |tr "\n" ":" )
-fastqcids=$( cat $TopOutputLogs/pbs.FASTQC | sed "s/\..*//" | sed "s/\n\n/\n/g" || sed "s/  / /g" | sed "s/ /:/g" |tr "\n" ":" )
-pbsids=$( cat $TopOutputLogs/pbs.MARKED $TopOutputLogs/pbs.ALIGNED | sed "s/\..*//" | sed "s/\n\n/\n/g" | sed "s/  / /g" | sed "s/ /:/g" |tr "\n" ":" ) 
+pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" ":" ) 
 
 ## generating summary redmine email if analysis ends here
 set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x;
@@ -1328,7 +1328,7 @@ then
 		echo "#PBS -m ae" >> $qsub_cleanup
 		echo "#PBS -M $email" >> $qsub_cleanup
 		echo "#PBS -W depend=afterok:$pbsids" >> $qsub_cleanup
-		echo "aprun -n 1 -d $thr $scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
+		echo "$scriptdir/cleanup.sh $outputdir $analysis $TopOutputLogs/log.cleanup.align.in $TopOutputLogs/log.cleanup.align.ou $email $TopOutputLogs/qsub.cleanup.align"  >> $qsub_cleanup
 		#`chmod a+r $qsub_cleanup`
 		cleanjobid=`qsub $qsub_cleanup`
 		echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
@@ -1346,12 +1346,7 @@ then
 	echo "#PBS -q $pbsqueue" >> $qsub_summary
 	echo "#PBS -m ae" >> $qsub_summary
 	echo "#PBS -M $email" >> $qsub_summary
-	if [ `expr ${#cleanjobid}` -gt 0 ]
-	then
-	echo "#PBS -W depend=afterok:$cleanjobid" >> $qsub_summary
-	else
 	echo "#PBS -W depend=afterok:$pbsids" >> $qsub_summary
-	fi
 	echo "$scriptdir/summary.sh $runfile $email exitok $reportticket"  >> $qsub_summary
 	#`chmod a+r $qsub_summary`
 	lastjobid=`qsub $qsub_summary`
