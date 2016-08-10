@@ -71,7 +71,7 @@ profiler=$( cat $runfile | grep -w PROFILER | cut -d '=' -f2 )
 cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 splitAlignDedup=$( cat $runfile | grep -w SPLITALIGNDEDUP | cut -d '=' -f2 ) #binay value YES|NO
 run_cmd=$( cat $runfile | grep -w LAUNCHERCMD | cut -d '=' -f2 )   #string value aprun|mpirun
-        
+bash_cmd=`which bash`        
         
 
 set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
@@ -480,13 +480,20 @@ do
 			else
 				fastqc_input="$LeftReadsFastq:$RightReadsFastq"
 			fi
-
-			# form the fastqc command in jobfile and then add it to the anisimov launcher                
-			jobfileFastqc=$TopOutputLogs/Fastqc.$SampleName.jobfile
+			
+			# logs will go to TopOutputLogs if launcher is used, otherwise they will go to sample/fastqc/logs folder
+			if [ $run_method == "LAUNCHER" ]
+			then
+				FastqcOutputLogs=$TopOutputLogs
+			fi
+			
+			# form the fastqc command in jobfile and then add it to the anisimov launcher 
+			
+			jobfileFastqc=$FastqcOutputLogs/Fastqc.$SampleName.jobfile
 			truncate -s 0 $jobfileFastqc
-			echo "$scriptdir/fastqc.sh $runfile $fastqcdir $FastqcOutputDir $fastqcparms $fastqc_input $FastqcOutputLogs/log.Fastqc_${SampleName}.in $FastqcOutputLogs/log.Fastqc_${SampleName}.ou $email $TopOutputLogs/qsub.Fastqc_$SampleName > $FastqcOutputLogs/log.Fastqc_${SampleName}.in" > $jobfileFastqc
+			echo "$scriptdir/fastqc.sh $runfile $fastqcdir $FastqcOutputDir $fastqcparms $fastqc_input $FastqcOutputLogs/log.Fastqc_${SampleName}.in $FastqcOutputLogs/log.Fastqc_${SampleName}.ou $email $FastqcOutputLogs/qsub.Fastqc_$SampleName > $FastqcOutputLogs/log.Fastqc_${SampleName}.in" > $jobfileFastqc
 			jobfilename=$( basename $jobfileFastqc )
-			echo "$TopOutputLogs $jobfilename" >> $TopOutputLogs/FastqcAnisimov.joblist
+			echo "$FastqcOutputLogs $jobfilename" >> $FastqcOutputLogs/FastqcAnisimov.joblist
 
 		else
 			set +x; echo -e "\n\n ############ FASTQCFLAG == NO. Quality information for fastq files will NOT be calculated." >&2; set -x;
@@ -636,7 +643,10 @@ do
 			if [ $aligner == "NOVOALIGN"  ]
 			then
 				set +x; echo -e "\n###############   novoalign is used as aligner. input file in fastq format ################\n" >&2; set -x
-
+				##############################################################
+				#this section needs editing
+				##############################################################
+				
 				if [ $paired -eq 1 ]
 				then
 					echo "$scriptdir/novosplit.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.sam $outputsamfileprefix.node$OutputFileSuffix.bam $scriptdir $runfile $paired $AlignOutputDir/$Rone $AlignOutputDir/$Rtwo $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.novoaln.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.novoaln.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix
@@ -647,7 +657,11 @@ do
 			if [ $aligner == "BWA_ALN" ] 
 			then
 				set +x; echo -e "\n############# bwa is used as aligner. input file format is in fastq. this segment needs to be rewritten ###############\n" >&2; set -x
-
+				
+				##############################################################
+				#this section needs editing
+				##############################################################
+				
 				echo "$scriptdir/bwaS1.sh $alignerdir $alignparms $refdir/$refindexed $AlignOutputDir $outputsamfileprefix.node$OutputFileSuffix.R1.sai $AlignOutputDir/$Rone $scriptdir $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwar1.$SampleName.node$OutputFileSuffix.ou $email $AlignOutputLogs/qsub.bwar1.$SampleName.node$OutputFileSuffix" >> $AlignOutputDir/logs/bwar1.${SampleName}.node$OutputFileSuffix
 
 				if [ $paired -eq 1 ]
@@ -671,9 +685,18 @@ do
 				echo -e "\n####### input files for bwa mem are specified in $fqfiles                          ###############\n" >&2;
 				echo -e "\n####### we need to see if we need to split/not split alignemnt and dedup commands  ###############\n" >&2; set -x
 
-				jobfileAlign=$TopOutputLogs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile
-				jobfileMarkdup=$TopOutputLogs/Markdup.${SampleName}.node$OutputFileSuffix.jobfile
-				alignedbam=${outputsamfileprefix}.node${OutputFileSuffix}.soted.bam
+
+				# logs will go to TopOutputLogs if launcher is used, otherwise they will go to sample/align/logs folder
+
+				if [ $run_method == "LAUNCHER" ]
+				then
+					AlignOutputLogs=$TopOutputLogs
+				fi
+
+				jobfileAlign=$AlignOutputLogs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile
+				jobfileMarkdup=$AlignOutputLogs/Markdup.${SampleName}.node$OutputFileSuffix.jobfile
+				
+				alignedbam=${outputsamfileprefix}.node${OutputFileSuffix}.sorted.bam
 				dedupbam=${outputsamfileprefix}.node${OutputFileSuffix}.wdups.sorted.bam
 
 				if [ $splitAlignDedup != "YES" ]
@@ -681,15 +704,17 @@ do
 					set +x; echo -e "################# CASE is NOT SPLIT, alignment and markduplicates in one job ############\n" >&2; set -x
 					echo "$scriptdir/bwamem_and_markduplicates.sh $AlignOutputDir $fqfiles $alignedbam $dedupbam $RGparms  $runfile $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfileAlign $failedlog > $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfileAlign
 					jobfilename=$( basename $jobfileAlign )
-					echo "$TopOutputLogs $jobfilename" >> $TopOutputLogs/AlignAnisimov.joblist
+					echo "$AlignOutputLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
 				else
 					set +x; echo -e "################# CASE is SPLIT, alignment in one job and markduplicates in another job ##\n" >&2; set -x
+
 					echo "$scriptdir/bwamem_only.sh $AlignOutputDir $fqfiles $alignedbam $dedupbam $RGparms  $runfile $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.ou $email $jobfileAlign $failedlog > $AlignOutputLogs/log.bwamem.$SampleName.node$OutputFileSuffix.in" > $jobfileAlign
 					jobfilename=$( basename $jobfileAlign )
-					echo "$TopOutputLogs $jobfilename" >> $TopOutputLogs/AlignAnisimov.joblist
+					echo "$AlignOutputLogs $jobfilename" >> $AlignOutputLogs/AlignAnisimov.joblist
+
 					echo "$scriptdir/markduplicates.sh $AlignOutputDir $fqfiles $alignedbam $dedupbam $RGparms  $runfile $AlignOutputLogs/log.Markdup.$SampleName.node$OutputFileSuffix.in $AlignOutputLogs/log.Markdup.$SampleName.node$OutputFileSuffix.ou $email $jobfileMarkdup $failedlog > $AlignOutputLogs/log.Markdup.$SampleName.node$OutputFileSuffix.in" > $jobfileMarkdup
 					jobfilenameMarkdup=$( basename $jobfileMarkdup )
-					echo "$TopOutputLogs $jobfilenameMarkdup" >> $TopOutputLogs/MarkdupsAnisimov.joblist
+					echo "$AlignOutputLogs $jobfilenameMarkdup" >> $AlignOutputLogs/MarkdupsAnisimov.joblist
 				fi                             
 
 
@@ -727,6 +752,10 @@ do
 		then
 		       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\.[a-z]*//" | tr "\n" ":" )
 		       #ALIGNED=$( cat $AlignOutputLogs/ALIGNED_* | sed "s/\..*//" | tr "\n" ":" )
+
+			##############################################################
+			#this section needs editing
+			##############################################################
 
 
 		       listfiles=$( echo $allfiles  | tr " " ":" | sed "s/::/:/g" )
@@ -801,6 +830,8 @@ then
 		# case1: one job only when fastqc is skipped and align-dedup is a single job, no splitting
 		# case2: two jobs when fastqc is not skipped and align-dedup is a single job, no splitting 
 		# case3: three jobs when when fastqc is not skipped and align-dedup is two jobs, with splitting
+		#
+		# all logs, joblists, and qsub files for launchers will go to TopOutputLogs
 		
 		numalignnodes=$(( inputfastqcounter + 1))
 
@@ -823,7 +854,7 @@ then
 			echo "#PBS -m ae" >> $qsubFastqcLauncher
 			echo "#PBS -M $email" >> $qsubFastqcLauncher
 
-			echo "$run_cmd $numalignnodes -env OMP_NUM_HREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/FastqcAnisimov.joblist /bin/bash > $TopOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/FastqcAnisimov.joblist $bash_cmd > $TopOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
 
 			echo "exitcode=\$?" >> $qsubFastqcLauncher
 			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubFastqcLauncher
@@ -849,7 +880,7 @@ then
 		echo "#PBS -m ae" >> $qsubAlignLauncher
 		echo "#PBS -M $email" >> $qsubAlignLauncher
 
-		echo "$run_cmd $numalignnodes -env OMP_NUM_HREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/AlignAnisimov.joblist /bin/bash > $TopOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+		echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/AlignAnisimov.joblist $bash_cmd > $TopOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
 
 		echo "exitcode=\$?" >> $qsubAlignLauncher
 		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
@@ -866,6 +897,7 @@ then
 
 		if [ $splitAlignDedup == "YES" ]
 		then
+
 			qsubMarkdupLauncher=$TopOutputLogs/qsub.Markdup.Anisimov
 			echo "#!/bin/bash" > $qsubMarkdupLauncher
 			echo "#PBS -A $pbsprj" >> $qsubMarkdupLauncher
@@ -876,10 +908,10 @@ then
 			echo "#PBS -e $TopOutputLogs/log.Markdup.Anisimov.in" >> $qsubMarkdupLauncher
 			echo "#PBS -q $pbsqueue" >> $qsubMarkdupLauncher
 			echo "#PBS -m ae" >> $qsubMarkdupLauncher
-			echo "#PBS -M $email" >> $$qsubMarkdupLauncher
+			echo "#PBS -M $email" >> $qsubMarkdupLauncher
 			echo "#PBS -W depend=afterok:$AlignAnisimovJoblistId" >> $qsubMarkdupLauncher 
 
-			echo "$run_cmd $numalignnodes -env OMP_NUM_HREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/MarkdupsAnisimov.joblist /bin/bash > $TopOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/MarkdupsAnisimov.joblist $bash_cmd > $TopOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
 
 			echo "exitcode=\$?" >> $qsubMarkdupLauncher
 			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMarkdupLauncher
@@ -901,7 +933,8 @@ then
 		# case1: one job  per sample only when fastqc is skipped and align-dedup is a single job, no splitting
 		# case2: two jobs  per sample when fastqc is not skipped and align-dedup is a single job, no splitting 
 		# case3: three jobs  per sample when when fastqc is not skipped and align-dedup is two jobs, with splitting
-
+		#
+		# all logs, joblists, and qsub files for launchers will go to either sample/align/logs  or   sample/fastqc/logs
 
 		while read SampleLine
 		do              
@@ -915,9 +948,9 @@ then
 			FastqcOutputDir=$outputdir/$SampleName/fastqc
 			FastqcOutputLogs=$FastqcOutputDir/logs
 
-			jobfileFastqc=$( ls $TopOutputLogs/Fastqc.$SampleName.jobfile | tr "\n" " " )
-			jobfileAlign=$( ls $TopOutputLogs/bwamem.${SampleName}.*.jobfile | tr "\n" " " )
-			jobfileMarkdup=$( ls $TopOutputLogs/Markdup.${SampleName}.*.jobfile | tr "\n" " " )
+			jobfileFastqc=$( ls  $FastqcOutputLogs/Fastqc.$SampleName.jobfile | tr "\n" " " )
+			jobfileAlign=$( ls   $AlignOutputLogs/bwamem.${SampleName}.*.jobfile | tr "\n" " " )
+			jobfileMarkdup=$( ls $AlignOutputLogs/Markdup.${SampleName}.*.jobfile | tr "\n" " " )
 
 			
 			set +x; echo -e "\n # run_method is not LAUNCHER. scheduling the FastQC qsub job\n" >&2; set -x
@@ -951,7 +984,6 @@ then
 
 
 			set +x; echo -e "\n # run_method is not LAUNCHER. scheduling alignment qsubs\n" >&2; set -x
-
 
 			qsubAlign=$AlignOutputLogs/qsub.align.${SampleName}
 			echo "#!/bin/bash" > $qsubAlign
@@ -989,8 +1021,8 @@ then
 				echo "#PBS -e $AlignOutputLogs/log.Markdup.${SampleName}.in" >> $qsubMarkdup
 				echo "#PBS -q $pbsqueue" >> $qsubMarkdup
 				echo "#PBS -m ae" >> $qsubMarkdup
-				echo "#PBS -M $email" >> $$qsubMarkdup
-				echo "#PBS -W depend=afterok:$Align_${SampleName}_JobId" >> $qsubMarkdup 
+				echo "#PBS -M $email" >> $qsubMarkdup
+				echo "#PBS -W depend=afterok:$AlignJobId" >> $qsubMarkdup 
 				cat $jobfileMarkdup >> $qsubMarkdup
 				echo "exitcode=\$?" >> $qsubMarkdup
 				echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMarkdup
@@ -999,8 +1031,6 @@ then
 				echo "fi" >> $qsubMarkdup
 
 				MarkDupJobId=`qsub $qsubMarkdup`
-				#`qhold -h u $MarkDup${SampleName}JoblistId`
-				#echo $MarkDup${SampleName}JoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
 				echo $MarkDupJobId >> $TopOutputLogs/pbs.MARKED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk                     
 			fi
 
@@ -1039,6 +1069,10 @@ then
 	echo -e "   # @out input_to_realrecal @as fastq_aligned_sorted_markdup @URI ${MergedFastqPathTemplate}" >> $outputdir/WorkflowAutodocumentationScript.sh
 	echo -e "# @end merge_${sortool}_${markduplicatestool}" >> $outputdir/WorkflowAutodocumentationScript.sh
 
+	##############################################################
+	#this section needs editing
+	##############################################################
+	
 	case $run_method in
 	"LAUNCHER")
               # clear out the joblists
@@ -1101,13 +1135,13 @@ then
               NumberOfNodes=$(( inputfastqcounter * NumChunks )) 
               (( NumberOfNodes++ )) # plus one for the launcher
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_novosplit_anisimov
-              echo "aprun -n $NumberOfNodes -env OMP_NUM_HREADS=$thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+              echo "$eun_cmd $NumberOfNodes -env OMP_NUM_THREADS=$thr ~anisimov/scheduler/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist $bash_cmd > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
 
               ### iForge - specific use of launcher - not sure how to handle the switch, so keeping it commented out for now
               ### echo "module load intel/12.0.4" >> $qsub_novosplit_anisimov
               ### echo "module load openmpi-1.4.3-intel-12.0.4" >> $qsub_novosplit_anisimov
               #echo "cat $PBS_NODEFILE | sort -u | awk -v n=1 '{for(i=0;i<n;i++) print \$0}' > ${AlignOutputLogs}/HOSTLIST" >> $qsub_novosplit_anisimov
-              ### echo "mpiexec -n $NumberOfNodes  --pernode -machinefile \$PBS_NODEFILE --mca btl tcp,self  ${launcherdir}/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist /bin/bash > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
+              ### echo "mpiexec -n $NumberOfNodes  --pernode -machinefile \$PBS_NODEFILE --mca btl tcp,self  ${launcherdir}/scheduler.x $AlignOutputLogs/novosplit.AnisimovJoblist $bash_cmd > $AlignOutputLogs/novosplit.AnisimovLauncher.log" >> $qsub_novosplit_anisimov
 
               novosplit_job=`qsub $qsub_novosplit_anisimov`
               `qhold -h u $novosplit_job`
@@ -1126,7 +1160,7 @@ then
               # number of nodes required for mergenovo is equal to the number of samples plus one for the launcher
               NumberOfNodes=$(( inputfastqcounter + 1 )) # counter started at zero, so in the end reflects the true number of fsatq samples
               echo -e "#PBS -l nodes=$NumberOfNodes:ppn=$thr\n" >> $qsub_mergenovo_anisimov
-              echo "aprun -n $NumberOfNodes -env OMP_NUM_HREADS=$thr $launcherdir/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist /bin/bash > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
+              echo "$run_cmd $NumberOfNodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $AlignOutputLogs/mergenovo.AnisimovJoblist $bash_cmd > $AlignOutputLogs/mergenovo.AnisimovLauncher.log" >> $qsub_mergenovo_anisimov
 
               mergenovo_job=`qsub $qsub_mergenovo_anisimov`
               `qhold -h u $mergenovo_job`
@@ -1170,7 +1204,7 @@ then
                     echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_novosplit
 
                     # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                    sed "1!b;s/^/$run_cmd 1 -env OMP_NUM_HREADS=$thr /" $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix >> $qsub_novosplit 
+                    sed "1!b;s/^/$run_cmd 1 -N 1 -d $thr /" $AlignOutputDir/logs/novosplit.${SampleName}.node$OutputFileSuffix >> $qsub_novosplit 
 
                     novosplit_job=`qsub $qsub_novosplit`
                     `qhold -h u $novosplit_job`
@@ -1198,7 +1232,7 @@ then
                  echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_mergenovo
 
                  # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 sed "1!b;s/^/$run_cmd 1 -env OMP_NUM_HREADS=$thr /" $AlignOutputDir/logs/mergenovo.${SampleName} >> $qsub_mergenovo 
+                 sed "1!b;s/^/$run_cmd 1 -N 1 -d $thr /" $AlignOutputDir/logs/mergenovo.${SampleName} >> $qsub_mergenovo 
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
@@ -1270,7 +1304,7 @@ then
                  echo -e "#PBS -l nodes=1:ppn=$thr\n" >> $qsub_mergenovo
 
                  # using sed to edit the first and only line in each jobfile to add the relevant scheduling commands
-                 sed "1!b;s/^/$run_cmd 1 -env OMP_NUM_HREADS=$thr /" $AlignOutputDir/logs/mergenovo.${SampleName} >> $qsub_mergenovo
+                 sed "1!b;s/^/$run_cmd 1 -env OMP_NUM_THREADS=$thr /" $AlignOutputDir/logs/mergenovo.${SampleName} >> $qsub_mergenovo
 
                  mergenovo_job=`qsub $qsub_mergenovo`
                  `qhold -h u $mergenovo_job`
@@ -1293,15 +1327,15 @@ echo "###############     ALL QSUB SCRIPTS BELOW WILL RUN AFTER ALIGNMENT IS DON
 echo "#####################################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-markedids=$( cat "$TopOutputLogs/pbs.MARKED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
-mergeids=$( cat "$TopOutputLogs/pbs.MERGED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
-alignids=$( cat "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
-fastqcids=$( cat "$TopOutputLogs/pbs.FASTQC" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )
-
-pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" ":" ) 
+markedids=$( cat "$TopOutputLogs/pbs.MARKED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " ) #for release comd
+mergeids=$( cat "$TopOutputLogs/pbs.MERGED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )  #for release comd
+alignids=$( cat "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " ) #for release comd
+fastqcids=$( cat "$TopOutputLogs/pbs.FASTQC" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " ) #for release comd
+pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" ":" | sed "s/^://" ) #for job dependency argument
 
 ## generating summary redmine email if analysis ends here
 set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x;
+
 if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
 then
 	set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
@@ -1334,7 +1368,8 @@ then
 		echo $cleanjobid >> $outputdir/logs/pbs.CLEANUP
 	fi
 
-	`sleep 30s`
+	`sleep 10s`  # to avoid choking the scheduler
+	
 	set +x; echo -e "\n ###### Generating Summary report   ######\n" >&2; set -x;
 	qsub_summary=$TopOutputLogs/qsub.summary.aln.allok
 	echo "#PBS -A $pbsprj" >> $qsub_summary
@@ -1364,7 +1399,7 @@ then
 	echo "#PBS -q $pbsqueue" >> $qsub_summaryany
 	echo "#PBS -m ae" >> $qsub_summaryany
 	echo "#PBS -M $email" >> $qsub_summaryany
-	echo "#PBS -W depend=afterany:$pbsids" >> $qsub_summaryany
+	echo "#PBS -W depend=afternotok:$lastjobid" >> $qsub_summaryany
 	echo "$scriptdir/summary.sh $runfile $email exitnotok $reportticket"  >> $qsub_summaryany
 	#`chmod a+r $qsub_summaryany`
 	badjobid=`qsub $qsub_summaryany`

@@ -1,11 +1,12 @@
 #!/bin/bash
 ##redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# != 11 ]
-then
-        MSG="parameter mismatch"
-        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
-        exit 1;
-fi
+#if [ $# != 11 ]
+#then
+#        MSG="parameter mismatch"
+#        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+#        exit 1;
+#fi
+
 umask 0027	
 set -x
 echo `date`
@@ -82,7 +83,7 @@ fi
 header=$( echo $RGparms  | tr ":" "\t" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
 threads=`expr $thr "-" 1`
-fqfiles=$( echo $infiles | tr ":" " " )
+fqfiles=$( echo $inputfiles | tr ":" " " )
 prefix=${alignedbam%.bam}
 samfile=${prefix}.sam
 unsortedbam=${prefix}.unsorted.bam
@@ -97,7 +98,7 @@ cd $outputdir
 echo `date`
 
 
-$alignerdir/bwa mem  $alignparms -R "${rgheader}" $refindex $fqfiles >  $samfile
+$alignerdir/bwa mem  $alignparms -t $threads -R "${rgheader}" $refindex $fqfiles >  $samfile
 exitcode=$?
 echo `date`
 if [ $exitcode -ne 0 ]
@@ -142,10 +143,11 @@ echo -e "########    QC: count alignments                                       
 echo -e "#######################################################################################################" >&2
 
 echo -e "\n\n" >&2; set -x;
-numAlignments=$( $sambambadir/sambamba view -c -t $thr $unsortedbam ) 
-numAlignments=$( $samdir/samtools view -c -@ $thr $dedupbam )
+#numAlignments=$( $sambambadir/sambamba view -c -t $thr $unsortedbam ) 
+numAlignments=$( $samdir/samtools view -c -@ $thr $unsortedbam )
 echo `date`
-if [ $numAlignments -eq 0 ]
+
+if [ `expr ${#numAlignments}` -lt 1 ]
 then
     MSG="bwa mem command did not produce alignments. alignment failed"
     echo -e "program=$0 failed at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
@@ -179,6 +181,8 @@ $samdir/samtools view -H $alignedbam > ${alignedbam}.header
 
 
 echo `date`
+
+
 
 set +x; echo -e "\n\n" >&2;
 echo -e "#######################################################################################################" >&2

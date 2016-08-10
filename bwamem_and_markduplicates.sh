@@ -60,6 +60,7 @@ dup_cutoff=$( cat $runfile | grep -w DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w MAP_CUTOFF | cut -d '=' -f2 )
 novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
 runqctest=$( cat $runfile | grep -w RUNDEDUPQC | cut -d '=' -f2 )
+analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 QCfile=$rootdir/QC_Results.txt
 
 
@@ -160,14 +161,14 @@ then
         if [ $samprocessing == "SAMTOOLS" ]
         then
            echo `date`
-           $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> $dedupbam
+           $alignerdir/bwa mem $alignparms -t $threads -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster |  $samdir/samtools view -bSu -@ $threads -> $dedupbam
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
         elif [ $samprocessing == "SAMBAMBA" ]
         then 
            echo `date`
-           $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster -o $samfile
+           $alignerdir/bwa mem $alignparms -t $threads  -R "${rgheader}" $refindex $fqfiles | $samblasterdir/samblaster -o $samfile
            exitcode=$?
            echo `date`
            all_exitcodes=$(( $exitcode + $all_exitcodes ))
@@ -179,7 +180,7 @@ then
         fi
 
 
-        set +x; echo -e "\n\n########################### cheching to see if any of the commands in this block failed #################\n\n" >&2; set -x;
+        set +x; echo -e "\n\n########################### checking to see if any of the commands in this block failed #################\n\n" >&2; set -x;
         
       
         if [ $exitcode -ne 0 ]
@@ -218,7 +219,7 @@ then
         
         cd $outputdir
         echo `date`
-        $alignerdir/bwa mem $alignparms -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
+        $alignerdir/bwa mem $alignparms -t $threads -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
         exitcode=$?
         echo `date`
         if [ $exitcode -ne 0 ]
@@ -488,6 +489,39 @@ fi  # end of QC for thissample
 
 echo `date`
 
+set +x; echo -e "\n\n" >&2;        
+echo -e "#######################################################################################################" >&2
+echo -e "########    Send files to delivery if analysis ends here                                        #######" >&2
+echo -e "#######################################################################################################" >&2
+echo -e "\n\n" >&2; set -x; 
+
+if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
+then
+	set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
+
+	deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+	rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+
+	cd $outputdir/..
+	sample=`basename $PWD`
+	cd $outputdir
+
+	if [ `expr ${#deliveryfolder}` -lt 2 ]
+	then
+	     delivery=$rootdir/delivery
+	else
+	     delivery=$rootdir/$deliveryfolder
+	fi
+	if [ ! -d $delivery/$sample ]
+	then
+	    mkdir -p $delivery/$sample
+	fi
+	
+	cp $outputbam $delivery/$sample
+	
+	echo `date`
+
+fi
 
 set +x; echo -e "\n\n" >&2;        
 echo -e "#######################################################################################################" >&2

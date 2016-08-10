@@ -1,11 +1,12 @@
 #!/bin/bash
 ##redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# != 11 ]
-then
-        MSG="parameter mismatch"
-        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
-        exit 1;
-fi
+#if [ $# != 11 ]
+#then
+#        MSG="parameter mismatch"
+#        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+#        exit 1;
+#fi
+
 umask 0027	
 set -x
 echo `date`
@@ -61,6 +62,7 @@ dup_cutoff=$( cat $runfile | grep -w DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w MAP_CUTOFF | cut -d '=' -f2 )
 novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
 runqctest=$( cat $runfile | grep -w RUNDEDUPQC | cut -d '=' -f2 )
+analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 QCfile=$rootdir/QC_Results.txt
 
 if [ $runqctest == "YES" -a ! -s $qc_result ]
@@ -382,10 +384,41 @@ echo `date`
 
 set +x; echo -e "\n\n" >&2;        
 echo -e "#######################################################################################################" >&2
-echo -e "########    Done with QC of aligned BAM, now exiting                                            #######" >&2
+echo -e "########    Send files to delivery if analysis ends here                                        #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x; 
 
+if [ $analysis == "ALIGNMENT" -o $analysis == "ALIGN" -o $analysis == "ALIGN_ONLY" ]
+then
+	set +x; echo -e "\n ###### ANALYSIS = $analysis ends here. Wrapping up and quitting\n" >&2; set -x;
+
+	deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+	rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+
+	cd $outputdir/..
+	sample=`basename $PWD`
+	cd $outputdir
+
+	if [ `expr ${#deliveryfolder}` -lt 2 ]
+	then
+	     delivery=$rootdir/delivery
+	else
+	     delivery=$rootdir/$deliveryfolder
+	fi
+	if [ ! -d $delivery/$sample ]
+	then
+	    mkdir -p $delivery/$sample
+	fi
+	
+	cp $outputbam $delivery/$sample
+	
+	echo `date`
+
+fi
 
 
-
+set +x; echo -e "\n\n" >&2;        
+echo -e "#######################################################################################################" >&2
+echo -e "########    Done.  now exiting                                                                  #######" >&2
+echo -e "#######################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
