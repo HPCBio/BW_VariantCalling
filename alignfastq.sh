@@ -72,7 +72,8 @@ cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-
 splitAlignDedup=$( cat $runfile | grep -w SPLITALIGNDEDUP | cut -d '=' -f2 ) #binay value YES|NO
 run_cmd=$( cat $runfile | grep -w LAUNCHERCMD | cut -d '=' -f2 )   #string value aprun|mpirun
 bash_cmd=`which bash`        
-        
+QCfile=$outputdir/QC_Results.txt        
+truncate -s 0 $QCfile
 
 set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
 
@@ -295,7 +296,7 @@ fi
 
 set +x; echo -e "\n\n">&2
 echo "############################################################################################################" >&2
-echo "###############################  CREATE  DIRECTORY STRUCTURE. TOP LEVEL ONLY     ###########################" >&2
+echo "###############################  CREATE  DIRECTORY STRUCTURE FOR LOGS. TOP LEVEL ONLY     ##################" >&2
 echo "############################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
@@ -306,11 +307,20 @@ if [ -d $TopOutputLogs ]
 then
 	pbsids=""
 else
-	mkdir -p $TopOutputLogs
+	mkdir -p $TopOutputLogs/align
 fi
 
-        
+if [ $run_method == "LAUNCHER" ]
+then
+	mkdir -p $TopOutputLogs/align
+fi
 pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
+truncate -s 0 $TopOutputLogs/pbs.SCHREAL
+truncate -s 0 $TopOutputLogs/pbs.ALIGNED
+truncate -s 0 $TopOutputLogs/pbs.MARKED
+truncate -s 0 $TopOutputLogs/FastqcAnisimov.joblist
+truncate -s 0 $TopOutputLogs/align/AlignAnisimov.joblist 
+truncate -s 0 $TopOutputLogs/align/MarkdupsAnisimov.joblist
 
 #chunks=`expr $nodes "-" 1`
 #if [ $chunks -lt 1 ]
@@ -481,11 +491,10 @@ do
 				fastqc_input="$LeftReadsFastq:$RightReadsFastq"
 			fi
 			
-			# logs will go to TopOutputLogs if launcher is used, otherwise they will go to sample/fastqc/logs folder
-			if [ $run_method == "LAUNCHER" ]
-			then
-				FastqcOutputLogs=$TopOutputLogs
-			fi
+
+
+			FastqcOutputLogs=$TopOutputLogs
+
 			
 			# form the fastqc command in jobfile and then add it to the anisimov launcher 
 			
@@ -690,7 +699,9 @@ do
 
 				if [ $run_method == "LAUNCHER" ]
 				then
-					AlignOutputLogs=$TopOutputLogs
+					AlignOutputLogs=$TopOutputLogs/align
+				else 
+					AlignOutputLogs=$AlignOutputDir/logs			
 				fi
 
 				jobfileAlign=$AlignOutputLogs/bwamem.${SampleName}.node$OutputFileSuffix.jobfile
@@ -837,28 +848,33 @@ then
 
 		set +x; echo -e "\n # run_method is LAUNCHER. scheduling the FastQC Launcher\n" >&2; set -x
 
+		AlignOutputLogs=$TopOutputLogs/align
+		FastqcOutputLogs=$TopOutputLogs
+		
 		if [ $fastqcflag == "YES" ]
 		then
                    
 			#No dependencies will be made with this job. Hopefully, it will run last right before the summary script
 
-			qsubFastqcLauncher=$TopOutputLogs/qsub.Fastqc.Anisimov
+			FastqcOutputLogs=$TopOutputLogs
+
+			qsubFastqcLauncher=$FastqcOutputLogs/qsub.Fastqc.Anisimov
 			echo "#!/bin/bash" > $qsubFastqcLauncher
 			echo "#PBS -A $pbsprj" >> $qsubFastqcLauncher
 			echo "#PBS -N ${pipeid}_Fastqc_Anisimov" >> $qsubFastqcLauncher
 			echo "#PBS -l walltime=$pbscpu" >> $qsubFastqcLauncher
 			echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubFastqcLauncher
-			echo "#PBS -o $TopOutputLogs/log.Fastqc.Anisimov.ou" >> $qsubFastqcLauncher
-			echo "#PBS -e $TopOutputLogs/log.Fastqc.Anisimov.in" >> $qsubFastqcLauncher
+			echo "#PBS -o $FastqcOutputLogs/log.Fastqc.Anisimov.ou" >> $qsubFastqcLauncher
+			echo "#PBS -e $FastqcOutputLogs/log.Fastqc.Anisimov.in" >> $qsubFastqcLauncher
 			echo "#PBS -q $pbsqueue" >> $qsubFastqcLauncher
 			echo "#PBS -m ae" >> $qsubFastqcLauncher
 			echo "#PBS -M $email" >> $qsubFastqcLauncher
 
-			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/FastqcAnisimov.joblist $bash_cmd > $TopOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
+			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $FastqcOutputLogs/FastqcAnisimov.joblist $bash_cmd > $FastqcOutputLogs/FastqcAnisimov.joblist.log" >> $qsubFastqcLauncher
 
 			echo "exitcode=\$?" >> $qsubFastqcLauncher
 			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubFastqcLauncher
-			echo "   echo -e \"\n\n FastqcAnisimov failed with exit code = \$exitcode \n logfile=$TopOutputLogs/log.Fastqc.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubFastqcLauncher
+			echo "   echo -e \"\n\n FastqcAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.Fastqc.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubFastqcLauncher
 			echo "   exit 1" >> $qsubFastqcLauncher
 			echo "fi" >> $qsubFastqcLauncher
 
@@ -868,54 +884,52 @@ then
 
 		set +x; echo -e "\n # run_method is LAUNCHER. scheduling the Align Launcher\n" >&2; set -x
 
-		qsubAlignLauncher=$TopOutputLogs/qsub.align.Anisimov
+		qsubAlignLauncher=$AlignOutputLogs/qsub.align.Anisimov
 		echo "#!/bin/bash" > $qsubAlignLauncher
 		echo "#PBS -A $pbsprj" >> $qsubAlignLauncher
 		echo "#PBS -N ${pipeid}_align_Anisimov" >> $qsubAlignLauncher
 		echo "#PBS -l walltime=$pbscpu" >> $qsubAlignLauncher
 		echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubAlignLauncher
-		echo "#PBS -o $TopOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
-		echo "#PBS -e $TopOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
+		echo "#PBS -o $AlignOutputLogs/log.align.Anisimov.ou" >> $qsubAlignLauncher
+		echo "#PBS -e $AlignOutputLogs/log.align.Anisimov.in" >> $qsubAlignLauncher
 		echo "#PBS -q $pbsqueue" >> $qsubAlignLauncher
 		echo "#PBS -m ae" >> $qsubAlignLauncher
 		echo "#PBS -M $email" >> $qsubAlignLauncher
 
-		echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/AlignAnisimov.joblist $bash_cmd > $TopOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
+		echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $AlignOutputLogs/AlignAnisimov.joblist $bash_cmd > $AlignOutputLogs/AlignAnisimov.joblist.log" >> $qsubAlignLauncher
 
 		echo "exitcode=\$?" >> $qsubAlignLauncher
 		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubAlignLauncher
-		echo "   echo -e \"\n\n AlignAnisimov failed with exit code = \$exitcode \n logfile=$TopOutputLogs/log.AlignAnisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
+		echo "   echo -e \"\n\n AlignAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.AlignAnisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubAlignLauncher
 		echo "   exit 1" >> $qsubAlignLauncher
 		echo "fi" >> $qsubAlignLauncher
 
 		AlignAnisimovJoblistId=`qsub $qsubAlignLauncher`
 		echo $AlignAnisimovJoblistId >> $TopOutputLogs/pbs.ALIGNED # so that this job could be released in the next section. Should it be held to begin with?
-		#echo $AlignAnisimovJoblistId > $TopOutputLogs/pbs.MERGED # so that summaryok and start_realrecal_block.sh could depend on this job, in case when there is no merging: a sigle chunk
-
 
 		set +x; echo -e "\n # run_method is LAUNCHER. scheduling the MarkDuplicates Launcher\n" >&2; set -x   
 
 		if [ $splitAlignDedup == "YES" ]
 		then
 
-			qsubMarkdupLauncher=$TopOutputLogs/qsub.Markdup.Anisimov
+			qsubMarkdupLauncher=$AlignOutputLogs/qsub.Markdup.Anisimov
 			echo "#!/bin/bash" > $qsubMarkdupLauncher
 			echo "#PBS -A $pbsprj" >> $qsubMarkdupLauncher
 			echo "#PBS -N ${pipeid}_Markdup_Anisimov" >> $qsubMarkdupLauncher
 			echo "#PBS -l walltime=$pbscpu" >> $qsubMarkdupLauncher
 			echo "#PBS -l nodes=$numalignnodes:ppn=$thr" >> $qsubMarkdupLauncher
-			echo "#PBS -o $TopOutputLogs/log.Markdup.Anisimov.ou" >> $qsubMarkdupLauncher
-			echo "#PBS -e $TopOutputLogs/log.Markdup.Anisimov.in" >> $qsubMarkdupLauncher
+			echo "#PBS -o $AlignOutputLogs/log.Markdup.Anisimov.ou" >> $qsubMarkdupLauncher
+			echo "#PBS -e $AlignOutputLogs/log.Markdup.Anisimov.in" >> $qsubMarkdupLauncher
 			echo "#PBS -q $pbsqueue" >> $qsubMarkdupLauncher
 			echo "#PBS -m ae" >> $qsubMarkdupLauncher
 			echo "#PBS -M $email" >> $qsubMarkdupLauncher
 			echo "#PBS -W depend=afterok:$AlignAnisimovJoblistId" >> $qsubMarkdupLauncher 
 
-			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $TopOutputLogs/MarkdupsAnisimov.joblist $bash_cmd > $TopOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
+			echo "$run_cmd $numalignnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $AlignOutputLogs/MarkdupsAnisimov.joblist $bash_cmd > $AlignOutputLogs/MarkdupsAnisimov.joblist.log" >> $qsubMarkdupLauncher
 
 			echo "exitcode=\$?" >> $qsubMarkdupLauncher
 			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMarkdupLauncher
-			echo "   echo -e \"\n\n MarkdupsAnisimov failed with exit code = \$exitcode \n logfile=$TopOutputLogs/log.Markdup.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMarkdupLauncher
+			echo "   echo -e \"\n\n MarkdupsAnisimov failed with exit code = \$exitcode \n logfile=$AlignOutputLogs/log.Markdup.Anisimov.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMarkdupLauncher
 			echo "   exit 1" >> $qsubMarkdupLauncher
 			echo "fi" >> $qsubMarkdupLauncher
 
@@ -946,7 +960,7 @@ then
 			AlignOutputDir=$outputdir/$SampleName/align
 			AlignOutputLogs=$AlignOutputDir/logs
 			FastqcOutputDir=$outputdir/$SampleName/fastqc
-			FastqcOutputLogs=$FastqcOutputDir/logs
+			FastqcOutputLogs=$$outputdir/logs
 
 			jobfileFastqc=$( ls  $FastqcOutputLogs/Fastqc.$SampleName.jobfile | tr "\n" " " )
 			jobfileAlign=$( ls   $AlignOutputLogs/bwamem.${SampleName}.*.jobfile | tr "\n" " " )
@@ -1331,7 +1345,8 @@ markedids=$( cat "$TopOutputLogs/pbs.MARKED" | sed "s/\.[a-zA-Z]*//" | tr "\n" "
 mergeids=$( cat "$TopOutputLogs/pbs.MERGED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " )  #for release comd
 alignids=$( cat "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " ) #for release comd
 fastqcids=$( cat "$TopOutputLogs/pbs.FASTQC" | sed "s/\.[a-zA-Z]*//" | tr "\n" " " ) #for release comd
-pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" ":" | sed "s/^://" ) #for job dependency argument
+#pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | sed "s/\.[a-zA-Z]*//" | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
+pbsids=$( cat "$TopOutputLogs/pbs.MARKED" "$TopOutputLogs/pbs.ALIGNED" | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
 
 ## generating summary redmine email if analysis ends here
 set +x; echo -e "\n # wrap up and produce summary table if analysis ends here or call realign if analysis continues \n" >&2; set -x;
@@ -1423,7 +1438,7 @@ then
 	echo "#PBS -M $email" >> $qsub_realign
 	echo "$scriptdir/start_realrecal_block.sh $runfile $TopOutputLogs/start_realrecal_block.in $TopOutputLogs/start_realrecal_block.ou $email $TopOutputLogs/qsub.start_realrecal_block" >> $qsub_realign
 	#`chmod a+r $qsub_realign` 
-	`qsub $qsub_realign >> $TopOutputLogs/pbs.REALRECAL`
+	`qsub $qsub_realign >> $TopOutputLogs/pbs.SCHREAL`
 
 	# need to release jobs here or realignment will not start
 	`qrls -h u $alignids`

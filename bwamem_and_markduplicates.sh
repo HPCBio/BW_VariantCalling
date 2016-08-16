@@ -128,8 +128,8 @@ then
     exit 1;
 fi
 
-threads=`expr $thr "-" 1`
-
+#threads=`expr $thr "-" 1`
+threads=$thr
 header=$( echo $RGparms  | tr ":" "\t" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
 threads=`expr $thr "-" 1`
