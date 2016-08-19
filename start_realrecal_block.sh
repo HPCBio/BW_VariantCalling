@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # start_realrecal_block.sh
-# Second module in the GGPS analysis pipeline
+# Second module in the analysis pipeline.This module launches qsubs to convert input bams aligned elsewhere and to launch realignment schedulers according to analysis type
 #redmine=hpcbio-redmine@igb.illinois.edu
 redmine=grendon@illinois.edu
 
@@ -12,7 +12,7 @@ then
 	exit 1;
 fi
 
-echo -e "\n\n############# START REALRECAL BLOCK: decide if the aligned bams were made locally or externally; create the downstream schedule_realrecal_per_chromosome accordingly  ###############\n\n" >&2
+echo -e "\n\n############# START REALRECAL BLOCK: This module launches qsubs to convert input bams aligned elsewhere and to launch realignment schedulers according to analysis type  ###############\n\n" >&2
 umask 0027
 set -x
 echo `date`
@@ -63,10 +63,14 @@ picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 run_method=$( cat $runfile | grep -w RUNMETHOD | cut -d '=' -f2 )
 
+set +x; echo -e "\n\n\n############ checking output folder\n" >&2; set -x
+
 if [ ! -d $outputdir ]
 then
 	mkdir -p $outputdir
 fi 
+
+set +x; echo -e "\n\n\n############ checking input type: WGS or WES\n" >&2; set -x
 
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
 then
@@ -81,6 +85,8 @@ else
 	echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking resortbam option\n" >&2; set -x
 
 if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
 then
@@ -97,6 +103,7 @@ then
 	$resortbam="NO"
 fi
 
+set +x; echo -e "\n\n\n############ checking tool dirs\n" >&2; set -x
 
 if [ ! -d $scriptdir ]
 then
@@ -116,6 +123,8 @@ then
 	echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking sample configuration file\n" >&2; set -x
 
 numsamples=`wc -l $outputdir/SAMPLENAMES.list | cut -d ' ' -f 1`
 if [ $numsamples -lt 1 ]
@@ -170,7 +179,7 @@ fi
 set +x; echo -e "\n\n" >&2;
 echo "#############################################################################################################" >&2
 echo "#####################################                                ########################################" >&2
-echo "#####################################  THE FOLLWOING BLOCK IS FOR    ########################################" >&2
+echo "#####################################  PREPROCESSING BLOCK           ########################################" >&2
 echo "#####################################  BAM files aligned elsewhere   ########################################" >&2
 echo "#####################################                                ########################################" >&2
 echo "#############################################################################################################" >&2
@@ -207,7 +216,7 @@ then
 				exit 1;
 			fi
 
-			set +x; echo -e "\n # creating folder for this sample's prior results\n" >&2; set -x
+			set +x; echo -e "\n################ creating folder for this sample's prior results\n" >&2; set -x
 			
 			outputalign=$outputdir/$prefix/align
 			outputlogs=$TopOutputLogs/$prefix/logs
@@ -228,7 +237,7 @@ then
 			if [ $resortbam == "YES" ]
 			then
 
-				set +x; echo -e "\n # $inbamfile needs to be resorted\n" >&2; set -x
+				set +x; echo -e "\n################ $inbamfile needs to be resorted\n" >&2; set -x
 
 				qsub_sortbammayo=$outputlogs/qsub.sortbammayo.$prefix
 
@@ -247,7 +256,7 @@ then
 				#`qhold -h u $sortid`
 				echo $sortid >> $TopOutputLogs/pbs.RESORTED
 			else
-				set +x; echo -e "\n # $inbamfile DOES NOT need to be resorted. create symlinks\n" >&2; set -x
+				set +x; echo -e "\n################ $inbamfile DOES NOT need to be resorted. populate folder with symlinks\n" >&2; set -x
 				### TODO: header and index files need to be generated afresh
 
 				cd $outputalign 
@@ -279,6 +288,7 @@ set +x; echo -e "\n\n" >&2;
 echo "######################################################################################" >&2
 echo "#############   NOW THAT THE INPUT HAVE BEEN CHECKED AND RESORTED,  ##################" >&2
 echo "#############   WE CAN PROCEED TO SCHEDULE REAL/RECAL ETC           ##################" >&2
+echo "#############   CASE1: MULTIPLEXED CASE2: NONMULTIPLEXED            ##################" >&2
 echo "######################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
@@ -302,8 +312,12 @@ fi
 # choosing the script to run in the qsub script
 if [ $analysis != "MULTIPLEXED" ]
 then
+	set +x; echo -e "\n################ ANALYSIS IS NONMULTIPLEXED\n" >&2; set -x
+
 	echo "$scriptdir/schedule_realrecal_nonmultiplexed.sh $outputdir $runfile $RealignOutputLogs/log.schedule_realrecal.in $RealignOutputLogs/log.schedule_realrecal.ou $email $RealignOutputLogs/qsub.schedule_realrecal" >> $RealignOutputLogs/qsub.schedule_realrecal
 else
+	set +x; echo -e "\n################ ANALYSIS IS MULTIPLEXED\n" >&2; set -x
+	
 	echo "$scriptdir/schedule_realrecal_multiplexed.sh $outputdir $runfile $RealignOutputLogs/log.schedule_realrecal.in $RealignOutputLogs/log.schedule_realrecal.ou $email $RealignOutputLogs/qsub.schedule_realrecal" >> $RealignOutputLogs/qsub.schedule_realrecal
 fi
 

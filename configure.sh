@@ -1,4 +1,8 @@
 #!/bin/bash
+########################### 
+# program configure.sh is the script that generates the sample configuration files
+# and selects the types of analyses that will be executed in this run
+###########################
 #redmine=hpcbio-redmine@igb.illinois.edu
 redmine=grendon@illinois.edu
 if [ $# != 5 ]
@@ -10,6 +14,7 @@ fi
 
 
 echo -e "\n\n############# CONFIGURE VARIANT CALLING WORKFLOW ###############\n\n" >&2
+
 umask 0027
 set -x
 echo `date`	
@@ -24,6 +29,7 @@ LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 
 set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n" >&2; set -x;
+
 if [ !  -s $runfile ]
 then
    MSG="$runfile configuration file not found."
@@ -32,7 +38,11 @@ then
 fi
 
 
-set +x; echo -e "\nadditional variable assignment from runfile and sanity check\n" >&2; set -x;
+set +x
+echo -e "\n\n####################################################################################################" >&2
+echo        "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo        "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "\n\n####################################################################################################\n\n" >&2; set -x;
 
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
@@ -49,6 +59,8 @@ multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 | tr '[a-z]' 
 #sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 sampleinfo=$outputdir/sampleinfo.txt
 
+set +x; echo -e "\n\n\n############ checking input type: WGS or WES\n" >&2; set -x
+
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
 then
 	pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
@@ -63,6 +75,8 @@ else
 	exit 1;
 fi
 
+set +x; echo -e "\n\n\n############ checking output directory\n" >&2; set -x;
+
 if [ -z $thr -o -z $outputdir ]
 then
 	MSG="Invalid value specified for any of these paramaters in configuration file:\nPBSTHREADS=$thr\nOUTPUTDIR=$outputdir\nPBSPROJECTID=$pbsprj\nEPILOGUE=$epilogue"
@@ -70,12 +84,26 @@ then
 	exit 1;
 fi
 
+set +x; echo -e "\n\n\n############ checking analysis\n" >&2; set -x;
+
+if [ `expr ${#analysis}` -lt 1 ]
+then
+	MSG="Incorrect value for ANALYSIS=$analysis in the configuration file."
+	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+
+
+set +x; echo -e "\n\n\n############ checking input format\n" >&2; set -x;
+
 if [ $inputformat != "FASTQ" -a $inputformat != "BAM" ]
 then
 	MSG="Incorrect value for INPUTFORMAT=$inputformat in the configuration file."
 	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking resortbam option\n" >&2; set -x;
 
 
 if [ $resortbam != "1" -a $resortbam != "0" -a $resortbam != "YES" -a $resortbam != "NO" ]
@@ -93,6 +121,7 @@ then
 	resortbam="NO"
 fi
 
+set +x; echo -e "\n\n\n############ checking bamtofastq option\n" >&2; set -x;
 
 if [ $bamtofastqflag != "YES" -a $bamtofastqflag != "NO" -a $bamtofastqflag != "1" -a $bamtofastqflag != "0" ]
 then
@@ -109,6 +138,8 @@ then
 	bamtofastqflag="NO"
 fi
 
+set +x; echo -e "\n\n\n############ checking multisamples option\n" >&2; set -x;
+
 if [ $multisample != "YES" -a $multisample != "NO" -a $multisample != "1" -a $multisample != "0" ]
 then
 	MSG="MULTISAMPLE=$multisample  invalid value"
@@ -124,6 +155,8 @@ then
 	multisample="NO"
 fi
 
+set +x; echo -e "\n\n\n############ checking clash in conversion options\n" >&2; set -x;
+
 if [ $resortbam == "YES" -a $bamtofastqflag == "YES" ]
 then
 	MSG="Incompatible values for the pair RESORTBAM=$resortbam and BAM2FASTQFLAG=$bam2fqflag in the configuration file."
@@ -131,7 +164,7 @@ then
 	exit 1;
 fi
 
-set +x; echo -e "\nChecking that a tab delimited file with information about samples and lanes must exist for the analysis pipeline to start.\n" >&2; set -x;
+set +x; echo -e "\nChecking  samples comfiguration file\n" >&2; set -x;
 
 if [ ! -s $sampleinfo ]
 then
@@ -139,6 +172,8 @@ then
 	echo -e "$MSG\n\nDetails:\n\n$LOGS" # | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
 
 if [ ! -d $scriptdir ]
 then
@@ -149,7 +184,7 @@ fi
 #`chmod -R 770 $outputdir`
 #`chmod 740 $epilogue`
 
-set +x; echo -e "\nThe jobid assigned to this job becomes the pipeline id and should be found in outputdir/logs/pbs.CONFIGURE\n" >&2; set -x;
+set +x; echo -e "\n\n\n############ checking output directory\n" >&2; set -x;
 
 TopOutputLogs=$outputdir/logs
 pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
@@ -172,18 +207,23 @@ else
 fi
 
 
-#############################
-set +x; echo -e "\n\nconstructing files with list(s) of input files to analyze in this run of the pipeline" >&2;
-echo -e "CASE1: analysis is multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has five columns" >&2
-echo -e "CASE2: analysis is NOT multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has three columns" >&2
-echo -e "CASE3: analysis is NOT multiplexed. Input format is BAM. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has two columns" >&2 
-echo -e "SELECTING CASE NOW\n" >&2; set -x;
-#############################
+
+set +x; echo -e "\n\n">&2
+echo "#################################################################################################################################################################################" >&2
+echo "############# constructing files with list(s) of input files to analyze in this run of the pipeline" >&2
+echo "############# CASE1: analysis is multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has five columns" >&2
+echo "############# CASE2: analysis is NOT multiplexed. Input format is FASTQ. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has three columns" >&2
+echo "############# CASE3: analysis is NOT multiplexed. Input format is BAM. Info sheet is parsed and three files are generated. SAMPLENAMES_multiplexed.list has two columns" >&2 
+echo "#################################################################################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
 set +x; echo -e "\n ### run perl script to create three configuration files ### \n"  >&2; set -x;
 cd $outputdir
 sampleinfo=`basename $sampleinfo`
+
+### all options below call the script configSAMPLENAMES.pl with the same parameters 
+### we use this nested if-then-else to document the cases
 
 if [ $analysis == "MULTIPLEXED" -a $inputformat == "FASTQ" ]
 then
@@ -219,7 +259,7 @@ else
 
 fi
 
-set +x; echo -e "\n ### testing that the perl script actually worked ### \n"  >&2; set -x;
+set +x; echo -e "\n ### testing that the perl script actually worked. it should always create three files ### \n"  >&2; set -x;
 
 if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 then
@@ -248,8 +288,11 @@ numsamplegroups=`wc -l $outputdir/SAMPLEGROUPS.list | cut -d ' ' -f 1`
 echo -e "# @in fastq_inputs @URI SAMPLENAMES_multiplexed.list=${numinputs}_inputs_for_${numsamplegroups}_samples" >> $outputdir/WorkflowAutodocumentationScript.sh
     
 
-###################################################
-set +x; echo -e "\n\nTwo more configuration tasks: generate a QC_Results file and a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
+set +x; echo -e "\n\n">&2
+echo "###########################################################################################################################################################" >&2
+echo "#############Two more configuration tasks: generate a QC_Results file and a qsub header so we would not have to repeat the same lines\n\n" >&2; set -x;
+echo "###########################################################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 generic_qsub_header=$outputdir/qsubGenericHeader
 truncate -s 0 $outputdir/QC_Results.txt  # to report results of all QC tests
@@ -271,27 +314,18 @@ fi
 
 
 
-set +x; 
-echo -e "\n\n###################################################"  >&2 
-echo -e "done with preprocessing and configuration steps" >&2
-echo -e "now we select analysis or analyses to run" >&2
-echo -e "based on the value specified in runfile in line ANALYSIS"  >&2 
-echo -e "\n\n###################################################"  >&2 
-echo -e "possible values for ANALYSIS "  >&2 
-echo -e "vcall_only "  >&2 
-echo -e "realign_only "  >&2 
-echo -e "align_only"  >&2 
-echo -e "align_and_realign"  >&2 
-echo -e "align_and_realign_and_vcall"  >&2 
-echo -e "\n\n###################################################"  >&2 
-echo -e "\n\n" >&2; 
-set -x;
+set +x; echo -e "\n\n">&2
+echo "###########################################################################################################################################################" >&2
+echo "#############  select analysis or analyses to run. possible values for ANALYSIS are "  >&2 
+echo "#############  vcall_only realign_only align_only align_and_realign align_and_realign_and_vcall"  >&2 
+echo "###########################################################################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
 case=""
 if [ $analysis == "REALIGNONLY" -o $analysis == "REALIGN_ONLY" ]
 then
-	echo "Type of analysis to run: REALIGNMENT only. bams provided"
+	echo "############# Type of analysis to run: REALIGNMENT only. bams must be provided as input############# "
 	qsub2=$TopOutputLogs/qsub.START_REALRECAL_BLOCK
 	echo "#!/bin/bash" > $qsub2
 	echo "#PBS -A $pbsprj" >> $qsub2
@@ -313,7 +347,7 @@ then
  
  if [ $analysis == "VCALL_ONLY" -o $analysis == "VCALL" ]
  then
- 	echo "variant calling only"
+ 	echo "############# Type of analysis to run: VARIANT CALLING ONLY. cleaned bams must be provided as input############# "
  	qsub3=$TopOutputLogs/qsub.START_VARCALL_BLOCK
  	echo "#!/bin/bash" > $qsub3
  	echo "#PBS -A $pbsprj" >> $qsub3
@@ -335,7 +369,7 @@ then
 
  if [ $analysis == "ALIGN" -o $analysis == "ALIGNMENT" -o $analysis == "ALIGNONLY" ]
  then
-	echo "Type of analysis to run: ALIGNMENT only"      
+	echo "############# Type of analysis to run: ALIGNMENT only. fastq or unaligned bams must be provided as input"      
 	qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
 	echo "#!/bin/bash" > $qsub1
 	echo "#PBS -A $pbsprj" >> $qsub1
@@ -357,7 +391,7 @@ then
 
  if [ $analysis == "REALIGN" -o $analysis == "REALIGNMENT" -o $analysis == "MULTIPLEXED" ]
  then
-	echo "Type of analysis to run: ALIGNMENT and REALIGNMENT"
+	echo "Type of analysis to run: ALIGNMENT and REALIGNMENT and/or VARiANT CALLING. fastq or unaligned bams must be provided as input"
 	qsub1=$TopOutputLogs/qsub.START_ALIGN_BLOCK
 	echo "#!/bin/bash" > $qsub1
 	echo "#PBS -A $pbsprj" >> $qsub1

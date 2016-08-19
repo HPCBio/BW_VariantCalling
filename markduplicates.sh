@@ -1,11 +1,18 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+#
+# markduplicates.sh
+# module to be used for input files in fastq format. 
+# This module runs dedup commands, QC test, and copy results to delivery folder
+#redmine=hpcbio-redmine@igb.illinois.edu
+
 #if [ $# != 11 ]
 #then
 #        MSG="parameter mismatch"
 #        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
 #        exit 1;
 #fi
+
+echo -e "\n\n############# BEGIN MARKDUPLICATES PROCEDURE  ###############\n\n" >&2
 
 umask 0027	
 set -x
@@ -65,12 +72,15 @@ runqctest=$( cat $runfile | grep -w RUNDEDUPQC | cut -d '=' -f2 )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 QCfile=$rootdir/QC_Results.txt
 
+set +x; echo -e "\n\n\n############ checking runqctest\n" >&2; set -x;
+
 if [ $runqctest == "YES" -a ! -s $qc_result ]
 then
     MSG="$qc_result file for QC test results was not found"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
     exit 1;
 fi
+set +x; echo -e "\n\n\n############ checking tool directories\n" >&2; set -x;
 
 if [ ! -d $alignerdir ]
 then
@@ -122,6 +132,9 @@ then
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
     exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking which mark duplicates tool to use\n" >&2; set -x;
+
 if [ `expr ${#markduptool}` -lt 1 ]
 then
     MSG="MARKDUPLICATESTOOL=$markduptool invalid value"
@@ -129,14 +142,14 @@ then
     exit 1;
 fi
 
-if [ $markduptool != "PICARD" ]
-then
-    MSG="$markduptool IS NOT PICARD. exiting now"
-    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-    exit 1;
-fi
-threads=`expr $thr "-" 1`
+set +x; echo -e "\n\n" >&2;
+echo -e "#######################################################################################################" >&2
+echo -e "########    Prep work                                                                           #######" >&2
+echo -e "#######################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
+#threads=`expr $thr "-" 1`
+threads=$thr
 header=$( echo $RGparms  | tr ":" "\t" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
 threads=`expr $thr "-" 1`
@@ -147,8 +160,6 @@ unsortedbam=${prefix}.temp.unsorted.bam
 sortedbam=${prefix}.temp.sorted.bam
 dedupbam=${prefix}.wdups.unsorted.bam
 all_exitcodes=0
-
-
 
 
 set +x; echo -e "\n\n" >&2;

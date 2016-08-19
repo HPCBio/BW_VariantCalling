@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # start_align_block.sh
-# First module in the GGPS analysis pipeline
+# First module in the GGPS analysis pipeline. This module launches qsubs to convert file formats -if needed- and to align data according to input type
 #redmine=hpcbio-redmine@igb.illinois.edu
 redmine=grendon@illinois.edu
 
@@ -24,6 +24,7 @@ email=$4
 qsubfile=$5
 LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
+set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
 
 if [ !  -s $runfile ]
 then
@@ -54,6 +55,8 @@ epilogue=$( cat $runfile | grep -w EPILOGUE  | cut -d '=' -f2 )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 
+set +x; echo -e "\n\n\n############ checking input type: WGS or WES\n" >&2; set -x
+
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
 then
 	pbscpu=$( cat $runfile | grep -w PBSCPUALIGNWGEN | cut -d '=' -f2 )
@@ -68,6 +71,7 @@ else
 	exit 1;
 fi
 
+set +x; echo -e "\n\n\n############ checking input format\n" >&2; set -x
 
 
 if [ $inputformat != "FASTQ" -a $inputformat != "BAM" ]
@@ -76,6 +80,8 @@ then
     echo -e "$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking input conversion flag\n" >&2; set -x
 
 
 if [ $bamtofastqflag != "YES" -a $bamtofastqflag != "NO" -a $bamtofastqflag != "1" -a $bamtofastqflag != "0" ]
@@ -94,6 +100,7 @@ then
     bamtofastqflag="NO"
 fi
 
+set +x; echo -e "\n\n\n############ checking sample configuration file\n" >&2; set -x
 
 if [ ! -s $outputdir/SAMPLENAMES_multiplexed.list ]
 then
@@ -101,6 +108,8 @@ then
     echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking aligner\n" >&2; set -x
 
 if [ $aligner != "NOVOALIGN" -a $aligner != "BWA_ALN" -a $aligner != "BWA_MEM" ]
 then
@@ -118,12 +127,15 @@ fi
 #   `chmod 740 $epilogue`
 #fi
 
+set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
+
 if [ ! -d $scriptdir ]
 then
    MSG="SCRIPTDIR=$scriptdir directory not found"
    echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
    exit 1;
 fi
+set +x; echo -e "\n\n\n############ checking output directory\n" >&2; set -x;
 
 if [ ! -d $outputdir ]
 then
@@ -131,47 +143,98 @@ then
 fi
 
 
-set +x; echo -e "\n\n#####################    resetting output directories, logs, files     #############################\n\n" >&2; set -x; 
+set +x; echo -e "\n\n">&2
+echo "############################################################################################################" >&2
+echo "#############  CREATE  DIRECTORY STRUCTURE FOR LOGS AND RESET FILES. TOP LEVEL ONLY       ##################" >&2
+echo "############################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 TopLogsFolder=$outputdir/logs
 pipeid=$( cat $TopLogsFolder/pbs.CONFIGURE )
 pbsids=""
 
 
-set +x; echo -e "\n\n#####################    Do we need to run Preprocessing steps? if FASTQ, then NO, else YES     #####\n\n" >&2; set -x; 
-
-#ALL input files that will be processed with this pipeline MUST have the same input format
+set +x; echo -e "\n\n">&2
+echo "############################################################################################################" >&2
+echo "#############  QSUBS FOR SCHEDULERS OF ALIGNMENT JOBS                                     ##################" >&2
+echo "#############  CASE1: input format is FASTQ                                               ##################" >&2
+echo "#############  CASE2: input format is BAM and conversion from bam to fastq IS NOT NEEDED  ##################" >&2
+echo "#############  CASE3: input format is BAM and conversion from bam to fastq IS NEEDED      ##################" >&2
+echo "############################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 
 if [ $inputformat == "FASTQ" ]
 then
 	set +x; echo -e "\n\n" >&2
-	echo "####################################################################" >&2
-	echo "####################################################################" >&2
-	echo "############SKIPPING preprocessing because INPUT is in FASTQ #######" >&2
-	echo "####################################################################" >&2
-	echo "####################################################################" >&2
+	echo "############################################################################################################" >&2
+	echo "############  CASE1: input format is FASTQ " >&2
+	echo "############################################################################################################" >&2
 	echo -e "\n\n" >&2; set -x
 	
-	qsub3=$TopLogsFolder/qsub.alignfastq
+	qsubSchAlignFq=$TopLogsFolder/qsub.alignfastq
 
-	echo "#PBS -A $pbsprj" >> $qsub3
-	echo "#PBS -N ${pipeid}_alignfastq" >> $qsub3
-	echo "#PBS -l epilogue=$epilogue" >> $qsub3
-	echo "#PBS -l walltime=$pbscpu" >> $qsub3
-	echo "#PBS -l nodes=1:ppn=1" >> $qsub3
-	echo "#PBS -o $TopLogsFolder/log.alignfastq.ou" >> $qsub3
-	echo "#PBS -e $TopLogsFolder/log.alignfastq.in" >> $qsub3
-	echo "#PBS -q $pbsqueue" >> $qsub3
-	echo "#PBS -m ae" >> $qsub3
-	echo "#PBS -M $email" >> $qsub3
-	echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/log.alignfastq.in $TopLogsFolder/log.alignfastq.ou $email $TopLogsFolder/qsub.alignfastq" >> $qsub3
-	#`chmod a+r $qsub3` 
-	`qsub $qsub3 >> $TopLogsFolder/pbs.ALIGN`
+	echo "#PBS -A $pbsprj" >> $qsubSchAlignFq
+	echo "#PBS -N ${pipeid}_alignfastq" >> $qsubSchAlignFq
+	echo "#PBS -l epilogue=$epilogue" >> $qsubSchAlignFq
+	echo "#PBS -l walltime=$pbscpu" >> $qsubSchAlignFq
+	echo "#PBS -l nodes=1:ppn=1" >> $qsubSchAlignFq
+	echo "#PBS -o $TopLogsFolder/log.alignfastq.ou" >> $qsubSchAlignFq
+	echo "#PBS -e $TopLogsFolder/log.alignfastq.in" >> $qsubSchAlignFq
+	echo "#PBS -q $pbsqueue" >> $qsubSchAlignFq
+	echo "#PBS -m ae" >> $qsubSchAlignFq
+	echo "#PBS -M $email" >> $qsubSchAlignFq
+	echo "$scriptdir/schedule_alignfastq.sh $runfile $TopLogsFolder/log.alignfastq.in $TopLogsFolder/log.alignfastq.ou $email $qsubSchAlignFq" >> $qsubSchAlignFq
+	#`chmod a+r $qsubSchAlignFq` 
+	`qsub $qsubSchAlignFq >> $TopLogsFolder/pbs.ALIGN`
 	case="alignfastq"
 	echo `date`
 
-else
+elif [ $bamtofastqflag == "NO" -a $inputformat == "BAM" ]
+then
+	set +x; echo -e "\n\n" >&2
+	echo "############################################################################################################" >&2
+	echo "############  CASE2: input format is BAM and conversion from bam to fastq IS NOT NEEDED" >&2
+	echo "############################################################################################################" >&2
+	echo -e "\n\n" >&2; set -x
+
+	##############################################################
+	#this section needs editing
+	##############################################################
+
+
+	qsubSchAlignBam=$TopLogsFolder/qsub.alignbams
+
+	echo "#PBS -A $pbsprj" >> $qsubSchAlignBam
+	echo "#PBS -N ${pipeid}_alignbam" >> $qsubSchAlignBam
+	echo "#PBS -l epilogue=$epilogue" >> $qsubSchAlignBam
+	echo "#PBS -l walltime=$pbscpu" >> $qsubSchAlignBam
+	echo "#PBS -l nodes=1:ppn=1" >> $qsubSchAlignBam
+	echo "#PBS -o $TopLogsFolder/log.alignbams.ou" >> $qsubSchAlignBam
+	echo "#PBS -e $TopLogsFolder/log.alignbams.in" >> $qsubSchAlignBam
+	echo "#PBS -q $pbsqueue" >> $qsubSchAlignBam
+	echo "#PBS -m ae" >> $qsubSchAlignBam
+	echo "#PBS -M $email" >> $qsubSchAlignBam
+	echo "#PBS -W depend=afterok:$updatejob" >> $qsubSchAlignBam
+	echo "$scriptdir/schedule_alignbam.sh $runfile $TopLogsFolder/log.alignbams.in $TopLogsFolder/log.alignbams.ou $email $qsubSchAlignBam" >> $qsubSchAlignBam
+	#`chmod a+r $qsubSchAlignBam`               
+	`qsub $qsubSchAlignBam >> $TopLogsFolder/pbs.ALIGN`
+	case="alignbams"
+	echo `date`
+
+elif [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
+then
+	set +x; echo -e "\n\n" >&2
+	echo "############################################################################################################" >&2
+	echo "############  CASE3: input format is BAM and conversion from bam to fastq IS NEEDED" >&2
+	echo "############################################################################################################" >&2
+	echo -e "\n\n" >&2; set -x
+
+	##############################################################
+	#this section needs editing
+	##############################################################
+                
+
 	set +x; echo -e "\n\n" >&2
 	echo "####################################################################" >&2
 	echo "####################################################################" >&2
@@ -194,118 +257,82 @@ else
 
 	while read SampleName
 	do
-              # this will evaluate the length of string; 
-              if [ `expr ${#SampleName}` -lt 1 ]
-              then
-                    set +x; echo -e "\n\n #### skipping empty line #### \n\n" >&2; set -x;              
+		# this will evaluate the length of string; 
+		if [ `expr ${#SampleName}` -lt 1 ]
+		then
+			set +x; echo -e "\n\n #### skipping empty line #### \n\n" >&2; set -x;              
 
-              else
+		else
               
-                    set +x; echo -e "\n\n #### processing $SampleName #### \n\n" >&2; set -x;
-                    set +x; echo -e "\n\n #### parsing the line. It should have two fields: samplename inputfile.bam #### \n\n" >&2; set -x;
+			set +x; echo -e "\n\n #### processing $SampleName #### \n\n" >&2; set -x;
+			set +x; echo -e "\n\n #### parsing the line. It should have two fields: samplename inputfile.bam #### \n\n" >&2; set -x;
+
+			sample=$( echo $SampleName | cut -d ' ' -f 1 )
+			inputbam=$( echo $SampleName | cut -d ' ' -f 2 )
+
+			if [ ! -s $inputbam ]
+			then
+				MSG="$inputbam input BAM file not found. Parsing of $SampleName failed"
+				echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+				exit 1;
+			fi                    
+
+			set +x; echo -e "\n\n #### define output folder and output file  #### \n\n" >&2; set -x;
+
+			AlignmentOutputFolder=$outputdir/$sample/align
+			AlignmentOutputLog=$outputdir/$sample/align/logs
+			AlignedOutputFile=${sample}.wdups.sorted.bam
+
+			if [ -d $AlignmentOutputFolder ]
+			then
+				echo "$AlignmentOutputFolder is there; resetting it"
+				`rm -r $AlignmentOutputFolder/*`
+				mkdir -p $AlignmentOutputLog
+			else
+				mkdir -p $AlignmentOutputLog
+			fi
+
+
+			set +x; echo -e "\n\n #### TWO CASES: convert/not convert input.bam to fastq #### \n\n" >&2; set -x;
                     
-                    sample=$( echo $SampleName | cut -d ' ' -f 1 )
-                    inputbam=$( echo $SampleName | cut -d ' ' -f 2 )
-                    
-                    if [ ! -s $inputbam ]
-		    then
-			MSG="$inputbam input BAM file not found. Parsing of $SampleName failed"
-			echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-			exit 1;
-		    fi                    
-
-
-		    AlignmentOutputFolder=$outputdir/$sample/align
-		    AlignmentOutputLog=$outputdir/$sample/align/logs
-		    AlignedOutputFile=${sample}.wdups.sorted.bam
-		    
-		    if [ -d $AlignmentOutputFolder ]
-		    then
-			echo "$AlignmentOutputFolder is there; resetting it"
-			`rm -r $AlignmentOutputFolder/*`
-			mkdir -p $AlignmentOutputLog
-		    else
-		        mkdir -p $AlignmentOutputLog
-		    fi
-
-
-                    set +x; echo -e "\n\n #### TWO CASES: convert/not convert input.bam to fastq #### \n\n" >&2; set -x;
-                    
-		    if [ $bamtofastqflag == "NO" ] 
-                    then
-			set +x; echo -e "\n # bam2newbam preprocessing... \n" >&2; set -x;
-			typeOfupdateconfig="bam2newbam"
-
-			#########################
-			# TODO: new script goes here
-			# this script performs: namesort, remove singletons, revertsam (if so indicated)
-			# input is originalBAM, output is newsuffix4bam
-			#########################
-
-			qsub1=$AlignmentOutputLog/qsub.convertbam2newbam.$sample
-			echo "#PBS -A $pbsprj" >> $qsub1
-			echo "#PBS -N ${pipeid}_convertbam2newbam_${sample}" >> $qsub1
-			echo "#pbs -l epilogue=$epilogue" >> $qsub1
-			echo "#PBS -l walltime=$pbscpu" >> $qsub1
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-			echo "#PBS -o $AlignmentOutputLog/log.convertbam2newbam.${sample}.ou" >> $qsub1
-			echo "#PBS -e $AlignmentOutputLog/log.convertbam2newbam.${sample}.in" >> $qsub1
-			echo "#PBS -q $pbsqueue" >> $qsub1
-			echo "#PBS -m ae" >> $qsub1
-			echo "#PBS -M $email" >> $qsub1
-			echo "$scriptdir/convertbam2newbam.sh $AlignmentOutputFolder $inputbam $AlignedOutputFile $runfile $AlignmentOutputLog/log.convertbam2newbam.${sample}.in $AlignmentOutputLog/log.convertbam2newbam.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2newbam.$sample" >> $qsub1
-			echo -e "\n\n" >> $qsub1
-			echo "exitcode=\$?" >> $qsub1
-			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
-			echo "   echo -e \"\n\n convertbam2newbam.sh failed with exit code = \$exitcode \n logfile=$AlignmentOutputLog/log.convertbam2newbam.${sample}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1
-			echo "fi" >> $qsub1
-			echo -e "\n\n exit 1" >> $qsub1
-
-			#`chmod a+r $qsub1` 
-			convertjob=`qsub $qsub1`
-			`qhold -h u $convertjob` 
-			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
-			echo `date`
-
-                    else
-                        echo "bam2fastq preprocessing..."
+			echo "bam2fastq preprocessing..."
 			typeOfupdateconfig="bam2fastq"
 
-                        #########################                        
-                        # TODO: add preprocessing stuff to convertbam.sh
-                        # the new convertbam.sh  script must perform: 
-                        # namesort, remove singletons, revertsam (if so indicated, bam2fastq
-                        # input is originalBAM, output is newsuffix4fq
-                        #########################
+			#########################                        
+			# TODO: add preprocessing stuff to convertbam.sh
+			# the new convertbam.sh  script must perform: 
+			# namesort, remove singletons, revertsam (if so indicated, bam2fastq
+			# input is originalBAM, output is newsuffix4fq
+			#########################
 
-			qsub1=$AlignmentOutputLog/qsub.convertbam2fq.$sample
+			qsubConvert=$AlignmentOutputLog/qsub.convertbam2fq.$sample
 
-			echo "#PBS -A $pbsprj" >> $qsub1
-			echo "#PBS -N ${pipeid}_convertbam2fq_${sample}" >> $qsub1
-			echo "#pbs -l epilogue=$epilogue" >> $qsub1
-			echo "#PBS -l walltime=$pbscpu" >> $qsub1
-			echo "#PBS -l nodes=1:ppn=$thr" >> $qsub1
-			echo "#PBS -o $AlignmentOutputLog/log.convertbam2fq.${sample}.ou" >> $qsub1
-			echo "#PBS -e $AlignmentOutputLog/log.convertbam2fq.${sample}.in" >> $qsub1
-			echo "#PBS -q $pbsqueue" >> $qsub1
-			echo "#PBS -m ae" >> $qsub1
-			echo "#PBS -M $email" >> $qsub1
-			echo "$scriptdir/convertbam2fastq.sh $AlignmentOutputFolder $inputbam $sample $runfile $AlignmentOutputLog/log.convertbam2fq.${sample}.in $AlignmentOutputLog/log.convertbam2fq.${sample}.ou $email $AlignmentOutputLog/qsub.convertbam2fq.$sample" >> $qsub1
+			echo "#PBS -A $pbsprj" >> $qsubConvert
+			echo "#PBS -N ${pipeid}_convertbam2fq_${sample}" >> $qsubConvert
+			echo "#pbs -l epilogue=$epilogue" >> $qsubConvert
+			echo "#PBS -l walltime=$pbscpu" >> $qsubConvert
+			echo "#PBS -l nodes=1:ppn=$thr" >> $qsubConvert
+			echo "#PBS -o $AlignmentOutputLog/log.convertbam2fq.${sample}.ou" >> $qsubConvert
+			echo "#PBS -e $AlignmentOutputLog/log.convertbam2fq.${sample}.in" >> $qsubConvert
+			echo "#PBS -q $pbsqueue" >> $qsubConvert
+			echo "#PBS -m ae" >> $qsubConvert
+			echo "#PBS -M $email" >> $qsubConvert
+			echo "$scriptdir/convertbam2fastq.sh $AlignmentOutputFolder $inputbam $sample $runfile $AlignmentOutputLog/log.convertbam2fq.${sample}.in $AlignmentOutputLog/log.convertbam2fq.${sample}.ou $email $qsubConvert" >> $qsubConvert
 
-                        echo "exitcode=\$?" >> $qsub1
-                        echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub1
-                        echo "   echo -e \"\n\n convertbam2fastq.sh failed with exit code = \$exitcode \n logfile=$AlignmentOutputLog/log.convertbam2fq.${sample}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub1
-                        echo "fi" >> $qsub1
-                        echo -e "\n\n exit 1" >> $qsub1
+			echo "exitcode=\$?" >> $qsubConvert
+			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubConvert
+			echo "   echo -e \"\n\n convertbam2fastq.sh failed with exit code = \$exitcode \n logfile=$AlignmentOutputLog/log.convertbam2fq.${sample}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubConvert
+			echo "fi" >> $qsubConvert
+			echo -e "\n\n exit 1" >> $qsubConvert
 
-			#`chmod a+r $qsub1` 
-			convertjob=`qsub $qsub1`
+			#`chmod a+r $qsubConvert` 
+			convertjob=`qsub $qsubConvert`
 			`qhold -h u $convertjob` 
 			echo $convertjob >> $TopLogsFolder/pbs.CONVERTBAM
 			echo `date`
-                    fi  #end if $bamtofastqflag
+
 		
-              fi  # end non-empty line
+		fi  # end non-empty line
               
 	done < $outputdir/SAMPLENAMES_multiplexed.list
 	
@@ -314,116 +341,74 @@ else
 
 	CONVERTids=$( cat $TopLogsFolder/pbs.CONVERTBAM | sed "s/\..*//" | tr "\n" ":" )
 
-	if [ $bamtofastqflag == "YES" ]
-	then
-                ###############################
-                # todo:
-                # rename updateconfig script for newfastq files
-                # rename updateconfig.sh to updateconfig.wnewfq.sh
-                ###############################
 
-		qsub2=$TopLogsFolder/qsub.updateconfig_wnewfq
+	qsubUpdate=$TopLogsFolder/qsub.updateconfig_wnewfq
 
-		echo "#PBS -A $pbsprj" >> $qsub2
-		echo "#PBS -N ${pipeid}_updateconfig_wnewfq" >> $qsub2
-		echo "#pbs -l epilogue=$epilogue" >> $qsub2
-		echo "#PBS -l walltime=$pbscpu" >> $qsub2
-		echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-		echo "#PBS -o $TopLogsFolder/log.updateconfig_wnewfq.ou" >> $qsub2
-		echo "#PBS -e $TopLogsFolder/log.updateconfig_wnewfq.in" >> $qsub2
-		echo "#PBS -q $pbsqueue" >> $qsub2
-		echo "#PBS -m ae" >> $qsub2
-		echo "#PBS -M $email" >> $qsub2
-		echo "#PBS -W depend=afterok:$CONVERTids" >> $qsub2
-		echo "$scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $TopLogsFolder/qsub.updateconfig_wnewfq" >> $qsub2
+	echo "#PBS -A $pbsprj" >> $qsubUpdate
+	echo "#PBS -N ${pipeid}_updateconfig_wnewfq" >> $qsubUpdate
+	echo "#pbs -l epilogue=$epilogue" >> $qsubUpdate
+	echo "#PBS -l walltime=$pbscpu" >> $qsubUpdate
+	echo "#PBS -l nodes=1:ppn=1" >> $qsubUpdate
+	echo "#PBS -o $TopLogsFolder/log.updateconfig_wnewfq.ou" >> $qsubUpdate
+	echo "#PBS -e $TopLogsFolder/log.updateconfig_wnewfq.in" >> $qsubUpdate
+	echo "#PBS -q $pbsqueue" >> $qsubUpdate
+	echo "#PBS -m ae" >> $qsubUpdate
+	echo "#PBS -M $email" >> $qsubUpdate
+	echo "#PBS -W depend=afterok:$CONVERTids" >> $qsubUpdate
+	echo "$scriptdir/updateconfig.wnewfq.sh $sampledir $newfqfiles $runfile $samplefileinfo $TopLogsFolder/log.updateconfig_wnewfq.in $TopLogsFolder/log.updateconfig_wnewfq.ou $email $qsubUpdate" >> $qsubUpdate
 
-                echo "exitcode=\$?" >> $qsub2
-                echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsub2
-                echo "   echo -e \"\n\n updateconfig.wnewfq.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.updateconfig_wnewfq.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsub2
-                echo "fi" >> $qsub2
-                echo -e "\n\n exit 1" >> $qsub2
+	echo "exitcode=\$?" >> $qsubUpdate
+	echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubUpdate
+	echo "   echo -e \"\n\n updateconfig.wnewfq.sh failed with exit code = \$exitcode \n logfile=$TopLogsFolder/log.updateconfig_wnewfq.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubUpdate
+	echo "fi" >> $qsubUpdate
+	echo -e "\n\n exit 1" >> $qsubUpdate
 
-		#`chmod a+r $qsub2`       
-		updatejob=`qsub $qsub2` 
-		echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
-	fi
+	#`chmod a+r $qsubUpdate`       
+	updatejob=`qsub $qsubUpdate` 
+	echo $updatejob >> $TopLogsFolder/pbs.UPDATECONFIG
 
 	allconjobs=$( echo $CONVERTids | tr ":" " " )
 	`qrls -h u $allconjobs`
 	echo `date`
 
 
-        set +x; echo -e "\n\n" >&2
-        echo "####################################################################" >&2
-        echo "############    done with update config             ################" >&2
-        echo "############    alignment case selection is next    ################" >&2
-        echo "####################################################################" >&2
-        echo -e "\n\n" >&2; set -x;
+	set +x; echo -e "\n# input is BAM, convert to fastq\n" >&2;  set -x;
+	qsubAlignFq=$TopLogsFolder/qsub.alignfastq.afterbam2fastq
 
-        if [ $bamtofastqflag == "YES" -a $inputformat == "BAM" ]
-        then
-            set +x; echo -e "\n# input is BAM, convert to fastq\n" >&2;  set -x;
-	    qsub1=$TopLogsFolder/qsub.main.alnFQ.afterbam2fastq
-
-	    echo "#PBS -A $pbsprj" >> $qsub1
-	    echo "#PBS -N ${pipeid}_alnFQ_afterbam2fastq" >> $qsub1
-	    echo "#pbs -l epilogue=$epilogue" >> $qsub1
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub1
-	    echo "#PBS -l nodes=1:ppn=1" >> $qsub1
-	    echo "#PBS -o $TopLogsFolder/alnFQ.afterbam2fastq.ou" >> $qsub1
-	    echo "#PBS -e $TopLogsFolder/alnFQ.afterbam2fastq.in" >> $qsub1
-	    echo "#PBS -q $pbsqueue" >> $qsub1
-	    echo "#PBS -m ae" >> $qsub1
-	    echo "#PBS -M $email" >> $qsub1
-	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub1
-	    echo "$scriptdir/alignfastq.sh $runfile $TopLogsFolder/alnFQ.afterbam2fastq.in $TopLogsFolder/alnFQ.afterbam2fastq.ou $email $TopLogsFolder/qsub.main.alnFQ.afterbam2fastq" >> $qsub1
-
-	    #`chmod a+r $qsub1`               
-	    `qsub $qsub1 >> $TopLogsFolder/pbs.ALIGN`
-            case="bam2fastq"
-	    echo `date`
-	fi
-
-        if [ $bamtofastqflag == "NO" -a $inputformat == "BAM" ]
-        then
-            set +x; echo "# aligning bam files directly\n" >&2;  set -x;
+	echo "#PBS -A $pbsprj" >> $qsubAlignFq
+	echo "#PBS -N ${pipeid}_alnFQ_afterbam2fastq" >> $qsubAlignFq
+	echo "#pbs -l epilogue=$epilogue" >> $qsubAlignFq
+	echo "#PBS -l walltime=$pbscpu" >> $qsubAlignFq
+	echo "#PBS -l nodes=1:ppn=1" >> $qsubAlignFq
+	echo "#PBS -o $TopLogsFolder/log.alnFQ.afterbam2fastq.ou" >> $qsubAlignFq
+	echo "#PBS -e $TopLogsFolder/log.alnFQ.afterbam2fastq.in" >> $qsubAlignFq
+	echo "#PBS -q $pbsqueue" >> $qsubAlignFq
+	echo "#PBS -m ae" >> $qsubAlignFq
+	echo "#PBS -M $email" >> $qsubAlignFq
+	echo "#PBS -W depend=afterok:$updatejob" >> $qsubAlignFq
+	echo "$scriptdir/schedule_alignfastq.sh $runfile $TopLogsFolder/log.alnFQ.afterbam2fastq.in $TopLogsFolder/log.alnFQ.afterbam2fastq.ou $email $qsubAlignFq" >> $qsubAlignFq
+	
+	#`chmod a+r $qsubAlignFq`               
+	`qsub $qsubAlignFq >> $TopLogsFolder/pbs.ALIGN`
+	case="bam2fastq"
+	echo `date`
 
 
-            ####################################
-            #  TODO:
-            #  aligbam.sh does not need to call revertsam
-            ####################################
-
-            qsub2=$TopLogsFolder/qsub.alignbams
-
-            echo "#PBS -A $pbsprj" >> $qsub2
-            echo "#PBS -N ${pipeid}_alignbam" >> $qsub2
-            echo "#PBS -l epilogue=$epilogue" >> $qsub2
-	    echo "#PBS -l walltime=$pbscpu" >> $qsub2
-	    echo "#PBS -l nodes=1:ppn=1" >> $qsub2
-	    echo "#PBS -o $TopLogsFolder/log.alignbams.ou" >> $qsub2
-	    echo "#PBS -e $TopLogsFolder/log.alignbams.in" >> $qsub2
-            echo "#PBS -q $pbsqueue" >> $qsub2
-            echo "#PBS -m ae" >> $qsub2
-            echo "#PBS -M $email" >> $qsub2
-	    echo "#PBS -W depend=afterok:$updatejob" >> $qsub2
-            echo "$scriptdir/alignbam.sh $runfile $TopLogsFolder/log.alignbams.in $TopLogsFolder/log.alignbams.ou $email $TopLogsFolder/qsub.alignbams" >> $qsub2
-            #`chmod a+r $qsub2`               
-            `qsub $qsub2 >> $TopLogsFolder/pbs.ALIGN`
-            case="alignbams"
-            echo `date`
-        fi
-
-
-        if [ `expr ${#case}` -lt 1 ]
-        then
-           MSG="Alignment module failed to launch. Incompatible values specified in config files bam2fastqflag=$bamtofastqflag inputformat=$inputformat analysis=$analysis"
-           echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-           exit 1;
-        fi         
-
+else
+	MSG="Alignment module failed to launch. Incompatible values specified in config files bam2fastqflag=$bamtofastqflag inputformat=$inputformat analysis=$analysis"
+	echo -e "Program $scriptfile stopped at line=$LINENO.\n$MSG\n\nDetails:\n\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+    
 fi # end cases with inputformat
 
-echo -e "now we need to make the PBS log files group readable"
+set +x; echo -e "now we need to make the PBS log files group readable" >&2; set -x; 
 
 find $outputdir -name logs -type d | awk '{print "chmod -R g=rwx "$1}' | sh -x
+
+echo `date`
+
+set +x; echo -e "\n\n">&2
+echo "############################################################################################################" >&2
+echo "#############  DONE. EXITING NOW                                                         ##################" >&2
+echo "############################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;

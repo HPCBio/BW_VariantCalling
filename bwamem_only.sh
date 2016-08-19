@@ -1,11 +1,18 @@
 #!/bin/bash
-##redmine=hpcbio-redmine@igb.illinois.edu
+#
+# bwamem_only.sh
+# module to be used for input files in fastq format. 
+# This module runs alignment command only
+#redmine=hpcbio-redmine@igb.illinois.edu
+
 #if [ $# != 11 ]
 #then
 #        MSG="parameter mismatch"
 #        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
 #        exit 1;
 #fi
+
+echo -e "\n\n############# BEGIN BWAMEM_ONLY PROCEDURE  ###############\n\n" >&2
 
 umask 0027	
 set -x
@@ -55,6 +62,10 @@ alignerdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
 refindex=$( cat $runfile | grep -w BWAMEMINDEX | cut -d '=' -f2 )
 alignparms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 | tr " " "_" )
 
+set +x; echo -e "\n\n\n############ checking runqctest\n" >&2; set -x;
+
+set +x; echo -e "\n\n\n############ checking tool directories\n" >&2; set -x;
+
 if [ ! -d $alignerdir ]
 then
     MSG="$alignerdir directory not found"
@@ -80,9 +91,36 @@ then
     exit 1;
 fi
 
+if [ ! -d $samblasterdir ]
+then
+    MSG="$samblasterdir samblaster directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit 1;
+fi
+if [ ! -d $sambambadir ]
+then
+    MSG="$sambambadir sambamba directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit 1;
+fi
+if [ ! -d $novodir ]
+then
+    MSG="$novodir novocraft directory not found"
+    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+    exit 1;
+fi
+
+
+set +x; echo -e "\n\n" >&2;
+echo -e "#######################################################################################################" >&2
+echo -e "########    Prep work                                                                           #######" >&2
+echo -e "#######################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
+#threads=`expr $thr "-" 1`
+threads=$thr
 header=$( echo $RGparms  | tr ":" "\t" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${header}"  | tr "=" ":" )
-threads=`expr $thr "-" 1`
 fqfiles=$( echo $inputfiles | tr ":" " " )
 prefix=${alignedbam%.bam}
 samfile=${prefix}.sam

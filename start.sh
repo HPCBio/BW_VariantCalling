@@ -1,7 +1,8 @@
 #!/bin/bash
-
 ########################### 
-#		$1		=	       run info file
+# program start.sh is the script that initiates the execution of the variant calling pipeline
+# to run this program type this command from a head node that can launch PBS-Torque qsub jobs:
+# start.sh <runfile>
 ###########################
 #redmine=hpcbio-redmine@igb.illinois.edu
 redmine=grendon@illinois.edu
@@ -19,14 +20,21 @@ echo `date`
 scriptfile=$0
 runfile=$1
 
+set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
+
 if [ !  -s $runfile ]
 then
-   MSG="$runfile configuration file not found."
-   echo -e "program=$0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
-   exit 1;
+	MSG="$runfile configuration file not found."
+	echo -e "program=$0 stopped. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
+	exit 1;
 fi
 
-set +x; echo -e "\n\n############# CHECKING PARAMETERS ###############\n\n"; set -x;
+set +x
+echo -e "\n\n####################################################################################################" >&2
+echo        "##################################### PARSING RUN INFO FILE ########################################" >&2
+echo        "##################################### AND SANITY CHECK      ########################################" >&2
+echo -e "\n\n####################################################################################################\n\n" >&2; set -x;
+
 
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
@@ -36,48 +44,66 @@ epilogue=$( cat $runfile | grep -w EPILOGUE | cut -d '=' -f2 )
 input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
+`umask u=rwx,g=rwx,o=`
 
-if [ ! -d $scriptdir ]
-then
-   MSG="SCRIPTDIR=$scriptdir directory not found"
-   echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-   exit 1;
-fi
-if [ -z $email ]
-then
-   MSG="Invalid value for parameter PBSEMAIL=$email in configuration file"
-   echo -e "Program $0 stopped.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-   exit 1;
-fi
+
+set +x; echo -e "\n\n\n############ checking input type: WGS or WES\n" >&2; set -x
 
 if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
 then
-    pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
-    pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
-else
-    if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
-    then
+	pbscpu=$( cat $runfile | grep -w PBSCPUOTHERWGEN | cut -d '=' -f2 )
+	pbsqueue=$( cat $runfile | grep -w PBSQUEUEWGEN | cut -d '=' -f2 )
+elif [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
+then
 	pbscpu=$( cat $runfile | grep -w PBSCPUOTHEREXOME | cut -d '=' -f2 )
 	pbsqueue=$( cat $runfile | grep -w PBSQUEUEEXOME | cut -d '=' -f2 )
-    else
+else
 	MSG="Invalid value for parameter INPUTTYPE=$input_type  in configuration file."
 	echo -e "Program $0 stopped.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
-    fi
 fi
 
-`umask u=rwx,g=rwx,o=`
+set +x; echo -e "\n\n\n############ checking workflow scripts directory\n" >&2; set -x;
+
+if [ ! -d $scriptdir ]
+then
+	MSG="SCRIPTDIR=$scriptdir directory not found"
+	echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+
+set +x; echo -e "\n\n\n############ checking sample configuration file\n" >&2; set -x;
+
+if [ ! -s $sampleinfo ]
+then
+	MSG="SAMPLEINFORMATION=$sampleinfo sample configuration file not found"
+	echo -e "Program $0 stopped.\n\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+set +x; echo -e "\n\n\n############ checking email for receiving pipeline execution event\n" >&2; set -x;
+
+if [ -z $email ]
+then
+	MSG="Invalid value for parameter PBSEMAIL=$email in configuration file"
+	echo -e "Program $0 stopped.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	exit 1;
+fi
+
+set +x; echo -e "\n\n\n############ checking output directory\n" >&2; set -x;
 
 if [ ! -d $outputdir ]
 then
-    mkdir -p $outputdir/logs
+	mkdir -p $outputdir/logs
 else 
-    echo "resetting directory"
-    `rm -r $outputdir/*`
-    mkdir -p $outputdir/logs
+	echo "resetting directory"
+	`rm -r $outputdir/*`
+	mkdir -p $outputdir/logs
 fi
 #`chmod -R 770 $outputdir/`
 `chmod 740 $epilogue`
+
+set +x; echo -e "\n\n\n############ copy configuration files to output directory\n" >&2; set -x;
+
 `cp $runfile $outputdir/runfile.txt`
 `cp $sampleinfo $outputdir/sampleinfo.txt`
 runfile=$outputdir/runfile.txt
@@ -91,9 +117,10 @@ echo "# @begin $WorkflowName" >> $outputdir/WorkflowAutodocumentationScript.sh
 
 
 outputlogs=$outputdir/logs
-set +x; echo -e "\n ### launching the pipeline configuration script ### \n"; set -x;
-qsub1=$outputlogs/qsub.CONFIGURE
 
+set +x; echo -e "\n ### LAUNCH THE CONFIGURATION SCIPT. THIS JOBID WILL BECOME THE PIPELINE-ID FOR THIS RUN### \n"; set -x;
+
+qsub1=$outputlogs/qsub.CONFIGURE
 echo "#PBS -A $pbsprj" >> $qsub1
 echo "#PBS -N CONFIGURE" >> $qsub1
 echo "#PBS -l epilogue=$epilogue" >> $qsub1

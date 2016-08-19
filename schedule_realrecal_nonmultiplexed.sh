@@ -13,6 +13,9 @@ then
 	exit 1;
 fi
 
+
+echo -e "\n\n############# START SCHEDULE_REALRECAL_NONMULTIPLEXED ###############\n\n" >&2
+
 umask 0027
 set -x
 echo `date`
@@ -72,13 +75,8 @@ realignparams=$( cat $runfile | grep -w REALIGNPARMS | cut -d '=' -f2 )
 omnisites=$( cat $runfile | grep -w OMNISITES | cut -d '=' -f2 ) 
 recalibrator=$( cat $runfile | grep -w RECALIBRATOR | cut -d '=' -f2 )
 runverify=$( cat $runfile | grep -w RUNVERIFYBAM | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-multisample=$( cat $runfile | grep -w MULTISAMPLE | cut -d '=' -f2 )
-samples=$( cat $runfile | grep -w SAMPLENAMES | cut -d '=' -f2 )
 chrindex=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 )
 indices=$( echo $chrindex | sed 's/:/ /g' )
-sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
-sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
-sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
 cleanupflag=$( cat $runfile | grep -w REMOVETEMPFILES | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -130,20 +128,17 @@ then
 	splitRealign="NO"
 fi  
 
-if [ $splitRealign == "YES" -a `expr ${#packageByChr}` -lt 1 ]
+set +x; echo -e "\n\n#############   checking option for packaging jobs by chr after splitting by region ###############\n\n" >&2; set -x;
+
+if [ `expr ${#packageByChr}` -lt 1 ]
+then
+	packageByChr="NO"  # if value not specified, then set default value to NO
+elif [ $packageByChr == "1" ]
 then
 	packageByChr="YES"
-elif [ $splitRealign == "YES" -a $packageByChr == "1" ]
-then
-	packageByChr="YES"
-elif [ $splitRealign == "YES" -a $packageByChr == "0" ]
+elif [ $packageByChr == "0" ]
 then
 	packageByChr="NO"
-elif [ $splitRealign == "YES" -a $packageByChr != "YES" -a $packageByChr != "NO" ]
-then
-	MSG="Invalid value for SPLIT2REALIGNBYCHR=$packageByChr"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
 fi
 
 set +x; echo -e "\n\n#############      checking cleanup options   ###############\n\n" >&2; set -x;
@@ -198,6 +193,8 @@ if [ $runverify == "0" ]
 then
 	runverify="NO"
 fi   
+
+set +x; echo -e "\n\n#############  MPI command to run launcher ###############\n\n" >&2; set -x;
 
 if [ $run_cmd == "aprun" ]
 then        
@@ -279,6 +276,8 @@ then
 	exit 1;
 fi
 
+set +x; echo -e "\n\n###########checking callsets -with full pathnames- needed for analyses ###############\n\n" >&2; set -x;
+
 if [ ! -s $indelfile ]
 then
 	MSG="$indelfile INDELS file not found"
@@ -304,7 +303,7 @@ fi
 set +x; echo -e "\n\n" >&2;   
 echo "####################################################################################################" >&2
 echo "####################################################################################################" >&2
-echo "###########################      params ok. Now creating/resetting logs and folders        #########" >&2
+echo "###########################      PREP WORK creating/resetting logs and folders        #########" >&2
 echo "####################################################################################################" >&2
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;  
@@ -333,17 +332,16 @@ pipeid=$( cat $TopOutputLogs/pbs.CONFIGURE )
 truncate -s 0 $TopOutputLogs/pbs.REALRECAL 
 truncate -s 0 $TopOutputLogs/pbs.VCALL
 truncate -s 0 $TopOutputLogs/pbs.SUMMARY
-
+truncate -s 0 $TopOutputLogs/pbs.MERGEVCALL 
+truncate -s 0 $TopOutputLogs/pbs.MERGEREALRECAL
 
 set +x; echo -e "\n\n" >&2; 
 echo "####################################################################################################" >&2
 echo "####################################################################################################" >&2
-echo "#######   LOOP to generate regions, targets, known/knownSites                           ############" >&2
+echo "#######   MORE PREP WORK: generate regions, targets, known/knownSites                        " >&2
 echo "####################################################################################################" >&2
-echo "####################################################################################################" >&2
-echo "#######   target is the array of targeted regions for WES ONLY which will be used by all GATK commands"  >&2
-echo "#######   region is the array of known variants per chr"  >&2
-echo "#######   realparms is the array with indels per chr which will be used for  gatk-IndelRealigner" >&2
+echo "#######   targetParm is the array of targeted regions for WES ONLY which will be used by all GATK commands"  >&2
+echo "#######   indelParm is the array with indels per chr which will be used for  gatk-IndelRealigner" >&2
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x; 
 
@@ -353,14 +351,13 @@ then
 	set +x; echo -e "\n\n########### samples will be split by region, therefore we need to create these files ###############\n\n" >&2; set -x;
 	
 	echo `date`
-	i=1
-
+	numregions=1        # to count regions, it will be used for calculating resources to allocate to launcher. It starts at 1 because 1 nodes is fo launcher
+	
 	for chr in $indices
 	do
-		cd $refdir/$snpdir
-		region[$i]=$( find $PWD -type f -name "${chr}.*.vcf.gz" | sed "s/^/:knownSites:/g" | tr "\n" ":" )
+
 		cd $refdir/$indeldir
-		realparms[$i]=$( find $PWD -type f -name "${chr}.*.vcf" | tr "\n" ":" )
+		indelParm[$numregions]=$( find $PWD -type f -name "${chr}.*.vcf" | tr "\n" ":" )
 
 		if [ -d $targetdir -a $input_type == "WES" ]
 		then
@@ -368,10 +365,10 @@ then
 
 			if [ -s $targetdir/${chr}.bed ]
 			then
-				target[$i]=$targetdir/${chr}.bed
+				targetParm[$numregions]=$targetdir/${chr}.bed
 			fi
 		fi
-		(( i++ ))
+		(( numregions++ ))
 	done
 
 	echo `date`
@@ -380,7 +377,7 @@ fi
 set +x; echo -e "\n\n" >&2;
 echo -e "\n####################################################################################################" >&2 
 echo "####################################################################################################" >&2
-echo "################ Loop to check that aligned files exist AND to  Create output folders   ############" >&2     
+echo "################ MORE PREP WORK: check that aligned files exist AND then  Create output folders   " >&2     
 echo "####################################################################################################" >&2
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
@@ -393,6 +390,7 @@ else
 	TheInputFile=$outputdir/SAMPLENAMES.list
 fi
 
+numsamples=1   # to count samples, it will be used for calculating resources to allocate to launcher. It starts at 1 because 1 nodes is fo launcher
 
 while read SampleLine
 do
@@ -428,11 +426,15 @@ do
       			mkdir -p $outputdir/${sample}/variant/logs
 
 		else
-			set +x; echo -e "\n\n###### resetting logs        ##############\n\n" >&2; set -x;
+			set +x; echo -e "\n\n###### resetting logs and temp files   ##############\n\n" >&2; set -x;
 
 			rm $outputdir/${sample}/realign/logs/*
+			rm $outputdir/${sample}/realign/*.bam
 			rm $outputdir/${sample}/variant/logs/*
+			rm $outputdir/${sample}/variant/*.vcf
   		fi
+  		
+  		(( numsamples++ ))
 
 	fi  # end processing non-empty lines
 done  <  $TheInputFile
@@ -445,13 +447,22 @@ echo "##########################################################################
 echo "####################################################################################################" >&2
 echo "####### BLOCK to generate and package cmds for realign recalibrate and varcall   " >&2
 echo "####################################################################################################" >&2
-echo "####### CASE1: NO SAMPLE SPLITTING, LAUNCHER IS USED, there will be only one anisimov job for real-recalibrate and one for varcall " >&2
-echo "####### CASE2: NO SAMPLE SPLITTING, LAUNCHER IS NOT USED, there will be two qsub jobs per sample " >&2
+echo "####### CASE1: NO SAMPLE SPLITTING, LAUNCHER IS USED, there will be TWO anisimov jobs: one for real-recalibrate and one for varcall " >&2
+echo "####### CASE2: NO SAMPLE SPLITTING, LAUNCHER IS NOT USED, there will be two one-node qsub jobs per sample " >&2
 echo "####### CASE3: SAMPLE SPLITTING BY REGION, LAUNCHER IS ALWAYS USED,PACKAGE BY CHR " >&2
 echo "####### CASE4: SAMPLE SPLITTING BY REGION, LAUNCHER IS ALWAYS USED,PACKAGE BY SAMPLE " >&2	
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
+
+
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE1 and CASE2 - NO SAMPLE SPLITTING  -generate and package cmds for realign recalibrate and varcall" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 if [ $splitRealign == "NO" ]
 then
@@ -466,7 +477,7 @@ then
 		VcallOutputLogs=$outputdir/logs/variant
 
 		qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.AnisimovJoblist
-		qsubVcallAnisimov=$VcallOutputLogs/qsub.vcall.AnisimovJoblist
+		qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.AnisimovJoblist
 		realrecalAnisimov=$RealignOutputLogs/realrecal.AnisimovJoblist			
 		vcallAnisimov=$VcallOutputLogs/vcall.AnisimovJoblist
 
@@ -475,7 +486,7 @@ then
 	fi
 
 	set +x; echo -e "\n\n###### Only One loop over samples is needed to create commands and populate files   ##############\n\n" >&2; set -x;	
-	samplecounter=0 
+
 	while read SampleLine
 	do
 		if [ `expr ${#SampleLine}` -gt 1 ]
@@ -497,7 +508,7 @@ then
 				#RealignOutputLogs=$outputdir/logs/realign
 				#VcallOutputLogs=$outputdir/logs/variant
 				qsubRealrecal=$qsubRealrecalAnisimov
-				qsubVcall=$qsubVcallAnisimov
+				qsubVcall=$qsubMergeVcallAnisimov
 			else
 				set +x; echo -e "\n\n###### LAUNCHER will NOT be used. Log folders will have these paths  ##############\n\n" >&2; set -x;
 				RealignOutputLogs=$outputdir/${sample}/realign/logs
@@ -512,8 +523,9 @@ then
 			VcallOutputDir=$outputdir/${sample}/variant
 			realignedOutputfile=$RealignOutputDir/${sample}.realigned.bam
 			recalibratedOutputfile=$RealignOutputDir/${sample}.recalibrated.calmd.bam
-			vcallOutputFile=$VcallOutputDir/${sample}.raw.g.vcf
-
+			vcallGVCFOutputFile=$VcallOutputDir/${sample}.raw.g.vcf
+			vcallPlainVCFOutputFile=$VcallOutputDir/${sample}.plain.vcf
+			
 			set +x; echo -e "\n\n###### Logs and files with command lines will go here  ##############\n\n" >&2; set -x;
 			
 			jobfileRealrecal=$RealignOutputLogs/Realrecal.${sample}.jobfile
@@ -539,12 +551,12 @@ then
 
 			set +x; echo -e "\n\n###### ready to put together the command for the realignment-recalibration analysis   ##############\n\n" >&2; set -x;
 
-			echo "$scriptdir/realrecal_sample.sh $RealignOutputDir $aligned_bam $realignedOutputfile $recalibratedOutputfile $target $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileRealrecal
+			echo "$scriptdir/realrecal_per_sample.sh $RealignOutputDir $aligned_bam $realignedOutputfile $recalibratedOutputfile $target $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileRealrecal
 
 			if [ $skipvcall == "NO" ]
 			then
 				set +x; echo -e "\n\n######  ready to put together the command for the variant calling analysis    ########\n\n" >&2; set -x;
-				echo "$scriptdir/vcallgatk_sample.sh $recalibratedOutputfile $vcallOutputFile $VcallOutputDir $target $runfile $vcallFailedlog $email $qsubVcall" > $jobfileVcall
+				echo "$scriptdir/vcallgatk_per_sample.sh $recalibratedOutputfile $vcallGVCFOutputFile $vcallPlainVCFOutputFile $VcallOutputDir $target $runfile $vcallFailedlog $email $qsubVcall" > $jobfileVcall
 			fi
 
 			set +x; echo -e "\n\n###### populate anisimov list if LAUNCHER will be used   ##############\n\n" >&2; set -x;
@@ -559,9 +571,7 @@ then
 					Vcalljobfilename=$( basename $jobfileVcall )
 					echo "$VcallOutputLogs $Vcalljobfilename" >> $vcallAnisimov
 				fi
-			fi						
-
-			(( samplecounter++ ))  # this counter will be linked to numnodes we need to allocate to the launcher
+			fi
 		      
 		fi # done processing non-empty lines
 
@@ -569,8 +579,15 @@ then
 
 	done <  $TheInputFile
 	
-	set +x; echo -e "\n\n###### END SPLITREALIGN=NO ##############\n\n"  >&2; set -x;
+	set +x; echo -e "\n\n###### END SPLITREALIGN=NO CASE1 and CASE2 ##############\n\n"  >&2; set -x;
 
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE3 - SAMPLE SPLITTING AND PACKAGED BY REGION - generate and package cmds for realign recalibrate and varcall" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 elif [ $splitRealign == "YES" -a $packageByChr == "YES" ]
 then
@@ -578,14 +595,353 @@ then
 	set +x; echo -e "\n\n###### CASE3 SPLITREALIGN=YES. PACKAGEBYCHR=YES. THERE WILL BE ONE LAUNCHER PER REGION ##############\n\n" >&2; set -x;
 
 	####stuff goes here
+	
+	set +x; echo -e "\n\n###### CASE3 LOOP1 BY REGION STARTS HERE ##############\n\n" >&2; set -x;
 
+	i=1 
+	
+	for chr in $indices
+	do
+
+		set +x; echo -e "\n\n###### CASE3 LAUNCHER PREP WORK: Create and/or reset anisimov files      ##############\n\n" >&2; set -x;
+		
+		RealignOutputLogs=$outputdir/logs/realign
+		VcallOutputLogs=$outputdir/logs/variant
+
+		qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovJoblist
+		qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.${chr}.AnisimovJoblist
+		realrecalAnisimov=$RealignOutputLogs/realrecal.${chr}.AnisimovJoblist			
+		vcallAnisimov=$VcallOutputLogs/vcall.${chr}.AnisimovJoblist
+
+		truncate -s 0 $realrecalAnisimov
+		truncate -s 0 $vcallAnisimov		
+
+		set +x; echo -e "\n\n###### which target file to use for WES data in all GATK commands     ##############\n\n" >&2; set -x;
+
+		if [ ! -s $targetParm[$i] -a $input_type == "WES"  ]
+		then
+			target="NOTARGET" 
+		else
+			target=$targetParm[$i]
+		fi
+
+		set +x; echo -e "\n\n###### CASE3 LOOP2 BY SAMPLE STARTS HERE ##############\n\n" >&2; set -x;
+		
+		while read SampleLine
+		do
+			if [ `expr ${#SampleLine}` -gt 1 ]
+			then
+
+				set +x; echo -e "\n\n###### Parse the line and get the corresponding aligned bam  ##############\n\n" >&2; set -x;
+				
+				sample=$( echo "$SampleLine" | cut -f 1 )
+				aligned_bam=`find $outputdir/$sample/align -name "*.wdups.sorted.bam"`   
+
+
+				set +x; echo -e "\n\n###### Output results will go here  ##############\n\n" >&2; set -x;
+
+				RealignOutputDir=$outputdir/${sample}/realign
+				VcallOutputDir=$outputdir/${sample}/variant
+				realignedOutputfile=$RealignOutputDir/${sample}.${chr}.realigned.bam
+				recalibratedOutputfile=$RealignOutputDir/${sample}.${chr}.recalibrated.calmd.bam
+				vcallOutputFile=$VcallOutputDir/${sample}.${chr}.raw.g.vcf
+
+				set +x; echo -e "\n\n###### Logs and files with command lines will go here  ##############\n\n" >&2; set -x;
+
+				jobfileRealrecal=$RealignOutputLogs/Realrecal.${sample}.${chr}.jobfile
+				jobfileVcall=$VcallOutputLogs/Vcall.${sample}.${chr}.jobfile
+				realignFailedlog=$RealignOutputDir/logs/FAILED_Realrecal.${sample}.${chr}              
+				vcallFailedlog=$VcallOutputDir/logs/FAILED_Vcall.${sample}.${chr}
+
+				set +x; echo -e "\n\n###### reset those files  ##############\n\n" >&2; set -x;
+
+				truncate -s 0 $jobfileRealrecal
+				truncate -s 0 $jobfileVcall			
+				truncate -s 0 $realignFailedlog
+				truncate -s 0 $vcallFailedlog
+
+				
+				set +x; echo -e "\n\n###### ready to put together the command for the realignment-recalibration analysis   ##############\n\n" >&2; set -x;
+
+				echo "$scriptdir/realrecal_per_chromosome.sh $RealignOutputDir $aligned_bam $realignedOutputfile $recalibratedOutputfile $chr $target indelParm[$i] $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileRealrecal
+
+
+				Realjobfilename=$( basename $jobfileRealrecal )
+				echo "$RealignOutputLogs $Realjobfilename" >> $realrecalAnisimov
+
+
+				if [ $skipvcall == "NO" ]
+				then
+					set +x; echo -e "\n\n######  ready to put together the command for the variant calling analysis    ########\n\n" >&2; set -x;
+					echo "$scriptdir/vcallgatk_per_chromosome.sh $recalibratedOutputfile $vcallOutputFile $VcallOutputDir $target $chr $runfile $vcallFailedlog $email $qsubVcall" > $jobfileVcall
+
+					Vcalljobfilename=$( basename $jobfileVcall )
+					echo "$VcallOutputLogs $Vcalljobfilename" >> $vcallAnisimov
+				fi
+
+			fi # end if empty line
+
+			set +x; echo -e "\n\n###### Done with this sample. Next one please   ##############\n\n" >&2; set -x; 
+
+		done <  $TheInputFile   # end of loop2 by sample
+		
+		(( i++ ))
+		
+	done # end of loop1 by chr
+	
+	set +x; echo -e "\n\n###### CASE3 LOOP1 GENERATE REALRECAL AND VCALL CMDS BY REGION ENDS HERE ##############\n\n" >&2; set -x;
+	
+	set +x; echo -e "\n\n###### CASE3 ANOTHER LOOP  TO PACKAGE MERGE JOBS  ##############\n\n" >&2; set -x;	
+
+	RealignOutputLogs=$outputdir/logs/realign
+	VcallOutputLogs=$outputdir/logs/variant
+
+	qsubMergeRealrecalAnisimov=$RealignOutputLogs/qsub.Merge.realrecal.AnisimovJoblist
+	qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.Merge.vcall.AnisimovJoblist
+	MergeRealrecalAnisimov=$RealignOutputLogs/Merge.realrecal.AnisimovJoblist			
+	MergeVcallAnisimov=$VcallOutputLogs/Merge.vcall.AnisimovJoblist
+
+	while read SampleLine
+	do
+		if [ `expr ${#SampleLine}` -gt 1 ]
+		then
+
+			set +x; echo -e "\n\n###### Parse the line   ##############\n\n" >&2; set -x;
+			
+			sample=$( echo "$SampleLine" | cut -f 1 )
+
+			set +x; echo -e "\n\n###### Output results will go here  ##############\n\n" >&2; set -x;
+			
+			RealignOutputDir=$outputdir/${sample}/realign
+			VcallOutputDir=$outputdir/${sample}/variant
+			recalibratedOutputfile=$RealignOutputDir/${sample}.recalibrated.calmd.bam
+			vcallGVCFOutputFile=$VcallOutputDir/${sample}.raw.g.vcf
+			vcallPlainVCFOutputFile=$VcallOutputDir/${sample}.plain.vcf
+
+
+			set +x; echo -e "\n\n###### Logs and files with command lines will go here  ##############\n\n" >&2; set -x;
+
+			jobfileMergeRealrecal=$RealignOutputLogs/Merge.Realrecal.${sample}.jobfile
+			jobfileMergeVcall=$VcallOutputLogs/Merge.Vcall.${sample}.jobfile
+			MergeRealignFailedlog=$RealignOutputDir/logs/FAILED_Merge.Realrecal.${sample}              
+			MergeVcallFailedlog=$VcallOutputDir/logs/FAILED_Merge.Vcall.${sample}
+
+			set +x; echo -e "\n\n###### reset those files  ##############\n\n" >&2; set -x;
+
+			truncate -s 0 $jobfileMergeRealrecal
+			truncate -s 0 $jobfileMergeVcall			
+			truncate -s 0 $MergeRealignFailedlog
+			truncate -s 0 $MergeVcallFailedlog
+
+
+			set +x; echo -e "\n\n###### ready to put together the command for merging cleaned bams   ##############\n\n" >&2; set -x;
+
+			echo "$scriptdir/mergeCleanedBams.sh $recalibratedOutputfile $RealignOutputDir $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileMergeRealrecal
+
+			Realjobfilename=$( basename $jobfileMergeRealrecal )
+			echo "$RealignOutputLogs $Realjobfilename" >> $MergeRealrecalAnisimov
+
+			if [ $skipvcall == "NO" ]
+			then
+				set +x; echo -e "\n\n######  ready to put together the command for merging vcf files    ########\n\n" >&2; set -x;
+				echo "$scriptdir/mergevcfs.sh $recalibratedOutputfile $vcallGVCFOutputFile vcallPlainVCFOutputFile $VcallOutputDir $runfile $vcallFailedlog $email $qsubVcall" > $jobfileMergeVcall
+
+				Vcalljobfilename=$( basename $jobfileMergeVcall )
+				echo "$VcallOutputLogs $Vcalljobfilename" >> $MergeVcallAnisimov
+			fi
+
+		fi # end if empty line
+
+		set +x; echo -e "\n\n###### Done with this sample. Next one please   ##############\n\n" >&2; set -x; 
+
+	done <  $TheInputFile   # end of loop by sample
+
+	set +x; echo -e "\n\n###### CASE3 END ANOTHER LOOP BY SAMPLE TO MERGE ALL REGIONS INTO ONE FILE ##############\n\n" >&2; set -x;	
+
+	
 	set +x; echo -e "\n\n###### END SPLITREALIGN=YES. PACKAGEBYCHR=YES ##############\n\n" >&2; set -x;
+
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE4 - SAMPLE SPLITTING AND PACKAGED BY SAMPLE - generate and package cmds for realign recalibrate and varcall" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
+
 	
 elif [ $splitRealign == "YES" -a $packageByChr == "NO" ]
 then
 	set +x; echo -e "\n\n###### CASE4 SPLITREALIGN=YES. PACKAGEBYCHR=NO. THERE WILL BE ONE LAUNCHER PER SAMPLE##############\n\n" >&2; set -x;
 
 	####stuff goes here
+
+	set +x; echo -e "\n\n###### CASE4 LOOP1 OVER SAMPLES TO generate and package cmds for realign recalibrate and varcall      ##############\n\n" >&2; set -x;
+
+	while read SampleLine
+	do
+		if [ `expr ${#SampleLine}` -gt 1 ]
+		then
+		
+			set +x; echo -e "\n\n###### CASE4 LAUNCHER PREP WORK: Create and/or reset anisimov files      ##############\n\n" >&2; set -x;
+
+			set +x; echo -e "\n\n###### processing next non-empty line in SAMPLENAMES_multiplexed.list ##############\n\n" >&2; set -x;
+
+			set +x; echo -e "\n\n###### sample name and input file.     ##############\n\n" >&2; set -x;
+
+			sample=$( echo "$SampleLine" | cut -f 1 )
+			aligned_bam=`find $outputdir/$sample/align -name "*.wdups.sorted.bam"`   
+
+			set +x; echo -e "\n\n###### define output directories and files for results, cmds, logs, etc.     ##############\n\n" >&2; set -x;
+		      
+			RealignOutputLogs=$outputdir/logs/realign
+			VcallOutputLogs=$outputdir/logs/variant
+
+			qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.${sample}.AnisimovJoblist
+			qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.${sample}.AnisimovJoblist
+			realrecalAnisimov=$RealignOutputLogs/realrecal.${sample}.AnisimovJoblist			
+			vcallAnisimov=$VcallOutputLogs/vcall.${sample}.AnisimovJoblist
+
+			truncate -s 0 $realrecalAnisimov
+			truncate -s 0 $vcallAnisimov
+
+			set +x; echo -e "\n\n###### CASE4 LOOP2 OVER REGIONS TO generate and package cmds for realign recalibrate and varcall      ##############\n\n" >&2; set -x;
+			
+			i=1
+
+			for chr in $indices
+			do
+
+				set +x; echo -e "\n\n###### which target file to use for WES data in all GATK commands     ##############\n\n" >&2; set -x;
+
+				if [ ! -s $targetParm[$i] -a $input_type == "WES"  ]
+				then
+					target="NOTARGET" 
+				else
+					target=$targetParm[$i]
+				fi
+
+
+				set +x; echo -e "\n\n###### Output results will go here  ##############\n\n" >&2; set -x;
+
+				RealignOutputDir=$outputdir/${sample}/realign
+				VcallOutputDir=$outputdir/${sample}/variant
+				realignedOutputfile=$RealignOutputDir/${sample}.${chr}.realigned.bam
+				recalibratedOutputfile=$RealignOutputDir/${sample}.${chr}.recalibrated.calmd.bam
+				vcallOutputFile=$VcallOutputDir/${sample}.${chr}.raw.g.vcf
+
+				set +x; echo -e "\n\n###### Logs and files with command lines will go here  ##############\n\n" >&2; set -x;
+
+				jobfileRealrecal=$RealignOutputLogs/Realrecal.${sample}.${chr}.jobfile
+				jobfileVcall=$VcallOutputLogs/Vcall.${sample}.${chr}.jobfile
+				realignFailedlog=$RealignOutputDir/logs/FAILED_Realrecal.${sample}.${chr}              
+				vcallFailedlog=$VcallOutputDir/logs/FAILED_Vcall.${sample}.${chr}
+
+				set +x; echo -e "\n\n###### reset those files  ##############\n\n" >&2; set -x;
+
+				truncate -s 0 $jobfileRealrecal
+				truncate -s 0 $jobfileVcall			
+				truncate -s 0 $realignFailedlog
+				truncate -s 0 $vcallFailedlog
+
+				
+				set +x; echo -e "\n\n###### ready to put together the command for the realignment-recalibration analysis   ##############\n\n" >&2; set -x;
+
+				echo "$scriptdir/realrecal_per_chromosome.sh $RealignOutputDir $aligned_bam $realignedOutputfile $recalibratedOutputfile $chr $target indelParm[$i] $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileRealrecal
+
+
+				Realjobfilename=$( basename $jobfileRealrecal )
+				echo "$RealignOutputLogs $Realjobfilename" >> $realrecalAnisimov
+
+
+				if [ $skipvcall == "NO" ]
+				then
+					set +x; echo -e "\n\n######  ready to put together the command for the variant calling analysis    ########\n\n" >&2; set -x;
+					echo "$scriptdir/vcallgatk_per_chromosome.sh $recalibratedOutputfile $vcallOutputFile $VcallOutputDir $target $chr $runfile $vcallFailedlog $email $qsubVcall" > $jobfileVcall
+
+					Vcalljobfilename=$( basename $jobfileVcall )
+					echo "$VcallOutputLogs $Vcalljobfilename" >> $vcallAnisimov
+				fi
+
+			done # end loop over regions
+
+			set +x; echo -e "\n\n###### CASE4 END LOOP2 OVER REGIONS TO generate and package cmds for realign recalibrate and varcall  
+		fi # non empty line
+
+		set +x; echo -e "\n\n###### Done with this sample. Next one please   ##############\n\n" >&2; set -x; 
+
+	done <  $TheInputFile   # end of loop by sample
+
+	set +x; echo -e "\n\n###### CASE4 END LOOP1 OVER SAMPLES TO generate and package cmds for realign recalibrate and varcall      ##############\n\n" >&2; set -x;
+
+
+	set +x; echo -e "\n\n###### CASE4 ANOTHER LOOP  TO PACKAGE MERGE JOBS  ##############\n\n" >&2; set -x;	
+
+	RealignOutputLogs=$outputdir/logs/realign
+	VcallOutputLogs=$outputdir/logs/variant
+
+	qsubMergeRealrecalAnisimov=$RealignOutputLogs/qsub.Merge.realrecal.AnisimovJoblist
+	qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.Merge.vcall.AnisimovJoblist
+	MergeRealrecalAnisimov=$RealignOutputLogs/Merge.realrecal.AnisimovJoblist			
+	MergeVcallAnisimov=$VcallOutputLogs/Merge.vcall.AnisimovJoblist
+
+	while read SampleLine
+	do
+		if [ `expr ${#SampleLine}` -gt 1 ]
+		then
+
+			set +x; echo -e "\n\n###### Parse the line   ##############\n\n" >&2; set -x;
+			
+			sample=$( echo "$SampleLine" | cut -f 1 )
+
+			set +x; echo -e "\n\n###### Output results will go here  ##############\n\n" >&2; set -x;
+			
+			RealignOutputDir=$outputdir/${sample}/realign
+			VcallOutputDir=$outputdir/${sample}/variant
+			recalibratedOutputfile=$RealignOutputDir/${sample}.recalibrated.calmd.bam
+			vcallGVCFOutputFile=$VcallOutputDir/${sample}.raw.g.vcf
+			vcallPlainVCFOutputFile=$VcallOutputDir/${sample}.plain.vcf
+
+
+			set +x; echo -e "\n\n###### Logs and files with command lines will go here  ##############\n\n" >&2; set -x;
+
+			jobfileMergeRealrecal=$RealignOutputLogs/Merge.Realrecal.${sample}.jobfile
+			jobfileMergeVcall=$VcallOutputLogs/Merge.Vcall.${sample}.jobfile
+			MergeRealignFailedlog=$RealignOutputDir/logs/FAILED_Merge.Realrecal.${sample}              
+			MergeVcallFailedlog=$VcallOutputDir/logs/FAILED_Merge.Vcall.${sample}
+
+			set +x; echo -e "\n\n###### reset those files  ##############\n\n" >&2; set -x;
+
+			truncate -s 0 $jobfileMergeRealrecal
+			truncate -s 0 $jobfileMergeVcall			
+			truncate -s 0 $MergeRealignFailedlog
+			truncate -s 0 $MergeVcallFailedlog
+
+
+			set +x; echo -e "\n\n###### ready to put together the command for merging cleaned bams   ##############\n\n" >&2; set -x;
+
+			echo "$scriptdir/mergeCleanedBams.sh $recalibratedOutputfile $RealignOutputDir $runfile $realignFailedlog $email $qsubRealrecal" > $jobfileMergeRealrecal
+
+			Realjobfilename=$( basename $jobfileMergeRealrecal )
+			echo "$RealignOutputLogs $Realjobfilename" >> $MergeRealrecalAnisimov
+
+			if [ $skipvcall == "NO" ]
+			then
+				set +x; echo -e "\n\n######  ready to put together the command for merging vcf files    ########\n\n" >&2; set -x;
+				echo "$scriptdir/mergevcfs.sh $recalibratedOutputfile $vcallGVCFOutputFile vcallPlainVCFOutputFile $VcallOutputDir $runfile $vcallFailedlog $email $qsubVcall" > $jobfileMergeVcall
+
+				Vcalljobfilename=$( basename $jobfileMergeVcall )
+				echo "$VcallOutputLogs $Vcalljobfilename" >> $MergeVcallAnisimov
+			fi
+
+		fi # end if empty line
+
+		set +x; echo -e "\n\n###### Done with this sample. Next one please   ##############\n\n" >&2; set -x; 
+
+	done <  $TheInputFile   # end of loop by sample
+
+	set +x; echo -e "\n\n###### CASE4 END ANOTHER LOOP BY SAMPLE TO MERGE ALL REGIONS INTO ONE FILE ##############\n\n" >&2; set -x;	
+
 	
 	set +x; echo -e "\n\n###### END SPLITREALIGN=YES. PACKAGEBYCHR=NO. ##############\n\n" >&2; set -x;
 	
@@ -640,7 +996,14 @@ echo "####### CASE4: SAMPLE SPLITTING BY REGION, LAUNCHER IS ALWAYS USED,PACKAGE
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE1 - NO SAMPLE SPLITTING AND NO PACKAGING - SCHEDULE JOBS" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
+
 
 if [ $splitRealign == "NO" -a $run_method == "LAUNCHER" ]
 then
@@ -649,13 +1012,13 @@ then
 
 	set +x; echo -e "\n # run_method is LAUNCHER. scheduling the real-recalibrate Launcher\n" >&2; set -x
 
-	let "numnodes = $samplecounter + 1"  # we need an additional node for the launcher
+	numnodes=$numsamples  #numnodes is total samples + 1 for the launcher
 
 	RealignOutputLogs=$outputdir/logs/realign
 	VcallOutputLogs=$outputdir/logs/variant
 	
 	qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.AnisimovJoblist
-	qsubVcallAnisimov=$VcallOutputLogs/qsub.vcall.AnisimovJoblist
+	qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.AnisimovJoblist
 	realrecalAnisimov=$RealignOutputLogs/realrecal.AnisimovJoblist			
 	vcallAnisimov=$VcallOutputLogs/vcall.AnisimovJoblist
 
@@ -687,33 +1050,41 @@ then
 	if [ $skipvcall == "NO" ]
 	then
 
-		echo "#!/bin/bash" > $qsubVcallAnisimov
-		echo "#PBS -A $pbsprj" >> $qsubVcallAnisimov
-		echo "#PBS -N ${pipeid}_Vcall_Anisimov" >> $qsubVcallAnisimov
-		echo "#PBS -l walltime=$pbscpu" >> $qsubVcallAnisimov
-		echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubVcallAnisimov
-		echo "#PBS -o $VcallOutputLogs/log.Vcall.AnisimovJoblist.ou" >> $qsubVcallAnisimov
-		echo "#PBS -e $VcallOutputLogs/log.Vcall.AnisimovJoblist.in" >> $qsubVcallAnisimov
-		echo "#PBS -q $pbsqueue" >> $qsubVcallAnisimov
-		echo "#PBS -m ae" >> $qsubVcallAnisimov
-		echo "#PBS -M $email" >> $qsubVcallAnisimov
-		echo "#PBS -W depend=afterok:$RealrecalAnisimovJoblistId" >> $qsubVcallAnisimov
+		echo "#!/bin/bash" > $qsubMergeVcallAnisimov
+		echo "#PBS -A $pbsprj" >> $qsubMergeVcallAnisimov
+		echo "#PBS -N ${pipeid}_Vcall_Anisimov" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l walltime=$pbscpu" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeVcallAnisimov
+		echo "#PBS -o $VcallOutputLogs/log.Vcall.AnisimovJoblist.ou" >> $qsubMergeVcallAnisimov
+		echo "#PBS -e $VcallOutputLogs/log.Vcall.AnisimovJoblist.in" >> $qsubMergeVcallAnisimov
+		echo "#PBS -q $pbsqueue" >> $qsubMergeVcallAnisimov
+		echo "#PBS -m ae" >> $qsubMergeVcallAnisimov
+		echo "#PBS -M $email" >> $qsubMergeVcallAnisimov
+		echo "#PBS -W depend=afterok:$RealrecalAnisimovJoblistId" >> $qsubMergeVcallAnisimov
 		
-		echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $vcallAnisimov $bash_cmd > ${vcallAnisimov}.log" >> $qsubVcallAnisimov
+		echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $vcallAnisimov $bash_cmd > ${vcallAnisimov}.log" >> $qsubMergeVcallAnisimov
 
-		echo "exitcode=\$?" >> $qsubVcallAnisimov
-		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubVcallAnisimov
-		echo "   echo -e \"\n\n RealrecalAnisimov failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Vcall.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubVcallAnisimov
-		echo "   exit 1" >> $qsubVcallAnisimov
-		echo "fi" >> $qsubVcallAnisimov
+		echo "exitcode=\$?" >> $qsubMergeVcallAnisimov
+		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeVcallAnisimov
+		echo "   echo -e \"\n\n RealrecalAnisimov failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Vcall.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeVcallAnisimov
+		echo "   exit 1" >> $qsubMergeVcallAnisimov
+		echo "fi" >> $qsubMergeVcallAnisimov
 
-		VcallAnisimovJoblistId=`qsub $qsubVcallAnisimov`
+		VcallAnisimovJoblistId=`qsub $qsubMergeVcallAnisimov`
 		echo $VcallAnisimovJoblistId >> $TopOutputLogs/pbs.VCALL 
 
 	
 	fi  #end if skipvcall
 	
 	set +x; echo -e "\n\n###### END CASE1 splitRealign=NO. run_methods IS LAUNCHER ##############\n\n" >&2; set -x;	
+
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE2 - NO SAMPLE SPLITTING AND LAUNCHER - SCHEDULE JOBS" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 elif [ $splitRealign == "NO" -a $run_method != "LAUNCHER" ]
 then
@@ -726,6 +1097,11 @@ then
 	do
 		if [ `expr ${#SampleLine}` -gt 1 ]
 		then
+		
+			set +x; echo -e "\n\n###### Parse the line   ##############\n\n" >&2; set -x;
+			
+			sample=$( echo "$SampleLine" | cut -f 1 )
+		
 
 			RealignOutputLogs=$outputdir/${sample}/realign/logs
 			VcallOutputLogs=$outputdir/${sample}/variant/logs
@@ -798,6 +1174,14 @@ then
 	done <  $TheInputFile
 
 	set +x; echo -e "\n\n###### END CASE2 splitRealign=NO. run_methods IS NOT LAUNCHER ##############\n\n" >&2; set -x;
+
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE3 - SAMPLE SPLITTING AND PACKAGING BY REGION - SCHEDULE JOBS" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 	
 elif [ $splitRealign == "YES" -a $packageByChr == "YES" ]
 then
@@ -806,13 +1190,322 @@ then
 
 	####stuff goes here
 
-	set +x; echo -e "\n\n###### END SPLITREALIGN=YES. PACKAGEBYCHR=YES ##############\n\n" >&2; set -x;
+	numnodes=$numsamples
+
+
+	set +x; echo -e "\n\n###### CASE3 LOOP TO LAUNCH JOBS BY REGION STARTS HERE ##############\n\n" >&2; set -x;
+	
+	for chr in $indices
+	do
+
+
+		set +x; echo -e "\n\n###### REALRECAL QSUB FOR REGION $chr      ##############\n\n" >&2; set -x;
+		
+		RealignOutputLogs=$outputdir/logs/realign
+		VcallOutputLogs=$outputdir/logs/variant
+
+		qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.${chr}.AnisimovJoblist
+		qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.${chr}.AnisimovJoblist
+		realrecalAnisimov=$RealignOutputLogs/realrecal.${chr}.AnisimovJoblist			
+		vcallAnisimov=$VcallOutputLogs/vcall.${chr}.AnisimovJoblist
+
+
+		echo "#!/bin/bash" > $qsubRealrecalAnisimov
+		echo "#PBS -A $pbsprj" >> $qsubRealrecalAnisimov
+		echo "#PBS -N ${pipeid}_realrecal_${chr}_Anisimov" >> $qsubRealrecalAnisimov
+		echo "#PBS -l walltime=$pbscpu" >> $qsubRealrecalAnisimov
+		echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubRealrecalAnisimov
+		echo "#PBS -o $RealignOutputLogs/log.realrecal.AnisimovJoblist.${chr}.ou" >> $qsubRealrecalAnisimov
+		echo "#PBS -e $RealignOutputLogs/log.realrecal.AnisimovJoblist.${chr}.in" >> $qsubRealrecalAnisimov
+		echo "#PBS -q $pbsqueue" >> $qsubRealrecalAnisimov
+		echo "#PBS -m ae" >> $qsubRealrecalAnisimov
+		echo "#PBS -M $email" >> $qsubRealrecalAnisimov
+
+		echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $realrecalAnisimov $bash_cmd > ${realrecalAnisimov}.log" >> $qsubRealrecalAnisimov
+
+		echo "exitcode=\$?" >> $qsubRealrecalAnisimov
+		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubRealrecalAnisimov
+		echo "   echo -e \"\n\n Realrecal $chr failed with exit code = \$exitcode \n logfile=$RealignOutputLogs/log.realrecal.AnisimovJoblist.${chr}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubRealrecalAnisimov
+		echo "   exit 1" >> $qsubRealrecalAnisimov
+		echo "fi" >> $qsubRealrecalAnisimov
+
+		RealrecalJobId=`qsub $qsubRealrecalAnisimov`
+		echo $RealrecalJobId >> $TopOutputLogs/pbs.REALRECAL 
+
+
+		set +x; echo -e "\n##########  VCALL QSUB FOR REGION $chr     ############\n" >&2; set -x
+
+		if [ $skipvcall == "NO" ]
+		then
+
+			echo "#!/bin/bash" > $qsubMergeVcallAnisimov
+			echo "#PBS -A $pbsprj" >> $qsubMergeVcallAnisimov
+			echo "#PBS -N ${pipeid}_Vcall_${chr}_Anisimov" >> $qsubMergeVcallAnisimov
+			echo "#PBS -l walltime=$pbscpu" >> $qsubMergeVcallAnisimov
+			echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeVcallAnisimov
+			echo "#PBS -o $VcallOutputLogs/log.Vcall.AnisimovJoblist.${chr}.ou" >> $qsubMergeVcallAnisimov
+			echo "#PBS -e $VcallOutputLogs/log.Vcall.AnisimovJoblist.${chr}.in" >> $qsubMergeVcallAnisimov
+			echo "#PBS -q $pbsqueue" >> $qsubMergeVcallAnisimov
+			echo "#PBS -m ae" >> $qsubMergeVcallAnisimov
+			echo "#PBS -M $email" >> $qsubMergeVcallAnisimov
+			echo "#PBS -W depend=afterok:$RealrecalAnisimovJoblistId" >> $qsubMergeVcallAnisimov
+
+			echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $vcallAnisimov $bash_cmd > ${vcallAnisimov}.log" >> $qsubMergeVcallAnisimov
+
+			echo "exitcode=\$?" >> $qsubMergeVcallAnisimov
+			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeVcallAnisimov
+			echo "   echo -e \"\n\n RealrecalAnisimov failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Vcall.AnisimovJoblist.${chr}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeVcallAnisimov
+			echo "   exit 1" >> $qsubMergeVcallAnisimov
+			echo "fi" >> $qsubMergeVcallAnisimov
+
+			VcallAnisimovJoblistId=`qsub $qsubMergeVcallAnisimov`
+			echo $VcallAnisimovJoblistId >> $TopOutputLogs/pbs.VCALL 
+
+
+		fi  #end if skipvcall
+
+
+
+	done # end of loop1 by chr
+	
+	set +x; echo -e "\n\n###### CASE3 LOOP TO LAUNCH MERGE JOBS ##############\n\n" >&2; set -x;	
+
+	numnodes=$numsamples
+	
+	qsubMergeRealrecalAnisimov=$RealignOutputLogs/qsub.Merge.realrecal.AnisimovJoblist
+	qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.Merge.vcall.AnisimovJoblist
+	MergeRealrecalAnisimov=$RealignOutputLogs/Merge.realrecal.AnisimovJoblist			
+	MergeVcallAnisimov=$VcallOutputLogs/Merge.vcall.AnisimovJoblist
+
+	VcallDependids=$( cat $TopOutputLogs/pbs.VCALL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" )     #for job dependency argument
+	RealignDependids=$( cat $TopOutputLogs/pbs.REALRECAL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
+
+
+	echo "#!/bin/bash" > $qsubMergeRealrecalAnisimov
+	echo "#PBS -A $pbsprj" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -N ${pipeid}_Merge.realrecal_Anisimov" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -l walltime=$pbscpu" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -o $RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.ou" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -e $RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.in" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -q $pbsqueue" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -m ae" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -M $email" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -W depend=afterok:$RealignDependids" >> $qsubMergeRealrecalAnisimov
+	
+	echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x MergeRealrecalAnisimov $bash_cmd > ${MergeRealrecalAnisimov}.log" >> $qsubMergeRealrecalAnisimov
+
+	echo "exitcode=\$?" >> $qsubMergeRealrecalAnisimov
+	echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeRealrecalAnisimov
+	echo "   echo -e \"\n\n Merge Realrecal anisimov failed with exit code = \$exitcode \n logfile=$RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeRealrecalAnisimov
+	echo "   exit 1" >> $qsubMergeRealrecalAnisimov
+	echo "fi" >> $qsubMergeRealrecalAnisimov
+
+	RealrecalJobId=`qsub $qsubMergeRealrecalAnisimov`
+	echo $RealrecalJobId >> $TopOutputLogs/pbs.MERGEREALRECAL 
+
+
+	set +x; echo -e "\n##########  VCALL QSUB FOR REGION $chr     ############\n" >&2; set -x
+
+	if [ $skipvcall == "NO" ]
+	then
+
+		echo "#!/bin/bash" > $qsubMergeVcallAnisimov
+		echo "#PBS -A $pbsprj" >> $qsubMergeVcallAnisimov
+		echo "#PBS -N ${pipeid}_Merge.Vcall_Anisimov" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l walltime=$pbscpu" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeVcallAnisimov
+		echo "#PBS -o $VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.ou" >> $qsubMergeVcallAnisimov
+		echo "#PBS -e $VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.in" >> $qsubMergeVcallAnisimov
+		echo "#PBS -q $pbsqueue" >> $qsubMergeVcallAnisimov
+		echo "#PBS -m ae" >> $qsubMergeVcallAnisimov
+		echo "#PBS -M $email" >> $qsubMergeVcallAnisimov
+		echo "#PBS -W depend=afterok:$VcallDependids" >> $qsubMergeVcallAnisimov
+
+		echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $MergeVcallAnisimov $bash_cmd > ${MergeVcallAnisimov}.log" >> $qsubMergeVcallAnisimov
+
+		echo "exitcode=\$?" >> $qsubMergeVcallAnisimov
+		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeVcallAnisimov
+		echo "   echo -e \"\n\n Merge Realrecal Anisimov failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeVcallAnisimov
+		echo "   exit 1" >> $qsubMergeVcallAnisimov
+		echo "fi" >> $qsubMergeVcallAnisimov
+
+		VcallAnisimovJoblistId=`qsub $qsubMergeVcallAnisimov`
+		echo $VcallAnisimovJoblistId >> $TopOutputLogs/pbs.MERGEVCALL 
+
+
+	fi  #end if skipvcall
+
+
+
+	
+	set +x; echo -e "\n\n###### CASE3 LOOP TO LAUNCH JOBS BY REGION ENDS HERE ##############\n\n" >&2; set -x;
+	
+set +x; echo -e "\n\n" >&2;
+echo -e "\n####################################################################################################" >&2 
+echo "####################################################################################################" >&2
+echo "################ CASE4 - SAMPLE SPLITTING AND PACKAGING BY SAMPLE - SCHEDULE JOBS" >&2     
+echo "####################################################################################################" >&2
+echo "####################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 	
 elif [ $splitRealign == "YES" -a $packageByChr == "NO" ]
 then
 	set +x; echo -e "\n\n###### CASE4 SPLITREALIGN=YES. PACKAGEBYCHR=NO. THERE WILL BE ONE LAUNCHER PER SAMPLE##############\n\n" >&2; set -x;
 
 	####stuff goes here
+
+	numnodes=$numregions
+
+	while read SampleLine
+	do
+		if [ `expr ${#SampleLine}` -gt 1 ]
+		then
+		
+			set +x; echo -e "\n\n###### Parse the line   ##############\n\n" >&2; set -x;
+			
+			sample=$( echo "$SampleLine" | cut -f 1 )
+
+
+			set +x; echo -e "\n\n###### REALRECAL QSUB FOR SAMPLE $sample      ##############\n\n" >&2; set -x;
+
+			RealignOutputLogs=$outputdir/logs/realign
+			VcallOutputLogs=$outputdir/logs/variant
+
+			qsubRealrecalAnisimov=$RealignOutputLogs/qsub.realrecal.${sample}.AnisimovJoblist
+			qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.vcall.${sample}.AnisimovJoblist
+			realrecalAnisimov=$RealignOutputLogs/realrecal.${sample}.AnisimovJoblist			
+			vcallAnisimov=$VcallOutputLogs/vcall.${sample}.AnisimovJoblist
+
+
+			echo "#!/bin/bash" > $qsubRealrecalAnisimov
+			echo "#PBS -A $pbsprj" >> $qsubRealrecalAnisimov
+			echo "#PBS -N ${pipeid}_realrecal_${sample}_Anisimov" >> $qsubRealrecalAnisimov
+			echo "#PBS -l walltime=$pbscpu" >> $qsubRealrecalAnisimov
+			echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubRealrecalAnisimov
+			echo "#PBS -o $RealignOutputLogs/log.realrecal.AnisimovJoblist.${sample}.ou" >> $qsubRealrecalAnisimov
+			echo "#PBS -e $RealignOutputLogs/log.realrecal.AnisimovJoblist.${sample}.in" >> $qsubRealrecalAnisimov
+			echo "#PBS -q $pbsqueue" >> $qsubRealrecalAnisimov
+			echo "#PBS -m ae" >> $qsubRealrecalAnisimov
+			echo "#PBS -M $email" >> $qsubRealrecalAnisimov
+
+			echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $realrecalAnisimov $bash_cmd > ${realrecalAnisimov}.log" >> $qsubRealrecalAnisimov
+
+			echo "exitcode=\$?" >> $qsubRealrecalAnisimov
+			echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubRealrecalAnisimov
+			echo "   echo -e \"\n\n Realrecal $sample failed with exit code = \$exitcode \n logfile=$RealignOutputLogs/log.realrecal.AnisimovJoblist.${sample}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubRealrecalAnisimov
+			echo "   exit 1" >> $qsubRealrecalAnisimov
+			echo "fi" >> $qsubRealrecalAnisimov
+
+			RealrecalJobId=`qsub $qsubRealrecalAnisimov`
+			echo $RealrecalJobId >> $TopOutputLogs/pbs.REALRECAL 
+
+
+			set +x; echo -e "\n##########  VCALL QSUB FOR REGION $chr     ############\n" >&2; set -x
+
+			if [ $skipvcall == "NO" ]
+			then
+
+				echo "#!/bin/bash" > $qsubMergeVcallAnisimov
+				echo "#PBS -A $pbsprj" >> $qsubMergeVcallAnisimov
+				echo "#PBS -N ${pipeid}_Vcall_${sample}_Anisimov" >> $qsubMergeVcallAnisimov
+				echo "#PBS -l walltime=$pbscpu" >> $qsubMergeVcallAnisimov
+				echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeVcallAnisimov
+				echo "#PBS -o $VcallOutputLogs/log.Vcall.AnisimovJoblist.${sample}.ou" >> $qsubMergeVcallAnisimov
+				echo "#PBS -e $VcallOutputLogs/log.Vcall.AnisimovJoblist.${sample}.in" >> $qsubMergeVcallAnisimov
+				echo "#PBS -q $pbsqueue" >> $qsubMergeVcallAnisimov
+				echo "#PBS -m ae" >> $qsubMergeVcallAnisimov
+				echo "#PBS -M $email" >> $qsubMergeVcallAnisimov
+				echo "#PBS -W depend=afterok:$RealrecalAnisimovJoblistId" >> $qsubMergeVcallAnisimov
+
+				echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $vcallAnisimov $bash_cmd > ${vcallAnisimov}.log" >> $qsubMergeVcallAnisimov
+
+				echo "exitcode=\$?" >> $qsubMergeVcallAnisimov
+				echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeVcallAnisimov
+				echo "   echo -e \"\n\n VcallAnisimov $sample failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Vcall.AnisimovJoblist.${sample}.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeVcallAnisimov
+				echo "   exit 1" >> $qsubMergeVcallAnisimov
+				echo "fi" >> $qsubMergeVcallAnisimov
+
+				VcallAnisimovJoblistId=`qsub $qsubMergeVcallAnisimov`
+				echo $VcallAnisimovJoblistId >> $TopOutputLogs/pbs.VCALL 
+
+
+			fi  #end if skipvcall
+
+		fi # done processing non-empty lines
+
+		set +x; echo -e "\n\n###### bottom of the loop over samples. Next one please "  >&2; set -x; 
+
+	done <  $TheInputFile
+
+
+	set +x; echo -e "\n\n###### CASE4 LOOP TO LAUNCH MERGE JOBS ##############\n\n" >&2; set -x;	
+
+	numnodes=$numsamples
+	
+	qsubMergeRealrecalAnisimov=$RealignOutputLogs/qsub.Merge.realrecal.AnisimovJoblist
+	qsubMergeVcallAnisimov=$VcallOutputLogs/qsub.Merge.vcall.AnisimovJoblist
+	MergeRealrecalAnisimov=$RealignOutputLogs/Merge.realrecal.AnisimovJoblist			
+	MergeVcallAnisimov=$VcallOutputLogs/Merge.vcall.AnisimovJoblist
+
+	VcallDependids=$( cat $TopOutputLogs/pbs.VCALL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" )     #for job dependency argument
+	RealignDependids=$( cat $TopOutputLogs/pbs.REALRECAL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
+
+
+	echo "#!/bin/bash" > $qsubMergeRealrecalAnisimov
+	echo "#PBS -A $pbsprj" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -N ${pipeid}_Merge.realrecal_Anisimov" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -l walltime=$pbscpu" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -o $RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.ou" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -e $RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.in" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -q $pbsqueue" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -m ae" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -M $email" >> $qsubMergeRealrecalAnisimov
+	echo "#PBS -W depend=afterok:$RealignDependids" >> $qsubMergeRealrecalAnisimov
+	
+	echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x MergeRealrecalAnisimov $bash_cmd > ${MergeRealrecalAnisimov}.log" >> $qsubMergeRealrecalAnisimov
+
+	echo "exitcode=\$?" >> $qsubMergeRealrecalAnisimov
+	echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeRealrecalAnisimov
+	echo "   echo -e \"\n\n Merge Realrecal anisimov failed with exit code = \$exitcode \n logfile=$RealignOutputLogs/log.Merge.realrecal.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeRealrecalAnisimov
+	echo "   exit 1" >> $qsubMergeRealrecalAnisimov
+	echo "fi" >> $qsubMergeRealrecalAnisimov
+
+	RealrecalJobId=`qsub $qsubMergeRealrecalAnisimov`
+	echo $RealrecalJobId >> $TopOutputLogs/pbs.MERGEREALRECAL 
+
+
+	set +x; echo -e "\n##########  VCALL QSUB FOR REGION $chr     ############\n" >&2; set -x
+
+	if [ $skipvcall == "NO" ]
+	then
+
+		echo "#!/bin/bash" > $qsubMergeVcallAnisimov
+		echo "#PBS -A $pbsprj" >> $qsubMergeVcallAnisimov
+		echo "#PBS -N ${pipeid}_Merge.Vcall_Anisimov" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l walltime=$pbscpu" >> $qsubMergeVcallAnisimov
+		echo "#PBS -l nodes=$numnodes:ppn=$thr" >> $qsubMergeVcallAnisimov
+		echo "#PBS -o $VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.ou" >> $qsubMergeVcallAnisimov
+		echo "#PBS -e $VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.in" >> $qsubMergeVcallAnisimov
+		echo "#PBS -q $pbsqueue" >> $qsubMergeVcallAnisimov
+		echo "#PBS -m ae" >> $qsubMergeVcallAnisimov
+		echo "#PBS -M $email" >> $qsubMergeVcallAnisimov
+		echo "#PBS -W depend=afterok:$VcallDependids" >> $qsubMergeVcallAnisimov
+
+		echo "$run_cmd $numnodes -env OMP_NUM_THREADS=$thr $launcherdir/scheduler.x $MergeVcallAnisimov $bash_cmd > ${MergeVcallAnisimov}.log" >> $qsubMergeVcallAnisimov
+
+		echo "exitcode=\$?" >> $qsubMergeVcallAnisimov
+		echo -e "if [ \$exitcode -ne 0 ]\nthen " >> $qsubMergeVcallAnisimov
+		echo "   echo -e \"\n\n Merge Realrecal Anisimov failed with exit code = \$exitcode \n logfile=$VcallOutputLogs/log.Merge.Vcall.AnisimovJoblist.in\n\" | mail -s \"[Task #${reportticket}]\" \"$redmine,$email\"" >> $qsubMergeVcallAnisimov
+		echo "   exit 1" >> $qsubMergeVcallAnisimov
+		echo "fi" >> $qsubMergeVcallAnisimov
+
+		VcallAnisimovJoblistId=`qsub $qsubMergeVcallAnisimov`
+		echo $VcallAnisimovJoblistId >> $TopOutputLogs/pbs.MERGEVCALL 
+
+
+	fi  #end if skipvcall
 	
 	set +x; echo -e "\n\n###### END SPLITREALIGN=YES. PACKAGEBYCHR=NO. ##############\n\n" >&2; set -x;
 
@@ -826,15 +1519,30 @@ echo "##########################################################################
 echo "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-if [ $skipvcall == "NO" ]
+if [ $splitRealign == "NO" -a $skipvcall == "NO" ]
 then
       summarydependids=$( cat $TopOutputLogs/pbs.VCALL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" )     #for job dependency argument
-else
+
+elif [ $splitRealign == "NO" -a $skipvcall != "NO" ]
+then
       summarydependids=$( cat $TopOutputLogs/pbs.REALRECAL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
+
+elif [ $splitRealign == "YES" -a $skipvcall == "NO" ]
+then
+      summarydependids=$( cat $TopOutputLogs/pbs.MERGEVCALL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" )     #for job dependency argument
+
+elif [ $splitRealign == "YES" -a $skipvcall != "NO" ]
+then
+      summarydependids=$( cat $TopOutputLogs/pbs.MERGEREALRECAL  | tr "\n" ":" | sed "s/^://" | sed "s/:$//" ) #for job dependency argument
+
 fi
+
 
 lastjobid=""
 cleanjobid=""
+set +x; echo -e "\n\n###### Remove temporary files ##############\n\n" >&2; set -x;
+
+# the cleanup.sh script needs editing
 
 if [ $cleanupflag == "YES" ]
 then

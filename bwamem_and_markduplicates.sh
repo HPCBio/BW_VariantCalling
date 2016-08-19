@@ -1,11 +1,18 @@
 #!/bin/bash
-redmine=hpcbio-redmine@igb.illinois.edu
-if [ $# != 11 ]
-then
-        MSG="parameter mismatch"
-        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
-        exit 1;
-fi
+#
+# bwamem_and_markduplicates.sh
+# module to be used for input files in fastq format. 
+# This module runs alignment and dedup commands, QC test, and copy results to delivery folder
+#redmine=hpcbio-redmine@igb.illinois.edu
+
+#if [ $# != 11 ]
+#then
+#        MSG="parameter mismatch"
+#        echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
+#        exit 1;
+#fi
+
+echo -e "\n\n############# BEGIN BWAMEM_AND_MARKDUPLICATES PROCEDURE  ###############\n\n" >&2
 	
 set -x
 echo `date`
@@ -63,6 +70,7 @@ runqctest=$( cat $runfile | grep -w RUNDEDUPQC | cut -d '=' -f2 )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 QCfile=$rootdir/QC_Results.txt
 
+set +x; echo -e "\n\n\n############ checking runqctest\n" >&2; set -x;
 
 if [ $runqctest == "YES" -a ! -s $qc_result ]
 then
@@ -70,6 +78,7 @@ then
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
     exit 1;
 fi
+set +x; echo -e "\n\n\n############ checking tool directories\n" >&2; set -x;
 
 if [ ! -d $alignerdir ]
 then
@@ -121,12 +130,21 @@ then
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
     exit 1;
 fi
+
+set +x; echo -e "\n\n\n############ checking which mark duplicates tool to use\n" >&2; set -x;
+
 if [ `expr ${#markduptool}` -lt 1 ]
 then
     MSG="MARKDUPLICATESTOOL=$markduptool invalid value"
     echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
     exit 1;
 fi
+
+set +x; echo -e "\n\n" >&2;
+echo -e "#######################################################################################################" >&2
+echo -e "########    Prep work                                                                           #######" >&2
+echo -e "#######################################################################################################" >&2
+echo -e "\n\n" >&2; set -x;
 
 #threads=`expr $thr "-" 1`
 threads=$thr
@@ -144,6 +162,8 @@ all_exitcodes=0
 set +x; echo -e "\n\n" >&2;
 echo -e "#######################################################################################################" >&2
 echo -e "########    Run bwa mem -> conversion to bam -> dedup                                           #######" >&2
+echo -e "########    CASE1: do not use PICARD to dedup                                                   #######" >&2
+echo -e "########    CASE2: use PICARD to dedup                                                          #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
@@ -153,7 +173,7 @@ echo `date`
 if [ $markduptool != "PICARD" ]
 then
 	set +x; echo -e "\n\n" >&2; 
-	echo -e "#######################################   CASE1: MARKDUPLICATESTOOL != PICARD ##################################################" >&2
+	echo -e "####################################### CASE1: MARKDUPLICATESTOOL != PICARD                         ############################" >&2
 	echo -e "####################################### step 1: align, mark duplicates, convert to bam - on the fly ############################" >&2
 	echo -e "\n\n" >&2; set -x;
 
@@ -180,7 +200,7 @@ then
         fi
 
 
-        set +x; echo -e "\n\n########################### checking to see if any of the commands in this block failed #################\n\n" >&2; set -x;
+        set +x; echo -e "\n\n########################### step2: checking to see if any of the commands in this pipe failed #################\n\n" >&2; set -x;
         
       
         if [ $exitcode -ne 0 ]
@@ -196,7 +216,7 @@ then
             exit 1;
         fi
         
-        ### sometimes we may have a BAM file with NO alignmnets, just the header
+        set +x; echo -e "\n\n########################### step3: checking to see if bam file has alignments                 #################\n\n" >&2; set -x;
  
         #numAlignments=$( $sambambadir/sambamba view -c -t $thr $dedupbam ) 
         numAlignments=$( $samdir/samtools view -c -@ $thr $dedupbam )
@@ -213,7 +233,7 @@ then
 elif [ $markduptool == "PICARD" ]
 then
         set +x; echo -e "\n\n" >&2; 
-        echo -e "#######################################   CASE2: MARKDUPLICATESTOOL == PICARD   ##################################################" >&2
+        echo -e "####################################### CASE2: MARKDUPLICATESTOOL == PICARD                                      #################" >&2
         echo -e "####################################### step 1: align, then convert sam to bam, then sort, then mark duplicates  #################" >&2
         echo -e "\n\n" >&2; set -x;
         
@@ -222,6 +242,9 @@ then
         $alignerdir/bwa mem $alignparms -t $threads -R "${rgheader}" $refindex $fqfiles |  $samdir/samtools view -bSu -@ $threads -> $unsortedbam
         exitcode=$?
         echo `date`
+        
+        set +x; echo -e "\n\n########################### step2: checking to see if the bwa mem command failed                #################\n\n" >&2; set -x;
+        
         if [ $exitcode -ne 0 ]
         then
             MSG="bwa mem command failed on $fqfiles   exitcode=$exitcode. alignment failed"
@@ -235,7 +258,7 @@ then
             exit 1;
         fi        
 
-        ### sometimes we may have a BAM file with NO alignmnets, just the header
+        set +x; echo -e "\n\n########################### step3: checking to see if bam file has alignments                 #################\n\n" >&2; set -x;
  
         numAlignments=$( $samdir/samtools view -c -@ $thr $unsortedbam ) 
         echo `date`
@@ -246,7 +269,8 @@ then
             exit 1;
         fi
 
-        # sorting the bam file
+        set +x; echo -e "\n\n########################### step4: sort the bam                                               #################\n\n" >&2; set -x;
+
         $novodir/novosort --index --tmpdir $outputdir --threads $threads -m 16g --compression 1 -o $sortedbam $unsortedbam
         exitcode=$?
         echo `date`
@@ -264,12 +288,13 @@ then
             exit 1;
         fi
 
-        # creating header file
+        set +x; echo -e "\n\n########################### step5: create the header                                           #################\n\n" >&2; set -x;
         
         $samdir/samtools view -H $sortedbam > $sortedbam.header
 
 
-        # running the deduplication command
+        set +x; echo -e "\n\n########################### step6: dedup the bam file                                          #################\n\n" >&2; set -x;
+
         #$javadir/java -Xmx8g -Xms1024m -jar $picardir/MarkDuplicates.jar \
 
         java -Xmx8g -jar $picardir/picard.jar MarkDuplicates \
@@ -284,6 +309,9 @@ then
              
         exitcode=$?
         echo `date`
+        
+        set +x; echo -e "\n\n########################### step6: checking to see if the MarkDuplicates command failed        #################\n\n" >&2; set -x;
+        
         if [ $exitcode -ne 0 ]
         then
                  MSG="picard-Markduplicates commands failed on $sortedbam  exitcode=$exitcode. alignment failed"
@@ -301,7 +329,7 @@ fi
 
 set +x; echo -e "\n\n" >&2;
 echo -e "#######################################################################################################" >&2
-echo -e "########    Sort by coordinate to make GATK happy                                           #######" >&2
+echo -e "########    Sort by coordinate to make GATK happy                                               #######" >&2
 echo -e "#######################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 

@@ -1,26 +1,28 @@
-#!/bin/bash
-# written in collaboration with Mayo Bioinformatics core group
-#
-# script to combine chr GVCFs for a sample into a single file, convert GVCF to VCF, add missing tags and copy to delivery folder
-# 
-#########################################################################################################
+#!/bin/bash 
+#	
+#  script to perform variant calling with HaplotypeCaller ONLY on an entire sample
+#  This module is called from within the realign module
+######################################
 #redmine=hpcbio-redmine@igb.illinois.edu
 redmine=grendon@illinois.edu
 
 set -x
 echo `date`
+ulimit -s unlimited
 umask 0027
 scriptfile=$0
 realignedbam=$1
 gvcfFile=$2
 plainVcfFile=$3
-outputdir=$5
+outputdir=$4
+target=$5
 runfile=$6
 failedlog=$7
 email=$8
 qsubfile=$9
 
 LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$failedlog\noutputlog=$failedlog"
+
 
 set +x; echo -e "\n\n" >&2; 
 echo -e "####################################################################################################" >&2
@@ -29,93 +31,50 @@ echo -e "##################################### PARSING RUN INFO FILE ###########
 echo -e "##################################### AND SANITY CHECK      ########################################" >&2
 echo -e "####################################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
-
-rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
-input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
-snvcaller=$( cat $runfile | grep -w SNV_CALLER | cut -d '=' -f2 )
-samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
-samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-novodir=$( cat $runfile | grep -w NOVODIR | cut -d '=' -f2 )
-refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
-ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
-dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
-deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
-indices=$( cat $runfile | grep -w CHRINDEX | cut -d '=' -f2 | tr ':' ' ' )
-thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
-variantcmd=$( cat $runfile | grep -w VARIANT_CMD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-variantAnalysis=$( cat $runfile | grep -w VARIANT_ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-gvcf2vcf=$( cat $runfile | grep -w CONVERT_GVCF2VCF | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
-tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
-
-qc_result=$rootdir/QC_Results.txt
- 
-set +x; echo -e "\n\n########### checking tool directories     #############\n\n" >&2; set -x;
-
-if [ ! -d $samdir ]
+       
+if [ ! -s $runfile ]
 then
-	MSG="$samdir samtools directory not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
-fi
-
-if [ ! -d $gatk ]
-then
-	MSG="$gatk GATK directory not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
-fi
-
-if [ ! -d $tabixdir ]
-then
-	MSG="$tabixdir tabix directory not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
-fi
-
-set +x; echo -e "\n\n########### checking callsets     #############\n\n" >&2; set -x;
-
-if [ ! -d $refdir ]
-then
-	MSG="$refdir reference genome directory not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
-fi
-     
-if [ ! -s $refdir/$ref ]
-then
-	MSG="$ref reference genome not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
-fi
-
-if [ ! -s $refdir/$dbsnp ]
-then
-	MSG="$refdir/$dbsnp dbSNP for reference genome not found"
+	MSG="$runfile configuration file not found"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	exit 1;
 fi
 
-set +x; echo -e "\n\n########### checking inout/output folder     #############\n\n" >&2; set -x;
+rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
+input_type=$( cat $runfile | grep -w INPUTTYPE | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+thr=$( cat $runfile | grep -w PBSTHREADS | cut -d '=' -f2 )
+deliveryfolder=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )
+refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
+ref=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
+picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
+samdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
+sambambadir=$( cat $runfile | grep -w SAMBAMBADIR | cut -d '=' -f2 )
+javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
+gatk=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
+snvcaller=$( cat $runfile | grep -w SNV_CALLER | cut -d '=' -f2 )
+skipvcall=$( cat $runfile | grep -w SKIPVCALL | cut -d '=' -f2 )
+dbsnp=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+indelfile=$( cat $runfile | grep -w INDELFILE | cut -d '=' -f2 )
+genderinfo=$( cat $runfile | grep -w GENDERINFORMATION | cut -d '=' -f2 )
+variantcmd=$( cat $runfile | grep -w VARIANT_CMD | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+variantAnalysis=$( cat $runfile | grep -w VARIANT_ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+gvcf2vcf=$( cat $runfile | grep -w CONVERT_GVCF2VCF | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
+tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
+qc_result=$rootdir/QC_Results.txt
 
-if [ ! -d $outputdir ]
+if [ $variantAnalysis == "GENOTYPE" -o $variantAnalysis == "GENOTYPING" ]
 then
-	MSG="$outputdir vcall directory not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	MSG="VARIANT_ANALYSIS=$variantAnalysis This case is not analyzed in this script; it needs to be done by region rather than by sample"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	exit 1;
 fi
 
-if [ ! -s $realignedbam ]
+if [ $variantcmd != "HC" -a $variantcmd != "HAPLOTYPECALLER"  ]
 then
-	MSG="$realignedbam realigned.bam file not found"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	MSG="VARIANT_CMD=$variantcmd this case is not analyzed in this script"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	exit 1;
 fi
-
-
-set +x; echo -e "\n\n########### checking delivery folder     #############\n\n" >&2; set -x;
 
 if [ `expr ${#deliveryfolder}` -lt 2 ]
 then
@@ -129,6 +88,100 @@ then
     `mkdir -p $deliverydir`
 fi
 
+if [ $skipvcall == "1" -o $skipvcall == "YES" ]
+then
+	echo "skipping the execution of this variant calling module"
+	exit 0;
+fi
+if [ -z $snvcaller ]
+then
+	MSG="$snvcaller snvcaller tool was not specified in configuration file"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+if [ $variantcmd == "HC" -o $variantcmd == "HAPLOTYPECALLER"  ]
+then
+    variantcmd="HC"
+fi
+
+if [ $snvcaller == "GATK" -a $variantcmd != "HC" ]
+then
+	MSG="VARIANT_CMD=$variantcmd specified in configuration file. This script only runs HaplotypeCaller"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+if [ $input_type == "GENOME" -o $input_type == "WHOLE_GENOME" -o $input_type == "WHOLEGENOME" -o $input_type == "WGS" ]
+then
+    input_type="WGS"
+fi
+
+if [ $input_type == "EXOME" -o $input_type == "WHOLE_EXOME" -o $input_type == "WHOLEEXOME" -o $input_type == "WES" ]
+then
+    input_type="WES"
+fi
+
+
+if [ ! -s $realignedbam ]
+then
+	MSG="$realignedbam realigned bam file not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+
+if [ ! -d $outputdir ]
+then
+    mkdir -p $outputdir
+fi
+
+if [ ! -d $refdir ]
+then
+	MSG="$refdir reference genome directory not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi      
+if [ ! -s $refdir/$ref ]
+then
+	MSG="$ref reference genome not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+if [ ! -s $refdir/$dbsnp ]
+then
+	MSG="$refdir/$dbsnp dbSNP for reference genome not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+
+
+if [ ! -d $samdir ]
+then
+	MSG="$samdir samtools directory not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	exit 1;
+fi
+if [ -z $javadir ]
+then
+	MSG="A value must be specified for JAVADIR in configuration file"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi      
+if [ ! -d $gatk ]
+then
+	MSG="$gatk GATK directory not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+
+if [ ! -d $tabixdir ]
+then
+	MSG="$tabixdir tabix directory not found"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
+	exit 1;
+fi
+echo `date`
+
+#tabix needs to be on your path for GATK to produce *tbi files
+export PATH=${PATH}:$tabixdir
 
 set +x; echo -e "\n\n########### checking GVCF 2 VCF conversion     #############\n\n" >&2; set -x;
 
@@ -143,10 +196,7 @@ fi
 if [ $gvcf2vcf == "0" ]
 then
 	gvcf2vcf="NO"
-fi  
-
-#tabix needs to be on your path for GATK to produce *tbi files
-export PATH=${PATH}:$tabixdir
+fi 
 
 set +x; echo -e "\n\n" >&2;
 echo "#################################################################################" >&2
@@ -156,89 +206,63 @@ echo -e "\n\n" >&2; set -x;
 
 cd $outputdir/..
 sample=`basename $PWD`
-cd $outputdir
-inputFilename=$sample
-rawGVCF=${inputFilename}.combined.raw.g.vcf
-verifiedOut=${inputFilename}.verifyOutput        # output prefix for verifybam command
+cd $$outputdir
+intervals=" "                                    # for file with WES intervals list, if it is provided
+qctestflag=""                                    # for qc test
 
-
-
-set +x; echo -e "\n\n" >&2;
-echo "#################################################################################" >&2
-echo "################  STEP1: form an ordered list of the vcf files that will be merged" >&2
-echo "#################################################################################" >&2
-echo -e "\n\n" >&2; set -x;
-
-cd $outputdir
-
-ordered_vcfs=""
-
-for chr in $indices
-do
-
-	set +x; echo -e "\n\n########### processing $sample $chr     #############\n\n" >&2; set -x;
-
-	if [ -s ${sample}.$chr.raw.g.vcf ]
-	then
-		### the vcf file for this chr and  GATK-CombineGVCFs
-
-		thisvcf="  --variant  "${sample}.$chr.raw.g.vcf
-
-		### now we append this name to the ordered list
-
-		ordered_vcfs=${ordered_vcfs}$thisvcf
-	fi
-done
-
-set +x; echo -e "\n\n########### check that we have a non-empty list     #############\n\n" >&2; set -x;
-
-if [ `expr ${#ordered_vcfs}` -lt 1 ]
+if [ $input_type == "WES" -a $target != "NOTARGET" -a -s $target ]
 then
-	MSG="no GVCF files to merge for $sample in folder $outputdir"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
-	exit 1;
+	intervals=" -L $target "
 fi
 
 set +x; echo -e "\n\n" >&2;
-echo -e "##################################################################################"  >&2
-echo -e "########### STEP2: merge with GATK-CombineGVCFs                              #####" >&2
-echo -e "##################################################################################" >&2
+echo "#################################################################################" >&2
+echo "################  STEP1: run HaplotypeCaller                  ###################" >&2
+echo "#################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
 
-java -Xmx8g  -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
-	 -R $refdir/$ref \
-	 --dbsnp $refdir/$dbsnp \
-	 $ordered_vcfs  \
-	 -T CombineGVCFs \
-	 -o $gvcfFile
+java -Xmx8g -Djava.io.tmpdir=$outputdir -jar $gatk/GenomeAnalysisTK.jar \
+         -T HaplotypeCaller \
+         -R $refdir/$ref \
+         -I $realignedbam \
+         --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000 \
+         -gt_mode DISCOVERY \
+         -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+         -stand_call_conf 30 \
+         -stand_emit_conf 30 \
+         -nt 1 -nct $thr \
+         --dbsnp $refdir/$dbsnp $intervals \
+         -o $gvcfFile
 
 exitcode=$?
-echo `date`
+
+echo `date`		
 if [ $exitcode -ne 0 ]
 then
-	MSG="GATK CombineGVCFs  command failed exitcode=$exitcode. sample $sample"
+	MSG="HaplotypeCaller command failed  exitcode=$exitcode varcalling stopped for $inputfile"
 	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
 	exit $exitcode;
 fi
 
-if [ ! -s $gvcfFile ]
+if [ ! -s $gvcfFile ] 
 then
-	MSG="GATK CombineGVCFs did not generate output file exitcode=$exitcode. sample $sample"
-	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog
+	MSG="$ogvcfFile HaplotypeCaller file not created. varcalling stopped for $inputfile"
+	echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" >> $failedlog 
 	exit 1;
 fi 
 
 set +x; echo -e "\n\n" >&2;
-echo -e "##################################################################################"  >&2
-echo -e "########### STEP3: copy file to delivery folder                              #####" >&2
-echo -e "##################################################################################" >&2
+echo "#################################################################################" >&2
+echo "################  STEP3: COPY OUTPUT FILES TO DELIVERY FOLDER      ##############" >&2
+echo "#################################################################################" >&2
 echo -e "\n\n" >&2; set -x;
+
 
 echo `date`
 
 cp $gvcfFile $deliverydir
 
-echo `date`
+echo `date`	 
 
 set +x; echo -e "\n\n" >&2;
 echo -e "##################################################################################"  >&2

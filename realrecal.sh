@@ -4,7 +4,7 @@
 ########################################################
 redmine=hpcbio-redmine@igb.illinois.edu
 set -x
-if [ $# != 14 ];
+if [ $# != 12 ];
 then
 	MSG="parameter mismatch."
         echo -e "program=$0 stopped. Reason=$MSG" | mail -s 'Variant Calling Workflow failure message' "$redmine"
@@ -15,19 +15,17 @@ else
         umask 0027
 	scriptfile=$0
         realrecaldir=$1
-        outputfile=$2	
-        chr=$3
-        inputfile=$4
+        outputfile=$2
+        inputfile=$3
+        chr=$4       
         RGparms=$5
         region=$6
         realparms=$7
-        recalparms=$8
-        runfile=$9
-        flag=${10}
-	elog=${11}
-	olog=${12}
-	email=${13}
-        qsubfile=${14}
+        runfile=$8
+	elog=$9
+	olog=${10}
+	email=${11}
+        qsubfile=${12}
 	LOGS="jobid:${PBS_JOBID}\nqsubfile=$qsubfile\nerrorlog=$elog\noutputlog=$olog"
 
 
