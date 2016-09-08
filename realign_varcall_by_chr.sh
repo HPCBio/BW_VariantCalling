@@ -56,6 +56,7 @@ gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
+analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 ref_local=${refdir}/$refgenome
 dbsnp_local=${refdir}/$dbSNP
 indel_local=${refdir}/$indeldir
@@ -256,80 +257,82 @@ then
     exit 1;
 fi
 
+
+############################## Indel realignment should be added as an optional stage to the pipeline. This requires adding a variable to the runfile, and also changing the output file name 
+
 set +x
 echo -e "########### command one: executing GATK RealignerTargetCreator using known indels ####" 
 echo -e "##################################################################################\n\n"
 set -x
 cd $RealignDir
 
-$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
-	 -R $ref_local\
-	 -I $dedupsortedbam\
-	 -T RealignerTargetCreator\
-	 -nt $thr\
-	 $realparms\
-	 -o ${SampleName}.$chr.realignTargetCreator.intervals
-
-exitcode=$?
-echo `date`
-if [ $exitcode -ne 0 ]
-then
-	 MSG="RealignerTargetCreator command failed exitcode=$exitcode. realignment for sample $SampleName.$chr. stopped"
-	 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
-	 exit $exitcode;
-fi
-if [ ! -s ${SampleName}.$chr.realignTargetCreator.intervals ]
-then
-	 echo -e "${SampleName}\tREALIGNMENT\tWARN\t${SampleName}.$chr.RealignTargetCreator.intervals is an empty file. Skipping Indel realignment cmd\n" >> $qcfile
-         ln -s $dedupsortedbam $RealignDir/$realignedbam
-else 
- 	set +x
-	echo -e "\n\n##################################################################################" 
-	echo -e "########### command two: executing GATK IndelRealigner and generating BAM    #####"
-	echo -e "##################################################################################\n\n"
-	set -x
-	$javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
-                  -R $ref_local -I $dedupsortedbam -T IndelRealigner $realparms \
-                  --targetIntervals ${SampleName}.$chr.realignTargetCreator.intervals \
-                  -o $realignedbam
-
+if [ $analysis == "VC_with_realignment" ]; then 
+	$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+       		-R $ref_local\
+       		-I $dedupsortedbam\
+       		-T RealignerTargetCreator\
+       		-nt $thr\
+       		$realparms\
+       		-o ${SampleName}.$chr.realignTargetCreator.intervals
+	
 	exitcode=$?
-	set +x
-	echo -e "\n\n##################################################################################" 
-	echo -e "########### command three: sanity check for GATK IndelRealigner                  #####"
-	echo -e "##################################################################################\n\n"
-	set -x
 	echo `date`
-	if [ $exitcode -ne 0 ]
-	then
-		 MSG="indelrealigner command failed exitcode=$exitcode. realignment for sample $SampleName stopped"
-		 echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-		 exit $exitcode;
+	if [ $exitcode -ne 0 ]; then
+       		MSG="RealignerTargetCreator command failed exitcode=$exitcode. realignment for sample $SampleName.$chr. stopped"
+       		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"
+       		exit $exitcode;
 	fi
 
-	if [ -s $realignedbam ]
-	then
-   	    set +x		     
-	    echo -e "### the file was created. But we are not done.     #############"
-	    echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
-	    set -x 			
-	    numAlignments=$( $samtoolsdir/samtools view -c $realignedbam ) 
-
-	    echo `date`
-	    if [ $numAlignments -eq 0 ]
-	    then
-	        echo -e "${SampleName}\tREALIGNMENT\tFAIL\tGATK IndelRealigner command did not produce alignments for $realignedbam\n" >> $qcfile	    
-		MSG="GATK IndelRealigner command did not produce alignments for $realignedbam"
-		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-		exit 1;
-	    else
-		echo -e "####### $realignedbam seems to be in order ###########"
-	    fi
+	if [ ! -s ${SampleName}.$chr.realignTargetCreator.intervals ]; 	then
+       		echo -e "${SampleName}\tREALIGNMENT\tWARN\t${SampleName}.$chr.RealignTargetCreator.intervals is an empty file. Skipping Indel realignment cmd\n" >> $qcfile
+       		ln -s $dedupsortedbam $RealignDir/$realignedbam
 	else 
-	    MSG="indelrealigner command did not produce a file $realignedbam"
-	    echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
-	    exit 1;          
-	fi	
+		set +x
+		echo -e "\n\n##################################################################################" 
+		echo -e "########### command two: executing GATK IndelRealigner and generating BAM    #####"
+		echo -e "##################################################################################\n\n"
+		set -x
+		$javadir/java -Xmx8g -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+      			-R $ref_local -I $dedupsortedbam -T IndelRealigner $realparms \
+      			--targetIntervals ${SampleName}.$chr.realignTargetCreator.intervals \
+      			-o $realignedbam
+		
+		exitcode=$?
+		set +x
+		echo -e "\n\n##################################################################################" 
+		echo -e "########### command three: sanity check for GATK IndelRealigner                  #####"
+		echo -e "##################################################################################\n\n"
+		set -x
+		echo `date`
+		if [ $exitcode -ne 0 ]; then
+       			MSG="indelrealigner command failed exitcode=$exitcode. realignment for sample $SampleName stopped"
+       			echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+       			exit $exitcode;
+		fi
+		
+		if [ -s $realignedbam ]; then
+	    		set +x		     
+	    		echo -e "### the file was created. But we are not done.     #############"
+	    		echo -e "### sometimes we may have a BAM file with NO alignmnets      ###"
+	    		set -x 			
+	    		numAlignments=$( $samtoolsdir/samtools view -c $realignedbam ) 
+	    		echo `date`
+	    		if [ $numAlignments -eq 0 ]; then
+				echo -e "${SampleName}\tREALIGNMENT\tFAIL\tGATK IndelRealigner command did not produce alignments for $realignedbam\n" >> $qcfile	    
+				MSG="GATK IndelRealigner command did not produce alignments for $realignedbam"
+				echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+				exit 1;
+	    		else
+				echo -e "####### $realignedbam seems to be in order ###########"
+	    		fi
+		else 
+	    		MSG="indelrealigner command did not produce a file $realignedbam"
+	    		echo -e "program=$scriptfile stopped at line=$LINENO.\nReason=$MSG\n$LOGS"        
+	    		exit 1;          
+		fi
+	fi
+else 
+	realignedbam=$dedupsortedbam	#if no realignment required, then use the dedupsortedbam file as input to the next step. This is to avoid introducing a new variable
 fi
 
 echo `date`     
