@@ -76,6 +76,7 @@ New and changed parameters and meanings:
 - BWAINDEX: points to the indexed reference genome, and should be passed to the align_dedup.sh
 - SCRIPTDIR
 - OMNI: This is another database that is valuable for VQSR for human data (VQSR is done differently in plant datasets though!)
+- ANALYSIS: This parameter specifies which analysis is needed. It can be 'ALIGN', 'ALIGNMENT', OR 'ALIGN_ONLY' to only do the alignment stage of the pipeline; or 'VC_WITH_REALIGNMETN' to do a complete Variant Calling with realignment; or anything else to do a complete Variant Calling without the realignment stage
 
 Code changes:
 - pbs.MERGE

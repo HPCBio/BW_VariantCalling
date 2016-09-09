@@ -266,7 +266,7 @@ echo -e "#######################################################################
 set -x
 cd $RealignDir
 
-if [ $analysis == "VC_with_realignment" ]; then 
+if [ $analysis == "VC_WITH_REALIGNMENT" ]; then 
 	$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
        		-R $ref_local\
        		-I $dedupsortedbam\
