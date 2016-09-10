@@ -294,7 +294,7 @@ then
 	mkdir -p $outputdir/$deliverydir/docs
 fi
 
-if [ ! -d $outputdir/jointVCFs  ]
+if [ ! -d $outputdir/$deliverydir/jointVCFs  ]
 then
         # the jointVCF directory (containing files before VQSR) does not exist. create it
         mkdir -p $outputdir/$deliverydir/jointVCFs
