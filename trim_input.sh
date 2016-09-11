@@ -66,7 +66,7 @@ else
     echo -e "\n\n############ parameters ok                  #################\n\n"
     set -x
 
-    generic_qsub_header=$TopOutputLogs/qsubGenericHeader
+    generic_qsub_header=$TopOutputLogs/qsubGenericHeader_qc_trimming
     truncate -s 0 $generic_qsub_header
     echo "#!/bin/bash" > $generic_qsub_header
     echo "#PBS -q $queue" >> $generic_qsub_header
@@ -134,8 +134,8 @@ else
 	   cat $generic_qsub_header > $qsub1
 	   echo "#PBS -V" >> $qsub1
 	   echo "#PBS -N trim.${samplename}" >> $qsub1
-	   echo "#PBS -e $tmpdir/qsub.trim.${samplename}.er" >> $qsub1
-	   echo "#PBS -o $tmpdir/qsub.trim.${samplename}.ou" >> $qsub1
+	   echo "#PBS -e $TopOutputLogs/qsub.trim.${samplename}.er" >> $qsub1
+	   echo "#PBS -o $TopOutputLogs/qsub.trim.${samplename}.ou" >> $qsub1
            echo "set -x" >> $qsub1
            echo "echo step1 fastqc on raw reads $R1 $R2" >> $qsub1           
 
@@ -161,7 +161,7 @@ else
 	   jobid=`qsub $qsub1`
 	   `qhold -h u $jobid`
 	   echo $jobid >> $TopOutputLogs/pbs.TRIM
-           echo $jobid >> $TopOutputLogs/pbs.summary_dependencies
+           echo $jobid >> $TopOutputLogs/pbs.summary_dependencies_qc_trimming
 
 	   echo `date`
 	   `qrls -h u $jobid`
@@ -169,23 +169,23 @@ else
     fi           
     done < $sampleinfo
 	
-	   jobids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+	   jobids=$( cat $TopOutputLogs/pbs.summary_dependencies_qc_trimming | sed "s/\.[a-z]*//g" | tr "\n" ":" )
            qsub1=$TopOutputLogs/qsub.update.sampleinfo
 	   cat $generic_qsub_header > $qsub1
            echo "#PBS -N update.sampleinfo" >> $qsub1
-           echo "#PBS -e $tmpdir/qsub.trim.samples.er" >> $qsub1
-           echo "#PBS -o $tmpdir/qsub.trim.samples.ou" >> $qsub1
+           echo "#PBS -e $TopOutputLogs/qsub.trim.samples.er" >> $qsub1
+           echo "#PBS -o $TopOutputLogs/qsub.trim.samples.ou" >> $qsub1
 	   echo "#PBS -W depend=afterok:$jobids" >> $qsub1
            echo "set -x" >> $qsub1
            echo "Updating the SAMPLEINFORMATION file with the trimmed reads" >> $qsub1
            echo "mv ${rootdir}/sample.information ${sampleinfo}" >> $qsub1
 	   jobid=`qsub $qsub1`
-	   echo $jobid >> $TopOutputLogs/pbs.summary_dependencies
+	   echo $jobid >> $TopOutputLogs/pbs.summary_dependencies_qc_trimming
 	   echo `date`
 fi
 
 MSG="Quuuality control for all samples finished successfully"
-echo -e "program=$0 at line=$LINENO.\nReason=$MSG\n Logs for the run are available in $outputdir/logs" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+echo -e "program=$0 at line=$LINENO.\nReason=$MSG\n Logs for the run are available in $TopOutputLogs" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 echo `date`
 
