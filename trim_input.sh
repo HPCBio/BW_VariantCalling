@@ -4,10 +4,12 @@
 # trim_input.sh <runfile>
 
 runfile=$1
+redmine=hpcbio-redmine@igb.illinois.edu
 
 if [ $# != 1 ]
 then
-     echo -e "program $0 stopped at line=$LINENO. \nREASON=Parameters mismatch"
+     MSG="Parameter mismatch.\nRerun like this: $0 <runfile>\n"     
+     echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
      exit 1;
 else
     set -x
@@ -15,10 +17,13 @@ else
     rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
     tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
     email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
+    reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
     sampleinfo=$( cat $runfile | grep SAMPLEINFORMATION | cut -d '=' -f2)
     adapters=$( cat $runfile | grep ADAPTERS | cut -d '=' -f2 )
     fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2)
     trimmomaticdir=$( cat $runfile | grep -w TRIMMOMATICDIR | cut -d '=' -f2)
+    trimmomaticparams=$( cat $runfile | grep -w TRIMMOMATICPARAMS | cut -d '=' -f2)
+    javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
     TopOutputLogs=$rootdir/logs
     thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
     nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
@@ -29,19 +34,23 @@ else
     set -x 
     if [ ! -s $sampleinfo ]
     then
-	echo -e "$0 stopped at line $LINENO. \nREASON=input file not found $sampleinfo"
+	echo -e "$0 stopped at line $LINENO. \nREASON=input file not found $sampleinfo"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
     fi
     if [ ! -s $adapters ]
     then
-	echo -e "$0 stopped at line $LINENO. \nREASON=input file not found $adapters"
+	echo -e "$0 stopped at line $LINENO. \nREASON=input file not found $adapters"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
     fi
-    if [ ! -d $rootdir ]
-    then
-        echo -e "$0 stopped at line $LINENO. \sREASON=$rootdir directory not found"
-        exit 1;
+    if [ ! -d $rootdir ]; then
+        mkdir $rootdir
+    else
+        rm -rf $rootdir/*
     fi
+
+    setfacl -Rm   g::rwx $rootdir  #gives the group rwx permission, and to subdirectories
+    setfacl -Rm d:g::rwx $rootdir  #passes the permissions to newly created files/folders
+
     if [ ! -d $TopOutputLogs ]
     then
 	echo -e "creating Logs folder $TopOutputLogs";
@@ -55,7 +64,17 @@ else
 
     set +x
     echo -e "\n\n############ parameters ok                  #################\n\n"
-    set -x 
+    set -x
+
+    generic_qsub_header=$TopOutputLogs/qsubGenericHeader_qc_trimming
+    truncate -s 0 $generic_qsub_header
+    echo "#!/bin/bash" > $generic_qsub_header
+    echo "#PBS -q $queue" >> $generic_qsub_header
+    echo "#PBS -m ae" >> $generic_qsub_header
+    echo "#PBS -M $email" >> $generic_qsub_header
+    echo "#PBS -l nodes=$nodes:ppn=$thr" >> $generic_qsub_header
+    echo "#PBS -l walltime=${pbswalltime}" >> $generic_qsub_header
+ 
     echo -e "\n\n############ trimming loop start here       #################\n\n"
 
     while read sampleLine
@@ -78,19 +97,19 @@ else
           
 	   if [ `expr ${#samplename}` -lt 1 ]
  	   then
-	       echo -e "$0 stopped at line $LINENO\nREASON=samplename string not found $samplename"
+	       echo -e "$0 stopped at line $LINENO\nREASON=samplename string not found $samplename"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	       exit 1;
            fi
 
 	   if [ ! -s $R1 ]
 	   then
-	       echo -e "$0 stopped at line $LINENO\nREASON=reads file not found $R1"
+	       echo -e "$0 stopped at line $LINENO\nREASON=reads file not found $R1"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	       exit 1;
            fi
 
 	   if [ ! -s $R2 ]
 	   then
-	       echo -e "$0 stopped at line $LINENO\nREASON=reads file not found $R2"
+	       echo -e "$0 stopped at line $LINENO\nREASON=reads file not found $R2"| mail -s "[Task #${reportticket}]" "$redmine,$email"
 	       exit 1;
            fi
 	   set +x
@@ -112,17 +131,11 @@ else
  
 
 	   qsub1=$TopOutputLogs/qsub.trim.$samplename
-	   echo "#PBS -S /bin/bash" > $qsub1
+	   cat $generic_qsub_header > $qsub1
 	   echo "#PBS -V" >> $qsub1
 	   echo "#PBS -N trim.${samplename}" >> $qsub1
-	   echo "#PBS -M $email" >> $qsub1
-	   echo "#PBS -m ae" >> $qsub1
-	   echo "#PBS -e $tmpdir/qsub.trim.${samplename}.er" >> $qsub1
-	   echo "#PBS -o $tmpdir/qsub.trim.${samplename}.ou" >> $qsub1
-	   echo "#PBS -l nodes=$nodes:ppn=$thr" >> $qsub1
-	   echo "#PBS -l walltime=${pbswalltime}" >> $qsub1
-	   echo "#PBS -l mem=$mem" >> $qsub1
-	   echo "#PBS -q $queue" >> $qsub1
+	   echo "#PBS -e $TopOutputLogs/qsub.trim.${samplename}.er" >> $qsub1
+	   echo "#PBS -o $TopOutputLogs/qsub.trim.${samplename}.ou" >> $qsub1
            echo "set -x" >> $qsub1
            echo "echo step1 fastqc on raw reads $R1 $R2" >> $qsub1           
 
@@ -130,13 +143,13 @@ else
            echo "$fastqcdir -o $fqdir1 -t $thr $R2" >> $qsub1
            echo "echo `date`" >>  $qsub1           
            echo "echo step2 trim raw reads" >> $qsub1           
-	   echo "java -jar $trimmomaticdir/trimmomatic-0.36.jar PE\
+	   echo "$javadir/java -jar $trimmomaticdir PE\
 		   -threads $thr \
 		   -trimlog $outputdir/${samplename}_trim.log \
 		   $R1 $R2 \
 		   $outputdir/${b1}.paired.fq.gz $outputdir/${b1}.unpaired.fq.gz \
 		   $outputdir/${b2}.paired.fq.gz $outputdir/${b2}.unpaired.fq.gz \
-		   ILLUMINACLIP:${adapters}:2:20:10 LEADING:5 TRAILING:5 MINLEN:25 " >> $qsub1
+		   ILLUMINACLIP:${adapters}${trimmomaticparams} " >> $qsub1
            echo "echo `date`" >>  $qsub1
            echo "echo step3 fastqc on trimmed reads" >> $qsub1           
            echo "$fastqcdir -o $fqdir2 -t $thr $outputdir/${b1}.paired.fq.gz" >> $qsub1
@@ -146,10 +159,39 @@ else
 	   echo " echo "${samplename} $outputdir/${b1}.paired.fq.gz $outputdir/${b2}.paired.fq.gz" > ${rootdir}/sample.information " >> $qsub1
 	   `chmod g+r $qsub1 `
 	   jobid=`qsub $qsub1`
+	   `qhold -h u $jobid`
+	   echo $jobid >> $TopOutputLogs/pbs.TRIM
+           echo $jobid >> $TopOutputLogs/pbs.summary_dependencies_qc_trimming
+
 	   echo `date`
+	   `qrls -h u $jobid`
 	  
     fi           
     done < $sampleinfo
-    mv ${rootdir}/sample.information ${sampleinfo}
+	
+	   jobids=$( cat $TopOutputLogs/pbs.summary_dependencies_qc_trimming | sed "s/\.[a-z]*//g" | tr "\n" ":" )
+           qsub1=$TopOutputLogs/qsub.update.sampleinfo
+	   cat $generic_qsub_header > $qsub1
+           echo "#PBS -N update.sampleinfo" >> $qsub1
+           echo "#PBS -e $TopOutputLogs/qsub.trim.samples.er" >> $qsub1
+           echo "#PBS -o $TopOutputLogs/qsub.trim.samples.ou" >> $qsub1
+	   echo "#PBS -W depend=afterok:$jobids" >> $qsub1
+           echo "set -x" >> $qsub1
+           echo "Updating the SAMPLEINFORMATION file with the trimmed reads" >> $qsub1
+           echo "mv ${rootdir}/sample.information ${sampleinfo}" >> $qsub1
+	   jobid=`qsub $qsub1`
+	   echo $jobid >> $TopOutputLogs/pbs.summary_dependencies_qc_trimming
+	   echo `date`
 fi
+
+MSG="Quuuality control for all samples finished successfully"
+echo -e "program=$0 at line=$LINENO.\nReason=$MSG\n Logs for the run are available in $TopOutputLogs" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+
+echo `date`
+
+set +x
+echo -e "\n\n##################################################################################" >&2
+echo -e "#############    DONE PROCESSING SAMPLE $SampleName. EXITING NOW.  ###############" >&2
+echo -e "##################################################################################\n\n" >&2
+set -x
 
