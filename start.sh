@@ -275,7 +275,7 @@ set -x
 
 if [ ! -d $outputdir ]; then
 	mkdir $outputdir
-else
+#else
 	#rm -rf $outputdir/* #This would actually delete important data if the user did qc & trimming before running vriant calling (vc), so I'm commenting it! However, it might be needed to start fresh in the same folder if he is only doing vc. 
 fi
 

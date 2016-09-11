@@ -139,8 +139,8 @@ else
            echo "set -x" >> $qsub1
            echo "echo step1 fastqc on raw reads $R1 $R2" >> $qsub1           
 
-           echo "$fastqcdir -o $fqdir1 -t $thr $R1" >> $qsub1
-           echo "$fastqcdir -o $fqdir1 -t $thr $R2" >> $qsub1
+           echo "$fastqcdir/fastqc -o $fqdir1 -t $thr $R1" >> $qsub1
+           echo "$fastqcdir/fastqc -o $fqdir1 -t $thr $R2" >> $qsub1
            echo "echo `date`" >>  $qsub1           
            echo "echo step2 trim raw reads" >> $qsub1           
 	   echo "$javadir/java -jar $trimmomaticdir PE\
@@ -152,8 +152,8 @@ else
 		   ILLUMINACLIP:${adapters}${trimmomaticparams} " >> $qsub1
            echo "echo `date`" >>  $qsub1
            echo "echo step3 fastqc on trimmed reads" >> $qsub1           
-           echo "$fastqcdir -o $fqdir2 -t $thr $outputdir/${b1}.paired.fq.gz" >> $qsub1
-           echo "$fastqcdir -o $fqdir2 -t $thr $outputdir/${b2}.paired.fq.gz" >> $qsub1
+           echo "$fastqcdir/fastqc -o $fqdir2 -t $thr $outputdir/${b1}.paired.fq.gz" >> $qsub1
+           echo "$fastqcdir/fastqc -o $fqdir2 -t $thr $outputdir/${b2}.paired.fq.gz" >> $qsub1
            echo "echo `date`" >>  $qsub1
            echo "echo exiting now" >> $qsub1           
 	   echo " echo "${samplename} $outputdir/${b1}.paired.fq.gz $outputdir/${b2}.paired.fq.gz" > ${rootdir}/sample.information " >> $qsub1
