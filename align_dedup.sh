@@ -121,7 +121,7 @@ if [ ! -d $DeliveryDir ]
 then
     mkdir -p $DeliveryDir
 fi
-if [ `expr ${#R1}` -lt 1]
+if [ `expr ${#R1}` -lt 1 ]
 then
     MSG="$R1 read one file not found"
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
@@ -133,7 +133,7 @@ then
     exit 1                
 fi
 
-if [ `expr ${#R2}` -lt 1]
+if [ `expr ${#R2}` -lt 1 ]
 then
     MSG="$R2 read two file not found"
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
@@ -145,7 +145,7 @@ then
     exit 1                
 fi
 
-if [ `expr ${#SampleName}` -lt 1]
+if [ `expr ${#SampleName}` -lt 1 ]
 then
     MSG="$SampleName sample undefined variable"
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
