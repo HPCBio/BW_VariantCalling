@@ -43,7 +43,6 @@ tmpdir=$( cat $runfile | grep -w TMPDIR | cut -d '=' -f2 )
 deliverydir=$( cat $runfile | grep -w DELIVERYFOLDER | cut -d '=' -f2 )  
 scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
-inputformat=$( cat $runfile | grep -w INPUTFORMAT | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 sampleinfo=$( cat $runfile | grep -w SAMPLEINFORMATION | cut -d '=' -f2 )
 numsamples=$(wc -l $sampleinfo)
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
@@ -54,7 +53,6 @@ sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 dup_cutoff=$( cat $runfile | grep -w  DUP_CUTOFF | cut -d '=' -f2 )
 map_cutoff=$( cat $runfile | grep -w  MAP_CUTOFF | cut -d '=' -f2 )
-paired=$( cat $runfile | grep -w PAIRED | cut -d '=' -f2 )
 indices=$( cat $runfile | grep -w CHRNAMES | cut -d '=' -f2 | tr ':' ' ' )
 analysis=$( cat $runfile | grep -w ANALYSIS | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
 alignertool=$( cat $runfile | grep -w ALIGNERTOOL | cut -d '=' -f2 | tr '[a-z]' '[A-Z]' )
@@ -64,10 +62,8 @@ picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 gatkdir=$( cat $runfile | grep -w GATKDIR | cut -d '=' -f2 )
 samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
 bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
-tabixdir=$( cat $runfile | grep -w TABIXDIR | cut -d '=' -f2 )
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 novocraftdir=$( cat $runfile | grep -w NOVOCRAFTDIR | cut -d '=' -f2 )
-vcftoolsdir=$( cat $runfile | grep -w VCFTOOLSDIR | cut -d '=' -f2 )
 fastqcdir=$( cat $runfile | grep -w FASTQCDIR | cut -d '=' -f2 )
 thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 nodes=$( cat $runfile | grep -w PBSNODES | cut -d '=' -f2 )
@@ -100,14 +96,6 @@ then
 	MSG="Invalid value specified for DBSNP=$dbSNP in the runfile."
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 	exit 1;
-fi
-
-
-if [ $inputformat != "FASTQ"  ]
-then
-    MSG="Incorrect value for INPUTFORMAT=$inputformat in the runfile."
-    echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
 fi
 
 if [[ -z "${alignertool// }" ]]
@@ -173,13 +161,6 @@ then
     MSG="SAMPLEINFORMATION=$sampleinfo  file is empty."
     echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
     exit 1;	
-fi
-
-if [ $paired -ne 1 -a $paired != "YES" ]
-then
-    MSG="Invalid value for parameter PAIRED=$paired in runfile "
-    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
 fi
 
 set +x 
@@ -251,21 +232,12 @@ then
         exit 1;
 fi
 
-if [ ! -d  $vcftoolsdir  ]
-then
-        MSG="Invalid value specified for VCFTOOLSDIR=$vcftoolsdir in the runfile."
-        echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1;
-fi
-
 if [ ! -d  $fastqcdir  ]
 then
         MSG="Invalid value specified for FASTQDIR=$fastqcdir in the runfile."
         echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
         exit 1;
 fi
-
-hash  $tabixdir/tabix  2>/dev/null || { echo >&2 "I require tabix but it's not installed.  Aborting."; exit 1; }
 
 set +x
 echo -e "\n\n########################################################################################" >&2

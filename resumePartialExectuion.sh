@@ -5,9 +5,12 @@
 # Two Inputs: your specfic logs directory where your qsub files are. Make sure the names of your qsub files are specific to the parts of the workflow that you want to run.
 
 
-logsdir="/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs"
+logsdir=$1
+#Example: logsdir="/projects/bioinformatics/HudsonSoybeanProject/VarCallingRuns/MattK_output_2016/Align.Soy_4small_samples/logs"
+workflow_job=$2
+#Example qsub*realVcall*
 
-ls $logsdir/qsub*realVcall* > qsubsscripts
+ls $logsdir/$workflow_job > qsubsscripts
 
 readarray qsubs < qsubsscripts
 
