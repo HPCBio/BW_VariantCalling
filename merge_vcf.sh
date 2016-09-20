@@ -131,7 +131,7 @@ set -x
 cd $RealignDir
 set +x
 echo -e "\n\n##################################################################################" 
-echo -e "########### command one: skipping the merging for the bam files              #####"
+echo -e "########### command one: gather all files to be merged             #####"
 echo -e "##################################################################################\n\n"
 set -x 
 chr_bamList=$( ls -1 ${SampleName}.*.recalibrated.bam | tr "\n" " " )
@@ -144,7 +144,7 @@ then
 fi
 set +x
 echo -e "\n\n##################################################################################" 
-echo -e "########### command two: skipping the novosort part             #####"
+echo -e "########### command two: merge files with novosort              #####"
 echo -e "##################################################################################\n\n"
 set -x
 $novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${SampleName}.*.recalibrated.bam 
@@ -152,7 +152,7 @@ $novocraftdir/novosort --index --threads $thr --tmpdir $tmpdir -o $outbam  ${Sam
 exitcode=$?
 set +x
 echo -e "\n\n##################################################################################" 
-echo -e "########### command three: skipping the sanity check for novosort                        #####"
+echo -e "########### command three: sanity check for novosort                        #####"
 echo -e "##################################################################################\n\n"
 set -x 
 
@@ -210,7 +210,7 @@ then
 fi
 set +x
 echo -e "\n\n##################################################################################" 
-echo -e "########### command two: prepare vcfs and create ordered list of vcfs to merge   #####"
+echo -e "########### STAGE two: prepare vcfs and create ordered list of vcfs to merge   #####"
 echo -e "##################################################################################\n\n"
 set -x
 
