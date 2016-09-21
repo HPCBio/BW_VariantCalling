@@ -8,7 +8,6 @@
 
 referencedir="/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/data/genome"
 
-: << 'comment_block'
 for i in `seq 1 22` ; do
 
   /home/apps/java/jdk1.8.0_65/bin/java -jar /home/apps/gatk/gatk-3.6/GenomeAnalysisTK.jar \
@@ -29,7 +28,7 @@ for i in `seq 1 22` ; do
   echo "splitting the Mills file;       chr: chr${i};         exit with $?"
 
 done
-comment_block
+
 
 for i in chrX chrY chrM ; do
 
