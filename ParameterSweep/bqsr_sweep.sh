@@ -31,14 +31,13 @@ sampleinfo=$( cat $runfile | grep SAMPLEINFORMATION | cut -d '=' -f2)
 javadir=$( cat $runfile | grep -w JAVADIR | cut -d '=' -f2 )
 
 reads="/home/groups/hpcbio_shared/azza/GIAB/reads"
-results="/home/groups/hpcbio_shared/azza/GIAB/results"
 
 # Default run
-if [ ! -d  $results/p4_indelRealign_bqsr/default ]; then
-	mkdir -p  $results/p4_indelRealign_bqsr/bqsr/default
+if [ ! -d  $rootdir/p4_indelRealign_bqsr/default ]; then
+	mkdir -p  $rootdir/p4_indelRealign_bqsr/bqsr/default
 fi
 
-cd $results/p4_indelRealign_bqsr/bqsr/default
+cd $rootdir/p4_indelRealign_bqsr/bqsr/default
 
 module load gatk/3.6
 GenomeAnalysisTK=/home/apps/gatk/gatk-3.6/GenomeAnalysisTK.jar
@@ -119,7 +118,7 @@ declare -a step=(2 150 2 10 10 10 2 2)
 declare -a max=(13 1000 13 70 70 70 12 12) 
 
 
-cd $results/p4_indelRealign_bqsr/bqsr
+cd $rootdir/p4_indelRealign_bqsr/bqsr
 mkdir ${parameters[@]}
 
 echo The parameters being tested and their ranges are given below: >> "../bqsr.summary.txt"
@@ -139,7 +138,7 @@ do
 	GenomeAnalysisTK=/home/apps/gatk/gatk-3.6/GenomeAnalysisTK.jar
 	module load R/3.2.3
 	par=${parameters[pos]}
-	cd $results/p4_indelRealign_bqsr/bqsr/$par
+	cd $rootdir/p4_indelRealign_bqsr/bqsr/$par
 	for i in $(seq ${min[pos]} ${step[pos]} ${max[pos]}); do
 		START=$(date +%s)
 		java -jar $GenomeAnalysisTK\
