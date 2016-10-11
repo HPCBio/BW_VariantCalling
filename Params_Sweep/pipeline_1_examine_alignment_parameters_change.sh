@@ -1,8 +1,6 @@
 #!/bin/bash
 
-## This script sweeps the parameters for the aligner BWA MEM, and allows comaprison between the quality of mapping in each case. It should be called as:
-
-############################################################################################## 
+################################################################################################ 
 	#################### Torque preparation: PBS commands ###################
 ################################################################################################
 
@@ -22,6 +20,32 @@ echo -e "#######################################################################
 reference="/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/data/genome"
 reads="/home/groups/hpcbio_shared/azza/GIAB/reads"
 results="/home/groups/hpcbio_shared/azza/GIAB/results"
+
+	# an alternative to having to copy the reference genome (from the gatk bundle in the mirror folder), would have been creating a soft link to it:
+	# ln -s /home/mirrors/gatk_bundle/2.8/hg19/ucsc.hg19.fasta reference
+	# and now from this point onward, reference is accepted instead of the long path to ucsc.hg19.fasta
+
+######### Some parts were already done, so it would be a good idea to not rerun them!
+
+	######### Reads preparation:
+		
+	######### for the sake of sanity, I created 2 couple read files:
+
+	cp $reads/N*_R1_*.fastq $reads/read1.fastq
+	cp $reads/N*_R2_*.fastq $reads/read2.fastq
+	
+if [ $done ]; then
+	gunzip $reads/read*
+fi
+
+	######### Quality checking: 
+	module load fastqc/0.11.4
+	fastqc $reads/read1.fastq --outdir=$results/p1_quality
+	fastqc $reads/read2.fastq --outdir=$results/p1_quality
+	# In reality, to see this result, just type: firefox required.read_fastqc.html
+	# Reports show data of good quality, except for some kmer content in read1 (Gloria: its near the end, so 	should be ok). Also, the encoding is Sanger, so the reads are neat..
+	# A pertinent question is about the read group, Do I accept the info presented on the chromosome here?
+
 
 ######### Alignment: The default settings
 cd $results/p2_alignment/
@@ -111,6 +135,12 @@ while [ $pos -lt ${#parameters[@]} ]; do
 	done
 	let pos+=1
 done
+
+
+
+#################################################################################################### 
+################################ What are the group read info??? ################################
+####################################################################################################
 
 
 echo -e "\n\n########################################################################################"
