@@ -8,6 +8,8 @@
 
 set -x
 redmine=hpcbio-redmine@igb.illinois.edu
+scriptfile=$0
+runfile=$1
 
 if [ $# != 1 ] 
 then
@@ -82,7 +84,7 @@ do
         echo "#PBS -o $TopOutputLogs/log.bqsr_sweep.$sample.$chr.ou" >> $qsub1
         echo "#PBS -e $TopOutputLogs/log.bqsr_sweep.$sample.$chr.in" >> $qsub1
         
-        echo "$scriptdir/bqsr_sweep.sh $runfile $sample $chr $TopOutputLogs/log.bqsr_sweep.$sample.$chr.in $TopOutputLogs/log.bqsr_sweep.$sample.$chr.ou $TopOutputLogs/qsub.bqsr_sweep.$sample.$chr" >> $qsub1
+        echo "$scriptdir/ParameterSweep/bqsr_sweep.sh $runfile $sample $chr $TopOutputLogs/log.bqsr_sweep.$sample.$chr.in $TopOutputLogs/log.bqsr_sweep.$sample.$chr.ou $TopOutputLogs/qsub.bqsr_sweep.$sample.$chr" >> $qsub1
         `chmod a+r $qsub1`               
         bqsr_sweepjobid=`qsub $qsub1` 
         #`qhold -h u $bqsr_sweepjobid`

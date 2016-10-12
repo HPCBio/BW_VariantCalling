@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #This scrips performs a parameter sweep for the bqsr stage of a variant calling pipeline. Run it as: bqsr_sweep.sh <runfile> <sample> <chr> <log.in> <log.ou> <qsub>
-
+set -x
 redmine=hpcbio-redmine@igb.illinois.edu
 
 if [ $# != 6 ]
