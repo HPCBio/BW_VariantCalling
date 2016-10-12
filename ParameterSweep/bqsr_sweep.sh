@@ -153,7 +153,7 @@ START=$(date +%s)
 $javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 	-T BaseRecalibrator\
 	-R $ref_local\
-	-I $dedupsortedbam\
+	-I ${RealignDir}/${dedupsortedbam}\
 	$recalparmsindels \
        	$recalparmsdbsnp \
 	--out $SampleName.$chr.recal_table.default.0 \
@@ -168,7 +168,7 @@ START=$(date +%s)
 java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
        	-T BaseRecalibrator\
         -R $ref_local\
-	-I $dedupsortedbam\
+	-I ${RealignDir}/${dedupsortedbam}\
         $recalparmsindels \
 	$recalparmsdbsnp \
         -BQSR $SampleName.$chr.recal_table.default.0\
@@ -195,7 +195,7 @@ START=$(date +%s)
 java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 	-T PrintReads\
 	-R $ref_local\
-	-I $dedupsortedbam\
+	-I ${RealignDir}/${dedupsortedbam}\
 	-BQSR $SampleName.$chr.recal_table.default.0\
 	-o $SampleName.$chr.recal.default.0.bam\
 	-nct $thr
@@ -234,7 +234,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 		        -T BaseRecalibrator\
 		        -R $ref_local\
-			-I $dedupsortedbam\
+			-I ${RealignDir}/${dedupsortedbam}\
                         $recalparmsindels \
                 	$recalparmsdbsnp \
 			-$par "$i"\
@@ -258,7 +258,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 		        -T BaseRecalibrator\
 		        -R $ref_local\
-			-I $dedupsortedbam\
+			-I ${RealignDir}/${dedupsortedbam}\
                         $recalparmsindels \
                 	$recalparmsdbsnp \
 		        -BQSR $SampleName.$chr.recal_table.$par.$i\
@@ -285,7 +285,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 		        -T PrintReads\
 		        -R $ref_local\
-			-I $dedupsortedbam\
+			-I ${RealignDir}/${dedupsortedbam}\
 		        -BQSR $SampleName.$chr.recal_table.$par.$i\
 		        -o $SampleName.$chr.recal.$par.$i.bam\
 			-nct $thr
