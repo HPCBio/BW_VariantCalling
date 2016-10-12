@@ -1,12 +1,4 @@
 #!/bin/bash
-#PBS -S /bin/bash                       
-#PBS -q default                         
-#PBS -l nodes=1:ppn=23                  
-#PBS -o localhost:$HOME/outputs.log.txt
-#PBS -e localhost:$HOME/errors.log.txt          
-#PBS -M aeahmed@illinois.edu
-#PBS -m abe
-
 
 ## This script sweeps the parameters for the aligner BWA MEM, and allows comaprison between the quality of mapping in each case. It should be called as: bwa_sweep.sh <runfile> <SampleName> <read1> <read2>
 
@@ -17,64 +9,37 @@ read1=$3
 read2=$4
 redmine=hpcbio-redmine@igb.illinois.edu
 
-if [ $# != 4 ]; then
+if [ $# != 4 ]
+then
 	MSG="Parameter mismatch.\nRerun like this: $0 <runfile>\n"
 	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "Variant Calling Workflow failure message" "$redmine"
 	exit 1;
 fi
 
-if [ `expr ${#read1}` -lt 1 ]; then
-        MSG="$read1 read one file not found"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1
-elif [ ! -s $read1 ]; then
-        MSG="$read1 read one file not found"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1    
-fi
-
-if [ `expr ${#read2}` -lt 1 ]; then
-    MSG="$read2 read two file not found"
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"        
-    exit 1
-elif [ ! -s $read2 ]; then
-    MSG="$read2 read two  file not found"
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"        
-    exit 1    
-fi
-
-if [ `expr ${#SampleName}` -lt 1 ] 
+if [ `expr ${#R1}` -lt 1 ]
 then
-    MSG="$SampleName sample undefined variable"
-    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1
-else
-    sID=$SampleName
-    sPU=$SampleName
-    sSM=$SampleName
-fi
+	    MSG="$R1 read one file not found"
+	        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+		    exit 1
+	    elif [ ! -s $R1 ]
+	    then
+		        MSG="$R1 read one file not found"
+			    echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+			        exit 1    
+			fi
 
-if [ `expr ${#sLB}` -lt 1 -o `expr ${#sPL}` -lt 1 -o `expr ${#sCN}` -lt 1 ]
-then
-    MSG="SAMPLELB=$sLB SAMPLEPL=$sPL SAMPLECN=$sCN at least one of these fields has invalid values. "
-    echo -e "program=$0 stopped at line=$LINENO.\nReason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-    exit 1;
-fi
-
-RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
-rgheader=$( echo -n -e "@RG\t" )$( echo -e "${RGparms}"  | tr ":" "\t" | tr "=" ":" )
 
 echo -e "\n\n########################################################################################"
-echo -e "#############                Sweeping parameters starts here!              ###############"
+echo -e "#############                Pipeline starts here!              ###############"
 echo -e "########################################################################################\n\n"
 
 set -x
 echo `date`
+refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 bwa_index=$( cat $runfile | grep -w BWAINDEX | cut -d '=' -f2 )
 outputdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
 bwamemdir=$( cat $runfile | grep -w BWAMEMDIR | cut -d '=' -f2 )
 samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
-thr=$( cat $runfile | grep -w PBSCORES | cut -d '=' -f2 )
 
 results=$outputdir/bwa_sweep.$SampleName
 
@@ -84,14 +49,15 @@ mkdir default
 cd default
 
 START=$(date +%s)
-$bwamemdir/bwa mem -M -t $thr -R "${rgheader}" $bwa_index $read1 $read2 > a.default.0.sam
+$bwamemdir/bwa mem -M -t 12 -R  '@RG\tID:H7.5.R1\tPL:illumina\tPU:H7LH3CCXX.5.0\tLB:R1\tPI:0\tDT:2016-7-1\tSM:NA12878-Garvan' $refdir/human $reads/read1.fastq $reads/read2.fastq > a.default.0.sam
+# note that it is the indexed file(s) that was needed in this stage. It has a different name than the 	refdir (remember the -p argument), so I need to use its name (human)
 END=$(date +%s)
 [ -s a.default.0.sam ] && echo "Default alignment successeful!" || exit
 alignments=$($samtoolsdir/samtools view -c a.default.0.sam)
 if [ "$alignments" -eq 0]; then
 	echo			
-	echo " Unfortunately, I can NOT process the sample $SampleName with default parameters" 
-	echo "Exiting now"
+	echo " Unfortunately, I can NOT process the your request with default parameters" 
+	echo
 	exit
 fi
 $samtoolsdir/samtools view -bS a.default.0.sam > a.default.0.bam
@@ -118,7 +84,7 @@ declare -a min=(3 .5 20 20 300 .1 20 0 1 1 1 1 1 1 10)
 declare -a step=(3 .5 20 20 300 .1 20 3 2 2 2 2 2 3 10)
 declare -a max=(60 4 200 200 10000 1 200 30 20 20 20 20 20 40 80)
 
-cd $results
+cd $results/p2_alignment/
 mkdir ${parameters[@]}
 
 echo The parameters being tested and their ranges are given below:
@@ -129,10 +95,10 @@ echo maximum  : ${max[@]}
 pos=0
 while [ $pos -lt ${#parameters[@]} ]; do
         par=${parameters[pos]}
-	cd $results/$par
+	cd $results/p2_alignment/$par
         for i in $(seq ${min[pos]} ${step[pos]} ${max[pos]}); do
 		START=$(date +%s)	
-		$bwamemdir/bwa mem -t $thr -$par "$i" -M -R  "${rgheader}" $bwa_index $read1 $read2   > "a.$par.$i.sam"
+		$bwamemdir/bwa mem -t 12 -$par "$i" -M -R  '@RG\tID:H7.5.R1\tPL:illumina\tPU:H7LH3CCXX.5.0\tLB:R1\tPI:0\tDT:2016-7-1\tSM:NA12878-Garvan'  $refdir/human $reads/read1.fastq $reads/read2.fastq  > "a.$par.$i.sam"
 		END=$(date +%s)
 		DIFF=$(( $END - $START ))
 		if [ -s "a.$par.$i.sam" ]; then
