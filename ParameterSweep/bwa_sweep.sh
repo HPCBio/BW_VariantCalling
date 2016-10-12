@@ -149,7 +149,6 @@ echo -e "#######################################################################
 cd $results
 echo parameter value Total_reads Total_aligned Mean_MAPQ Time > changing_parameters.txt
 
-module load samtools/1.3.1
 ls $results > list
 readarray parameters < list
 rm list
@@ -169,7 +168,7 @@ for par in "${parameters[@]}"; do
                 time=$(grep Execution $summaryfile|cut -d':' -f2)
                 file="a.$par.${range[i]}.bam"
                 bamfile=$(echo $file | tr -d ' ')
-                mapq=$(samtools view $bamfile | awk '{sum+=$5} END { print sum/NR}')
+                mapq=$($samtoolsdir/samtools view $bamfile | awk '{sum+=$5} END { print sum/NR}')
                 echo $par ${range[i]} $total $aligned $mapq $time >> $results/changing_parameters.txt
                 let i+=1
         done
@@ -181,7 +180,7 @@ echo -e "\n\n###################################################################
 echo -e "##############                 plotting now for this sample=$SampleName                            ##################"   
 echo -e "########################################################################################\n\n"
 
-
+module load R
 Rscript bwaplotting.R  $results/changing_parameters.txt 
 
 
