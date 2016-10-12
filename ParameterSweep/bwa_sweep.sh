@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## This script sweeps the parameters for the aligner BWA MEM, and allows comaprison between the quality of mapping in each case. It should be called as: bwa_sweep.sh <runfile> <SampleName> <read1> <read2> <log.in> <log.ou> <qsub>
+## This script sweeps the parameters for the aligner BWA MEM, and allows comaprison between the quality of mapping in each case. It should be called as: bwa_sweep.sh <runfile> <SampleName> <read1> <read2> <log.in> <log.ou> 
 
 scriptfile=$0
 runfile=$1
@@ -62,7 +62,7 @@ mkdir default
 cd default
 
 START=$(date +%s)
-$bwamemdir/bwa mem -M -t $thr -R  "${rgheader}" $bwa_index $R1 $R2 > a.default.0.sam
+$bwamemdir/bwa mem -M -t $thr -R  "${rgheader}" $bwa_index $read1 $read2 > a.default.0.sam
 END=$(date +%s)
 [ -s a.default.0.sam ] && echo "Default alignment successeful!" || exit
 alignments=$($samtoolsdir/samtools view -c a.default.0.sam)
@@ -110,7 +110,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 	cd $results/$par
         for i in $(seq ${min[pos]} ${step[pos]} ${max[pos]}); do
 		START=$(date +%s)	
-		$bwamemdir/bwa mem -t $thr -$par "$i" -M -R "${rgheader}" $bwa_index  $R1 $R2  > "a.$par.$i.sam"
+		$bwamemdir/bwa mem -t $thr -$par "$i" -M -R "${rgheader}" $bwa_index  $read1 $read2  > "a.$par.$i.sam"
 		END=$(date +%s)
 		DIFF=$(( $END - $START ))
 		if [ -s "a.$par.$i.sam" ]; then

@@ -108,7 +108,7 @@ do
    echo "#PBS -N bwaSweep.$sample" >> $qsub1
    echo "#PBS -o $TopOutputLogs/log.bwaSweep.$sample.ou" >> $qsub1
    echo "#PBS -e $TopOutputLogs/log.bwaSweep.$sample.in" >> $qsub1
-   echo "$scriptdir/ParameterSweep/bwa_sweep.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.bwaSweep.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
+   echo "$scriptdir/ParameterSweep/bwa_sweep.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.bwaSweep.$sample.in $TopOutputLogs/log.bwaSweep.$sample.ou " >> $qsub1
    `chmod a+r $qsub1`               
    alignjobid=`qsub $qsub1`
    echo $alignjobid >> $TopOutputLogs/pbs.BWA_Sweep.$sample
