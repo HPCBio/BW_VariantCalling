@@ -108,7 +108,7 @@ echo -e "#################     Now, we need to generate summary           ######
 echo -e "########################################################################################" >&2
 echo -e "########################################################################################\n\n" >&2
     
-           
+: << 'end_comment_out'
 alljobids=$( cat $TopOutputLogs/pbs.summary_dependencies | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
 set +x
@@ -136,4 +136,4 @@ then
      exit 1
 fi
 
-
+end_comment_out
