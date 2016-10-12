@@ -61,7 +61,7 @@ outputdir=$rootdir/$SampleName
 AlignDir=$outputdir/align
 RealignDir=$outputdir/realign
 inputbam=$AlignDir/${SampleName}.wdups.sorted.bam                # name of the bam file that align-dedup produced
-dedupsortedbam=${SampleName}.$chr.wdups.sorted.bam               # name of the aligned file -one chr out of inputbam
+dedupsortedbam=${SampleName}.${chr}.wdups.sorted.bam               # name of the aligned file -one chr out of inputbam
 
 echo -e "\n\n##################################################################################"
 echo -e "########### PREP WORK: split aligned.bam by chr and grab indels for chr            ###" 
