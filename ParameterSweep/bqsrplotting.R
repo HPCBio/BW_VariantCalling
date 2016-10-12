@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-#User need to supply the following: the path to the swept files, the number of cores for parallelization
+#User need to supply the following: the path to the swept files, args[0], the number of cores for parallelization, args[1]
 
 library(gsalib)
 library(dplyr)

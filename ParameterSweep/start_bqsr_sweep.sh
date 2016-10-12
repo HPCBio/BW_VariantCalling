@@ -3,7 +3,7 @@
 ################################################################################################ 
 # Program to do a parameter sweep from human samples of WES short reads
 # In order to run this pipeline please type at the command line
-# start_bwa_sweep.sh <runfile>
+# start_bqsr_sweep.sh <runfile>
 ################################################################################################
 
 set -x
@@ -71,58 +71,35 @@ do
         echo -e "########################################################################################\n\n" >&2
     fi
     sample=$( echo "$sampleLine" | cut -d ' ' -f 1 )
-    FQ_R1=$( echo "$sampleLine" | cut -d ' '  -f 2 )
-    FQ_R2=$( echo "$sampleLine" | cut -d ' ' -f 3 )
-    
-    if [ `expr ${#sample}` -lt 1 ] ; then
-        MSG="unable to parse line $sampleLine"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1
-    fi
+    for chr in $indices
+    do
+        set +x
+        echo -e "\n\n########################################################################################" >&2 
+        echo -e "####   BQSR sweep script for SAMPLE $sample chr=$chr                              #######" >&2
+        echo -e "########################################################################################\n\n" >&2
+        set -x
+        qsub1=$TopOutputLogs/qsub.bqsr_sweep.$sample.$chr
+        cat $generic_qsub_header > $qsub1
+        echo "#PBS -N bqsr_sweep.$sample.$chr" >> $qsub1
+        echo "#PBS -o $TopOutputLogs/log.bqsr_sweep.$sample.$chr.ou" >> $qsub1
+        echo "#PBS -e $TopOutputLogs/log.bqsr_sweep.$sample.$chr.in" >> $qsub1
+        
+        echo "$scriptdir/ParameterSweep/bqsr_sweep.sh $runfile $sample $chr $TopOutputLogs/log.bqsr_sweep.$sample.$chr.in $TopOutputLogs/log.bqsr_sweep.$sample.$chr.ou $TopOutputLogs/qsub.bqsr_sweep.$sample.$chr" >> $qsub1
+        `chmod a+r $qsub1`               
+        bqsr_sweepjobid=`qsub $qsub1` 
+        echo $bqsr_sweepjobid >> $TopOutputLogs/pbs.BQSR_SWEEP.$sample
+        echo $bqsr_sweepjobid >> $TopOutputLogs/pbs.summary_dependencies
+        
+        echo `date`
+        if [ `expr ${#bqsr_sweepjobid}` -lt 1 ]
+        then
+                MSG="unable to launch qsub bqsr_sweep job for $sample. Exiting now"
+                echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+                exit 1        
+        fi
+    done
+    bqsrjobids=$( cat $TopOutputLogs/pbs.BQSR_SWEEP.$sample | sed "s/\.[a-z]*//g" | tr "\n" ":" )
 
-    if [ `expr ${#FQ_R1}` -lt 1 ] ; then
-        MSG="unable to parse line $sampleLine"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1
-    elif [ ! -s $FQ_R1 ]; then
-        MSG="$FQ_R1 read1 file not found"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-        exit 1    
-    fi
-    if [ `expr ${#FQ_R2}` -lt 1 ] ; then
-        MSG="unable to parse line $sampleLine"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"	
-        exit 1
-    elif [ ! -s $FQ_R2 ]; then
-        MSG="$FQ_R2 read2 file not found"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email" 
-        exit 1
-    fi
-    echo -e "\n\n###########################################################"
-    echo -e "####   Launching Alignment script for SAMPLE $sample with R1=$F"
-    echo -e "###############################################################"
-    set -x
-
-   qsub1=$TopOutputLogs/qsub.bwaSweep.$sample
-   cat $generic_qsub_header > $qsub1
-   echo "#PBS -N bwaSweep.$sample" >> $qsub1
-   echo "#PBS -o $TopOutputLogs/log.bwaSweep.$sample.ou" >> $qsub1
-   echo "#PBS -e $TopOutputLogs/log.bwaSweep.$sample.in" >> $qsub1
-   echo "$scriptdir/ParameterSweep/align_dedup.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.bwaSweep.$sample.in $TopOutputLogs/log.alignDedup.$sample.ou $TopOutputLogs/qsub.alignDedup.$sample" >> $qsub1
-   `chmod a+r $qsub1`               
-   alignjobid=`qsub $qsub1`
-   `qhold -h u $alignjobid`
-   echo $alignjobid >> $TopOutputLogs/pbs.ALIGN
-   echo $alignjobid >> $TopOutputLogs/pbs.summary_dependencies
-   echo `date`
-   
-   if [ `expr ${#alignjobid}` -lt 1 ]; then
-        MSG="unable to launch qsub align job for $sample. Exiting now"
-        echo -e "Program $0 stopped at line=$LINENO.\n\n$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"                     
-        exit 1
-
-   fi
-   
 done <  $sampleinfo
 
 echo -e "########################################################################################" >&2

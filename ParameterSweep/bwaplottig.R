@@ -1,7 +1,18 @@
+#!/usr/bin/env Rscript
+
+# To use this script, supply the following arguments: the file containing the summary stats from the alignment stage, args[0]
+
+args = commandArgs(trailingOnly=TRUE)
+
+
+# Check required packages:
 if (!require(RColorBrewer)){
   install.packages("RColorBrewer")
   library(RColorBrewer)
-  # display.brewer.all() To see all the available colors
+}
+
+if (!require(dplyr)){
+  install.packages("dplyr")
   library(dplyr)
 }
 
@@ -16,8 +27,7 @@ parameters = data.frame(
             'Bandwidth','Seed bases count'),
   stringsAsFactors = F)
 
-rawdata = read.table( pipe('ssh -l hpcbiointern01 biocluster.igb.illinois.edu "cat /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/results/changing_parameters.txt"'),
-                   stringsAsFactors = F,header = T)
+rawdata = read.table( args[0], stringsAsFactors = F, header = T)
 
 data = rawdata
 data = cbind(data,fraction=data$Total_aligned/data$Total_reads)
@@ -33,7 +43,7 @@ data = arrange(data,parameter,value)
 
 attempts = split(data,data$parameter)
 
-pdf('myplots.pdf',title = 'Effect of parameter chages in the alignment file')
+pdf(paste0(dirname(args[0]),"/",'BWA MEM Sweeping plots.pdf'),title = 'Effect of parameter chages in the alignment file')
 par(mfrow = c(2,2))
 for (i in seq(1:length(attempts))) {
   plot(attempts[[i]][,4],attempts[[i]][,5], main=attempts[[i]][1,1], xlab='Mean MAPQ',
