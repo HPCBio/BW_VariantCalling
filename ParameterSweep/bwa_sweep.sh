@@ -100,7 +100,10 @@ declare -a min=(3 .5 20 20 300 .1 20 0 1 1 1 1 1 1 10)
 declare -a step=(3 .5 20 20 300 .1 20 3 2 2 2 2 2 3 10)
 declare -a max=(60 4 200 200 10000 1 200 30 20 20 20 20 20 40 80)
 
-cd $results
+if [ ! -d $results ]; then 
+	cd $results
+fi 
+
 mkdir ${parameters[@]}
 
 echo The parameters being tested and their ranges are given below:
