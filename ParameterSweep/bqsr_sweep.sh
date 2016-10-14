@@ -136,13 +136,15 @@ echo -e "\n\n###################################################################
 echo -e "################# Running BQSR: Default parameters            ##########################" 
 echo -e "\n\n##################################################################################"
 
-if [ ! -d  $rootdir/sweepBQSR/default ]; then
-	mkdir -p  $rootdir/sweepBQSR/default
+if [ ! -d  $rootdir/sweepBQSR.$SampleName/default ]; then
+	mkdir -p  $rootdir/sweepBQSR.$SampleName/default
 fi
 
-cd $rootdir/sweepBQSR/default
+cd $rootdir/sweepBQSR.$SampleName/default
 
+set +x
 module load R ################################################ R is assumed availble in the user's environment, along with some libraries. More details are on: https://software.broadinstitute.org/gatk/guide/article?id=2899
+set -x
 
 echo Run using the default parameters: > "../bqsr.summary.txt"
 echo "The parameters are:     ( ics maxCycle mcs bqsrBAQGOP ddq idq lqt mdq )">> "../bqsr.summary.txt"
@@ -165,7 +167,7 @@ exitcode=$?
 echo "exit code from BaseRecalibrator chr=$chr using: defaults 0 = $exitcode ; execution time = $DIFF" >> "../bqsr.summary.txt"
 	
 START=$(date +%s)
-java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
        	-T BaseRecalibrator\
         -R $ref_local\
 	-I ${RealignDir}/${dedupsortedbam}\
@@ -180,7 +182,7 @@ exitcode=$?
 echo "exit code from the rerun of BaseRecalibrator chr=$chr using: defaults 0 = $exitcode  ; execution time = $DIFF" >> "../bqsr.summary.txt"
 
 START=$(date +%s)
-java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 	-T AnalyzeCovariates\
 	-R $ref_local\
 	-before $SampleName.$chr.recal_table.default.0\
@@ -192,7 +194,7 @@ exitcode=$?
 echo "exit code from AnalyzeCovariates chr=$chr using: defaults 0 = $exitcode  ; execution time = $DIFF" >> "../bqsr.summary.txt"
 		
 START=$(date +%s)
-java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 	-T PrintReads\
 	-R $ref_local\
 	-I ${RealignDir}/${dedupsortedbam}\
@@ -214,7 +216,7 @@ declare -a step=(2 150 2 10 10 10 2 2)
 declare -a max=(13 1000 13 70 70 70 12 12)
 
 
-cd $rootdir/sweepBQSR
+cd $rootdir/sweepBQSR.$SampleName
 mkdir ${parameters[@]}
 
 echo The parameters being tested and their ranges are given below: >> "bqsr.summary.txt"
@@ -228,10 +230,10 @@ pos=0
 
 while [ $pos -lt ${#parameters[@]} ]; do
 	par=${parameters[pos]}
-	cd $rootdir/sweepBQSR/$par
+	cd $rootdir/sweepBQSR.$SampleName/$par
 	for i in $(seq ${min[pos]} ${step[pos]} ${max[pos]}); do
 		START=$(date +%s)
-		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+		$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 		        -T BaseRecalibrator\
 		        -R $ref_local\
 			-I ${RealignDir}/${dedupsortedbam}\
@@ -255,7 +257,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 		fi
 			
 		START=$(date +%s)
-		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+		$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 		        -T BaseRecalibrator\
 		        -R $ref_local\
 			-I ${RealignDir}/${dedupsortedbam}\
@@ -270,7 +272,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 	        echo "exit code from the rerun of  BaseRecalibrator with: -$par $i = $exitcode ; execution time = $DIFF" >> "../bqsr.summary.txt"
 		
 		START=$(date +%s)
-		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+		$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 		        -T AnalyzeCovariates\
 		        -R $ref_local\
 		        -before $SampleName.$chr.recal_table.$par.$i\
@@ -282,7 +284,7 @@ while [ $pos -lt ${#parameters[@]} ]; do
 	        echo "exit code from AnalyzeCovariates using $par $i = $exitcode; execution time = $DIFF" >> "../bqsr.summary.txt"
 
 		START=$(date +%s)
-		java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
+		$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
 		        -T PrintReads\
 		        -R $ref_local\
 			-I ${RealignDir}/${dedupsortedbam}\
@@ -303,7 +305,7 @@ echo -e "##############                 plotting now for this chr=$chr          
 echo -e "########################################################################################\n\n"
 
 
-Rscript bqsrplotting.R $rootdir/sweepBQSR/ $thr
+Rscript bqsrplotting.R $rootdir/sweepBQSR.$SampleName/ $thr $chr
 
 
 

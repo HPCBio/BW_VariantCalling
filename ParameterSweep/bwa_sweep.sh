@@ -33,7 +33,7 @@ sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 
 
-results=$outputdir/bwa_sweep.$SampleName
+results=$outputdir/sweepBWA.$SampleName
 
 ## Read group info:
 if [ `expr ${#SampleName}` -lt 1 ]
@@ -57,6 +57,10 @@ RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${RGparms}"  | tr ":" "\t" | tr "=" ":" )
 
 ######### Alignment: The default settings
+if [ ! -d $results ]; then
+	mkdir $results
+fi
+
 cd $results
 mkdir default
 cd default
