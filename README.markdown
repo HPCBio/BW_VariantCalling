@@ -28,6 +28,7 @@ git clone https://github.com/HPCBio/BW_VariantCalling.git
 ## Documentation
 
 This pipeline implements the GATK's best practices for germline variant calling in Whole Genome and Whole Exome Next Generation Sequencing datasets (https://software.broadinstitute.org/gatk/best-practices/), given a single sample or a cohort of samples. In its latest version, 3.6,  the best practices include the following stages:
+
 1. Mapping to the reference genome 
 2. Marking duplicates 
 3. Base recalibration (BQSR)
