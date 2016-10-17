@@ -21,22 +21,68 @@ This workflow originated from collaboration with Mayo Bioinformatics core group,
 
 # Basics
 
-## Installation
-
-git clone https://github.com/HPCBio/BW_VariantCalling.git
-
-## Documentation
+## Introduction
 
 This pipeline implements the GATK's best practices for germline variant calling in Whole Genome and Whole Exome Next Generation Sequencing datasets (https://software.broadinstitute.org/gatk/best-practices/), given a single sample or a cohort of samples. In its latest version, 3.6,  the best practices include the following stages:
 
-1. Mapping to the reference genome 
-2. Marking duplicates 
+1. Mapping to the reference genome
+2. Marking duplicates
 3. Base recalibration (BQSR)
 4. Variant calling –----- (processing done per sample)
 5. Joint genotyping –----- (processing done for all samples together)
 
 These stages are implemented in our pipeline, with an optional  “Indel Realignment” step (which was recommended in previous GATK best practices < 3.6).
 
+
+
+## Installation and dependencies
+
+git clone https://github.com/HPCBio/BW_VariantCalling.git
+
+
+The pipeline implements the stages of Figure [?] and [?], while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [?] below, and it is assumed that the users would specify the path to each of them in theirhis runfile as shown in section ??.
+
+
+Quality control
+Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
+
+Illumina reads trimming
+Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
+
+Alignment
+Bwa mem (https://github.com/lh3/bwa ), 
+Novoalign (http://novocraft.com/ )
+
+Marking duplicates
+Samblaster (https://github.com/GregoryFaust/samblaster ), Novosort ( http://novocraft.com/ ),  
+Picard (https://broadinstitute.github.io/picard/ ), 
+
+Indel realignment
+GATK (https://software.broadinstitute.org/gatk/download/ )
+
+Base recalibration
+GATK (https://software.broadinstitute.org/gatk/download/ )
+
+Calling variants
+GATK  (Haplotypecaller: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php )
+
+Joint calling of variants
+GATK (Genotypegvcf: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php )
+
+Miscelleaneous
+Samtools (http://samtools.github.io/ )
+
+
+Additionally, for the purposes of monitoring, parallelization and optimization, the workflow uses memprof, Anisimov launcher, YesWorkflow and parfu.
+
+DECIDE WHETHER THESE NEED TO BE INSTALLED OR COULD BE OPTIONAL.
+
+
+## Documentation
+
+With an optional additional stage of checking the quality of input data, the pipeline can also be run as: Alignment stage only, Complete variant calling with realignment and Complete variant calling without realignment depending on the user’s ANALYSIS setting.
+
+Under the hood, this pipeline splits and merges files at different stages to achieve optimal usage of resources. 
 
 ## Features
 
