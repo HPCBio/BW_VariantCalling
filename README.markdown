@@ -86,24 +86,38 @@ Under the hood, this pipeline splits and merges files at different stages to ach
 
 ## Features
 
-# For users
 
-## Usage examples
-
-# For developers
-
-## Workflow file naming conventions
-
-__Input files__
+# Input files
 Convention on input fastq names: must be in form of samplename_read?.fq(.gz) or samplename_read?.fastq(.gz)
 
-__Scripts__
+For this pipeline to work, a number of standard files for calling variants are needed, namely the reference sequence, database of known variants and the adapter sequence to be trimmed. The full path to all these needs to be specified in the User’s runfile as specified in section ?.?
+
+It is important to note that the reference sequence should be prepared first, following the GATK’s guideline (http://gatkforums.broadinstitute.org/wdl/discussion/2798/howto-prepare-a-reference-for-use-with-bwa-and-gatk). 
+
+For working with human data, one can download most of the needed files from the GATK’s resource bundle: http://gatkforums.broadinstitute.org/gatk/discussion/1213/whats-in-the-resource-bundle-and-how-can-i-get-it . Missing from the bundle are the index files for the aligner, which are specific to the tool that would be used for alignment (i.e., bwa or novoalign in this pipeline)
+
+To achieve the parallelization of Figure [2] in the realignment/recalibration stages, the pipeline needs a separate vcf file for each chromosome/contig, and each should be named as: \*\${chr_name}.vcf. If working with the GATK bundle, the sample script (splitVCF-by-chromosome.sh) can be used to produce the needed files with some minor modifications (mainly, providing the right path to the referencedir, java and GenomeAnalysisTK.jar)
+
+
+## Scripts
 * qsub.whatever = qsub scripts
 * log.whatever.in = output log for that qsub
 * log.whatever.ou = pbs output message log for that qsub
 * pbsWHATEVER = list of jobids for that step in the workflow 
 * there are a few jobs that delineate major blocks of computation; their log files are in CAPS:
 log.CONFIGURE.in
+
+## User’s runfile and sample information files
+
+To run a specific stage of the pipeline, in addition to specifying the needed script file, the user needs to supply 2 additional files, these are the runfile and the sampleinfo files.
+The sampleinformation file contains the information about the samples to be processed by the pipeline. In its current implementation, it can analyze paired end WES/WGS data in fastq/fq/fastq.gz/fq.gz format only. These should be specified in tabular form of 3 columns separated by ‘space’, and according to the format below:
+<sample name> <full path to read1 file> <full path to read2 file>
+The runfile file contains all the details regarding a specific run of the pipeline, including the tools of section 2.1, resources of section 2.2, and the sampleinformation file path as well. It would change depending on the analysis type required.
+
+## Results
+
+The results from a typical run of the pipeline are organized according to the hierarchy shown in Figure [3] below. Overall, the DELIVERYFOLDER contains the key summarizing files of the run (the cleaned up bams, gvcfs and final vcf from joint calling; in addition to the summary reports regarding the quality of the data, and copies of the sampleinformation and runfile files). Each sample also has its own directory that contains the files generated after each stage. In Figure [3], a color coding schema is employed to differentiate the files that would be generated according to how the user specifies the ANALYSIS parameter in the runfile.
+
 
 ## Error capture
 
