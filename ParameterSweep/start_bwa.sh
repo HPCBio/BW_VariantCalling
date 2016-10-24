@@ -105,7 +105,7 @@ do
 
    qsub1=$TopOutputLogs/qsub.bwaSweep.$sample
    cat $generic_qsub_header > $qsub1
-   echo "#PBS -N bwaSweep.$sample" >> $qsub1
+   echo "#PBS -N bwa_sweep.$sample" >> $qsub1
    echo "#PBS -o $TopOutputLogs/log.bwaSweep.$sample.ou" >> $qsub1
    echo "#PBS -e $TopOutputLogs/log.bwaSweep.$sample.in" >> $qsub1
    echo "$scriptdir/ParameterSweep/bwa_sweep.sh $runfile $sample $FQ_R1 $FQ_R2 $TopOutputLogs/log.bwaSweep.$sample.in $TopOutputLogs/log.bwaSweep.$sample.ou " >> $qsub1

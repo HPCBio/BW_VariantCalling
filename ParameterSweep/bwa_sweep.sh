@@ -2,6 +2,8 @@
 
 ## This script sweeps the parameters for the aligner BWA MEM, and allows comaprison between the quality of mapping in each case. It should be called as: bwa_sweep.sh <runfile> <SampleName> <read1> <read2> <log.in> <log.ou> 
 
+set -x 
+
 scriptfile=$0
 runfile=$1
 SampleName=$2
@@ -66,17 +68,16 @@ mkdir default
 cd default
 
 START=$(date +%s)
-$bwamemdir/bwa mem -M -t $thr -R  "${rgheader}" $bwa_index $read1 $read2 > a.default.0.sam
+$bwamemdir/bwa mem -M -t $thr -R  "${rgheader}" $bwa_index $read1 $read2 | $samtoolsdir/samtools view -@ $thr -bS > a.default.0.bam 
 END=$(date +%s)
-[ -s a.default.0.sam ] && echo "Default alignment successeful!" || exit
-alignments=$($samtoolsdir/samtools view -c a.default.0.sam)
+[ -s a.default.0.bam ] && echo "Default alignment successeful!" || exit
+alignments=$($samtoolsdir/samtools view -@ $thr -c a.default.0.bam)
 if [ "$alignments" -eq 0]; then
 	echo			
 	echo " Unfortunately, I can NOT process the your request with default parameters" 
 	echo
 	exit
 fi
-$samtoolsdir/samtools view -bS a.default.0.sam > a.default.0.bam
 
 DIFF=$(( $END - $START ))
 
@@ -100,9 +101,7 @@ declare -a min=(3 .5 20 20 300 .1 20 0 1 1 1 1 1 1 10)
 declare -a step=(3 .5 20 20 300 .1 20 3 2 2 2 2 2 3 10)
 declare -a max=(60 4 200 200 10000 1 200 30 20 20 20 20 20 40 80)
 
-if [ ! -d $results ]; then 
-	cd $results
-fi 
+cd $results
 
 mkdir ${parameters[@]}
 
@@ -117,17 +116,17 @@ while [ $pos -lt ${#parameters[@]} ]; do
 	cd $results/$par
         for i in $(seq ${min[pos]} ${step[pos]} ${max[pos]}); do
 		START=$(date +%s)	
-		$bwamemdir/bwa mem -t $thr -$par "$i" -M -R "${rgheader}" $bwa_index  $read1 $read2  > "a.$par.$i.sam"
+		$bwamemdir/bwa mem -t $thr -$par "$i" -M -R "${rgheader}" $bwa_index  $read1 $read2 | $samtoolsdir/samtools view -bS -@ $thr > "a.$par.$i.bam" 
 		END=$(date +%s)
 		DIFF=$(( $END - $START ))
-		if [ -s "a.$par.$i.sam" ]; then
+		if [ -s "a.$par.$i.bam" ]; then
 			echo "Alignment successeful! with -$par $i" 
 		else 
 			echo "BWA aligned :0: using default parameter (*=0=)"> "a.$par.$i.summary.txt"
 			echo "Execution time is :0: seconds" >> "a.$par.$i.summary.txt"
 			continue
 		fi
-		alignments=$($samtoolsdir/samtools view -c a.$par.$i.sam)
+		alignments=$($samtoolsdir/samtools view -@ $thr -c a.$par.$i.bam)
 		if [ "$alignments" -eq 0]; then
 			echo			
 			echo " Unfortunately, I can NOT process the parameter $par = $i with bwa mem" > "a.$par.$i.summary.txt"
@@ -142,7 +141,6 @@ while [ $pos -lt ${#parameters[@]} ]; do
 		echo 
 		echo "Execution time is :$DIFF: seconds" >> "a.$par.$i.summary.txt"
 		echo 
-		$samtoolsdir/samtools view -bS "a.$par.$i.sam" >"a.$par.$i.bam"
 		$samtoolsdir/samtools flagstat a.$par.$i.bam >> "a.$par.$i.summary.txt"
 	done
 	let pos+=1
@@ -188,7 +186,7 @@ echo -e "##############                 plotting now for this sample=$SampleName
 echo -e "########################################################################################\n\n"
 
 module load R
-Rscript bwaplotting.R  $results/changing_parameters.txt 
+Rscript $scriptdir/bwaplotting.R  $results/changing_parameters.txt
 
 
 echo -e "\n\n########################################################################################"
