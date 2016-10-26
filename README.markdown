@@ -48,6 +48,8 @@ Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
 
 Illumina reads trimming
 Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
+read trimming implemented in the param sweep branch, not in main branch
+TO-DO: work it inot main branch
 
 Alignment
 Bwa mem (https://github.com/lh3/bwa ), 
