@@ -33,7 +33,7 @@ sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
 
 
-results=$outputdir/bwa_sweep.$SampleName
+results=$outputdir/sweepBWA.$SampleName
 
 ## Read group info:
 if [ `expr ${#SampleName}` -lt 1 ]
@@ -57,6 +57,10 @@ RGparms=$( echo "ID=${sID}:LB=${sLB}:PL=${sPL}:PU=${sPU}:SM=${sSM}:CN=${sCN}" )
 rgheader=$( echo -n -e "@RG\t" )$( echo -e "${RGparms}"  | tr ":" "\t" | tr "=" ":" )
 
 ######### Alignment: The default settings
+if [ ! -d $results ]; then
+	mkdir $results
+fi
+
 cd $results
 mkdir default
 cd default
@@ -96,7 +100,10 @@ declare -a min=(3 .5 20 20 300 .1 20 0 1 1 1 1 1 1 10)
 declare -a step=(3 .5 20 20 300 .1 20 3 2 2 2 2 2 3 10)
 declare -a max=(60 4 200 200 10000 1 200 30 20 20 20 20 20 40 80)
 
-cd $results
+if [ ! -d $results ]; then 
+	cd $results
+fi 
+
 mkdir ${parameters[@]}
 
 echo The parameters being tested and their ranges are given below:

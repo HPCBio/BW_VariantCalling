@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-#User need to supply the following: the path to the swept files, args[0], the number of cores for parallelization, args[1]
+#User need to supply the following: the path to the swept files, args[1], the number of cores for parallelization, args[2], and the name of the chromosome (or contig) for which the plot is generated
 
 library(gsalib)
 library(dplyr)
@@ -57,7 +57,7 @@ foreach (i = 1:length(dirs)+1 ) %dopar% {
 #for (i in seq_along(dirs)+1 ) {
   library(gsalib)
   library(dplyr)
-  pdffile=paste0(args[1],'bqsr_effect_',param_name[i-1],'.pdf')
+  pdffile=paste0(args[1],'BQSR_sweep_plot_on_',args[3],'_',param_name[i-1],'.pdf') #args[3] is the chrmosome name
   pdf(pdffile,title = 'Effect of parameter chages in the bqsr result')
   setwd(dirs[i])
   before = Sys.glob('*recal.table.*')

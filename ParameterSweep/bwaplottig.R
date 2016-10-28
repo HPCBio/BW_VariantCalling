@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# To use this script, supply the following arguments: the file containing the summary stats from the alignment stage, args[0]
+# To use this script, supply the following arguments: the file containing the summary stats from the alignment stage, args[1]
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -27,7 +27,7 @@ parameters = data.frame(
             'Bandwidth','Seed bases count'),
   stringsAsFactors = F)
 
-rawdata = read.table( args[0], stringsAsFactors = F, header = T)
+rawdata = read.table( args[1], stringsAsFactors = F, header = T)
 
 data = rawdata
 data = cbind(data,fraction=data$Total_aligned/data$Total_reads)
@@ -43,7 +43,7 @@ data = arrange(data,parameter,value)
 
 attempts = split(data,data$parameter)
 
-pdf(paste0(dirname(args[0]),"/",'BWA MEM Sweeping plots.pdf'),title = 'Effect of parameter chages in the alignment file')
+pdf(paste0(dirname(args[1]),"/",'BWA_MEM_Sweep_plots.pdf'),title = 'Effect of parameter chages in the alignment file')
 par(mfrow = c(2,2))
 for (i in seq(1:length(attempts))) {
   plot(attempts[[i]][,4],attempts[[i]][,5], main=attempts[[i]][1,1], xlab='Mean MAPQ',
