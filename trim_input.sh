@@ -184,7 +184,7 @@ else
 	   echo `date`
 fi
 
-MSG="Quuuality control for all samples finished successfully"
+MSG="Quality control for all samples finished successfully"
 echo -e "program=$0 at line=$LINENO.\nReason=$MSG\n Logs for the run are available in $TopOutputLogs" | mail -s "[Task #${reportticket}]" "$redmine,$email"
 
 echo `date`

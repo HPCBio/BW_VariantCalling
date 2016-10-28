@@ -1,0 +1,66 @@
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval/fn.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 47040838
+No Genotypes                 : 47040838
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval/fp.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 7413
+SNPs                         : 6672
+MNPs                         : 0
+Insertions                   : 473
+Deletions                    : 268
+Indels                       : 0
+Same as reference            : 0
+SNP Transitions/Transversions: 0.43 (3569/8289)
+Total Het/Hom ratio          : 0.29 (1665/5748)
+SNP Het/Hom ratio            : 0.29 (1486/5186)
+MNP Het/Hom ratio            : - (0/0)
+Insertion Het/Hom ratio      : 0.27 (101/372)
+Deletion Het/Hom ratio       : 0.41 (78/190)
+Indel Het/Hom ratio          : - (0/0)
+Insertion/Deletion ratio     : 1.76 (473/268)
+Indel/SNP+MNP ratio          : 0.11 (741/6672)
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval/tp-baseline.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 1144357
+No Genotypes                 : 1144357
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval/tp.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 1143865
+SNPs                         : 954925
+MNPs                         : 0
+Insertions                   : 111921
+Deletions                    : 77015
+Indels                       : 4
+Same as reference            : 0
+SNP Transitions/Transversions: 2.31 (1189393/515136)
+Total Het/Hom ratio          : 0.28 (249213/894652)
+SNP Het/Hom ratio            : 0.27 (205392/749533)
+MNP Het/Hom ratio            : - (0/0)
+Insertion Het/Hom ratio      : 0.31 (26251/85670)
+Deletion Het/Hom ratio       : 0.30 (17566/59449)
+Indel Het/Hom ratio          : - (4/0)
+Insertion/Deletion ratio     : 1.45 (111921/77015)
+Indel/SNP+MNP ratio          : 0.20 (188940/954925)
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_golden.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 48185195
+No Genotypes                 : 48185195
+Location                     : /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/jointVCFs/jointVCFcalled.vcf.gz
+Failed Filters               : 0
+Passed Filters               : 1151278
+SNPs                         : 961597
+MNPs                         : 0
+Insertions                   : 112394
+Deletions                    : 77283
+Indels                       : 4
+Same as reference            : 0
+SNP Transitions/Transversions: 2.28 (1192962/523425)
+Total Het/Hom ratio          : 0.28 (250878/900400)
+SNP Het/Hom ratio            : 0.27 (206878/754719)
+MNP Het/Hom ratio            : - (0/0)
+Insertion Het/Hom ratio      : 0.31 (26352/86042)
+Deletion Het/Hom ratio       : 0.30 (17644/59639)
+Indel Het/Hom ratio          : - (4/0)
+Insertion/Deletion ratio     : 1.45 (112394/77283)
+Indel/SNP+MNP ratio          : 0.20 (189681/961597)

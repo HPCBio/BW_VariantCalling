@@ -1,0 +1,80 @@
++ NEAT2_path=/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads
++ samtools_path=/home/apps/samtools/samtools-1.3.1/bin
++ reference=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa
++ targeted_region=/home/groups/hpcbio_shared/azza/TargetedRegions-Azza-has-permission/ZachUses_Illumina_truseq_exome_targeted_regions.hg19.chr.bed
++ known_variants=/home/groups/hpcbio_shared/azza/TargetedRegions-Azza-has-permission/NA12877.vcf
++ OutputDir=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123
++ DatasetName=synthetic.Oct_chr123.16
++ NumberOfChunks=1
++ NumberOfSamples=1
++ echo 'mutaion rate value in the files are:'
+./p5_simulate-reads_rare_variants.sh: line 22: /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/simulation_parameters.txt: No such file or directory
++ echo 'sample-name -M_parameter'
+./p5_simulate-reads_rare_variants.sh: line 23: /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/simulation_parameters.txt: No such file or directory
++ echo 'NEAT parameters are:'
+./p5_simulate-reads_rare_variants.sh: line 25: /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/neat_parameters.txt: No such file or directory
+++ seq 1 1
++ for i in '$(seq 1 ${NumberOfSamples})'
+++ awk -v i=1 'BEGIN{srand(i); print (rand()*0.3)}'
++ random_number=0.0713363
++ echo sample.1 0.0713363
+./p5_simulate-reads_rare_variants.sh: line 31: /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/simulation_parameters.txt: No such file or directory
++ NeatParams='-R 101 -c 1 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363 '
++ echo -R 101 -c 1 -E 0.01 -p 2 --pe 300 30 --bam --vcf --rng 123 -M 0.0713363
+./p5_simulate-reads_rare_variants.sh: line 33: /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/neat_parameters.txt: No such file or directory
++ OutputFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1
++ OutputLogsFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs
++ OutputChunksFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Chunks
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Chunks ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Chunks
++ OutputMergedFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Merged
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Merged ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Merged
++ echo '#!/bin/bash'
++ echo '#PBS -l nodes=1:ppn=23'
++ echo '#PBS -M aeahmed@illinois.edu'
++ echo '#PBS -m ae'
++ AllChunksJobIds=
++ (( jobnumber=1 ))
++ (( jobnumber<=1 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct_chr123.16.GenerateChunks.job_1_of_1'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.GenerateChunks.job_1_of_1.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.GenerateChunks.job_1_of_1.ou'
++ echo ' '
++ echo 'module load python'
++ echo 'python -u /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/genReads.py -r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Chunks/synthetic.Oct_chr123.16 -R 101 -c 1 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363  --job 1 1 >  /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.GenerateChunks.job_1_of_1.log '
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.GenerateChunks.job_1_of_1.qsub
+socket_read_num error
+socket_read_num error
+socket_read_num error
+Unable to communicate with biocluster.igb.illinois.edu(128.174.124.78)
+Communication failure.
+qsub: cannot connect to server biocluster.igb.illinois.edu (errno=15085) Time out
++ ChunkJobId=
++ AllChunksJobIds=:
++ (( jobnumber++  ))
++ (( jobnumber<=1 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct_chr123.16.MergeChunks'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.MergeChunks.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.MergeChunks.ou'
++ echo '#PBS -W depend=afterok::'
++ echo ' '
++ echo 'module load python'
++ echo 'python /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/mergeJobs.py -i /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Chunks/synthetic.Oct_chr123.16 -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Merged/synthetic.Oct_chr123.16_merged -s  /home/apps/samtools/samtools-1.3.1/bin/samtools'
++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct.16_chr123/sample.1/Logs/synthetic.Oct_chr123.16.MergeChunks.qsub
+[qsub: illegal -W value]
+
+usage: qsub [-a date_time] [-A account_string] [-b secs]
+    [-c [ none | { enabled | periodic | shutdown |
+    depth=<int> | dir=<path> | interval=<minutes>}... ]
+    [-C directive_prefix] [-d path] [-D path]
+    [-e path] [-h] [-I] [-j oe|eo|n] [-k {oe}] [-l resource_list] [-m n|{abe}]
+    [-M user_list] [-N jobname] [-o path] [-p priority] [-P proxy_user [-J <jobid]]
+    [-q queue] [-r y|n] [-S path] [-t number_to_submit] [-T type]  [-u user_list]
+    [-w] path
+      [-W additional_attributes] [-v variable_list] [-V ] [-x] [-X] [-z] [script]
+

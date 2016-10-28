@@ -1,0 +1,5 @@
+Run the following scripts:
+-Validating_pipeline_variants.sh  (do it for the 3 chromosomes sample!)
+- generate, modify sampleinfo and runfile, run pipeline, verify ==> for the 1 sample, 30x
+
+
