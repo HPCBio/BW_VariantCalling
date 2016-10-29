@@ -28,7 +28,7 @@ Figure 1: Best Practices for Germline SNPs and Indels in Whole Genomes and Exome
 
 Under the hood, this pipeline splits and merges files at different stages to achieve optimal usage of resources. This parallelization of data processing is shown in Figure \[2\] below:
 
-![](./media/image01.png){width="6.692716535433071in" height="5.125in"}
+![](./media/image01.png)
 
 Figure 2: Pipeline details. Note: the processing can be split by individual sequences in the reference FASTA file, which could be individual chromosomes, scaffolds, contigs, etc.
 
@@ -91,15 +91,15 @@ In a nutshell, the template below shows the various parameters and how they can 
   EMAIL=<email address to send torque notifications to\*>
   REPORTTICKET=<redmine ticket number to send notifications to\*>
 
-  ## choose the run case
+## choose the run case
   ANALYSIS=<depending on the analysis type it can be {ANALYSIS=ALIGNMENT, or ANALYSIS=ALIGN or ANALYSIS=ALIGN\_ONLY} for alignment only, {ANALYSIS=VC\_WITH\_REALIGNMENT} for complete variant calling with realignment, or anything else for complete variant calling without realignment>
 
-  ## Read group information for the samples: namely, the Library, Platform technology, and sequencing center name. It should be noted that the sample ID, platform unit (PU) and sample name (SM) are set by default to be the same sample name found in the sampleinformation file specified
+## Read group information for the samples: namely, the Library, Platform technology, and sequencing center name. It should be noted that the sample ID, platform unit (PU) and sample name (SM) are set by default to be the same sample name found in the sampleinformation file specified
   SAMPLELB=<name of the library>
   SAMPLEPL=<should be either ILLUMINA, SOLID, LS454, HELICOS or PACBIO>
   SAMPLECN=<name of the sequencing center generating the reads>
 
-  ## The tools to be used in this run of the pipeline (where a selection can be made)
+## The tools to be used in this run of the pipeline (where a selection can be made)
   ALIGNERTOOL=<the tool to be used for the alignment stage of the pipeline. Can be either BWAMEM or NOVOALIGN. Only the respective INDEX and PARAMS need to be specified in the next block of the runfile>
   MARKDUPLICATESTOOL=<the tool to be used for marking duplicates in the pipeline. Can be any of these: samblaster, novosort or PICARD>
 
@@ -115,7 +115,7 @@ In a nutshell, the template below shows the various parameters and how they can 
   MAP_CUTOFF=<minimum mapping quality of reads to pass QC test after alignment>
   DUP_CUTOFF=<maximum duplication level in reads to pass QC test after alignment>
 
-  ## paths to resources and tools - See section 2.1 and 2.2
+## paths to resources and tools - See section 2.1 and 2.2
   ADAPTERS=<path to the adapter file to be used with trimmomatic>
   REFGENOMEDIR=<path to the directory where all reference files and databases are stored>
   REFGENOME=<name of the reference genome file within REFGENOMEDIR. Example ucsc.hg19.fasta in the GATK bundle 2.8>
@@ -123,7 +123,7 @@ In a nutshell, the template below shows the various parameters and how they can 
   INDELDIR=<name of the directory within REFGENOMEDIR that contains a vcf file for each chromosome/contig specified by the CHRNAMES parameter. These files need to be named as: \*\${chr\_name}.vcf >
   OMNI=<name of the omni variants file. Example: 1000G\_omni2.5.hg19.sites.vcf in the GATK bundle 2.8>
 
- # Example entries for tools’ path in biocluster
+# Example entries for tools’ path in biocluster
   TRIMMOMATICDIR=/home/apps/trimmomatic/trimmomatic-0.33/trimmomatic-0.33.jar
   FASTQCDIR=/home/apps/fastqc/fastqc-0.11.4
   BWAMEMDIR=/home/apps/bwa/bwa-0.7.15
@@ -134,7 +134,7 @@ In a nutshell, the template below shows the various parameters and how they can 
   SAMDIR=/home/apps/samtools/samtools-1.3.1/bin
   JAVADIR=/home/apps/java/jdk1.8.0\_65/bin
 
-  \#\# pbs torque resources
+## pbs torque resources
   PBSNODES=<number of nodes>
   PBSCORES=<number of cores>
   PBSQUEUE=<name of the queue>
@@ -168,15 +168,15 @@ described in section 2.3 for each case.
  
 The pipeline breaks down the analysis stages on per sample and chromosome basis as is shown in Figure 2. It does so with the help of PBS torque resource manager to handle the various dependencies and scheduling of tasks. Accordingly, it keeps log files of each analysis stage in the logs output directory (Figure 3) with names that follows the convention:
 
--   qsub.computation\_phase.sample\_name = pbs torque script for a certain stage in the analysis, corresponding to a specific sample
+-   `qsub.computation\_phase.sample\_name` = pbs torque script for a certain stage in the analysis, corresponding to a specific sample
 
--   qsub.computation\_phase.sample\_name.chromosome = pbs torque script for a certain stage in the analysis, corresponding to a specific sample's chromosome
+-   `qsub.computation\_phase.sample\_name.chromosome` = pbs torque script for a certain stage in the analysis, corresponding to a specific sample's chromosome
 
--   log.computation\_phase.sample\_name.in = Error log for a certainqsub job (including warnings, and execution status of corresponding scripts)
+-   `log.computation\_phase.sample\_name.in` = Error log for a certainqsub job (including warnings, and execution status of corresponding scripts)
 
--   log.computation\_phase.sample\_name.ou = Output log for a certain qsub job
+-   `log.computation\_phase.sample\_name.ou` = Output log for a certain qsub job
 
--   pbs.COMPUTATIONSTAGE = list of jobids for that stage in the workflow (lists together jobs that delineate a major block of computation)
+-   `pbs.COMPUTATIONSTAGE` = list of jobids for that stage in the workflow (lists together jobs that delineate a major block of computation)
  
 Besides that, it also tracks the execution of the various stages by sending email notification of qsub jobs (the EMAIL parameter in the runfile), and also by reporting a summary of a given run in [redmine](http://www.redmine.org) . In its current implementation, the pipeline will send these to HPCBio’s redmine instance, and the given ticket number (the REPORTTICKET parameter in the runfile)
 
