@@ -1,0 +1,156 @@
+2016-10-23 00:14:08 serial = 27182818284
+2016-10-23 00:14:08 email = anon
+2016-10-23 00:14:08 RTG version = RTG Tools 3.7 / Core 29c0e9c (2016-08-25)
+2016-10-23 00:14:08 awt.toolkit = sun.awt.X11.XToolkit
+2016-10-23 00:14:08 file.encoding = ANSI_X3.4-1968
+2016-10-23 00:14:08 file.encoding.pkg = sun.io
+2016-10-23 00:14:08 file.separator = /
+2016-10-23 00:14:08 host.name = compute-5-19.local
+2016-10-23 00:14:08 java.awt.graphicsenv = sun.awt.X11GraphicsEnvironment
+2016-10-23 00:14:08 java.awt.printerjob = sun.print.PSPrinterJob
+2016-10-23 00:14:08 java.class.path = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/RTG.jar
+2016-10-23 00:14:08 java.class.version = 52.0
+2016-10-23 00:14:08 java.endorsed.dirs = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/endorsed
+2016-10-23 00:14:08 java.ext.dirs = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/ext:/usr/java/packages/lib/ext
+2016-10-23 00:14:08 java.home = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre
+2016-10-23 00:14:08 java.io.tmpdir = /tmp
+2016-10-23 00:14:08 java.library.path = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7
+2016-10-23 00:14:08 java.runtime.name = Java(TM) SE Runtime Environment
+2016-10-23 00:14:08 java.runtime.version = 1.8.0_92-b14
+2016-10-23 00:14:08 java.specification.name = Java Platform API Specification
+2016-10-23 00:14:08 java.specification.vendor = Oracle Corporation
+2016-10-23 00:14:08 java.specification.version = 1.8
+2016-10-23 00:14:08 java.vendor = Oracle Corporation
+2016-10-23 00:14:08 java.vendor.url = http://java.oracle.com/
+2016-10-23 00:14:08 java.vendor.url.bug = http://bugreport.sun.com/bugreport/
+2016-10-23 00:14:08 java.version = 1.8.0_92
+2016-10-23 00:14:08 java.vm.info = mixed mode
+2016-10-23 00:14:08 java.vm.name = Java HotSpot(TM) 64-Bit Server VM
+2016-10-23 00:14:08 java.vm.specification.name = Java Virtual Machine Specification
+2016-10-23 00:14:08 java.vm.specification.vendor = Oracle Corporation
+2016-10-23 00:14:08 java.vm.specification.version = 1.8
+2016-10-23 00:14:08 java.vm.vendor = Oracle Corporation
+2016-10-23 00:14:08 java.vm.version = 25.92-b14
+2016-10-23 00:14:08 lang.version = 1.8.0_92
+2016-10-23 00:14:08 line.separator = 
+
+2016-10-23 00:14:08 models.dir = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/models
+2016-10-23 00:14:08 os.arch = amd64
+2016-10-23 00:14:08 os.freememory = 235351154688
+2016-10-23 00:14:08 os.name = Linux
+2016-10-23 00:14:08 os.totalmemory = 406544146432
+2016-10-23 00:14:08 os.version = 2.6.32-504.8.1.el6.x86_64
+2016-10-23 00:14:08 path.separator = :
+2016-10-23 00:14:08 processor.arch = amd64
+2016-10-23 00:14:08 processor.count = 24
+2016-10-23 00:14:08 references.dir = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/references
+2016-10-23 00:14:08 runtime.freememory = 1972370920
+2016-10-23 00:14:08 runtime.maxmemory = 325235769344
+2016-10-23 00:14:08 runtime.totalMemory = 2058354688
+2016-10-23 00:14:08 sun.arch.data.model = 64
+2016-10-23 00:14:08 sun.boot.class.path = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/resources.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/rt.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/sunrsasign.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/jsse.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/jce.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/charsets.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/jfr.jar:/home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/classes
+2016-10-23 00:14:08 sun.boot.library.path = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/jre/lib/amd64
+2016-10-23 00:14:08 sun.cpu.endian = little
+2016-10-23 00:14:08 sun.cpu.isalist = 
+2016-10-23 00:14:08 sun.io.unicode.encoding = UnicodeLittle
+2016-10-23 00:14:08 sun.java.command = /home/groups/hpcbio_shared/azza/apps/rtg-tools-3.7/RTG.jar vcfeval -t /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome//HG19_GATKbundle2.8_noDecoys -b /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_golden.vcf.gz -c /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/jointVCFs/jointVCFcalled.vcf.gz -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval --squash-ploidy --sample ALT,synthetic.Oct2016.WES30x
+2016-10-23 00:14:08 sun.java.launcher = SUN_STANDARD
+2016-10-23 00:14:08 sun.jnu.encoding = ANSI_X3.4-1968
+2016-10-23 00:14:08 sun.management.compiler = HotSpot 64-Bit Tiered Compilers
+2016-10-23 00:14:08 sun.os.patch.level = unknown
+2016-10-23 00:14:08 talkback = true
+2016-10-23 00:14:08 usage = true
+2016-10-23 00:14:08 usage.log.hostname = true
+2016-10-23 00:14:08 usage.log.username = true
+2016-10-23 00:14:08 user.country = US
+2016-10-23 00:14:08 user.dir = /home/a-m/hpcbiointern01
+2016-10-23 00:14:08 user.home = /home/a-m/hpcbiointern01
+2016-10-23 00:14:08 user.language = en
+2016-10-23 00:14:08 user.name = hpcbiointern01
+2016-10-23 00:14:08 user.timezone = US/Central
+2016-10-23 00:14:08 vendor = Oracle Corporation
+2016-10-23 00:14:08 gzipfix.enabled = true
+2016-10-23 00:14:08 Command line arguments: rtg vcfeval -t /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome//HG19_GATKbundle2.8_noDecoys -b /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_golden.vcf.gz -c /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/jointVCFs/jointVCFcalled.vcf.gz -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/variant_comparison_vcfeval --squash-ploidy --sample ALT,synthetic.Oct2016.WES30x
+2016-10-23 00:14:08 Run Id: 4ef487bf-a678-4ea8-9bbc-4cb2b6ba984e
+2016-10-23 00:14:08 Referenced SDF-ID: 81a18803-eb2f-4b2c-b798-b551738dc6ab Type: DNA Sequences: 25 Max-Length: 249250621 Min-Length: 16569 Arm: UNKNOWN
+2016-10-23 00:14:08 Reference sequence chrMT is used in baseline but not in calls (variants will be treated as FN).
+2016-10-23 00:14:16 Reference chr1 baseline contains 3790001 variants.
+2016-10-23 00:14:16 Reference chr1 calls contains 87982 variants.
+2016-10-23 00:14:29 Reference chr2 baseline contains 4017673 variants.
+2016-10-23 00:14:29 Reference chr2 calls contains 95582 variants.
+2016-10-23 00:14:36 Reference chr1 had maximum path complexity of 27 at chr1:16770930-16771010
+2016-10-23 00:14:51 Reference chr3 baseline contains 3284489 variants.
+2016-10-23 00:14:51 Reference chr3 calls contains 80539 variants.
+2016-10-23 00:14:54 Reference chr2 had maximum path complexity of 66 at chr2:15817031-15817038
+2016-10-23 00:15:04 Reference chr3 had maximum path complexity of 27 at chr3:143837079-143837090
+2016-10-23 00:15:05 Reference chr4 baseline contains 3167527 variants.
+2016-10-23 00:15:05 Reference chr4 calls contains 77443 variants.
+2016-10-23 00:15:17 Reference chr4 had maximum path complexity of 27 at chr4:7248847-7248930
+2016-10-23 00:15:17 Reference chr5 baseline contains 2997691 variants.
+2016-10-23 00:15:17 Reference chr5 calls contains 72944 variants.
+2016-10-23 00:15:22 Reference chr6 baseline contains 2827814 variants.
+2016-10-23 00:15:22 Reference chr6 calls contains 68236 variants.
+2016-10-23 00:15:22 Reference chr5 had maximum path complexity of 27 at chr5:24457716-24457730
+2016-10-23 00:15:28 Reference chr7 baseline contains 2626412 variants.
+2016-10-23 00:15:28 Reference chr7 calls contains 62408 variants.
+2016-10-23 00:15:36 Reference chr6 had maximum path complexity of 24 at chr6:63476916-63476966
+2016-10-23 00:15:41 Reference chr7 had maximum path complexity of 27 at chr7:6458782-6458818
+2016-10-23 00:15:41 Reference chr8 baseline contains 2410872 variants.
+2016-10-23 00:15:41 Reference chr8 calls contains 59126 variants.
+2016-10-23 00:15:44 Reference chr9 baseline contains 2016853 variants.
+2016-10-23 00:15:44 Reference chr9 calls contains 45743 variants.
+2016-10-23 00:15:47 Reference chr8 had maximum path complexity of 17 at chr8:6959289-6959332
+2016-10-23 00:15:49 Reference chr9 had maximum path complexity of 27 at chr9:4036086-4036157
+2016-10-23 00:15:49 Reference chr10 baseline contains 2210792 variants.
+2016-10-23 00:15:49 Reference chr10 calls contains 52853 variants.
+2016-10-23 00:15:54 Reference chr11 baseline contains 2213695 variants.
+2016-10-23 00:15:54 Reference chr11 calls contains 53597 variants.
+2016-10-23 00:15:54 Reference chr10 had maximum path complexity of 27 at chr10:2956648-2956665
+2016-10-23 00:15:58 Reference chr12 baseline contains 2203594 variants.
+2016-10-23 00:15:58 Reference chr12 calls contains 54134 variants.
+2016-10-23 00:15:59 Reference chr11 had maximum path complexity of 27 at chr11:7243630-7243659
+2016-10-23 00:16:01 Reference chr13 baseline contains 1610342 variants.
+2016-10-23 00:16:01 Reference chr13 calls contains 38349 variants.
+2016-10-23 00:16:01 Reference chr12 had maximum path complexity of 28 at chr12:41382272-41382336
+2016-10-23 00:16:16 Reference chr13 had maximum path complexity of 16 at chr13:35412760-35412763
+2016-10-23 00:16:16 Reference chr14 baseline contains 1485133 variants.
+2016-10-23 00:16:16 Reference chr14 calls contains 34876 variants.
+2016-10-23 00:16:18 Reference chr15 baseline contains 1377503 variants.
+2016-10-23 00:16:18 Reference chr15 calls contains 30310 variants.
+2016-10-23 00:16:19 Reference chr14 had maximum path complexity of 17 at chr14:33376378-33376426
+2016-10-23 00:16:22 Reference chr16 baseline contains 1329397 variants.
+2016-10-23 00:16:22 Reference chr16 calls contains 30078 variants.
+2016-10-23 00:16:22 Reference chr15 had maximum path complexity of 27 at chr15:23749387-23749443
+2016-10-23 00:16:24 Reference chr16 had maximum path complexity of 16 at chr16:59630676-59630679
+2016-10-23 00:16:24 Reference chr17 baseline contains 1309637 variants.
+2016-10-23 00:16:24 Reference chr17 calls contains 30473 variants.
+2016-10-23 00:16:26 Reference chr18 baseline contains 1255272 variants.
+2016-10-23 00:16:26 Reference chr18 calls contains 31948 variants.
+2016-10-23 00:16:26 Reference chr17 had maximum path complexity of 14 at chr17:18473097-18473127
+2016-10-23 00:16:28 Reference chr19 baseline contains 940369 variants.
+2016-10-23 00:16:28 Reference chr19 calls contains 21529 variants.
+2016-10-23 00:16:28 Reference chr18 had maximum path complexity of 27 at chr18:15031081-15031199
+2016-10-23 00:16:30 Reference chr20 baseline contains 1003831 variants.
+2016-10-23 00:16:30 Reference chr20 calls contains 25559 variants.
+2016-10-23 00:16:30 Reference chr19 had maximum path complexity of 20 at chr19:14800409-14800517
+2016-10-23 00:16:30 Reference chr21 baseline contains 591854 variants.
+2016-10-23 00:16:30 Reference chr21 calls contains 15233 variants.
+2016-10-23 00:16:31 Reference chr22 baseline contains 585549 variants.
+2016-10-23 00:16:31 Reference chr22 calls contains 12815 variants.
+2016-10-23 00:16:31 Reference chr20 had maximum path complexity of 27 at chr20:14945955-14946007
+2016-10-23 00:16:32 Reference chr21 had maximum path complexity of 15 at chr21:18006312-18006365
+2016-10-23 00:16:35 Reference chr22 had maximum path complexity of 11 at chr22:34962775-34962838
+2016-10-23 00:16:37 Reference chrX baseline contains 2541291 variants.
+2016-10-23 00:16:37 Reference chrX calls contains 60669 variants.
+2016-10-23 00:16:38 Reference chrY baseline contains 387236 variants.
+2016-10-23 00:16:38 Reference chrY calls contains 8852 variants.
+2016-10-23 00:16:38 Reference chrMT baseline contains 368 variants.
+2016-10-23 00:16:38 Reference chrMT calls contains 0 variants.
+2016-10-23 00:16:39 Reference chrY had maximum path complexity of 12 at chrY:14958474-14958484
+2016-10-23 00:16:41 Reference chrX had maximum path complexity of 16 at chrX:128008991-128008994
+2016-10-23 00:19:40 Threshold  True-pos-baseline  True-pos-call  False-pos  False-neg  Precision  Sensitivity  F-measure
+----------------------------------------------------------------------------------------------------
+    0.000            1144333        1143865       7413   47040862     0.9936       0.0237     0.0464
+     None            1144357        1143865       7413   47040838     0.9936       0.0237     0.0464
+
+2016-10-23 00:19:41 Finished successfully in 332 s.

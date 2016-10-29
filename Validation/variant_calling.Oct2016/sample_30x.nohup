@@ -1,0 +1,92 @@
++ NEAT2_path=/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads
++ samtools_path=/home/apps/samtools/samtools-1.3.1/bin
++ reference=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa
++ targeted_region=/home/groups/hpcbio_shared/azza/TargetedRegions-Azza-has-permission/ZachUses_Illumina_truseq_exome_targeted_regions.hg19.chr.bed
++ known_variants=/home/groups/hpcbio_shared/azza/TargetedRegions-Azza-has-permission/NA12877.vcf
++ DatasetName=synthetic.Oct2016
++ OutputDir=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016
++ NumberOfChunks=3
++ NumberOfSamples=1
++ mkdir /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016
+mkdir: cannot create directory `/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016': File exists
++ echo 'mutaion rate value in the files are:'
++ echo 'sample-name -M_parameter'
++ echo 'NEAT parameters are:'
+++ seq 1 1
++ for i in '$(seq 1 ${NumberOfSamples})'
+++ awk -v i=1 'BEGIN{srand(i); print (rand()*0.3)}'
++ random_number=0.0713363
++ echo sample.1 0.0713363
++ NeatParams='-R 101 -c 30 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363 '
++ echo -R 101 -c 30 -E 0.01 -p 2 --pe 300 30 --bam --vcf --rng 123 -M 0.0713363
++ OutputFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1
++ OutputLogsFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs ']'
++ OutputChunksFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks ']'
++ OutputMergedFolder=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Merged
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Merged ']'
++ echo '#!/bin/bash'
++ echo '#PBS -l nodes=1:ppn=23'
++ echo '#PBS -M aeahmed@illinois.edu'
++ echo '#PBS -m ae'
++ AllChunksJobIds=
++ (( jobnumber=1 ))
++ (( jobnumber<=3 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct2016.GenerateChunks.job_1_of_3'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_1_of_3.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_1_of_3.ou'
++ echo ' '
++ echo 'module load python'
++ echo 'python -u /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/genReads.py -r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks/synthetic.Oct2016 -R 101 -c 30 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363  --job 1 3 >  /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_1_of_3.log '
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_1_of_3.qsub
++ ChunkJobId=2127431.biocluster.igb.illinois.edu
++ AllChunksJobIds=:
++ (( jobnumber++  ))
++ (( jobnumber<=3 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct2016.GenerateChunks.job_2_of_3'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_2_of_3.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_2_of_3.ou'
++ echo ' '
++ echo 'module load python'
++ echo 'python -u /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/genReads.py -r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks/synthetic.Oct2016 -R 101 -c 30 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363  --job 2 3 >  /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_2_of_3.log '
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_2_of_3.qsub
++ ChunkJobId=2127432.biocluster.igb.illinois.edu
++ AllChunksJobIds=::
++ (( jobnumber++  ))
++ (( jobnumber<=3 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct2016.GenerateChunks.job_3_of_3'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_3_of_3.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_3_of_3.ou'
++ echo ' '
++ echo 'module load python'
++ echo 'python -u /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/genReads.py -r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/HG19_GATKbundle2.8_chr1_chr2_chr3.fa -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks/synthetic.Oct2016 -R 101 -c 30 -E 0.01 -p 2  --pe 300 30 --bam --vcf --rng 123 -M 0.0713363  --job 3 3 >  /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_3_of_3.log '
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.GenerateChunks.job_3_of_3.qsub
++ ChunkJobId=2127433.biocluster.igb.illinois.edu
++ AllChunksJobIds=:::
++ (( jobnumber++  ))
++ (( jobnumber<=3 ))
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/GenericQsub.header
++ echo '#PBS -N synthetic.Oct2016.MergeChunks'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.MergeChunks.er'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.MergeChunks.ou'
++ echo '#PBS -W depend=afterok::::'
++ echo ' '
++ echo 'module load python'
++ echo 'python /home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/builds/NEAT/neat-genreads/mergeJobs.py -i /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Chunks/synthetic.Oct2016 -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Merged/synthetic.Oct2016_merged -s  /home/apps/samtools/samtools-1.3.1/bin/samtools'
++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016/sample.1/Logs/synthetic.Oct2016.MergeChunks.qsub
+[qsub: illegal -W value]
+
+usage: qsub [-a date_time] [-A account_string] [-b secs]
+    [-c [ none | { enabled | periodic | shutdown |
+    depth=<int> | dir=<path> | interval=<minutes>}... ]
+    [-C directive_prefix] [-d path] [-D path]
+    [-e path] [-h] [-I] [-j oe|eo|n] [-k {oe}] [-l resource_list] [-m n|{abe}]
+    [-M user_list] [-N jobname] [-o path] [-p priority] [-P proxy_user [-J <jobid]]
+    [-q queue] [-r y|n] [-S path] [-t number_to_submit] [-T type]  [-u user_list]
+    [-w] path
+      [-W additional_attributes] [-v variable_list] [-V ] [-x] [-X] [-z] [script]
+

@@ -1,0 +1,1081 @@
++ redmine=hpcbio-redmine@igb.illinois.edu
++ '[' 1 '!=' 1 ']'
++ set +x
+
+
+########################################################################################
+#############                BEGIN VARIANT CALLING WORKFLOW              ###############
+########################################################################################
+
+
+++ date
++ echo Sun Oct 16 20:20:44 CDT 2016
+Sun Oct 16 20:20:44 CDT 2016
++ scriptfile=/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/start.sh
++ runfile=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile ']'
++ set +x
+
+
+########################################################################################
+#############                CHECKING PARAMETERS                         ###############
+########################################################################################
+
+
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w REPORTTICKET
+++ cut -d = -f2
++ reportticket=5747
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w OUTPUTDIR
+++ cut -d = -f2
++ outputdir=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w TMPDIR
+++ cut -d = -f2
++ tmpdir=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/tmp
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w DELIVERYFOLDER
+++ cut -d = -f2
++ deliverydir=delivery
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SCRIPTDIR
+++ cut -d = -f2
++ scriptdir=/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w EMAIL
+++ cut -d = -f2
++ email=aeahmed@illinois.edu
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMPLEINFORMATION
+++ cut -d = -f2
++ sampleinfo=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo
+++ wc -l /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo
++ numsamples='1 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo'
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w REFGENOMEDIR
+++ cut -d = -f2
++ refdir=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w REFGENOME
+++ cut -d = -f2
++ refgenome=/HG19_GATKbundle2.8_noDecoys.fa
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w DBSNP
+++ cut -d = -f2
++ dbSNP=dbsnp_138.hg19.vcf
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMPLEPL
+++ cut -d = -f2
++ sPL=illumina
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMPLECN
+++ cut -d = -f2
++ sCN=synthetic
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMPLELB
+++ cut -d = -f2
++ sLB=synthetic
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w DUP_CUTOFF
+++ cut -d = -f2
++ dup_cutoff=1
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w MAP_CUTOFF
+++ cut -d = -f2
++ map_cutoff=95
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w CHRNAMES
+++ cut -d = -f2
+++ tr : ' '
++ indices='chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY'
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w ANALYSIS
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ analysis=COMPLETE
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w ALIGNERTOOL
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ alignertool=BWAMEM
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w MARKDUPLICATESTOOL
+++ cut -d = -f2
+++ tr '[a-z]' '[A-Z]'
++ markduplicates=PICARD
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMBLASTERDIR
+++ cut -d = -f2
++ samblasterdir=/home/apps/samblaster/samblaster-0.1.22/bin
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w PICARDIR
+++ cut -d = -f2
++ picardir=/home/apps/picard-tools/picard-tools-2.4.1
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w GATKDIR
+++ cut -d = -f2
++ gatkdir=/home/apps/gatk/gatk-3.6
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w SAMDIR
+++ cut -d = -f2
++ samtoolsdir=/home/apps/samtools/samtools-1.3.1/bin
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w BWAMEMDIR
+++ cut -d = -f2
++ bwamemdir=/home/apps/bwa/bwa-0.7.15
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w JAVADIR
+++ cut -d = -f2
++ javadir=/home/apps/java/jdk1.8.0_65/bin
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w NOVOCRAFTDIR
+++ cut -d = -f2
++ novocraftdir=/home/apps/novocraft/novocraft-3.02
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w FASTQCDIR
+++ cut -d = -f2
++ fastqcdir=/home/apps/fastqc/fastqc-0.11.4
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w PBSCORES
+++ cut -d = -f2
++ thr=23
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ cut -d = -f2
++ nodes=1
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w PBSQUEUE
+++ cut -d = -f2
++ queue=default
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile
+++ grep -w PBSWALLTIME
+++ cut -d = -f2
++ pbswalltime=72:00:00
+++ expr 76
++ '[' 76 -lt 1 ']'
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome/ ']'
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome///HG19_GATKbundle2.8_noDecoys.fa ']'
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/genome//dbsnp_138.hg19.vcf ']'
++ [[ -z BWAMEM ]]
++ '[' BWAMEM '!=' BWAMEM -a BWAMEM '!=' BWA_MEM -a BWAMEM '!=' NOVOALIGN ']'
++ '[' -z aeahmed@illinois.edu ']'
+++ expr 9
+++ expr 8
+++ expr 9
++ '[' 9 -lt 1 -o 8 -lt 1 -o 9 -lt 1 ']'
+++ expr 1
+++ expr 2
++ '[' 1 -lt 1 -o 2 -lt 1 ']'
+++ expr 132
++ '[' 132 -lt 1 ']'
++ '[' PICARD '!=' NOVOSORT -a PICARD '!=' SAMBLASTER -a PICARD '!=' PICARD ']'
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo ']'
++ '[' 1 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo -lt 1 ']'
+/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/start.sh: line 159: [: too many arguments
++ set +x
+
+
+########################################################################################
+###########                      checking PBS params                      ##################
+########################################################################################
+
+
+++ expr 2
++ '[' 2 -lt 1 ']'
+++ expr 1
++ '[' 1 -lt 1 ']'
+++ expr 7
++ '[' 7 -lt 1 ']'
++ set +x
+
+
+########################################################################################
+###########                      checking tools                       ##################
+########################################################################################
+
+
++ hash /home/apps/samblaster/samblaster-0.1.22/bin/samblaster
++ '[' '!' -d /home/apps/picard-tools/picard-tools-2.4.1 ']'
++ '[' '!' -d /home/apps/gatk/gatk-3.6 ']'
++ hash /home/apps/samtools/samtools-1.3.1/bin/samtools
++ '[' '!' -d /home/apps/bwa/bwa-0.7.15 ']'
++ '[' '!' -d /home/apps/java/jdk1.8.0_65/bin ']'
++ '[' '!' -d /home/apps/novocraft/novocraft-3.02 ']'
++ '[' '!' -d /home/apps/fastqc/fastqc-0.11.4 ']'
++ set +x
+
+
+########################################################################################
+#############  Everything seems ok. Now setup/configure output folders and files   #########
+########################################################################################
+
+
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8 ']'
++ mkdir /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8
++ setfacl -Rm g::rwx /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8
++ setfacl -Rm d:g::rwx /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs
++ '[' '!' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/jointVCFs ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/jointVCFs
+++ cp /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.runfile /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt
+++ cp /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/src/variant_calling.Oct2016/sample.sampleinfo /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/sampleinfo.txt
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/Summary.Report
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/QC_test_results.txt
++ runfile=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt
++ TopOutputLogs=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.ALIGN
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.summary_dependencies
++ generic_qsub_header=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#!/bin/bash'
++ echo '#PBS -q default'
++ echo '#PBS -m ae'
++ echo '#PBS -M aeahmed@illinois.edu'
++ echo '#PBS -l nodes=1:ppn=23'
++ echo '#PBS -l walltime=72:00:00'
++ set +x
+##### let's check that it worked and that the file was created                     ####
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader ']'
++ set +x
+
+
+########################################################################################
+################### Documenting progress on redmine with this message ##################
+########################################################################################
+##### the first part of the Report also needs to be stored in Summary.Report      ######
+########################################################################################
+
+
++++ date
+++ echo Sun Oct 16 20:20:45 CDT 2016
++ MSG='Variant calling workflow  started by username:hpcbiointern01 at: Sun Oct 16 20:20:45 CDT 2016'
++ LOGS='Documentation about this run such as config files and results of QC tests will be placed in this folder:\n\n/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/ \n\n'
++ echo -e 'Variant calling workflow  started by username:hpcbiointern01 at: Sun Oct 16 20:20:45 CDT 2016\n\nDetails:\n\nDocumentation about this run such as config files and results of QC tests will be placed in this folder:\n\n/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/ \n\n'
++ mail -s '[Task #5747]' hpcbio-redmine@igb.illinois.edu,aeahmed@illinois.edu
++ echo -e 'Variant calling workflow  started by username:hpcbiointern01 at: Sun Oct 16 20:20:45 CDT 2016\n\nDetails:\n\nDocumentation about this run such as config files and results of QC tests will be placed in this folder:\n\n/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/ \n\n'
++ set +x
+
+
+########################################################################################
+########################################################################################
+########################################################################################
+#####                               MAIN LOOP STARTS HERE                      #########
+########################################################################################
+#####  Trimming has been performed already                                     #########
+#####  Alignment-dedup analysis: one qsub per sample                           #########
+#####  Realignment-recalibration-variantCalling: 25 qsubs per sample, one per chr   ####
+########################################################################################
+
+
++ read sampleLine
+++ expr 340
++ '[' 340 -lt 1 ']'
++ echo -e '\n\n########################################################################################'
+
+
+########################################################################################
++ echo -e '#####         Processing next line synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq                                ##########'
+#####         Processing next line synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq                                ##########
++ echo -e '##### col1=sample_name col2=read1 col3=read2  including full paths            ##########'
+##### col1=sample_name col2=read1 col3=read2  including full paths            ##########
++ echo -e '##### sample_name will be used for directory namas and in RG line of BAM files##########'
+##### sample_name will be used for directory namas and in RG line of BAM files##########
++ echo -e '########################################################################################\n\n'
+########################################################################################
+
+
++ set -x
+++ cut -d ' ' -f 1
++ sample=synthetic.Oct2016.WES30x
+++ echo 'synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq'
+++ cut -d ' ' -f 2
++ FQ_R1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq
+++ echo 'synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq'
+++ cut -d ' ' -f 3
++ FQ_R2=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq
+++ expr 24
++ '[' 24 -lt 1 ']'
+++ expr 157
++ '[' 157 -lt 1 ']'
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq ']'
+++ expr 157
++ '[' 157 -lt 1 ']'
++ '[' '!' -s /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq ']'
++ set +x
+
+
+########################################################################################
+###   Everything seems in order. Now creating folders where results will go  ###########
+########################################################################################
+
+
++ '[' -d /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/synthetic.Oct2016.WES30x ']'
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/synthetic.Oct2016.WES30x/align
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/synthetic.Oct2016.WES30x/realign
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/synthetic.Oct2016.WES30x/variant
++ mkdir -p /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/synthetic.Oct2016.WES30x
++ set +x
+
+
+########################################################################################
+####   Launching Alignment script for SAMPLE synthetic.Oct2016.WES30x with R1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq R2=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq     ##########
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.alignDedup.synthetic.Oct2016.WES30x
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N alignDedup.synthetic.Oct2016.WES30x'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.alignDedup.synthetic.Oct2016.WES30x.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.alignDedup.synthetic.Oct2016.WES30x.in'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/align_dedup.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read1.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/data/reads/synthetic.Oct2016.WES30x/sample.1/Merged/synthetic.Oct2016.WES30x_merged_read2.fq /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.alignDedup.synthetic.Oct2016.WES30x.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.alignDedup.synthetic.Oct2016.WES30x.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.alignDedup.synthetic.Oct2016.WES30x'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.alignDedup.synthetic.Oct2016.WES30x
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.alignDedup.synthetic.Oct2016.WES30x
++ alignjobid=2128209.biocluster.igb.illinois.edu
+++ qhold -h u 2128209.biocluster.igb.illinois.edu
++ echo 2128209.biocluster.igb.illinois.edu
++ echo 2128209.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ set +x
+
+
+#######  this jobid=2128209.biocluster.igb.illinois.edu will be used to hold execution of realign_varcall.sh     ########
+
+
++ '[' COMPLETE == ALIGNMENT -o COMPLETE == ALIGN -o COMPLETE == ALIGN_ONLY ']'
++ set +x
+
+
+########################################################################################
+####   Next loop2 for Launching Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x on all chr     #####
+########################################################################################
+
+
+++ echo 2128209.biocluster.igb.illinois.edu
+++ cut -d . -f 1
++ alnjobid=2128209
++ truncate -s 0 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.VCALL.synthetic.Oct2016.WES30x
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr1                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr1
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr1'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr1.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr1.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr1 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr1.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr1.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr1'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr1
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr1
++ realjobid=2128210.biocluster.igb.illinois.edu
++ echo 2128210.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr2                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr2
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr2'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr2.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr2.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr2 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr2.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr2.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr2'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr2
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr2
++ realjobid=2128211.biocluster.igb.illinois.edu
++ echo 2128211.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr3                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr3
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr3'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr3.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr3.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr3 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr3.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr3.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr3'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr3
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr3
++ realjobid=2128212.biocluster.igb.illinois.edu
++ echo 2128212.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr4                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr4
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr4'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr4.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr4.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr4 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr4.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr4.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr4'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr4
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr4
++ realjobid=2128213.biocluster.igb.illinois.edu
++ echo 2128213.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr5                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr5
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr5'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr5.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr5.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr5 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr5.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr5.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr5'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr5
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr5
++ realjobid=2128214.biocluster.igb.illinois.edu
++ echo 2128214.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr6                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr6
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr6'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr6.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr6.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr6 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr6.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr6.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr6'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr6
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr6
++ realjobid=2128215.biocluster.igb.illinois.edu
++ echo 2128215.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr7                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr7
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr7'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr7.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr7.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr7 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr7.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr7.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr7'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr7
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr7
++ realjobid=2128216.biocluster.igb.illinois.edu
++ echo 2128216.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr8                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr8
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr8'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr8.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr8.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr8 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr8.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr8.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr8'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr8
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr8
++ realjobid=2128217.biocluster.igb.illinois.edu
++ echo 2128217.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr9                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr9
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr9'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr9.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr9.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr9 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr9.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr9.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr9'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr9
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr9
++ realjobid=2128218.biocluster.igb.illinois.edu
++ echo 2128218.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr10                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr10
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr10'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr10.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr10.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr10 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr10.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr10.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr10'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr10
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr10
++ realjobid=2128219.biocluster.igb.illinois.edu
++ echo 2128219.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr11                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr11
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr11'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr11.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr11.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr11 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr11.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr11.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr11'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr11
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr11
++ realjobid=2128220.biocluster.igb.illinois.edu
++ echo 2128220.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr12                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr12
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr12'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr12.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr12.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr12 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr12.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr12.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr12'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr12
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr12
++ realjobid=2128221.biocluster.igb.illinois.edu
++ echo 2128221.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr13                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr13
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr13'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr13.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr13.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr13 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr13.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr13.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr13'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr13
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr13
++ realjobid=2128222.biocluster.igb.illinois.edu
++ echo 2128222.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr14                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr14
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr14'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr14.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr14.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr14 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr14.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr14.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr14'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr14
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr14
++ realjobid=2128223.biocluster.igb.illinois.edu
++ echo 2128223.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr15                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr15
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr15'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr15.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr15.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr15 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr15.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr15.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr15'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr15
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr15
++ realjobid=2128224.biocluster.igb.illinois.edu
++ echo 2128224.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr16                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr16
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr16'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr16.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr16.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr16 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr16.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr16.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr16'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr16
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr16
++ realjobid=2128225.biocluster.igb.illinois.edu
++ echo 2128225.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr17                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr17
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr17'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr17.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr17.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr17 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr17.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr17.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr17'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr17
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr17
++ realjobid=2128226.biocluster.igb.illinois.edu
++ echo 2128226.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr18                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr18
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr18'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr18.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr18.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr18 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr18.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr18.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr18'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr18
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr18
++ realjobid=2128227.biocluster.igb.illinois.edu
++ echo 2128227.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr19                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr19
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr19'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr19.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr19.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr19 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr19.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr19.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr19'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr19
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr19
++ realjobid=2128228.biocluster.igb.illinois.edu
++ echo 2128228.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr20                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr20
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr20'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr20.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr20.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr20 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr20.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr20.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr20'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr20
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr20
++ realjobid=2128229.biocluster.igb.illinois.edu
++ echo 2128229.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr21                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr21
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr21'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr21.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr21.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr21 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr21.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr21.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr21'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr21
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr21
++ realjobid=2128230.biocluster.igb.illinois.edu
++ echo 2128230.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chr22                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr22
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chr22'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr22.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr22.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chr22 /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr22.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chr22.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr22'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr22
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chr22
++ realjobid=2128231.biocluster.igb.illinois.edu
++ echo 2128231.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chrX                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrX
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chrX'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrX.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrX.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chrX /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrX.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrX.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrX'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrX
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrX
++ realjobid=2128232.biocluster.igb.illinois.edu
++ echo 2128232.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ for chr in '$indices'
++ set +x
+
+
+########################################################################################
+####   Realign-Vcall script for SAMPLE synthetic.Oct2016.WES30x chr=chrY                              #######
+########################################################################################
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrY
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N realVcall.synthetic.Oct2016.WES30x.chrY'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrY.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrY.in'
++ echo '#PBS -W depend=afterok:2128209'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/realign_varcall_by_chr.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x chrY /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrY.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.realVcall.synthetic.Oct2016.WES30x.chrY.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrY'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrY
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.realVcall.synthetic.Oct2016.WES30x.chrY
++ realjobid=2128233.biocluster.igb.illinois.edu
++ echo 2128233.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ set +x
+
+
+########################################################################################
+####   Out of loop2. Now launching merge_vcf script for SAMPLE synthetic.Oct2016.WES30x       ##########
+########################################################################################
+
+
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.VCALL.synthetic.Oct2016.WES30x
+++ sed 's/\.[a-z]*//g'
+++ tr '\n' :
++ vcalljobids=2128210:2128211:2128212:2128213:2128214:2128215:2128216:2128217:2128218:2128219:2128220:2128221:2128222:2128223:2128224:2128225:2128226:2128227:2128228:2128229:2128230:2128231:2128232:2128233:
++ echo -e '\n\n### this list of jobids=[2128210:2128211:2128212:2128213:2128214:2128215:2128216:2128217:2128218:2128219:2128220:2128221:2128222:2128223:2128224:2128225:2128226:2128227:2128228:2128229:2128230:2128231:2128232:2128233:] will be used to hold execution of merge_vcf.sh #####\n\n'
+
+
+### this list of jobids=[2128210:2128211:2128212:2128213:2128214:2128215:2128216:2128217:2128218:2128219:2128220:2128221:2128222:2128223:2128224:2128225:2128226:2128227:2128228:2128229:2128230:2128231:2128232:2128233:] will be used to hold execution of merge_vcf.sh #####
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.merge.synthetic.Oct2016.WES30x
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N merge.synthetic.Oct2016.WES30x'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.merge.synthetic.Oct2016.WES30x.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.merge.synthetic.Oct2016.WES30x.in'
++ echo '#PBS -W depend=afterok:2128210:2128211:2128212:2128213:2128214:2128215:2128216:2128217:2128218:2128219:2128220:2128221:2128222:2128223:2128224:2128225:2128226:2128227:2128228:2128229:2128230:2128231:2128232:2128233:'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/merge_vcf.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt synthetic.Oct2016.WES30x /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.mergeVcf.synthetic.Oct2016.WES30x.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.merge.synthetic.Oct2016.WES30x.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.merge.synthetic.Oct2016.WES30x'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.merge.synthetic.Oct2016.WES30x
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.merge.synthetic.Oct2016.WES30x
++ mergejobid=2128234.biocluster.igb.illinois.edu
++ echo 2128234.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
+++ qrls -h u 2128209.biocluster.igb.illinois.edu
++ read sampleLine
++ set +x
+
+
+########################################################################################
+####    Now launching joint_genotyping script for all SAMPLEs: each 200 together        ##########
+########################################################################################
+
+
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.summary_dependencies
+++ sed 's/\.[a-z]*//g'
+++ tr '\n' :
++ mergedjobsids=2128209:2128234:
++ echo -e '\n\n### this list of jobids=[2128209:2128234:] will be used to hold execution of joint_vcfs.sh #####\n\n'
+
+
+### this list of jobids=[2128209:2128234:] will be used to hold execution of joint_vcfs.sh #####
+
+
++ qsub1=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.jointcall
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N JointCalling'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.jointcall.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.jointcall.in'
++ echo '#PBS -W depend=afterok:2128209:2128234:'
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/joint_vcf.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.jointcall.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.jointcall.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.jointcall'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.jointcall
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.jointcall
++ jointcalljobid=2128235.biocluster.igb.illinois.edu
++ echo 2128235.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
++ set +x
+
+
+########################################################################################
+########################################################################################
+#################           MAIN LOOP ENDS HERE                  #######################
+########################################################################################
+########################################################################################
+#################     Now, we need to generate summary           #######################
+########################################################################################
+########################################################################################
+
+
+++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/pbs.summary_dependencies
+++ sed 's/\.[a-z]*//g'
+++ tr '\n' :
++ alljobids=2128209:2128234:2128235:
++ set +x
+
+
+### this list of jobids=[2128209:2128234:2128235:] will be used to hold execution of summary.sh #####
+
+
++ qsub2=/home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.summary
++ cat /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsubGenericHeader
++ echo '#PBS -N Summary_vcall'
++ echo '#PBS -o /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.summary.ou'
++ echo '#PBS -e /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.summary.in'
++ echo '#PBS -W depend=afterok:2128209:2128234:2128235: '
++ echo '/home/groups/hpcbio_shared/azza/H3A_NextGen_assessment_set3/Workflow/BW_VariantCalling/summary.sh /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/delivery/docs/runfile.txt /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.summary.in /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/log.summary.ou /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.summary'
+++ chmod a+r /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.summary
+++ qsub /home/groups/hpcbio_shared/azza/human_WES_multi_sample_synthetic/results/run8/logs/qsub.summary
++ lastjobid=2128236.biocluster.igb.illinois.edu
++ echo 2128236.biocluster.igb.illinois.edu
+++ date
++ echo Sun Oct 16 20:20:45 CDT 2016
+Sun Oct 16 20:20:45 CDT 2016
+++ expr 35
++ '[' 35 -lt 1 ']'
+++ qrls -h u 2128209.biocluster.igb.illinois.edu
++ set +x
+
+
+########################################################################################
+##############                 EXITING NOW                            ##################
+########################################################################################
+
+
