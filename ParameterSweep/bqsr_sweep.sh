@@ -34,6 +34,7 @@ if [ ! -s $runfile ] ; then
 	    exit 1;
 fi
 
+scriptdir=$( cat $runfile | grep -w SCRIPTDIR | cut -d '=' -f2 )
 reportticket=$( cat $runfile | grep -w REPORTTICKET | cut -d '=' -f2 )
 email=$( cat $runfile | grep -w EMAIL | cut -d '=' -f2 )
 rootdir=$( cat $runfile | grep -w OUTPUTDIR | cut -d '=' -f2 )
@@ -304,8 +305,7 @@ echo -e "\n\n###################################################################
 echo -e "##############                 plotting now for this chr=$chr                            ##################"	
 echo -e "########################################################################################\n\n"
 
-
-Rscript bqsrplotting.R $rootdir/sweepBQSR.$SampleName/ $thr $chr
+Rscript $scriptdir/ParameterSweep/bqsrplotting.R $rootdir/sweepBQSR.$SampleName/ $thr $chr
 
 
 

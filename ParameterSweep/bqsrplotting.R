@@ -1,10 +1,15 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-#User need to supply the following: the path to the swept files, args[1], the number of cores for parallelization, args[2], and the name of the chromosome (or contig) for which the plot is generated
-
-library(gsalib)
-library(dplyr)
+#User need to supply the following: the path to the swept files, args[1], the number of cores for parallelization, args[2], and the name of the chromosome (or contig) for which the plot is generated, args[3]
+if (!require(gsalib)){
+ install.packages('gsalib')
+ library(gsalib)
+}
+if (!require(dplyr)) {
+ install.packages('dplyr') 
+ library(dplyr)
+}
 if (!require(doParallel)){
  install.packages('doParallel')
  library('doParallel')
@@ -32,8 +37,8 @@ parameters = data.frame(
 defaults = c(40, 45, 3, 45, 2, 500, 2, -1)
 
 setwd(paste0(args[1],"/default")) #go to the default folder
-before = Sys.glob('*recal.table.*')
-after = Sys.glob('*after_recal.*')
+before = Sys.glob(paste0('*.',args[3],'.recal_table.*'))
+after = Sys.glob(paste0('*.', args[3], '.after_recal_table.*')) 
 db = gsa.read.gatkreport(before)
 qb = db$RecalTable1
 da = gsa.read.gatkreport(after)
@@ -60,8 +65,8 @@ foreach (i = 1:length(dirs)+1 ) %dopar% {
   pdffile=paste0(args[1],'BQSR_sweep_plot_on_',args[3],'_',param_name[i-1],'.pdf') #args[3] is the chrmosome name
   pdf(pdffile,title = 'Effect of parameter chages in the bqsr result')
   setwd(dirs[i])
-  before = Sys.glob('*recal.table.*')
-  after = Sys.glob('*after_recal.*')
+  before =Sys.glob(paste0('*.',args[3],'.recal_table.*')) 
+  after =Sys.glob(paste0('*.', args[3], '.after_recal_table.*')) 
 
   values=c()
   fwsebefore=c()
