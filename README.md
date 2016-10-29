@@ -82,103 +82,63 @@ In a nutshell, the template below shows the various parameters and how they can 
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
-\#\# i/o
+## i/o
+  SAMPLEINFORMATION=<path to the sampleinformation file>
+  OUTPUTDIR=<path to the output directory>
+  DELIVERYFOLDER=<path where summary deliverables from the pipeline are stored. It is a subdirectory within the OUTPUTDIR>
+  TMPDIR=<path to where temporary files are stored>
+  SCRIPTDIR=<path to where the scripts of this repo are stored locally on the machine>
+  EMAIL=<email address to send torque notifications to\*>
+  REPORTTICKET=<redmine ticket number to send notifications to\*>
 
-  SAMPLEINFORMATION=&lt;path to the sampleinformation file&gt;
+  ## choose the run case
+  ANALYSIS=<depending on the analysis type it can be {ANALYSIS=ALIGNMENT, or ANALYSIS=ALIGN or ANALYSIS=ALIGN\_ONLY} for alignment only, {ANALYSIS=VC\_WITH\_REALIGNMENT} for complete variant calling with realignment, or anything else for complete variant calling without realignment>
 
-  OUTPUTDIR=&lt;path to the output directory&gt;
+  ## Read group information for the samples: namely, the Library, Platform technology, and sequencing center name. It should be noted that the sample ID, platform unit (PU) and sample name (SM) are set by default to be the same sample name found in the sampleinformation file specified
+  SAMPLELB=<name of the library>
+  SAMPLEPL=<should be either ILLUMINA, SOLID, LS454, HELICOS or PACBIO>
+  SAMPLECN=<name of the sequencing center generating the reads>
 
-  DELIVERYFOLDER=&lt;path where summary deliverables from the pipeline are stored. It is a subdirectory within the OUTPUTDIR&gt;
+  ## The tools to be used in this run of the pipeline (where a selection can be made)
+  ALIGNERTOOL=<the tool to be used for the alignment stage of the pipeline. Can be either BWAMEM or NOVOALIGN. Only the respective INDEX and PARAMS need to be specified in the next block of the runfile>
+  MARKDUPLICATESTOOL=<the tool to be used for marking duplicates in the pipeline. Can be any of these: samblaster, novosort or PICARD>
 
-  TMPDIR=&lt;path to where temporary files are stored&gt;
+## Alignment block parameters and Trimming options.
+  BWAINDEX=<Path to the indexed reference file for bwa, if it is the desired aligner >
+  BWAMEMPARAMS=<optional parameters to bwa mem, if used as an aligner. Example: -k 32 -I 30,30>
+  NOVOALIGNINDEX=<path to the indexed reference file for novoalign, if it is the desired aligner>
+  NOVOALIGNPARAMS=<optional parameters to novoalign, if used as an aligner>
+  CHRNAMES=<a colon (:) separated list of chromosome or contig names to split files by. Only these regions will be processed in the stages following the alignment>
+  TRIMMOMATICPARAMS=<parameters to trimmomatic for trimming illumina reads. Example :2:20:10 LEADING:5 TRAILING:5 MINLEN:25>
 
-  SCRIPTDIR=&lt;path to where the scripts of this repo are stored locally on the machine&gt;
+## Quality thresholds (for reporting only, as the pipeline will continue with the next stage regardless of whether these thresholds were respected or not):
+  MAP_CUTOFF=<minimum mapping quality of reads to pass QC test after alignment>
+  DUP_CUTOFF=<maximum duplication level in reads to pass QC test after alignment>
 
-  EMAIL=&lt;email address to send torque notifications to\*&gt;
+  ## paths to resources and tools - See section 2.1 and 2.2
+  ADAPTERS=<path to the adapter file to be used with trimmomatic>
+  REFGENOMEDIR=<path to the directory where all reference files and databases are stored>
+  REFGENOME=<name of the reference genome file within REFGENOMEDIR. Example ucsc.hg19.fasta in the GATK bundle 2.8>
+  DBSNP=<name of the dbsnp file within REFGENOMEDIR. Example dbsnp\_138.hg19.vcf in the GATK bundle 2.8>
+  INDELDIR=<name of the directory within REFGENOMEDIR that contains a vcf file for each chromosome/contig specified by the CHRNAMES parameter. These files need to be named as: \*\${chr\_name}.vcf >
+  OMNI=<name of the omni variants file. Example: 1000G\_omni2.5.hg19.sites.vcf in the GATK bundle 2.8>
 
-  REPORTTICKET=&lt;redmine ticket number to send notifications to\*&gt;
-
-  \#\# choose the run case
-
-  ANALYSIS=&lt;depending on the analysis type it can be {ANALYSIS=ALIGNMENT, or ANALYSIS=ALIGN or ANALYSIS=ALIGN\_ONLY} for alignment only, {ANALYSIS=VC\_WITH\_REALIGNMENT} for complete variant calling with realignment, or anything else for complete variant calling without realignment&gt;
-
-  \#\# Read group information for the samples: namely, the Library, Platform technology, and sequencing center name. It should be noted that the sample ID, platform unit (PU) and sample name (SM) are set by default to be the same sample name found in the sampleinformation file specified
-
-  SAMPLELB=&lt;name of the library&gt;
-
-  SAMPLEPL=&lt;should be either ILLUMINA, SOLID, LS454, HELICOS or PACBIO&gt;
-
-  SAMPLECN=&lt;name of the sequencing center generating the reads&gt;
-
-  \#\# The tools to be used in this run of the pipeline (where a selection can be made)
-
-  ALIGNERTOOL=&lt;the tool to be used for the alignment stage of the pipeline. Can be either BWAMEM or NOVOALIGN. Only the respective INDEX and PARAMS need to be specified in the next block of the runfile&gt;
-
-  MARKDUPLICATESTOOL=&lt;the tool to be used for marking duplicates in the pipeline. Can be any of these: samblaster, novosort or PICARD&gt;
-
-  \#\# Alignment block parameters and Trimming options.
-
-  BWAINDEX=&lt;Path to the indexed reference file for bwa, if it is the desired aligner &gt;
-
-  BWAMEMPARAMS=&lt;optional parameters to bwa mem, if used as an aligner. Example: -k 32 -I 30,30&gt;
-
-  NOVOALIGNINDEX=&lt;path to the indexed reference file for novoalign, if it is the desired aligner&gt;
-
-  NOVOALIGNPARAMS=&lt;optional parameters to novoalign, if used as an aligner&gt;
-
-  CHRNAMES=&lt;a colon (:) separated list of chromosome or contig names to split files by. Only these regions will be processed in the stages following the alignment&gt;
-
-  TRIMMOMATICPARAMS=&lt;parameters to trimmomatic for trimming illumina reads. Example :2:20:10 LEADING:5 TRAILING:5 MINLEN:25&gt;
-
-  \#\# Quality thresholds (for reporting only, as the pipeline will continue with the next stage regardless of whether these thresholds were respected or not):
-
-  MAP\_CUTOFF=&lt;minimum mapping quality of reads to pass QC test after alignment&gt;
-
-  DUP\_CUTOFF=&lt;maximum duplication level in reads to pass QC test after alignment&gt;
-
-  \#\# paths to resources and tools - See section 2.1 and 2.2
-
-  ADAPTERS=&lt;path to the adapter file to be used with trimmomatic&gt;
-
-  REFGENOMEDIR=&lt;path to the directory where all reference files and databases are stored&gt;
-
-  REFGENOME=&lt;name of the reference genome file within REFGENOMEDIR. Example ucsc.hg19.fasta in the GATK bundle 2.8&gt;
-
-  DBSNP=&lt;name of the dbsnp file within REFGENOMEDIR. Example dbsnp\_138.hg19.vcf in the GATK bundle 2.8&gt;
-
-  INDELDIR=&lt;name of the directory within REFGENOMEDIR that contains a vcf file for each chromosome/contig specified by the CHRNAMES parameter. These files need to be named as: \*\${chr\_name}.vcf &gt;
-
-  OMNI=&lt;name of the omni variants file. Example: 1000G\_omni2.5.hg19.sites.vcf in the GATK bundle 2.8&gt;
-
-  \# Example entries for tools’ path in biocluster
-
+ # Example entries for tools’ path in biocluster
   TRIMMOMATICDIR=/home/apps/trimmomatic/trimmomatic-0.33/trimmomatic-0.33.jar
-
   FASTQCDIR=/home/apps/fastqc/fastqc-0.11.4
-
   BWAMEMDIR=/home/apps/bwa/bwa-0.7.15
-
   NOVOCRAFTDIR=/home/apps/novocraft/novocraft-3.02
-
   SAMBLASTERDIR=/home/apps/samblaster/samblaster-0.1.22/bin
-
   PICARDIR=/home/apps/picard-tools/picard-tools-2.4.1
-
   GATKDIR=/home/apps/gatk/gatk-3.6
-
   SAMDIR=/home/apps/samtools/samtools-1.3.1/bin
-
   JAVADIR=/home/apps/java/jdk1.8.0\_65/bin
 
   \#\# pbs torque resources
-
-  PBSNODES=&lt;number of nodes&gt;
-
-  PBSCORES=&lt;number of cores&gt;
-
-  PBSQUEUE=&lt;name of the queue&gt;
-
-  PBSWALLTIME=&lt;wall time&gt;
+  PBSNODES=<number of nodes>
+  PBSCORES=<number of cores>
+  PBSQUEUE=<name of the queue>
+  PBSWALLTIME=<wall time>
   
   ```
 
@@ -208,22 +168,15 @@ described in section 2.3 for each case.
  
 The pipeline breaks down the analysis stages on per sample and chromosome basis as is shown in Figure 2. It does so with the help of PBS torque resource manager to handle the various dependencies and scheduling of tasks. Accordingly, it keeps log files of each analysis stage in the logs output directory (Figure 3) with names that follows the convention:
 
--   qsub.computation\_phase.sample\_name = pbs torque script for a
-    > certain stage in the analysis, corresponding to a specific sample
+-   qsub.computation\_phase.sample\_name = pbs torque script for a certain stage in the analysis, corresponding to a specific sample
 
--   qsub.computation\_phase.sample\_name.chromosome = pbs torque script
-    > for a certain stage in the analysis, corresponding to a specific
-    > sample's chromosome
+-   qsub.computation\_phase.sample\_name.chromosome = pbs torque script for a certain stage in the analysis, corresponding to a specific sample's chromosome
 
--   log.computation\_phase.sample\_name.in = Error log for a certain
-    > qsub job (including warnings, and execution status of
-    > corresponding scripts)
+-   log.computation\_phase.sample\_name.in = Error log for a certainqsub job (including warnings, and execution status of corresponding scripts)
 
--   log.computation\_phase.sample\_name.ou = Output log for a certain
-    > qsub job
+-   log.computation\_phase.sample\_name.ou = Output log for a certain qsub job
 
--   pbs.COMPUTATIONSTAGE = list of jobids for that stage in the workflow
-    > (lists together jobs that delineate a major block of computation)
+-   pbs.COMPUTATIONSTAGE = list of jobids for that stage in the workflow (lists together jobs that delineate a major block of computation)
  
 Besides that, it also tracks the execution of the various stages by sending email notification of qsub jobs (the EMAIL parameter in the runfile), and also by reporting a summary of a given run in [redmine](http://www.redmine.org) . In its current implementation, the pipeline will send these to HPCBio’s redmine instance, and the given ticket number (the REPORTTICKET parameter in the runfile)
 
@@ -271,9 +224,9 @@ Calling the variants in the data produced by Robot1 (i.e. replicate 1) of an ave
 
 > Table 1: Benchmarking summary\*
 
-  Type  |  Filter |  Total| Golden vcf variants |  True positives |  False negatives |  Total workflow vcf variants |  False positives |  ***Recall*** |  ***Precision***
-  -------| --------| ---------------------------| ----------------| ----------------- |----------------------------- |----------------- |-------------- |-----------------| -------
-  INDEL  | ALL |     803045  |  767492    |       35553   |           886700   |                     119213 |           0.955727 |      0.865554
+  Type  |  Filter |  Total Golden vcf variants |  True positives |  False negatives |  Total workflow vcf variants |  False positives |  ***Recall*** |  ***Precision***
+  -------| --------| ---------------------------| ----------------| ----------------- |----------------------------- |----------------- |-------------- |-----------------
+  INDEL  |  ALL  |     803045  |  767492    |       35553   |           886700|        119213 |           0.955727 |      0.865554
   INDEL  | PASS   |  803045 |                     764680       |    38365    |         883879     |                   119204    |        0.952226   |    0.865135
   SNP  |   ALL    |  3689294     |                3614155     |     75139       |      3806647        |               192500    |        0.979633      | 0.949431
   SNP |    PASS   |  3689294            |         3523155     |     166139     |       3714249             |          191102    |        0.954967    |   0.948549
@@ -310,9 +263,9 @@ Both functionalities can be invoked by running the commands below
 respectively:
 
   -------------------------------------------------------------------------
-  nohup start\_bwa.sh &lt;runfile&gt; &gt; bwa\_sweep\_log.nohup
+  nohup start\_bwa.sh <runfile> &gt; bwa\_sweep\_log.nohup
 
-  nohup start\_bqsr\_sweep.sh &lt;runfile&gt; &gt; bqsr\_sweep\_log.nohup
+  nohup start\_bqsr\_sweep.sh <runfile> &gt; bqsr\_sweep\_log.nohup
   -------------------------------------------------------------------------
   -------------------------------------------------------------------------
 
