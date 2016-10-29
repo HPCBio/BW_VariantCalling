@@ -1,3 +1,5 @@
+October 2016
+
 1 Pipeline architecture and function
 ====================================
 
@@ -30,7 +32,7 @@ Complete variant calling with realignment and Complete variant calling
 without realignment depending on the user’s ANALYSIS setting.
 
 <span id="_5gqwfmpxrsjj"
-class="anchor"></span>![](./media/image04.png){width="6.697916666666667in"
+class="anchor"></span>![](./media/image05.png){width="6.697916666666667in"
 height="3.316666666666667in"}
 
 Figure 1: Best Practices for Germline SNPs and Indels in Whole Genomes
@@ -42,7 +44,9 @@ data processing is shown in Figure \[2\] below:
 
 ![](./media/image01.png){width="6.692716535433071in" height="5.125in"}
 
-Figure 2: Pipeline details
+Figure 2: Pipeline details. Note the processing can be split by
+individual sequences in the reference FASTA file. Those could be
+individual chromosomes, scaffolds, contigs, etc.
 
 2 Dependencies
 ==============
@@ -53,27 +57,43 @@ Figure 2: Pipeline details
 The pipeline implements the stages of Figure \[1\] and \[2\], while
 allowing different software tools at some of the stages depending on
 user's preference. These are as shown in table \[1\] below, and it is
-assumed that the user would specify the path to each of them in his
+assumed that users would specify the path to each of them in their
 runfile as shown in section 2.3.
 
 Table 1: Pipeline tools
 
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Stage**                   **Tool options**
   --------------------------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   Quality control             Fastqc ([*http://www.bioinformatics.babraham.ac.uk/projects/fastqc/*](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) )
+
   Illumina reads trimming     Trimmomatic ([*http://www.usadellab.org/cms/?page=trimmomatic*](http://www.usadellab.org/cms/?page=trimmomatic) )
-  Alignment                   Bwa mem ([*https://github.com/lh3/bwa*](https://github.com/lh3/bwa) ), Novoalign ([*http://novocraft.com/*](http://novocraft.com/) )
-  Marking duplicates          Samblaster ([*https://github.com/GregoryFaust/samblaster*](https://github.com/GregoryFaust/samblaster) ), Novosort ( [*http://novocraft.com/*](http://novocraft.com/) ), Picard ([*https://broadinstitute.github.io/picard/*](https://broadinstitute.github.io/picard/) ),
+
+  Alignment                   Bwa mem ([*https://github.com/lh3/bwa*](https://github.com/lh3/bwa) ),
+                              
+                              Novoalign ([*http://novocraft.com/*](http://novocraft.com/) )
+
+  Marking duplicates          Samblaster ([*https://github.com/GregoryFaust/samblaster*](https://github.com/GregoryFaust/samblaster) ), Novosort ( [*http://novocraft.com/*](http://novocraft.com/) ),
+                              
+                              Picard ([*https://broadinstitute.github.io/picard/*](https://broadinstitute.github.io/picard/) )
+
   Indel realignment           GATK ([*https://software.broadinstitute.org/gatk/download/*](https://software.broadinstitute.org/gatk/download/) )
+
   Base recalibration          GATK ([*https://software.broadinstitute.org/gatk/download/*](https://software.broadinstitute.org/gatk/download/) )
+
   Calling variants            GATK (Haplotypecaller: [*https://www.broadinstitute.org/gatk/gatkdocs/org\_broadinstitute\_gatk\_tools\_walkers\_haplotypecaller\_HaplotypeCaller.php*](https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php) )
+
   Joint calling of variants   GATK (Genotypegvcf: [*https://www.broadinstitute.org/gatk/gatkdocs/org\_broadinstitute\_gatk\_tools\_walkers\_variantutils\_GenotypeGVCFs.php*](https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php) )
-  Miscelleneos                Samtools ([*http://samtools.github.io/*](http://samtools.github.io/) )
+
+  Miscellaneous               Samtools ([*http://samtools.github.io/*](http://samtools.github.io/) )
+                              
+                              Note: one alternative to samtools (and marking duplicates) is sambamba, but it is not currently implemented in the code.
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 2.2 Databases and resources
 ---------------------------
 
-For this pipeline to work a number of standard files for calling
+For this pipeline to work, a number of standard files for calling
 variants are needed, namely the reference sequence, database of known
 variants and the adapter sequence to be trimmed. The full path to all
 these needs to be specified in the User’s runfile as specified in
@@ -120,8 +140,9 @@ the pipeline, including the tools of section 2.1, resources of section
 2.2, and the sampleinformation file path as well. It would change
 depending on the analysis type required.
 
-In a nutshell, the various parameters and how they are specified are
-given below:
+In a nutshell, the template below shows the various parameters and how
+they can be specified. It should be noted that the pipeline is case
+sensitive to the parameters’ names.
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   \#\# i/o
@@ -136,9 +157,9 @@ given below:
 
   SCRIPTDIR=&lt;path to where the scripts of this repo are stored locally on the machine&gt;
 
-  EMAIL\*=&lt;email address to send torque notifications to&gt;
+  EMAIL=&lt;email address to send torque notifications to\*&gt;
 
-  REPORTTICKET\*=&lt;redmine ticket number to send notifications to&gt;
+  REPORTTICKET=&lt;redmine ticket number to send notifications to\*&gt;
 
   \#\# choose the run case
 
@@ -146,11 +167,11 @@ given below:
 
   \#\# Read group information for the samples: namely, the Library, Platform technology, and sequencing center name. It should be noted that the sample ID, platform unit (PU) and sample name (SM) are set by default to be the same sample name found in the sampleinformation file specified
 
-  SAMPLELB=synthetic
+  SAMPLELB=&lt;name of the library&gt;
 
-  SAMPLEPL=&lt;can be either ILLUMINA, SOLID, LS454, HELICOS and PACBIO&gt;
+  SAMPLEPL=&lt;should be either ILLUMINA, SOLID, LS454, HELICOS or PACBIO&gt;
 
-  SAMPLECN=synthetic
+  SAMPLECN=&lt;name of the sequencing center generating the reads&gt;
 
   \#\# The tools to be used in this run of the pipeline (where a selection can be made)
 
@@ -224,28 +245,26 @@ given below:
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-\* The pipeline tracks the execution of the various stages by sending
-email notification of qsub jobs (the EMAIL parameter), and also by
-reporting a summary of a given run in redmine
-[*http://www.redmine.org/*](http://www.redmine.org/). In its current
-implementation, the pipeline will send these to HPCBio’s redmine
-instance, and the given ticket number (the REPORTTICKET parameter)
+\* These are needed to track the execution of the various pipeline
+stages. See section 2.5 for more details
 
-2.4 Repo index/ The scripts
----------------------------
+2.4 Pipeline usage and naming conventions
+-----------------------------------------
 
 This pipeline
 ([*https://github.com/HPCBio/BW\_VariantCalling/tree/ParameterSweep*](https://github.com/HPCBio/BW_VariantCalling/tree/ParameterSweep)
 ) can be invoked in one of 3 ways depending on analysis requirement.
-These are specified in the table below:
+These are specified in the table below. Additionally, example runfiles
+corresponding to each analysis scenario are given in the Config
+directory of the repository.
 
-  **Desired analysis**                                                 **Invoke as+**
-  -------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  **Desired analysis scenario**                                        **Invoke as+**
+  -------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------
   Quality Control check of the raw reads and trimming                  bash trim\_input.sh &lt;runfile&gt;
   Aligning reads to a reference and basic quality control thereafter   bash start.sh &lt;runfile&gt;\*
   Complete variant calling, including the realignment stage            bash start.sh &lt;runfile&gt;\*
   Complete variant calling, without the realignment stage              bash start.sh &lt;runfile&gt;\*
-  Resume execution after a failing job                                 bash resumePartialExectuion.sh &lt;path to the logs directory from the failed run of the workflow&gt; &lt;name of the task to be resubmitted in the form qsub\*realVcall\*&gt;
+  Resume execution after a failing job                                 bash resumePartialExectuion.sh &lt;path to the logs directory from the failed run of the workflow&gt; &lt;name of the task to be resubmitted- see section 2.5 &gt;
 
 + Better to use nohup to run your analysis, as in: nohup
 &lt;script\_dir&gt; &lt;needed\_file&gt; &gt; log.nohup to be able to
@@ -253,6 +272,44 @@ track the run quickly, and also log off freely afterwards.
 
 \* The ANALYSIS parameter in the runfile needs to be configured as was
 described in section 2.3 for each case.
+
+2.5 Tasks management
+--------------------
+
+The pipeline breaks down the analysis stages on per sample and
+chromosome basis as is shown in Figure 2. It does so with the help of
+PBS torque resource manager to handle the various dependencies and
+scheduling of tasks. Accordingly, it keeps log files of each analysis
+stage in the logs output directory (Figure 3) with names that follows
+the convention:
+
+-   qsub.computation\_phase.sample\_name = pbs torque script for a
+    > certain stage in the analysis, corresponding to a specific sample
+
+-   qsub.computation\_phase.sample\_name.chromosome = pbs torque script
+    > for a certain stage in the analysis, corresponding to a specific
+    > sample's chromosome
+
+-   log.computation\_phase.sample\_name.in = Error log for a certain
+    > qsub job (including warnings, and execution status of
+    > corresponding scripts)
+
+-   log.computation\_phase.sample\_name.ou = Output log for a certain
+    > qsub job
+
+-   pbs.COMPUTATIONSTAGE = list of jobids for that stage in the workflow
+    > (lists together jobs that delineate a major block of computation)
+
+Besides that, it also tracks the execution of the various stages by
+sending email notification of qsub jobs (the EMAIL parameter in the
+runfile), and also by reporting a summary of a given run in redmine
+[*http://www.redmine.org*](http://www.redmine.org) . In its current
+implementation, the pipeline will send these to HPCBio’s redmine
+instance, and the given ticket number (the REPORTTICKET parameter in the
+runfile)
+
+2.6 Repo index/ The scripts
+---------------------------
 
 The details of the remaining files of the repo are as in the table
 below:
@@ -293,8 +350,8 @@ directory that contains the files generated after each stage. In Figure
 would be generated according to how the user specifies the ANALYSIS
 parameter in the runfile.
 
-![](./media/image05.png){width="6.692716535433071in"
-height="3.736111111111111in"}
+![](./media/image04.png){width="6.692716535433071in"
+height="3.5694444444444446in"}
 
 Figure 3: Output directories and files generated from a typical run of
 the pipeline
@@ -317,36 +374,59 @@ website is as show in the table below (as generated by hap.py)
 
 > Table 1: Benchmarking summary\*
 
-  Type    Filter   TRUTH.TOTAL   TRUTH.TP   TRUTH.FN   QUERY.TOTAL   QUERY.FP   METRIC.Recall   METRIC.Precision
-  ------- -------- ------------- ---------- ---------- ------------- ---------- --------------- ------------------
-  INDEL   ALL      803045        767492     35553      886700        119213     0.955727        0.865554
-  INDEL   PASS     803045        764680     38365      883879        119204     0.952226        0.865135
-  SNP     ALL      3689294       3614155    75139      3806647       192500     0.979633        0.949431
-  SNP     PASS     3689294       3523155    166139     3714249       191102     0.954967        0.948549
+  Type    Filter   Total Golden vcf variants   True positives   False negatives   Total workflow vcf variants   False positives   ***Recall***   ***Precision***
+  ------- -------- --------------------------- ---------------- ----------------- ----------------------------- ----------------- -------------- -----------------
+  INDEL   ALL      803045                      767492           35553             886700                        119213            0.955727       0.865554
+  INDEL   PASS     803045                      764680           38365             883879                        119204            0.952226       0.865135
+  SNP     ALL      3689294                     3614155          75139             3806647                       192500            0.979633       0.949431
+  SNP     PASS     3689294                     3523155          166139            3714249                       191102            0.954967       0.948549
 
-\* This table is extracted from hap.py output reports. The scripts to
-obtain this data and perform the benchmarking are in the Miscellaneous
-directory of the repo
+\* This table is extracted from hap.py summary output reports. The
+scripts to obtain this data and perform the benchmarking are in the
+\`GIAB\_example\` directory of the repo
 
-1.  For some reason, Neat is not really producing meaningful
-    > comparisons! It is giving 0 for all the comparisons: golden
-    > variants, workflow variants, differences between the two vcfs, and
-    > the resulting FP and FN files are also meaningless!\
-    > \
-    > This could be something about the way I’m calling it, so here is
-    > the code excerpt:
+4 Advanced options
+==================
 
-> reference="/home/groups/hpcbio\_shared/azza/H3A\_NextGen\_assessment\_set3/data/genome"
->
-> goldenFile=/home/groups/hpcbio\_shared/azza/GIAB/reads/Gravan\_raw/NA12878\_V2.5\_Robot\_1.hc.vqsr.vep.vcf
->
-> workflowFile=/home/groups/hpcbio\_shared/azza/GIAB/results/run8/delivery/jointVCFs/jointVCFcalled.vcf
->
-> module load python/2.7.9
->
-> vcf\_compare\_dir=/home/groups/hpcbio\_shared/azza/H3A\_NextGen\_assessment\_set3/builds/NEAT/neat-genreads/utilities
->
-> python \$vcf\_compare\_dir/vcf\_compare\_OLD.py -r
-> \$reference/ucsc.hg19.fasta -g \${goldenFile} -w \${workflowFile} -o
-> /home/groups/hpcbio\_shared/azza/GIAB/results/run8/variant\_compare\_neat
-> --incl-homs --incl-fail --vcf-out --no-plot
+For more handle of the pipeline, there is a possibility to examine the
+effect of parameter changes in some of the stages; namely, the alignment
+and the Base Recalibration stage.
+
+The scripts to allow such functionality are in the \`ParameterSweep\`
+directory of the repo, and they employ the same runfile and
+sampleinformation structure shown in section 2.3.
+
+For running these scripts, it is assumed that the user has R installed
+and accessible, along with the following libraries: gsalib, ggplot2,
+reshape, gplots (required for some of the GATK tools:
+https://software.broadinstitute.org/gatk/guide/article?id=2899), dplyr,
+doParallel, foreach, RColorBrewer (required for the supplied R scripts)
+
+The effect of changing the parameters in the alignment stage (using bwa
+mem) can be shown as a function of the average quality of the alignment
+(the mean MAPQ field in the sample’s bam file). Contrary, the effect of
+changing the parameters in the Base Recalibration stage can be shown as
+a function of the error (the difference between the reported and
+empirical quality of the bases).
+
+Both functionalities can be invoked by running the commands below
+respectively:
+
+  -------------------------------------------------------------------------
+  nohup start\_bwa.sh &lt;runfile&gt; &gt; bwa\_sweep\_log.nohup
+
+  nohup start\_bqsr\_sweep.sh &lt;runfile&gt; &gt; bqsr\_sweep\_log.nohup
+  -------------------------------------------------------------------------
+  -------------------------------------------------------------------------
+
+The results of invoking either stage is integrated into the tree
+structure of Figure 3 as 2 additional directories called ‘sweepBWA’ and
+‘sweepBQSR’ with subfolders for each parameter, and with an overall
+summary files bqsr.summary.txt (detailing whether it was successful
+setting the parameter to a particular value, and also how long the
+processing took)
+
+Figure 4 below shows sample results from changing the &lt;&gt; parameter
+in bwa for the GIAB sample, while Figure 5 shows the results on the same
+sample when varying the &lt;&gt; parameter in the BaseRecalibration
+stage for chromosome &lt;&gt;
