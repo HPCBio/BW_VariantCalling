@@ -44,9 +44,13 @@ git clone https://github.com/HPCBio/BW_VariantCalling.git
 The pipeline implements the stages of Figures 1 and 2 below, while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [1] below, and it is assumed that the users would specify the path to each of them in their runfile as shown in section [User’s runfile and sample information files](#users-runfile-and-sample-information-files).
 
 <img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png"> 
+
 Figure 1. Best Practices for Germline SNPs and Indels in Whole Genomes and Exomes
 
+
+
 <img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image01.png"> 
+
 Figure 2. Pipeline details. Note: the processing can be split by individual sequences in the reference FASTA file, which could be individual chromosomes, scaffolds, contigs, etc.
 
 
