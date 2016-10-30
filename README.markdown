@@ -69,28 +69,28 @@ We introduced an additional flexibility to allow different software tools at som
 ### Software dependencies
 
 * Quality control
-** Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
+   * Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
 * Illumina reads trimming
-** Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
-** read trimming implemented in the param sweep branch, not in main branch
-** TO-DO: work it into main branch
+   * Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
+   * read trimming implemented in the param sweep branch, not in main branch
+   * TO-DO: work it into main branch
 * Alignment
-** Bwa mem (https://github.com/lh3/bwa ), 
-** Novoalign (http://novocraft.com/ )
+   * Bwa mem (https://github.com/lh3/bwa ), 
+   * Novoalign (http://novocraft.com/ )
 * Marking duplicates
-** Samblaster (https://github.com/GregoryFaust/samblaster ), Novosort ( http://novocraft.com/ ),  
-** Picard (https://broadinstitute.github.io/picard/ ), 
+   * Samblaster (https://github.com/GregoryFaust/samblaster ), Novosort ( http://novocraft.com/ ),  
+   * Picard (https://broadinstitute.github.io/picard/ ), 
 * Indel realignment
-** GATK (https://software.broadinstitute.org/gatk/download/ )
+   * GATK (https://software.broadinstitute.org/gatk/download/ )
 * Base recalibration
-** GATK (https://software.broadinstitute.org/gatk/download/ )
+   * GATK (https://software.broadinstitute.org/gatk/download/ )
 * Calling variants
-** GATK  (Haplotypecaller: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php )
+   * GATK  (Haplotypecaller: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php )
 * Joint calling of variants
-** GATK (Genotypegvcf: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php )
+   * GATK (Genotypegvcf: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php )
 * Miscelleaneous
-** Samtools (http://samtools.github.io/ )
-** Sambamba (http://lomereiter.github.io/sambamba/)
+   * Samtools (http://samtools.github.io/ )
+   * Sambamba (http://lomereiter.github.io/sambamba/)
 
 
 Additionally, for the purposes of monitoring, parallelization and optimization, the workflow uses memprof, Anisimov launcher, YesWorkflow and parfu.
