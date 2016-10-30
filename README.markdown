@@ -1,17 +1,18 @@
 Variant Calling Workflow for HPC systems
 ========================================
 
-This workflow originated from collaboration with Mayo Bioinformatics core group, and has now evolved mostly for testing the scalability of variant calling on many hundreds of genomes on large *HPC* systems.
+This workflow originated from collaboration with Mayo Bioinformatics core group, and has now evolved for uses on extreme scale, running variant calling on many hundreds of genomes on large *HPC* systems, be it in production (main branch), performance and scalability analysis (Scalability branch), or other testing (ParameterSweep branch).
 
   * [Variant Calling Workflow for HPC systems](#variant-calling-workflow-for-hpc-systems)
   * [Basics](#basics)
-    * [Installation](#installation)
+    * [Introduction](#introduction)
+    * [Installation and dependencies](#installation-and-dependencies)
     * [Documentation](#documentation)
-    * [Features](#Features)
-  * [For users](#for-users)
-    * [Usage examples](#usage-examples)
-  * [For developers](#for-developers)
-    * [Workflow file naming conventions](#workflow-file-naming-conventions)
+    * [Features](#features)
+  * [Input files](#input-files)
+    * [Scripts](#scripts)
+    * [User’s runfile and sample information files](#users-runfile-and-sample-information-files)
+    * [Results](#results)
     * [Error capture](#error-capture)
     * [Auto-archiving](#auto-archiving)
     * [Scalability testing](#scalability-testing)
@@ -40,7 +41,7 @@ These stages are implemented in our pipeline, with an optional  “Indel Realign
 git clone https://github.com/HPCBio/BW_VariantCalling.git
 
 
-The pipeline implements the stages of Figure [?] and [?], while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [?] below, and it is assumed that the users would specify the path to each of them in theirhis runfile as shown in section ??.
+The pipeline implements the stages of Figure [https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png] and [?], while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [?] below, and it is assumed that the users would specify the path to each of them in theirhis runfile as shown in section ??.
 
 
 Quality control
