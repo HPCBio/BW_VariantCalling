@@ -92,8 +92,11 @@ We introduced an additional flexibility to allow different software tools at som
    * Samtools (http://samtools.github.io/ )
    * Sambamba (http://lomereiter.github.io/sambamba/)
 
-
-Additionally, for the purposes of monitoring, parallelization and optimization, the workflow uses memprof, Anisimov launcher, YesWorkflow and parfu.
+Additionally, for the purposes of monitoring, parallelization and optimization, the workflow uses 
+* memprof, 
+* Anisimov launcher, 
+* YesWorkflow and 
+* parfu.
 
 DECIDE WHETHER THESE NEED TO BE INSTALLED OR COULD BE OPTIONAL.
 
