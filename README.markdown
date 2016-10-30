@@ -5,7 +5,10 @@ This workflow originated from collaboration with Mayo Bioinformatics core group,
 
   * [Variant Calling Workflow for HPC systems](#variant-calling-workflow-for-hpc-systems)
   * [Basics](#basics)
-    * [Introduction](#introduction)
+    * [Introduction: the best practices workflow](#introduction-the-best-practices-workflow)
+      * [Figure 1.](#figure-1)
+    * [Parallelization and Flexible software choice](#parallelization-and-flexible-software-choice)
+      * [Figure 2.](#figure-2)
     * [Installation and dependencies](#installation-and-dependencies)
     * [Documentation](#documentation)
     * [Features](#features)
@@ -22,9 +25,9 @@ This workflow originated from collaboration with Mayo Bioinformatics core group,
 
 # Basics
 
-## Introduction
+## Introduction: the best practices workflow
 
-This pipeline implements the GATK's best practices for germline variant calling in Whole Genome and Whole Exome Next Generation Sequencing datasets (https://software.broadinstitute.org/gatk/best-practices/), given a single sample or a cohort of samples. In its latest version, 3.6,  the best practices include the following stages:
+This pipeline implements the GATK's best practices ([Figure 1.](#figure-1)) for germline variant calling in Whole Genome and Whole Exome Next Generation Sequencing datasets (https://software.broadinstitute.org/gatk/best-practices/), given a single sample or a cohort of samples. In its latest version, 3.6,  the best practices include the following stages:
 
 1. Mapping to the reference genome
 2. Marking duplicates
@@ -32,26 +35,28 @@ This pipeline implements the GATK's best practices for germline variant calling 
 4. Variant calling –----- (processing done per sample)
 5. Joint genotyping –----- (processing done for all samples together)
 
-These stages are implemented in our pipeline, with an optional  “Indel Realignment” step (which was recommended in previous GATK best practices < 3.6).
+There is also an optional “Indel Realignment” step, which was recommended in previous GATK best practices <3.6.
+
+### Figure 1. 
+
+<img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png"> 
+
+
+## Parallelization and Flexible software choice
+
+The processing can be split by individual sequences in the reference FASTA file, which could be individual chromosomes, scaffolds, contigs, etc. ([Figure 2.](#figure-2)).
+
+We introduced an additional flexibility to allow different software tools at some of the stages depending on user's preference. These are as shown in table [1] below, and it is assumed that the users would specify the path to each of them in their runfile as shown in section [User’s runfile and sample information files](#users-runfile-and-sample-information-files).
+
+### Figure 2.
+
+<img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image01.png"> 
 
 
 
 ## Installation and dependencies
 
 git clone https://github.com/HPCBio/BW_VariantCalling.git
-
-
-The pipeline implements the stages of Figures 1 and 2 below, while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [1] below, and it is assumed that the users would specify the path to each of them in their runfile as shown in section [User’s runfile and sample information files](#users-runfile-and-sample-information-files).
-
-<img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png"> 
-
-Figure 1. Best Practices for Germline SNPs and Indels in Whole Genomes and Exomes
-
-
-
-<img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image01.png"> 
-
-Figure 2. Pipeline details. Note: the processing can be split by individual sequences in the reference FASTA file, which could be individual chromosomes, scaffolds, contigs, etc.
 
 
 Quality control
