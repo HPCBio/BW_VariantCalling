@@ -41,7 +41,7 @@ These stages are implemented in our pipeline, with an optional  “Indel Realign
 git clone https://github.com/HPCBio/BW_VariantCalling.git
 
 
-The pipeline implements the stages of Figure <img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png" style="width:128px;"> and [?], while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [?] below, and it is assumed that the users would specify the path to each of them in theirhis runfile as shown in section ??.
+The pipeline implements the stages of Figure <img src="https://github.com/HPCBio/BW_VariantCalling/raw/ParameterSweep/media/image05.png" style="width:28px;"> and [?], while allowing different software tools at some of the stages depending on user's preference. These are as shown in table [?] below, and it is assumed that the users would specify the path to each of them in theirhis runfile as shown in section ??.
 
 
 Quality control
