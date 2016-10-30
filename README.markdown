@@ -9,7 +9,8 @@ This workflow originated from collaboration with Mayo Bioinformatics core group,
       * [Figure 1.](#figure-1)
     * [Parallelization and Flexible software choice](#parallelization-and-flexible-software-choice)
       * [Figure 2.](#figure-2)
-    * [Installation and dependencies](#installation-and-dependencies)
+    * [Installation](#installation)
+      * [Software dependencies](#software-dependencies)
     * [Documentation](#documentation)
     * [Features](#features)
   * [Input files](#input-files)
@@ -21,6 +22,9 @@ This workflow originated from collaboration with Mayo Bioinformatics core group,
     * [Scalability testing](#scalability-testing)
     * [To-Dos](#to-dos)
     * [Example runfiles for commonly used configurations](#example-runfiles-for-commonly-used-configurations)
+
+
+
 
 
 # Basics
@@ -46,7 +50,7 @@ There is also an optional “Indel Realignment” step, which was recommended in
 
 The processing can be split by individual sequences in the reference FASTA file, which could be individual chromosomes, scaffolds, contigs, etc. ([Figure 2.](#figure-2)).
 
-We introduced an additional flexibility to allow different software tools at some of the stages depending on user's preference. These are as shown in table [1] below, and it is assumed that the users would specify the path to each of them in their runfile as shown in section [User’s runfile and sample information files](#users-runfile-and-sample-information-files).
+We introduced an additional flexibility to allow different software tools at some of the stages depending on user's preference. These are as shown in the section [Software dependencies](#Software dependencies) below, and it is assumed that the users would specify the path to each of them in their runfile as shown in section [User’s runfile and sample information files](#users-runfile-and-sample-information-files).
 
 ### Figure 2.
 
@@ -54,41 +58,39 @@ We introduced an additional flexibility to allow different software tools at som
 
 
 
-## Installation and dependencies
+## Installation 
 
-git clone https://github.com/HPCBio/BW_VariantCalling.git
+* git clone https://github.com/HPCBio/BW_VariantCalling.git
+* install the prerequisite software listed below
+* download prerequisite datasets: reference genome, dbSNP, etc
+* Edit one of the sample runfiles from ???folder path??? to specify paths to software and datasets
 
 
-Quality control
-Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
+### Software dependencies
 
-Illumina reads trimming
-Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
-read trimming implemented in the param sweep branch, not in main branch
-TO-DO: work it inot main branch
-
-Alignment
-Bwa mem (https://github.com/lh3/bwa ), 
-Novoalign (http://novocraft.com/ )
-
-Marking duplicates
-Samblaster (https://github.com/GregoryFaust/samblaster ), Novosort ( http://novocraft.com/ ),  
-Picard (https://broadinstitute.github.io/picard/ ), 
-
-Indel realignment
-GATK (https://software.broadinstitute.org/gatk/download/ )
-
-Base recalibration
-GATK (https://software.broadinstitute.org/gatk/download/ )
-
-Calling variants
-GATK  (Haplotypecaller: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php )
-
-Joint calling of variants
-GATK (Genotypegvcf: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php )
-
-Miscelleaneous
-Samtools (http://samtools.github.io/ )
+* Quality control
+** Fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ )
+* Illumina reads trimming
+** Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic )
+** read trimming implemented in the param sweep branch, not in main branch
+** TO-DO: work it into main branch
+* Alignment
+** Bwa mem (https://github.com/lh3/bwa ), 
+** Novoalign (http://novocraft.com/ )
+* Marking duplicates
+** Samblaster (https://github.com/GregoryFaust/samblaster ), Novosort ( http://novocraft.com/ ),  
+** Picard (https://broadinstitute.github.io/picard/ ), 
+* Indel realignment
+** GATK (https://software.broadinstitute.org/gatk/download/ )
+* Base recalibration
+** GATK (https://software.broadinstitute.org/gatk/download/ )
+* Calling variants
+** GATK  (Haplotypecaller: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php )
+* Joint calling of variants
+** GATK (Genotypegvcf: https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantutils_GenotypeGVCFs.php )
+* Miscelleaneous
+** Samtools (http://samtools.github.io/ )
+** Sambamba (http://lomereiter.github.io/sambamba/)
 
 
 Additionally, for the purposes of monitoring, parallelization and optimization, the workflow uses memprof, Anisimov launcher, YesWorkflow and parfu.
