@@ -45,7 +45,12 @@ else
     if [ ! -d $rootdir ]; then
         mkdir $rootdir
     else
-        rm -rf $rootdir/*
+	    if [ `expr ${#rootdir}` -gt 1 ]  
+		    rm -rf $rootdir/*
+	    else
+		    echo -e "$0 stopped at line $LINENO. \nREASON=ROOTDIR not specified correctly"| mail -s "[Task #${reportticket}]" "$redmine,$email"
+	    	    exit 1;
+	    fi
     fi
 
     setfacl -Rm   g::rwx $rootdir  #gives the group rwx permission, and to subdirectories
