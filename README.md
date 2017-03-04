@@ -282,11 +282,13 @@ stage for chromosome &lt;&gt;
 
 
 
-5 This Pipeline: Troubleshooting area (FAQs) 
+5 Troubleshooting area (FAQs) 
 ====================================
 
 - The pipeline seems to be running, but then prematurely stops at one of the tools?
-Solution: make sure that all tools are specified in your runfile up to the executable itself (or the jar file if applicable)
+
+*Solution*: make sure that all tools are specified in your runfile up according to the template above (the path to most tools is NOT specified up to the executable itself (or the jar file if applicable))
 
 - The realignment/recalibration stage produces a lot of errors or strange results?
-Solution: make sure you are preparing your reference and extra files (dbsnp, 1000G,...etc) according to the guidelines of section 2.2
+
+*Solution*: make sure you are preparing your reference and extra files (dbsnp, 1000G,...etc) according to the guidelines of section 2.2
