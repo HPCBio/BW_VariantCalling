@@ -1,4 +1,4 @@
-October 2016
+March 2017
 
 1 Pipeline architecture and function
 ====================================
@@ -56,16 +56,17 @@ Table 1: Pipeline tools
 |  Miscellaneous      |         [Samtools](http://samtools.github.io/).  Note: one alternative to samtools (and marking duplicates) is *sambamba*, but it is *not currently implemented* in the code.|
  
 
-2.2 Databases and resources
+2.2 Data preparation
 ---------------------------
 
-For this pipeline to work, a number of standard files for calling variants are needed, namely the reference sequence, database of known variants and the adapter sequence to be trimmed. The full path to all these needs to be specified in the User’s runfile as specified in section 2.3
-
-It is important to note that the reference sequence should be prepared first, following [the GATK’s guidelines](http://gatkforums.broadinstitute.org/wdl/discussion/2798/howto-prepare-a-reference-for-use-with-bwa-and-gatk).
+For this pipeline to work, a number of standard files for calling variants are needed (besides the raw reads files which can be fastq/fq/fastq.gz/fq.gz), namely the reference sequence, database of known variants (Please see [this link](https://software.broadinstitute.org/gatk/guide/article?id=1247)) and the adapter sequence to be trimmed. The full path to all these needs to be specified in the User’s runfile as specified in section 2.3
 
 For working with human data, one can download most of the needed files from [the GATK’s resource bundle](http://gatkforums.broadinstitute.org/gatk/discussion/1213/whats-in-the-resource-bundle-and-how-can-i-get-it). Missing from the bundle are the index files for the aligner, which are specific to the tool that would be used for alignment (i.e., bwa or novoalign in this pipeline)
 
-To achieve the parallelization of Figure \[2\] in the realignment/recalibration stages, the pipeline needs a separate vcf file for each chromosome/contig, and each should be named as: \*\${chr\_name}.vcf. If working with the GATK bundle, the sample script ([*splitVCF-by-chromosome.sh*](https://github.com/HPCBio/BW_VariantCalling/blob/ParameterSweep/splitVCF-by-chromosome.sh)) can be used to produce the needed files with some minor modifications (mainly, providing the right path to the referencedir, java and GenomeAnalysisTK.jar)
+Generally, for the preparation of the reference sequence, the following link is a good start [Preparing the reference genome](http://gatkforums.broadinstitute.org/wdl/discussion/2798/howto-prepare-a-reference-for-use-with-bwa-and-gatk).
+
+To achieve the parallelization of Figure \[2\] in the realignment/recalibration stages, the pipeline needs a separate vcf file for each chromosome/contig, and each should be named as: \*\${chr\_name}.vcf. Further, all these files need to be in the `INDELDIR` which should be within the `REFGENOMEDIR` directory as per the runfile (see section 2.3 below).
+If working with the GATK bundle, the sample script ([*splitVCF-by-chromosome.sh*](https://github.com/HPCBio/BW_VariantCalling/blob/ParameterSweep/splitVCF-by-chromosome.sh)) can be used to produce the needed files of known variants with some minor modifications (mainly, providing the right path to the referencedir, java and GenomeAnalysisTK.jar)
 
 2.3 User’s runfile and sample information files
 -----------------------------------------------
@@ -207,11 +208,9 @@ The remaining files are not used as part of the variant calling pipeline of Figu
 3 Results
 =========
 
-The results from a typical run of the pipeline are organized according to the hierarchy shown in Figure \[3\] below. Overall, the `DELIVERYFOLDER` contains the key summarizing files of the run (the cleaned up bams, gvcfs and final vcf from joint calling; in addition to the summary reports regarding the quality of the data, and copies of the
-`sampleinformation` and `runfile` files). Each sample also has its own directory that contains the files generated after each stage. In Figure \[3\], a color coding schema is employed to differentiate the files that would be generated according to how the user specifies the `ANALYSIS` parameter in the `runfile`.
+The results from a typical run of the pipeline are organized according to the hierarchy shown in Figure \[3\] below. Overall, the `DELIVERYFOLDER` contains the key summarizing files of the run (the cleaned up bams, gvcfs and final vcf from joint calling; in addition to the summary reports regarding the quality of the data, and copies of the `sampleinformation` and `runfile` files). Each sample also has its own directory that contains the files generated after each stage. In Figure \[3\], a color coding schema is employed to differentiate the files that would be generated according to how the user specifies the `ANALYSIS` parameter in the `runfile`.
 
-![](./media/image04.png){width="6.692716535433071in"
-height="3.5694444444444446in"}
+![](./media/image04.png)
 
 Figure 3: Output directories and files generated from a typical run of
 the pipeline
@@ -280,3 +279,14 @@ Figure 4 below shows sample results from changing the &lt;&gt; parameter
 in bwa for the GIAB sample, while Figure 5 shows the results on the same
 sample when varying the &lt;&gt; parameter in the BaseRecalibration
 stage for chromosome &lt;&gt;
+
+
+
+5 This Pipeline: Troubleshooting area (FAQs) 
+====================================
+
+- The pipeline seems to be running, but then prematurely stops at one of the tools?
+Solution: make sure that all tools are specified in your runfile up to the executable itself (or the jar file if applicable)
+
+- The realignment/recalibration stage produces a lot of errors or strange results?
+Solution: make sure you are preparing your reference and extra files (dbsnp, 1000G,...etc) according to the guidelines of section 2.2
