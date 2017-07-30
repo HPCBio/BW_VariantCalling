@@ -48,6 +48,7 @@ numsamples=$(wc -l $sampleinfo)
 refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )        
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+incl_dbSNP=$( cat $runfile | grep -w INCLUDEDBSNP | cut -d '=' -f2 )
 sPL=$( cat $runfile | grep -w SAMPLEPL | cut -d '=' -f2 )
 sCN=$( cat $runfile | grep -w SAMPLECN | cut -d '=' -f2 )
 sLB=$( cat $runfile | grep -w SAMPLELB | cut -d '=' -f2 )
@@ -91,12 +92,14 @@ then
 	exit 1;
 fi
 
-if [ ! -s  $refdir/$dbSNP  ]
-then
-	MSG="Invalid value specified for DBSNP=$dbSNP in the runfile."
-	echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
-	exit 1;
-fi
+ if [ ${incl_dbSNP} == "Y" ]; then
+	 if [ ! -s  $refdir/$dbSNP  ]
+	 then
+	 	 MSG="Invalid value specified for DBSNP=$dbSNP in the runfile."
+	 	 echo -e "program=$0 stopped at line=$LINENO. Reason=$MSG" | mail -s "[Task #${reportticket}]" "$redmine,$email"
+	 	 exit 1;
+	 fi
+ fi
 
 if [[ -z "${alignertool// }" ]]
 then

@@ -47,6 +47,8 @@ refdir=$( cat $runfile | grep -w REFGENOMEDIR | cut -d '=' -f2 )
 indeldir=$( cat $runfile | grep -w INDELDIR | cut -d '=' -f2 )
 refgenome=$( cat $runfile | grep -w REFGENOME | cut -d '=' -f2 )
 dbSNP=$( cat $runfile | grep -w DBSNP | cut -d '=' -f2 )
+incl_dbSNP=$( cat $runfile | grep -w INCLUDEDBSNP | cut -d '=' -f2 )
+
 aligner_parms=$( cat $runfile | grep -w BWAMEMPARAMS | cut -d '=' -f2 )
 picardir=$( cat $runfile | grep -w PICARDIR | cut -d '=' -f2 )
 samtoolsdir=$( cat $runfile | grep -w SAMDIR | cut -d '=' -f2 )
@@ -266,7 +268,8 @@ echo -e "#######################################################################
 set -x
 cd $RealignDir
 
-if [ $analysis == "VC_WITH_REALIGNMENT" ]; then 
+if [ $analysis == "VC_WITH_REALIGNMENT" ]; then
+
 	$javadir/java -Xmx8g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar\
        		-R $ref_local\
        		-I $dedupsortedbam\
@@ -340,15 +343,26 @@ set +x
 echo -e "\n\n##################################################################################" 
 echo -e "########### command four: run GATK BaseRecalibrator using known indels and dbSNP    ##"
 echo -e "##################################################################################\n\n"
-set -x 
-$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
-         -T BaseRecalibrator \
-         -R $ref_local \
-         -I $realignedbam \
-         $recalparmsindels \
-	 $recalparmsdbsnp \
-         --out $SampleName.$chr.recal_report.grp \
-         -nct $thr 
+set -x
+
+if [ ${incl_dbSNP} == "Y" ]; then
+	$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+       		-T BaseRecalibrator \
+       		-R $ref_local \
+       		-I $realignedbam \
+       		$recalparmsindels \
+       		$recalparmsdbsnp \ 
+		--out $SampleName.$chr.recal_report.grp \
+       		-nct $thr 
+elif [ ${incl_dbSNP} == "N" ]
+	$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+		-T BaseRecalibrator \
+		-R $ref_local \
+		-I $realignedbam \
+		$recalparmsindels \
+		--out $SampleName.$chr.recal_report.grp \
+		-nct $thr 
+fi
 
 exitcode=$?
 
@@ -435,22 +449,36 @@ echo -e "########### command one: executing GATK HaplotypeCaller command        
 echo -e "##################################################################################\n\n"
 set -x
 
-
-$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
-	 -T HaplotypeCaller \
-	 -R $ref_local \
-	 --dbsnp $dbsnp_local \
-	 -I $RealignDir/$recalibratedbam \
-	 --emitRefConfidence GVCF \
-	 -gt_mode DISCOVERY \
-	 -A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
-	 -stand_call_conf 30 \
-	 -stand_emit_conf 30 \
-	 --sample_ploidy $ploidy \
-	 -nt 1 -nct $thr \
-	 -L $chr\
-	 -o $rawvariant
-
+if [ ${incl_dbSNP} == "Y" ]; then
+	$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+       		-T HaplotypeCaller \
+       		-R $ref_local \
+       		--dbsnp $dbsnp_local \
+       		-I $RealignDir/$recalibratedbam \
+       		--emitRefConfidence GVCF \
+       		-gt_mode DISCOVERY \
+       		-A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+       		-stand_call_conf 30 \
+       		-stand_emit_conf 30 \
+       		--sample_ploidy $ploidy \
+       		-nt 1 -nct $thr \
+       		-L $chr\
+       		-o $rawvariant
+elif [ ${incl_dbSNP} == "N" ]; then
+		$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
+       		-T HaplotypeCaller \
+       		-R $ref_local \	
+       		-I $RealignDir/$recalibratedbam \
+       		--emitRefConfidence GVCF \
+       		-gt_mode DISCOVERY \
+       		-A Coverage -A FisherStrand -A StrandOddsRatio -A HaplotypeScore -A MappingQualityRankSumTest -A QualByDepth -A RMSMappingQuality -A ReadPosRankSumTest \
+       		-stand_call_conf 30 \
+       		-stand_emit_conf 30 \
+       		--sample_ploidy $ploidy \
+       		-nt 1 -nct $thr \
+       		-L $chr\
+       		-o $rawvariant
+fi
 
 exitcode=$?
 echo `date`

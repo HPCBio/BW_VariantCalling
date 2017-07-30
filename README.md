@@ -120,6 +120,7 @@ In a nutshell, the template below shows the various parameters and how they can 
   ADAPTERS=<path to the adapter file to be used with trimmomatic>
   REFGENOMEDIR=<path to the directory where all reference files and databases are stored>
   REFGENOME=<name of the reference genome file within REFGENOMEDIR. Example ucsc.hg19.fasta in the GATK bundle 2.8>
+  INCLUDEDBSNP=<Y|N: whether(Y) or not(N) to use dbsnp in the analysi>
   DBSNP=<name of the dbsnp file within REFGENOMEDIR. Example dbsnp\_138.hg19.vcf in the GATK bundle 2.8>
   INDELDIR=<name of the directory within REFGENOMEDIR that contains a vcf file for each chromosome/contig specified by the CHRNAMES parameter. These files need to be named as: \*\${chr\_name}.vcf >
   OMNI=<name of the omni variants file. Example: 1000G\_omni2.5.hg19.sites.vcf in the GATK bundle 2.8>

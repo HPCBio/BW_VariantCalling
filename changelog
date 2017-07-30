@@ -9,6 +9,9 @@ Workflow assumptions
 
 Changelog
 
+July 29, 2017:
+- Adding INCLUDEDBSNP to the runfile: a parameter to whether or not use dbsnp in the analysis
+
 June 22, 2016:
 - The tool SNVMix is not used, so removed from the run fil
 - The tool SAMBAMBA is also not used
