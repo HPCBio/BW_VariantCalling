@@ -311,7 +311,7 @@ then
 	set -x 
         
 
-        if [ $alignertool== "BWA" ]
+        if [ $alignertool == "BWAMEM" ]
         then
 
 
