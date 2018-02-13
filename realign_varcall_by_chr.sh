@@ -351,10 +351,10 @@ if [ ${incl_dbSNP} == "Y" ]; then
        		-R $ref_local \
        		-I $realignedbam \
        		$recalparmsindels \
-       		$recalparmsdbsnp \ 
+       		$recalparmsdbsnp \
 		--out $SampleName.$chr.recal_report.grp \
        		-nct $thr 
-elif [ ${incl_dbSNP} == "N" ]
+elif [ ${incl_dbSNP} == "N" ]; then 
 	$javadir/java -Xmx16g  -Djava.io.tmpdir=$tmpdir -jar $gatkdir/GenomeAnalysisTK.jar \
 		-T BaseRecalibrator \
 		-R $ref_local \
